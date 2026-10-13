@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-12T20:47:35.9905477+08:00",
+  "generated_at": "2026-10-13T10:54:07.7694226+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 166,
-    "open_issues": 13856,
-    "community": 12936,
-    "artifacts": 995
+    "open_prs": 176,
+    "open_issues": 13863,
+    "community": 12939,
+    "artifacts": 992
   },
   "impact": {
-    "as_of": "2026-10-12T20:47:35.9905477+08:00",
+    "as_of": "2026-10-13T10:54:07.7694226+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -100,10 +100,8 @@ window.BOARD_INDEX = {
   "artifact_numbers": [
     51197,
     51195,
-    51181,
     51162,
     51153,
-    51152,
     51150,
     51149,
     51148,
@@ -138,7 +136,6 @@ window.BOARD_INDEX = {
     50897,
     50884,
     50873,
-    50834,
     50830,
     50776,
     50772,
@@ -1096,6 +1093,582 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51222",
+      "kind": "pr",
+      "number": 51222,
+      "url": "https://github.com/microsoft/PowerToys/pull/51222",
+      "title": "CmdPal: Add a Charts and visuals sample page and author docs",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T20:11:54Z",
+      "updated_at": "2026-10-12T20:17:55Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51221",
+      "kind": "pr",
+      "number": 51221,
+      "url": "https://github.com/microsoft/PowerToys/pull/51221",
+      "title": "CmdPal: Add a Performance Monitor Overview card and dock band",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T20:04:01Z",
+      "updated_at": "2026-10-12T20:04:21Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51220",
+      "kind": "pr",
+      "number": 51220,
+      "url": "https://github.com/microsoft/PowerToys/pull/51220",
+      "title": "CmdPal: Redesign the Performance Monitor Battery card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T19:27:19Z",
+      "updated_at": "2026-10-12T19:27:40Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51219",
+      "kind": "pr",
+      "number": 51219,
+      "url": "https://github.com/microsoft/PowerToys/pull/51219",
+      "title": "CmdPal: Render Adaptive Cards gauge, donut, and pie charts natively",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T19:18:25Z",
+      "updated_at": "2026-10-12T19:18:45Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51218",
+      "kind": "pr",
+      "number": 51218,
+      "url": "https://github.com/microsoft/PowerToys/pull/51218",
+      "title": "CmdPal: Redesign the Performance Monitor Network card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T19:16:15Z",
+      "updated_at": "2026-10-12T19:16:38Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51215",
+      "kind": "pr",
+      "number": 51215,
+      "url": "https://github.com/microsoft/PowerToys/pull/51215",
+      "title": "CmdPal: Redesign the Performance Monitor Disk card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T18:53:59Z",
+      "updated_at": "2026-10-12T18:54:19Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51214",
+      "kind": "pr",
+      "number": 51214,
+      "url": "https://github.com/microsoft/PowerToys/pull/51214",
+      "title": "CmdPal: Redesign the Performance Monitor GPU card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T18:02:51Z",
+      "updated_at": "2026-10-12T18:43:21Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51213",
+      "kind": "pr",
+      "number": 51213,
+      "url": "https://github.com/microsoft/PowerToys/pull/51213",
+      "title": "[Settings] Fix hang in SendInput while bringing window to foreground",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-General",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T17:29:07Z",
+      "updated_at": "2026-10-12T20:10:02Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "UNKNOWN"
+    },
+    {
+      "id": "pr-51212",
+      "kind": "pr",
+      "number": 51212,
+      "url": "https://github.com/microsoft/PowerToys/pull/51212",
+      "title": "CmdPal: Redesign the Performance Monitor Memory card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T17:18:05Z",
+      "updated_at": "2026-10-12T19:56:46Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51211",
+      "kind": "pr",
+      "number": 51211,
+      "url": "https://github.com/microsoft/PowerToys/pull/51211",
+      "title": "CmdPal: Redesign the Performance Monitor CPU card",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T17:09:07Z",
+      "updated_at": "2026-10-12T17:47:20Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51210",
+      "kind": "pr",
+      "number": 51210,
+      "url": "https://github.com/microsoft/PowerToys/pull/51210",
+      "title": "CmdPal: Render Adaptive Cards bar charts natively",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:54:24Z",
+      "updated_at": "2026-10-12T17:47:19Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51209",
+      "kind": "pr",
+      "number": 51209,
+      "url": "https://github.com/microsoft/PowerToys/pull/51209",
+      "title": "CmdPal: Render Adaptive Cards ProgressBar, Badge, Icon, and rounded tiles",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:43:02Z",
+      "updated_at": "2026-10-12T17:47:18Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51208",
+      "kind": "pr",
+      "number": 51208,
+      "url": "https://github.com/microsoft/PowerToys/pull/51208",
+      "title": "CmdPal: Add an Adaptive Cards polyfills library with native Chart.Line",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:41:24Z",
+      "updated_at": "2026-10-12T17:47:16Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51206",
+      "kind": "pr",
+      "number": 51206,
+      "url": "https://github.com/microsoft/PowerToys/pull/51206",
+      "title": "CmdPal: Fix double-speed Performance Monitor histories and long GPU names",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:27:41Z",
+      "updated_at": "2026-10-12T19:56:50Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "UNKNOWN"
+    },
+    {
+      "id": "pr-51205",
+      "kind": "pr",
+      "number": 51205,
+      "url": "https://github.com/microsoft/PowerToys/pull/51205",
+      "title": "CmdPal: Fluent, theme-aware host config for Adaptive Cards",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:27:17Z",
+      "updated_at": "2026-10-12T17:47:14Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "UNKNOWN"
+    },
+    {
+      "id": "pr-51204",
+      "kind": "pr",
+      "number": 51204,
+      "url": "https://github.com/microsoft/PowerToys/pull/51204",
+      "title": "CmdPal: Update custom card elements in place, including in release builds",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-10-12T16:20:07Z",
+      "updated_at": "2026-10-12T17:47:13Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51198",
       "kind": "pr",
       "number": 51198,
@@ -1122,12 +1695,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-12T09:59:18Z",
-      "updated_at": "2026-10-12T10:52:51Z",
+      "updated_at": "2026-10-12T19:18:31Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51197",
@@ -1157,19 +1730,19 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-12T09:36:54Z",
-      "updated_at": "2026-10-12T10:53:31Z",
+      "updated_at": "2026-10-12T19:02:55Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
-        "fork_number": 1003,
-        "fork_title": "[PR 51197] Persist Calculator clipboard text without OLE flush",
+        "fork_number": 1006,
+        "fork_title": "[PR 51197] [PTRun][Calculator] Persist copied results without a post-write OLE flush",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51197-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1003"
+        "fork_branch": "pr-iterate/51197-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1006"
       }
     },
     {
@@ -1197,11 +1770,12 @@ window.BOARD_INDEX = {
       "labels": [
         "Product-PowerToys Run",
         "Needs-Triage",
-        "Needs-Team-Response"
+        "Needs-Team-Response",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-12T08:45:38Z",
-      "updated_at": "2026-10-12T10:53:36Z",
+      "updated_at": "2026-10-12T19:07:17Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1248,7 +1822,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51189",
@@ -1282,50 +1856,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51181",
-      "kind": "pr",
-      "number": 51181,
-      "url": "https://github.com/microsoft/PowerToys/pull/51181",
-      "title": "[Awake] Rewrite Awake in Rust",
-      "author": "dend",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "2026-10-12T00:41:13Z",
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Awake",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-11T07:42:48Z",
-      "updated_at": "2026-10-12T00:41:14Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1001,
-        "fork_title": "[PR 51181] [Awake] Rewrite Awake in Rust",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51181",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1001"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51163",
@@ -1359,7 +1890,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51162",
@@ -1397,7 +1928,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 990,
@@ -1440,7 +1971,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 989,
@@ -1448,49 +1979,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51153",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/989"
-      }
-    },
-    {
-      "id": "pr-51152",
-      "kind": "pr",
-      "number": 51152,
-      "url": "https://github.com/microsoft/PowerToys/pull/51152",
-      "title": "New+: Fix leak of template folder and items for every context menu",
-      "author": "Arslan-TR",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_blocked",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-New+",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-09T14:07:49Z",
-      "updated_at": "2026-10-10T01:54:21Z",
-      "comments": 3,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 988,
-        "fork_title": "[PR 51152] New+: Fix leak of template folder and items for every context menu",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51152",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/988"
       }
     },
     {
@@ -1527,7 +2015,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 999,
@@ -1570,7 +2058,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 998,
@@ -1613,7 +2101,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 992,
@@ -1656,7 +2144,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 993,
@@ -1694,11 +2182,11 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-09T09:57:18Z",
-      "updated_at": "2026-10-09T13:06:37Z",
-      "comments": 2,
+      "updated_at": "2026-10-13T02:42:21Z",
+      "comments": 4,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "pending",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
@@ -1742,7 +2230,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 977,
@@ -1780,12 +2268,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T18:31:17Z",
-      "updated_at": "2026-10-10T09:42:53Z",
+      "updated_at": "2026-10-12T18:45:57Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1002,
@@ -1831,7 +2319,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 953,
@@ -1875,7 +2363,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 954,
@@ -1884,41 +2372,6 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/51126",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/954"
       }
-    },
-    {
-      "id": "pr-51125",
-      "kind": "pr",
-      "number": 51125,
-      "url": "https://github.com/microsoft/PowerToys/pull/51125",
-      "title": "CmdPal: Native Adaptive Cards charts and redesigned Performance Monitor cards",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-08T17:27:13Z",
-      "updated_at": "2026-10-09T22:43:25Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51123",
@@ -1956,7 +2409,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 984,
@@ -2007,7 +2460,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 978,
@@ -2046,12 +2499,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T07:15:54Z",
-      "updated_at": "2026-10-12T09:41:28Z",
+      "updated_at": "2026-10-12T17:29:50Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 968,
@@ -2095,7 +2548,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51106",
@@ -2130,7 +2583,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 957,
@@ -2176,7 +2629,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 958,
@@ -2185,40 +2638,6 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/51105-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/958"
       }
-    },
-    {
-      "id": "pr-51103",
-      "kind": "pr",
-      "number": 51103,
-      "url": "https://github.com/microsoft/PowerToys/pull/51103",
-      "title": "Add Display Profiles for saved monitor topologies",
-      "author": "Rhaegal222",
-      "state": "open",
-      "is_draft": true,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-08T00:26:40Z",
-      "updated_at": "2026-10-08T08:31:40Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51102",
@@ -2255,7 +2674,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 950,
@@ -2330,12 +2749,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T21:19:37Z",
-      "updated_at": "2026-10-09T08:24:12Z",
-      "comments": 4,
+      "updated_at": "2026-10-13T02:34:49Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "APPROVED",
-      "ci_state": "failed",
-      "merge_state": "UNSTABLE"
+      "ci_state": "pending",
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51097",
@@ -2373,7 +2792,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 959,
@@ -2453,7 +2872,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51088",
@@ -2506,12 +2925,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T17:43:18Z",
-      "updated_at": "2026-10-09T08:21:17Z",
-      "comments": 5,
+      "updated_at": "2026-10-13T02:23:45Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 951,
@@ -2557,7 +2976,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 962,
@@ -2594,12 +3013,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T06:45:57Z",
-      "updated_at": "2026-10-12T10:58:43Z",
-      "comments": 11,
+      "updated_at": "2026-10-13T02:33:30Z",
+      "comments": 13,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51063",
@@ -2633,7 +3052,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 967,
@@ -2700,7 +3119,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "UNSTABLE",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 995,
@@ -2741,12 +3160,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T04:06:01Z",
-      "updated_at": "2026-10-09T06:31:24Z",
-      "comments": 6,
+      "updated_at": "2026-10-12T23:49:14Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 969,
@@ -2780,19 +3199,19 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-Command Palette",
-        "CmdPal - Dock",
-        "Ready for review"
+        "Merge conflict 🙀",
+        "CmdPal - Dock"
       ],
       "assignees": [
         "jiripolasek"
       ],
       "created_at": "2026-10-06T14:48:49Z",
-      "updated_at": "2026-10-06T16:40:54Z",
+      "updated_at": "2026-10-12T18:12:57Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51041",
@@ -2825,12 +3244,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-05T23:06:33Z",
-      "updated_at": "2026-10-10T01:10:02Z",
+      "updated_at": "2026-10-13T00:58:04Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 971,
@@ -2869,7 +3288,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-05T21:17:55Z",
-      "updated_at": "2026-10-08T11:37:39Z",
+      "updated_at": "2026-10-12T22:00:19Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2912,7 +3331,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 972,
@@ -2957,7 +3376,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51022",
@@ -2992,7 +3411,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51017",
@@ -3026,7 +3445,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51013",
@@ -3052,54 +3471,16 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
-        "Product-Command Palette",
-        "Ready for review"
+        "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-10-05T13:47:51Z",
-      "updated_at": "2026-10-08T16:13:33Z",
+      "updated_at": "2026-10-12T18:13:14Z",
       "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51011",
-      "kind": "pr",
-      "number": 51011,
-      "url": "https://github.com/microsoft/PowerToys/pull/51011",
-      "title": "CmdPal: Add full-screen initial position picker",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-10-05T13:20:23Z",
-      "updated_at": "2026-10-11T13:20:47Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51005",
@@ -3135,7 +3516,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50982",
@@ -3208,7 +3589,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50968",
@@ -3276,7 +3657,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50957",
@@ -3314,7 +3695,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 994,
@@ -3358,7 +3739,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 982,
@@ -3402,7 +3783,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 985,
@@ -3446,7 +3827,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 981,
@@ -3489,7 +3870,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50915",
@@ -3524,7 +3905,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50914",
@@ -3562,7 +3943,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 979,
@@ -3608,7 +3989,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 940,
@@ -3655,7 +4036,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 939,
@@ -3701,7 +4082,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 937,
@@ -3743,12 +4124,12 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-09-30T03:12:59Z",
-      "updated_at": "2026-10-12T07:45:07Z",
-      "comments": 3,
+      "updated_at": "2026-10-12T17:28:03Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1000,
@@ -3796,7 +4177,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50884",
@@ -3835,7 +4216,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 935,
@@ -3877,7 +4258,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50873",
@@ -3913,7 +4294,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 987,
@@ -3958,54 +4339,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
-    },
-    {
-      "id": "pr-50834",
-      "kind": "pr",
-      "number": 50834,
-      "url": "https://github.com/microsoft/PowerToys/pull/50834",
-      "title": "[Advanced Paste] Add headless CLI for Advanced Paste actions",
-      "author": "MuyuanMS",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": true,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 14,
-      "primary_action": null,
-      "labels": [
-        "Needs-Author-Feedback",
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-Advanced Paste",
-        "0.102",
-        "Area-CLI"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-28T03:00:55Z",
-      "updated_at": "2026-10-12T08:34:20Z",
-      "comments": 8,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 918,
-        "fork_title": "[PR 50834] Advanced Paste headless CLI review iteration",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50834",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/918"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50830",
@@ -4043,7 +4377,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 919,
@@ -4091,7 +4425,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 908,
@@ -4136,7 +4470,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 900,
@@ -4179,7 +4513,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 980,
@@ -4221,7 +4555,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50739",
@@ -4255,7 +4589,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50738",
@@ -4333,7 +4667,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50730",
@@ -4370,7 +4704,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 894,
@@ -4458,7 +4792,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 879,
@@ -4500,7 +4834,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50683",
@@ -4538,7 +4872,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 874,
@@ -4584,7 +4918,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 863,
@@ -4633,7 +4967,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 860,
@@ -4675,7 +5009,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50638",
@@ -4709,7 +5043,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50637",
@@ -4744,7 +5078,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 851,
@@ -4789,7 +5123,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 846,
@@ -4831,7 +5165,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50597",
@@ -4869,7 +5203,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 890,
@@ -4911,7 +5245,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50545",
@@ -4948,7 +5282,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 785,
@@ -4994,7 +5328,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 811,
@@ -5037,7 +5371,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 809,
@@ -5083,7 +5417,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 781,
@@ -5129,7 +5463,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 829,
@@ -5173,7 +5507,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 789,
@@ -5209,16 +5543,17 @@ window.BOARD_INDEX = {
         "label": "Post Shortcut Guide general review note"
       },
       "labels": [
-        "Product-Mouse Utilities"
+        "Product-Mouse Utilities",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-09-09T20:57:18Z",
-      "updated_at": "2026-09-20T21:47:16Z",
-      "comments": 8,
+      "updated_at": "2026-10-12T21:01:58Z",
+      "comments": 9,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 870,
@@ -5263,7 +5598,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 752,
@@ -5311,7 +5646,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 755,
@@ -5354,7 +5689,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50432",
@@ -5389,7 +5724,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50418",
@@ -5451,18 +5786,21 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Command Palette"
       ],
       "assignees": [
-        "jiripolasek"
+        "jiripolasek",
+        "niels9001"
       ],
       "created_at": "2026-09-04T16:52:20Z",
-      "updated_at": "2026-09-21T18:26:13Z",
-      "comments": 2,
+      "updated_at": "2026-10-12T16:09:33Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50341",
@@ -5498,7 +5836,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50333",
@@ -5536,7 +5874,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 815,
@@ -5582,7 +5920,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 804,
@@ -5626,7 +5964,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50245",
@@ -5665,7 +6003,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50222",
@@ -5702,7 +6040,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 805,
@@ -5745,7 +6083,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50132",
@@ -5779,7 +6117,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50081",
@@ -5818,7 +6156,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50029",
@@ -5855,7 +6193,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 927,
@@ -5903,7 +6241,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 745,
@@ -5948,7 +6286,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49966",
@@ -5985,7 +6323,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49963",
@@ -6026,7 +6364,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49956",
@@ -6060,7 +6398,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49953",
@@ -6095,7 +6433,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49951",
@@ -6132,7 +6470,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49950",
@@ -6166,7 +6504,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49949",
@@ -6198,7 +6536,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49891",
@@ -6233,7 +6571,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49863",
@@ -6269,7 +6607,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49862",
@@ -6308,7 +6646,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49825",
@@ -6343,7 +6681,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 819,
@@ -6385,7 +6723,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49748",
@@ -6417,7 +6755,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49746",
@@ -6449,7 +6787,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49726",
@@ -6483,7 +6821,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49724",
@@ -6522,7 +6860,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 928,
@@ -6567,7 +6905,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 822,
@@ -6607,7 +6945,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 740,
@@ -6649,7 +6987,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49502",
@@ -6683,7 +7021,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49460",
@@ -6721,7 +7059,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49412",
@@ -6758,7 +7096,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 817,
@@ -6782,9 +7120,9 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-09-01T06:21:56Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6803,7 +7141,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49333",
@@ -6837,7 +7175,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49276",
@@ -6875,7 +7213,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 892,
@@ -6921,7 +7259,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49225",
@@ -6955,7 +7293,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49224",
@@ -6990,7 +7328,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49223",
@@ -7030,7 +7368,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49222",
@@ -7064,7 +7402,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49221",
@@ -7102,7 +7440,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49187",
@@ -7138,7 +7476,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49100",
@@ -7173,7 +7511,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49077",
@@ -7210,7 +7548,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 824,
@@ -7255,7 +7593,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48700",
@@ -7296,7 +7634,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 760,
@@ -7338,7 +7676,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48524",
@@ -7378,7 +7716,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48483",
@@ -7410,7 +7748,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48223",
@@ -7447,7 +7785,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47888",
@@ -7482,7 +7820,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47871",
@@ -7519,7 +7857,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 897,
@@ -7562,7 +7900,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-46056",
@@ -7598,7 +7936,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-45972",
@@ -7635,7 +7973,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-45927",
@@ -7670,7 +8008,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-44624",
@@ -7710,7 +8048,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-41656",
@@ -7746,7 +8084,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-41003",
@@ -7786,7 +8124,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "issue-36350",
@@ -11207,11 +11545,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2024-11-20T16:30:24Z",
-      "updated_at": "2026-10-11T01:13:03Z",
+      "updated_at": "2026-10-12T20:15:56Z",
       "comments": 4,
       "priority": null
     },
@@ -17867,11 +18203,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2024-10-24T04:56:05Z",
-      "updated_at": "2026-04-23T14:32:56Z",
+      "updated_at": "2026-10-12T20:15:59Z",
       "comments": 5,
       "priority": null
     },
@@ -29575,11 +29909,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2021-07-03T19:04:11Z",
-      "updated_at": "2024-12-05T01:53:54Z",
+      "updated_at": "2026-10-12T20:16:31Z",
       "comments": 3,
       "priority": null
     },
@@ -49051,11 +49383,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2024-04-15T17:47:22Z",
-      "updated_at": "2026-09-07T14:11:36Z",
+      "updated_at": "2026-10-12T20:16:01Z",
       "comments": 11,
       "priority": null
     },
@@ -57667,11 +57997,9 @@ window.BOARD_INDEX = {
         "Idea-New PowerToy",
         "Needs-Triage"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-05-07T03:30:23Z",
-      "updated_at": "2026-10-11T00:59:28Z",
+      "updated_at": "2026-10-12T20:15:09Z",
       "comments": 3,
       "priority": null
     },
@@ -62159,11 +62487,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Area-Flyout"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2024-02-07T09:35:41Z",
-      "updated_at": "2026-10-11T00:59:22Z",
+      "updated_at": "2026-10-12T20:16:04Z",
       "comments": 0,
       "priority": null
     },
@@ -63184,11 +63510,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-03-19T10:58:05Z",
-      "updated_at": "2026-10-11T01:13:33Z",
+      "updated_at": "2026-10-12T20:15:24Z",
       "comments": 4,
       "priority": null
     },
@@ -79511,11 +79835,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-10-28T15:54:25Z",
-      "updated_at": "2026-03-29T12:40:28Z",
+      "updated_at": "2026-10-12T20:16:06Z",
       "comments": 4,
       "priority": null
     },
@@ -81041,11 +81363,9 @@ window.BOARD_INDEX = {
         "Status-In progress",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-10-18T05:56:58Z",
-      "updated_at": "2026-10-05T09:49:17Z",
+      "updated_at": "2026-10-12T20:16:08Z",
       "comments": 4,
       "priority": null
     },
@@ -86921,11 +87241,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-09-13T07:23:26Z",
-      "updated_at": "2024-10-10T17:54:14Z",
+      "updated_at": "2026-10-12T20:16:10Z",
       "comments": 1,
       "priority": null
     },
@@ -104138,11 +104456,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2021-07-01T18:57:42Z",
-      "updated_at": "2024-12-05T01:53:46Z",
+      "updated_at": "2026-10-12T20:16:33Z",
       "comments": 0,
       "priority": null
     },
@@ -109253,7 +109569,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-04-12T22:32:27Z",
-      "updated_at": "2026-10-12T10:50:20Z",
+      "updated_at": "2026-10-12T19:03:19Z",
       "comments": 58,
       "priority": null
     },
@@ -109453,11 +109769,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-04-12T09:42:02Z",
-      "updated_at": "2026-04-19T02:03:27Z",
+      "updated_at": "2026-10-12T20:16:13Z",
       "comments": 2,
       "priority": null
     },
@@ -113864,11 +114178,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-03-16T09:08:06Z",
-      "updated_at": "2026-06-25T16:59:15Z",
+      "updated_at": "2026-10-12T20:16:15Z",
       "comments": 10,
       "priority": null
     },
@@ -117080,6 +117392,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51203",
+      "kind": "issue",
+      "number": 51203,
+      "url": "https://github.com/microsoft/PowerToys/issues/51203",
+      "title": "The operation could not be completed because desktop composition is disabled",
+      "author": "KkuraNekozzang",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Needs-Author-Feedback",
+        "Product-PowerToys Run"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T15:58:03Z",
+      "updated_at": "2026-10-12T20:08:03Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-24359",
       "kind": "issue",
       "number": 24359,
@@ -117782,6 +118128,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51202",
+      "kind": "issue",
+      "number": 51202,
+      "url": "https://github.com/microsoft/PowerToys/issues/51202",
+      "title": "New Feature - Run Virtual Desktop as a different user",
+      "author": "pshoreapco",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-New+"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T13:37:47Z",
+      "updated_at": "2026-10-12T13:42:32Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-24266",
       "kind": "issue",
       "number": 24266,
@@ -118242,11 +118620,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-02-20T18:01:58Z",
-      "updated_at": "2024-10-10T17:57:22Z",
+      "updated_at": "2026-10-12T20:16:18Z",
       "comments": 0,
       "priority": null
     },
@@ -120198,11 +120574,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2023-02-07T15:41:58Z",
-      "updated_at": "2024-10-13T12:14:43Z",
+      "updated_at": "2026-10-12T20:16:21Z",
       "comments": 1,
       "priority": null
     },
@@ -122763,11 +123137,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-02-25T00:27:28Z",
-      "updated_at": "2026-10-11T01:13:28Z",
+      "updated_at": "2026-10-12T20:15:29Z",
       "comments": 1,
       "priority": null
     },
@@ -131281,11 +131653,9 @@ window.BOARD_INDEX = {
         "Area-Logging",
         "Product-Mouse Highlighter"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2022-11-23T18:05:43Z",
-      "updated_at": "2026-10-11T00:59:21Z",
+      "updated_at": "2026-10-12T20:16:23Z",
       "comments": 2,
       "priority": null
     },
@@ -142675,7 +143045,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2022-09-09T18:36:13Z",
-      "updated_at": "2026-10-12T10:07:03Z",
+      "updated_at": "2026-10-12T19:08:40Z",
       "comments": 24,
       "priority": null
     },
@@ -161649,12 +162019,11 @@ window.BOARD_INDEX = {
         "Product-Awake"
       ],
       "assignees": [
-        "dend",
         "niels9001",
         "Copilot"
       ],
       "created_at": "2022-03-09T21:37:26Z",
-      "updated_at": "2026-10-11T01:12:48Z",
+      "updated_at": "2026-10-12T20:16:26Z",
       "comments": 4,
       "priority": null
     },
@@ -170819,11 +171188,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2021-12-24T22:28:18Z",
-      "updated_at": "2024-10-13T12:38:48Z",
+      "updated_at": "2026-10-12T20:16:29Z",
       "comments": 11,
       "priority": null
     },
@@ -172126,6 +172493,101 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51226",
+      "kind": "issue",
+      "number": 51226,
+      "url": "https://github.com/microsoft/PowerToys/issues/51226",
+      "title": "Code signing requirement",
+      "author": "jaypea70",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-13T02:18:43Z",
+      "updated_at": "2026-10-13T02:18:43Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51225",
+      "kind": "issue",
+      "number": 51225,
+      "url": "https://github.com/microsoft/PowerToys/issues/51225",
+      "title": "Command Palette: inherited Windows App SDK runtime directory can crash launched apps",
+      "author": "freddiehaddad",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T22:26:58Z",
+      "updated_at": "2026-10-13T00:54:43Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-51224",
+      "kind": "issue",
+      "number": 51224,
+      "url": "https://github.com/microsoft/PowerToys/issues/51224",
+      "title": "Shortcut keys for both MP4 and GIF recording with ZoomIt",
+      "author": "LewdDewd777",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-ZoomIt"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T21:05:40Z",
+      "updated_at": "2026-10-12T21:10:27Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-14863",
       "kind": "issue",
       "number": 14863,
@@ -172222,6 +172684,37 @@ window.BOARD_INDEX = {
       "created_at": "2021-12-06T07:35:47Z",
       "updated_at": "2022-02-10T01:20:15Z",
       "comments": 14,
+      "priority": null
+    },
+    {
+      "id": "issue-51207",
+      "kind": "issue",
+      "number": 51207,
+      "url": "https://github.com/microsoft/PowerToys/issues/51207",
+      "title": "Crop and Lock: Separate from Always on Top",
+      "author": "nickcombs32",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T16:28:44Z",
+      "updated_at": "2026-10-12T16:28:44Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -172388,6 +172881,72 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51201",
+      "kind": "issue",
+      "number": 51201,
+      "url": "https://github.com/microsoft/PowerToys/issues/51201",
+      "title": "No monitors have been detected.",
+      "author": "ColorTraining",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-PowerDisplay"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T12:46:31Z",
+      "updated_at": "2026-10-12T12:51:15Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51200",
+      "kind": "issue",
+      "number": 51200,
+      "url": "https://github.com/microsoft/PowerToys/issues/51200",
+      "title": "CmdPal: Remove or isolate the secondary command",
+      "author": "jiripolasek",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T11:53:29Z",
+      "updated_at": "2026-10-12T23:49:31Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-51199",
       "kind": "issue",
       "number": 51199,
@@ -172417,8 +172976,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-12T11:19:15Z",
-      "updated_at": "2026-10-12T11:25:17Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T12:10:47Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -172428,7 +172987,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51196",
       "title": "Windows File Explorer",
       "author": "Beyorizon",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -172445,12 +173004,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-File Explorer",
-        "Needs-Triage"
+        "Resolution-Please File on Feedback Hub"
       ],
       "assignees": [],
       "created_at": "2026-10-12T08:51:09Z",
-      "updated_at": "2026-10-12T08:58:10Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T14:26:41Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -172491,7 +173050,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51193",
       "title": "Feature Request: Prevent text shifting (\"jumping\") in Dock Panel metrics due to digit count changes",
       "author": "ivandrii",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -172508,14 +173067,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Resolution-Duplicate",
         "Needs-Author-Feedback",
-        "Needs-Triage",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-10-12T06:12:16Z",
-      "updated_at": "2026-10-12T06:17:31Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T12:21:29Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -172991,12 +173550,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback"
+        "Needs-Triage",
+        "Needs-Team-Response"
       ],
       "assignees": [],
       "created_at": "2026-10-10T16:58:02Z",
-      "updated_at": "2026-10-11T16:17:33Z",
-      "comments": 4,
+      "updated_at": "2026-10-12T15:48:33Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -173382,8 +173942,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-09T19:59:08Z",
-      "updated_at": "2026-10-09T19:59:08Z",
-      "comments": 0,
+      "updated_at": "2026-10-12T17:38:02Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -173513,8 +174073,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-09T16:12:13Z",
-      "updated_at": "2026-10-09T16:17:33Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T20:47:18Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -173558,7 +174118,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51151",
       "title": "New+: template folder and template items are leaked every time the context menu is built",
       "author": "Arslan-TR",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -173576,7 +174136,7 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-10-09T14:07:47Z",
-      "updated_at": "2026-10-09T14:07:47Z",
+      "updated_at": "2026-10-13T02:36:39Z",
       "comments": 0,
       "priority": null
     },
@@ -175965,7 +176525,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51029",
       "title": "Abilityto change the font of the apps",
       "author": "munnasercur",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -175986,8 +176546,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-05T17:50:37Z",
-      "updated_at": "2026-10-05T17:56:29Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T20:51:43Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -176433,7 +176993,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51010",
       "title": "fancy zone - regularnie sie zawiesza",
       "author": "kaczmar1023",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -176456,8 +177016,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-05T12:34:55Z",
-      "updated_at": "2026-10-05T12:39:47Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T14:26:43Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -176500,9 +177060,9 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51008",
       "title": "CmdPal: Improve initial vertical position control",
       "author": "jiripolasek",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
@@ -176518,9 +177078,11 @@ window.BOARD_INDEX = {
       "labels": [
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-10-05T10:52:15Z",
-      "updated_at": "2026-10-05T11:03:02Z",
+      "updated_at": "2026-10-12T16:33:20Z",
       "comments": 1,
       "priority": null
     },
@@ -188934,11 +189496,9 @@ window.BOARD_INDEX = {
         "Issue-Translation",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-09-09T18:45:32Z",
-      "updated_at": "2026-10-11T01:05:24Z",
+      "updated_at": "2026-10-12T20:14:46Z",
       "comments": 3,
       "priority": null
     },
@@ -192586,8 +193146,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-12T08:53:02Z",
-      "comments": 270,
+      "updated_at": "2026-10-13T02:23:12Z",
+      "comments": 272,
       "priority": null
     },
     {
@@ -204148,7 +204708,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/49902",
       "title": "[Advanced Paste] Add a headless CLI for transformations",
       "author": "niels9001",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -204170,7 +204730,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-14T15:18:22Z",
-      "updated_at": "2026-08-14T15:29:50Z",
+      "updated_at": "2026-10-13T02:33:23Z",
       "comments": 1,
       "priority": null
     },
@@ -212143,11 +212703,9 @@ window.BOARD_INDEX = {
         "Needs-Team-Response",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-07-28T22:43:55Z",
-      "updated_at": "2026-10-12T02:36:17Z",
+      "updated_at": "2026-10-12T20:14:49Z",
       "comments": 2,
       "priority": null
     },
@@ -212290,11 +212848,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-07-28T16:03:41Z",
-      "updated_at": "2026-10-11T01:14:32Z",
+      "updated_at": "2026-10-12T20:14:51Z",
       "comments": 1,
       "priority": null
     },
@@ -212459,11 +213015,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-07-28T10:01:18Z",
-      "updated_at": "2026-10-11T01:14:26Z",
+      "updated_at": "2026-10-12T20:14:53Z",
       "comments": 0,
       "priority": null
     },
@@ -216212,11 +216766,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-07-17T13:14:56Z",
-      "updated_at": "2026-10-11T01:14:16Z",
+      "updated_at": "2026-10-12T20:14:55Z",
       "comments": 1,
       "priority": null
     },
@@ -224164,11 +224716,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-06-30T22:31:11Z",
-      "updated_at": "2026-10-11T01:14:07Z",
+      "updated_at": "2026-10-12T20:14:58Z",
       "comments": 0,
       "priority": null
     },
@@ -232519,11 +233069,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-06-18T12:10:29Z",
-      "updated_at": "2026-10-11T01:14:01Z",
+      "updated_at": "2026-10-12T20:15:00Z",
       "comments": 0,
       "priority": null
     },
@@ -241195,11 +241743,9 @@ window.BOARD_INDEX = {
         "Product-Awake",
         "Product-PowerDisplay"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-06-08T16:04:45Z",
-      "updated_at": "2026-10-11T01:13:57Z",
+      "updated_at": "2026-10-12T20:15:02Z",
       "comments": 5,
       "priority": null
     },
@@ -246471,11 +247017,9 @@ window.BOARD_INDEX = {
         "Product-Mouse Utilities",
         "Product-Text Extractor"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-05-28T16:57:14Z",
-      "updated_at": "2026-10-11T00:59:26Z",
+      "updated_at": "2026-10-12T20:15:05Z",
       "comments": 0,
       "priority": null
     },
@@ -251188,11 +251732,9 @@ window.BOARD_INDEX = {
         "Idea-New PowerToy",
         "Needs-Triage"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-05-19T12:29:30Z",
-      "updated_at": "2026-10-11T00:59:25Z",
+      "updated_at": "2026-10-12T20:15:07Z",
       "comments": 0,
       "priority": null
     },
@@ -261230,11 +261772,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-05-04T11:09:45Z",
-      "updated_at": "2026-10-11T01:13:52Z",
+      "updated_at": "2026-10-12T20:15:11Z",
       "comments": 1,
       "priority": null
     },
@@ -267888,11 +268428,9 @@ window.BOARD_INDEX = {
         "Status-In progress",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-04-29T08:39:38Z",
-      "updated_at": "2026-10-11T01:13:47Z",
+      "updated_at": "2026-10-12T20:15:14Z",
       "comments": 4,
       "priority": null
     },
@@ -276732,11 +277270,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-04-15T06:03:34Z",
-      "updated_at": "2026-10-11T01:13:40Z",
+      "updated_at": "2026-10-12T20:15:16Z",
       "comments": 1,
       "priority": null
     },
@@ -288329,11 +288865,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-03-25T03:54:01Z",
-      "updated_at": "2026-10-11T01:13:37Z",
+      "updated_at": "2026-10-12T20:15:19Z",
       "comments": 0,
       "priority": null
     },
@@ -291385,11 +291919,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-03-20T22:00:29Z",
-      "updated_at": "2026-10-11T01:13:34Z",
+      "updated_at": "2026-10-12T20:15:22Z",
       "comments": 0,
       "priority": null
     },
@@ -302401,11 +302933,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-02-27T09:20:35Z",
-      "updated_at": "2026-10-11T01:13:30Z",
+      "updated_at": "2026-10-12T20:15:26Z",
       "comments": 1,
       "priority": null
     },
@@ -308354,11 +308884,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-02-11T02:17:19Z",
-      "updated_at": "2026-10-11T01:13:21Z",
+      "updated_at": "2026-10-12T20:15:31Z",
       "comments": 0,
       "priority": null
     },
@@ -321562,8 +322090,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-01-20T22:31:16Z",
-      "updated_at": "2026-01-29T09:14:23Z",
-      "comments": 7,
+      "updated_at": "2026-10-12T22:26:50Z",
+      "comments": 8,
       "priority": null
     },
     {
@@ -328819,11 +329347,9 @@ window.BOARD_INDEX = {
         "Idea-New PowerToy",
         "Needs-Triage"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2026-01-02T00:14:57Z",
-      "updated_at": "2026-10-11T00:59:27Z",
+      "updated_at": "2026-10-12T20:15:33Z",
       "comments": 0,
       "priority": null
     },
@@ -378470,11 +378996,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-10-16T11:10:21Z",
-      "updated_at": "2026-01-18T06:20:23Z",
+      "updated_at": "2026-10-12T20:15:36Z",
       "comments": 1,
       "priority": null
     },
@@ -392930,11 +393454,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-08-29T02:42:50Z",
-      "updated_at": "2026-10-11T01:13:10Z",
+      "updated_at": "2026-10-12T20:15:38Z",
       "comments": 3,
       "priority": null
     },
@@ -401459,11 +401981,9 @@ window.BOARD_INDEX = {
         "Product-Always On Top",
         "Needs-Triage"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-07-30T08:25:17Z",
-      "updated_at": "2026-10-11T00:59:23Z",
+      "updated_at": "2026-10-12T20:15:40Z",
       "comments": 0,
       "priority": null
     },
@@ -404503,11 +405023,9 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-07-17T19:44:23Z",
-      "updated_at": "2026-06-11T19:23:37Z",
+      "updated_at": "2026-10-12T20:15:42Z",
       "comments": 2,
       "priority": null
     },
@@ -406584,11 +407102,9 @@ window.BOARD_INDEX = {
         "Area-Enterprise",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-07-10T21:23:31Z",
-      "updated_at": "2026-09-08T18:14:12Z",
+      "updated_at": "2026-10-12T20:15:45Z",
       "comments": 19,
       "priority": null
     },
@@ -424918,11 +425434,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-05-07T14:02:44Z",
-      "updated_at": "2026-10-10T23:33:51Z",
+      "updated_at": "2026-10-12T20:15:47Z",
       "comments": 8,
       "priority": null
     },
@@ -438870,11 +439384,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-03-31T12:29:38Z",
-      "updated_at": "2025-04-06T01:22:16Z",
+      "updated_at": "2026-10-12T20:15:50Z",
       "comments": 0,
       "priority": null
     },
@@ -440100,11 +440612,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-03-26T12:10:56Z",
-      "updated_at": "2026-10-11T01:05:16Z",
+      "updated_at": "2026-10-12T20:15:52Z",
       "comments": 2,
       "priority": null
     },
@@ -446946,38 +447456,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-1354",
-      "kind": "issue",
-      "number": 1354,
-      "url": "https://github.com/microsoft/PowerToys/issues/1354",
-      "title": "Desktop Gadgets from Windows 7.",
-      "author": "varungupta3009",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-New PowerToy",
-        "Resolution-Built into Windows"
-      ],
-      "assignees": [],
-      "created_at": "2020-02-23T13:16:09Z",
-      "updated_at": "2026-04-15T16:59:23Z",
-      "comments": 19,
-      "priority": null
-    },
-    {
       "id": "issue-37706",
       "kind": "issue",
       "number": 37706,
@@ -451301,11 +451779,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Awake"
       ],
-      "assignees": [
-        "dend"
-      ],
+      "assignees": [],
       "created_at": "2025-02-12T23:11:21Z",
-      "updated_at": "2026-10-11T01:13:05Z",
+      "updated_at": "2026-10-12T20:15:54Z",
       "comments": 1,
       "priority": null
     },
@@ -455687,8 +456163,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2025-01-29T14:49:30Z",
-      "updated_at": "2026-10-05T09:17:45Z",
-      "comments": 17,
+      "updated_at": "2026-10-12T13:41:26Z",
+      "comments": 18,
       "priority": null,
       "mirror": {
         "kind": "issue",
