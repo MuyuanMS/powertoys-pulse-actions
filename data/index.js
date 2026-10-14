@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-14T14:40:21.104195+08:00",
+  "generated_at": "2026-10-14T16:44:03.8516196+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 201,
-    "open_issues": 13842,
-    "community": 12918,
-    "artifacts": 983
+    "open_prs": 191,
+    "open_issues": 13844,
+    "community": 12919,
+    "artifacts": 979
   },
   "impact": {
-    "as_of": "2026-10-14T14:40:21.104195+08:00",
+    "as_of": "2026-10-14T16:44:03.8516196+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -109,16 +109,13 @@ window.BOARD_INDEX = {
     51131,
     51128,
     51127,
-    51126,
     51123,
-    51115,
     51114,
     51106,
     51105,
     51102,
     51097,
     51080,
-    51063,
     51041,
     51033,
     50957,
@@ -208,7 +205,6 @@ window.BOARD_INDEX = {
     34491,
     47736,
     48803,
-    50335,
     50228,
     33499,
     50579,
@@ -1084,6 +1080,38 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51295",
+      "kind": "pr",
+      "number": 51295,
+      "url": "https://github.com/microsoft/PowerToys/pull/51295",
+      "title": "[Installer] Sign and validate Windows Runtime metadata",
+      "author": "moooyo",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [],
+      "assignees": [],
+      "created_at": "2026-10-14T07:29:35Z",
+      "updated_at": "2026-10-14T07:29:35Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51292",
       "kind": "pr",
       "number": 51292,
@@ -1107,50 +1135,11 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-PowerToys Run",
-        "Product-PowerRename",
-        "Product-Image Resizer",
-        "Product-File Locksmith",
-        "Product-New+",
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-14T06:04:44Z",
-      "updated_at": "2026-10-14T06:05:37Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51291",
-      "kind": "pr",
-      "number": 51291,
-      "url": "https://github.com/microsoft/PowerToys/pull/51291",
-      "title": "build(cmdpal): revert superseded Toolkit metadata workaround",
-      "author": "LegendaryBlair",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-14T06:00:52Z",
-      "updated_at": "2026-10-14T06:01:30Z",
+      "updated_at": "2026-10-14T07:10:56Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1192,7 +1181,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51288",
@@ -1221,12 +1210,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-14T04:01:47Z",
-      "updated_at": "2026-10-14T06:08:30Z",
-      "comments": 4,
+      "updated_at": "2026-10-14T08:19:45Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51287",
@@ -1298,7 +1287,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51285",
@@ -1390,136 +1379,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51282",
-      "kind": "pr",
-      "number": 51282,
-      "url": "https://github.com/microsoft/PowerToys/pull/51282",
-      "title": "[UI Tests] Fix CS2002 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-PowerRename",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:13:26Z",
-      "updated_at": "2026-10-13T18:15:33Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1014,
-        "fork_title": "[PR 51282] [UI Tests] Fix CS2002 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51282",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1014"
-      }
-    },
-    {
-      "id": "pr-51281",
-      "kind": "pr",
-      "number": 51281,
-      "url": "https://github.com/microsoft/PowerToys/pull/51281",
-      "title": "[UI Tests] Fix CA2219 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Workspaces",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:13:20Z",
-      "updated_at": "2026-10-13T18:15:29Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1013,
-        "fork_title": "[PR 51281] [UI Tests] Fix CA2219 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51281",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1013"
-      }
-    },
-    {
-      "id": "pr-51280",
-      "kind": "pr",
-      "number": 51280,
-      "url": "https://github.com/microsoft/PowerToys/pull/51280",
-      "title": "[UI Tests] Fix CA1869 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Advanced Paste",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:13:14Z",
-      "updated_at": "2026-10-13T18:15:28Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1015,
-        "fork_title": "[PR 51280] [UI Tests] Fix CA1869 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51280",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1015"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51279",
@@ -1640,7 +1500,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1012,
@@ -1726,7 +1586,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1016,
@@ -1770,7 +1630,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1025,
@@ -2051,12 +1911,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-13T18:11:47Z",
-      "updated_at": "2026-10-13T18:14:44Z",
-      "comments": 1,
+      "updated_at": "2026-10-14T06:33:04Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1018,
@@ -2064,49 +1924,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51267",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/1018"
-      }
-    },
-    {
-      "id": "pr-51266",
-      "kind": "pr",
-      "number": 51266,
-      "url": "https://github.com/microsoft/PowerToys/pull/51266",
-      "title": "[UI Tests] Fix SA1114 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Workspaces",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:11:40Z",
-      "updated_at": "2026-10-14T06:29:32Z",
-      "comments": 3,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "pending",
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1020,
-        "fork_title": "[PR 51266] [UI Tests] Fix SA1114 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51266-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1020"
       }
     },
     {
@@ -2139,8 +1956,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-13T18:11:34Z",
-      "updated_at": "2026-10-13T18:14:41Z",
-      "comments": 1,
+      "updated_at": "2026-10-14T06:44:21Z",
+      "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2185,8 +2002,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-13T18:11:27Z",
-      "updated_at": "2026-10-13T18:14:34Z",
-      "comments": 1,
+      "updated_at": "2026-10-14T06:32:53Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2271,12 +2088,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-13T18:11:12Z",
-      "updated_at": "2026-10-13T18:14:29Z",
-      "comments": 1,
+      "updated_at": "2026-10-14T06:32:50Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1023,
@@ -2314,50 +2131,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-13T18:11:07Z",
-      "updated_at": "2026-10-13T18:14:25Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "UNKNOWN",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1029,
-        "fork_title": "[PR 51261] [UI Tests] Fix CA1304 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51261",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1029"
-      }
-    },
-    {
-      "id": "pr-51260",
-      "kind": "pr",
-      "number": 51260,
-      "url": "https://github.com/microsoft/PowerToys/pull/51260",
-      "title": "[UI Tests] Fix CA1305 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Peek",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:11:01Z",
-      "updated_at": "2026-10-14T02:16:48Z",
+      "updated_at": "2026-10-14T06:32:42Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2365,11 +2139,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 1022,
-        "fork_title": "[PR 51260] [UI Tests] Fix CA1305 analyzer warnings in module UI tests",
+        "fork_number": 1029,
+        "fork_title": "[PR 51261] [UI Tests] Fix CA1304 analyzer warnings in module UI tests",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51260-mainline",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1022"
+        "fork_branch": "pr-iterate/51261",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1029"
       }
     },
     {
@@ -2406,7 +2180,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1031,
@@ -2414,102 +2188,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51259-mainline",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/1031"
-      }
-    },
-    {
-      "id": "pr-51258",
-      "kind": "pr",
-      "number": 51258,
-      "url": "https://github.com/microsoft/PowerToys/pull/51258",
-      "title": "[UI Tests] Fix SA1518 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-FancyZones",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:10:47Z",
-      "updated_at": "2026-10-14T02:17:40Z",
-      "comments": 3,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1024,
-        "fork_title": "[PR 51258] [UI Tests] Fix SA1518 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51258",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1024"
-      }
-    },
-    {
-      "id": "pr-51257",
-      "kind": "pr",
-      "number": 51257,
-      "url": "https://github.com/microsoft/PowerToys/pull/51257",
-      "title": "[UI Tests] Fix SA1118 analyzer warnings in module UI tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-FancyZones",
-        "Product-PowerRename",
-        "Product-Image Resizer",
-        "Product-File Explorer",
-        "Product-Mouse Utilities",
-        "Product-File Locksmith",
-        "Product-Peek",
-        "Product-Advanced Paste",
-        "Product-Registry Preview",
-        "Product-Workspaces",
-        "Product-New+",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-13T18:10:41Z",
-      "updated_at": "2026-10-14T02:17:24Z",
-      "comments": 3,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1027,
-        "fork_title": "[PR 51257] [UI Tests] Fix SA1118 analyzer warnings in module UI tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51257-mainline",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1027"
       }
     },
     {
@@ -2545,7 +2223,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51222",
@@ -2825,7 +2503,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1007,
@@ -3055,7 +2733,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51205",
@@ -3092,7 +2770,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51204",
@@ -3487,7 +3165,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 992,
@@ -3673,50 +3351,6 @@ window.BOARD_INDEX = {
       }
     },
     {
-      "id": "pr-51126",
-      "kind": "pr",
-      "number": 51126,
-      "url": "https://github.com/microsoft/PowerToys/pull/51126",
-      "title": "docs: fix outdated and broken plugin and author links in thirdPartyRu…",
-      "author": "karan5028ji",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [
-        "LegendaryBlair"
-      ],
-      "created_at": "2026-10-08T17:59:40Z",
-      "updated_at": "2026-10-14T05:58:37Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "pending",
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 954,
-        "fork_title": "[PR 51126] docs: fix outdated and broken plugin and author links",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51126",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/954"
-      }
-    },
-    {
       "id": "pr-51123",
       "kind": "pr",
       "number": 51123,
@@ -3747,7 +3381,7 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-10-08T14:32:40Z",
-      "updated_at": "2026-10-13T20:22:47Z",
+      "updated_at": "2026-10-14T08:30:38Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3760,57 +3394,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51123",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/984"
-      }
-    },
-    {
-      "id": "pr-51115",
-      "kind": "pr",
-      "number": 51115,
-      "url": "https://github.com/microsoft/PowerToys/pull/51115",
-      "title": "fix(runner): prevent startup and read-only settings overwrites",
-      "author": "moooyo",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-PowerToys Run",
-        "Product-PowerRename",
-        "Product-Image Resizer",
-        "Product-File Locksmith",
-        "Product-New+",
-        "Product-General",
-        "0.102",
-        "Ready for review"
-      ],
-      "assignees": [
-        "LegendaryBlair"
-      ],
-      "created_at": "2026-10-08T07:29:09Z",
-      "updated_at": "2026-10-14T06:28:34Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 978,
-        "fork_title": "[PR 51115] [Runner/Settings] Preserve general settings during startup and shutdown",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51115-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/978"
       }
     },
     {
@@ -3847,7 +3430,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 968,
@@ -4017,7 +3600,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 950,
@@ -4094,12 +3677,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T20:57:02Z",
-      "updated_at": "2026-10-08T23:50:00Z",
+      "updated_at": "2026-10-14T07:14:23Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 959,
@@ -4264,48 +3847,6 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-51063",
-      "kind": "pr",
-      "number": 51063,
-      "url": "https://github.com/microsoft/PowerToys/pull/51063",
-      "title": "[CodeAnalysis] Enforce CA1416 platform-compatibility rule as an error",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T05:06:23Z",
-      "updated_at": "2026-10-13T05:02:03Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1008,
-        "fork_title": "[PR 51063] Refresh CA1416 review after SDK versioning merge",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51063-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1008"
-      }
     },
     {
       "id": "pr-51051",
@@ -5261,7 +4802,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50879",
@@ -5326,7 +4867,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-29T13:56:32Z",
-      "updated_at": "2026-10-08T10:41:47Z",
+      "updated_at": "2026-10-14T06:50:03Z",
       "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -5662,7 +5203,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1005,
@@ -5829,7 +5370,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 879,
@@ -6046,7 +5587,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50638",
@@ -6892,7 +6433,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 815,
@@ -7823,9 +7364,11 @@ window.BOARD_INDEX = {
         "0.102",
         "Area-CLI"
       ],
-      "assignees": [],
+      "assignees": [
+        "LegendaryBlair"
+      ],
       "created_at": "2026-08-06T18:09:10Z",
-      "updated_at": "2026-10-08T14:23:32Z",
+      "updated_at": "2026-10-14T06:39:23Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -7875,7 +7418,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 822,
@@ -7915,7 +7458,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49538",
@@ -8175,7 +7718,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 892,
@@ -8290,7 +7833,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49223",
@@ -8670,7 +8213,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48483",
@@ -8811,7 +8354,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 897,
@@ -36661,8 +36204,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -36673,8 +36216,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T15:30:00Z",
-      "updated_at": "2026-09-28T08:12:44Z",
-      "comments": 5,
+      "updated_at": "2026-10-14T07:44:22Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -172716,6 +172259,70 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51296",
+      "kind": "issue",
+      "number": 51296,
+      "url": "https://github.com/microsoft/PowerToys/issues/51296",
+      "title": "[Dedupe Digest] 2026-10-14",
+      "author": "app/github-actions",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "dedupe-digest"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-14T08:19:50Z",
+      "updated_at": "2026-10-14T08:19:51Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51294",
+      "kind": "issue",
+      "number": 51294,
+      "url": "https://github.com/microsoft/PowerToys/issues/51294",
+      "title": "Keyboard Manager doesn't take the physical keyboard layout into account",
+      "author": "simeoncapy",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-14T06:46:31Z",
+      "updated_at": "2026-10-14T06:58:55Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-51293",
       "kind": "issue",
       "number": 51293,
@@ -173149,8 +172756,8 @@ window.BOARD_INDEX = {
       "number": 51229,
       "url": "https://github.com/microsoft/PowerToys/issues/51229",
       "title": "[Dedupe Digest] 2026-10-13",
-      "author": "app/github-actions",
-      "state": "open",
+      "author": "github-actions[bot]",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -173168,10 +172775,12 @@ window.BOARD_INDEX = {
       "labels": [
         "dedupe-digest"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-10-13T08:24:29Z",
-      "updated_at": "2026-10-13T08:24:30Z",
-      "comments": 0,
+      "updated_at": "2026-10-14T08:19:54Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -296373,7 +295982,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/46165",
       "title": "Most tools turned off after every restart",
       "author": "dreadbalaur",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -296395,7 +296004,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-03-17T00:28:04Z",
-      "updated_at": "2026-03-17T14:06:05Z",
+      "updated_at": "2026-10-14T07:51:09Z",
       "comments": 3,
       "priority": null
     },
