@@ -19,23 +19,24 @@ This works because `Cpp.Build.props` respects `<SpectreMitigation Condition="'$(
    <SpectreMitigation Condition="'$(POWERTOYS_DISABLE_SPECTRE)' == '1'">false</SpectreMitigation>
    ```
 
-## Step 3: Build locally (Debug)
+## Step 3: Prepare the validation plan
 
-Use the repo's standard build scripts — do **not** craft manual msbuild commands.
+After rebasing and verifying the fork PR diff, inspect its changed paths and
+write a focused validation plan into the per-PR checkpoint **before requesting
+Copilot**. Record the affected project/module, the exact final build commands
+from Step 7, required environment overrides, and any separate upstream-head or
+suggestion-candidate checks that will be needed. This gives a resumed worker
+actionable commands without spending a full serialized build before Copilot
+has reviewed the branch.
 
-```powershell
-$env:POWERTOYS_DISABLE_SPECTRE = "1"
-cd <worktree-path>
-# 1. Restore packages + build runner and settings
-.\tools\build\build-essentials.cmd
-# 2. Build the changed module(s)
-cd src\modules\<ModuleName>\<ProjectFolder>
-..\..\..\..\tools\build\build.cmd
-```
+Do not compile the ordinary fork worktree in Step 3. Request Copilot as soon as
+the mirror, rebase, and scope checks pass; process the review while the async
+review request is pending. Step 7 builds the converged fork tree once. If fixes
+are made after a successful build, rebuild the changed final tree before
+completion. Exact-upstream and apply-ready suggestion candidates remain
+separate required validation trees; validate them when drafting the findings.
 
-Verify: exit code 0, `x64/Debug/PowerToys.exe` exists, and the changed module's output exists.
-
-### Handling build failures
+### Handling build failures during Step 7
 
 - **Spectre errors** (`MSB8040`): ensure `POWERTOYS_DISABLE_SPECTRE=1` is set and the `Cpp.Build.props` condition is in place.
 - **NuGet missing**: run `build-essentials.cmd` first (it restores packages).
@@ -44,9 +45,15 @@ Verify: exit code 0, `x64/Debug/PowerToys.exe` exists, and the changed module's 
 - **Resource file missing** (e.g., a `.scr`): build the dependency project first (check the vcxproj for `ProjectReference` items).
 - **LIB path errors** (`cannot open file 'libcpmtd.lib'`): the build scripts should handle this via env var; if not, apply the LIB fix (see the known-issues table).
 
-## Step 7: Final build (full module chain)
+## Step 7: Final build (after Copilot convergence)
 
-`build-essentials.cmd` only builds the runner + settings. It does **not** build module interface DLLs or managed module executables. For end-to-end testing, build the full chain:
+After the latest fresh Copilot round has zero published inline comments and
+all Copilot threads are resolved, run the saved validation plan against the
+converged fork tree. Acquire the batch-wide build lock only for this build;
+never hold it while waiting for Copilot or processing findings. Run the
+full chain once for this tree. `build-essentials.cmd` only builds the runner +
+settings; it does **not** build module interface DLLs or managed module
+executables. For end-to-end testing, build the full chain:
 
 ```powershell
 $env:POWERTOYS_DISABLE_SPECTRE = "1"

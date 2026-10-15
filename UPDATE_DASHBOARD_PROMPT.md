@@ -51,6 +51,12 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- after each PR's mirror/rebase/scope checks, derive and checkpoint the exact
+  focused validation commands from its changed paths, then request Copilot
+  without a pre-review compile. Process findings while the request is pending;
+  run the serialized final fork build once after that PR's Copilot loop
+  converges, and rebuild only if later code changes. Keep exact-upstream and
+  apply-ready suggestion candidate builds as separate required gates;
 - use the PR skill's paginated Get-CopilotReviewStatus.ps1 to resume a saved
   request by fork head and original timestamp (and baseline review ID when
   saved). Do not call Request-CopilotReview.ps1 merely to check status. For a
