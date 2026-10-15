@@ -127,10 +127,13 @@ END LOOP
 - **Out-of-scope comments** (files this PR did not modify): reply "Not applicable: this file is not modified by this PR" and resolve; do not fix.
 - **Suppressed candidates are advisory only** — apply the policy above and never count them as published inline comments.
 
-**Definition of done (all must hold before leaving Step 6):**
+**Step 6 convergence conditions:**
 1. The most recent **freshly-requested** Copilot review returned **zero published inline comments**. Suppressed candidates do not count.
 2. **Zero** unresolved Copilot review threads remain (every thread replied-to and resolved).
-3. The worktree builds (Step 7) — modulo documented environmental failures.
+
+After both conditions hold, run the serialized Step 7 build before marking the
+review complete or proceeding to Step 9. If the final build changes any code,
+request another Copilot review and rebuild after that loop converges.
 
 Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0; a non-zero count means resume the loop (fix/resolve/re-request) — do not present yet.
 

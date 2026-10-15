@@ -1,12 +1,12 @@
 # Batch (parallel) review — 2+ PRs at once
 
-When asked to review multiple PRs (e.g. "review PRs 123, 456, 789"), **review them concurrently, not one after another.** Each PR spends most of its wall-clock time *waiting* — Copilot review polling (up to ~10 min per round), local builds, rebase/push — so serializing a batch wastes almost all of that time. Overlap the waits.
+When asked to review multiple PRs (e.g. "review PRs 123, 456, 789"), **review them concurrently, not one after another.** Each PR spends most of its wall-clock time *waiting* for Copilot, so request reviews as soon as each mirror/rebase/scope check is complete and overlap those waits with processing other PRs. Do not put an ordinary local build in front of the first review request.
 
 Do not fall back to one-PR-at-a-time execution merely because background sub-agents are unavailable. Use the pipelined single-agent mode below so multiple PRs still have review requests and waits concurrently in flight.
 
 ## Concurrency model: one background sub-agent per PR
 
-The orchestrator (this session) fans out **one background sub-agent per PR** and stays as the coordinator. Each sub-agent owns its PR end-to-end through the code-review engine (Steps 0–8): resume-check, mirror, worktree, rebase, build, and the **full Copilot loop to convergence** (Rule 11 — 0 new comments, 0 unresolved threads). It then returns its converged net diff + drafted suggestions + Phase 0 disposition to the orchestrator.
+The orchestrator (this session) fans out **one background sub-agent per PR** and stays as the coordinator. Each sub-agent owns its PR end-to-end through the code-review engine (Steps 0–8): resume-check, mirror, worktree, rebase, save a focused validation plan, and drive the **full Copilot loop to convergence** (Rule 11 — 0 new comments, 0 unresolved threads). Only after that PR's loop converges does it acquire the build lock and run the saved final build plan. It then returns its converged net diff + validation result + drafted suggestions + Phase 0 disposition to the orchestrator.
 
 ```
 orchestrator:
@@ -19,7 +19,7 @@ orchestrator:
   7. When all are ready/held, present for the Step 10 approval gate (or hand to the dashboard).
 ```
 
-- **Cap concurrency at 3–5.** More invites GitHub rate limits (review requests, API calls) and thrashes the machine. Launch the next PR only as a slot frees.
+- **Cap concurrency at 3–5 for direct batch reviews.** For dashboard runs, use the dashboard planner's cap (three in normal mode, six in drain mode) rather than overriding it with this direct-review limit. More workers invite GitHub rate limits (review requests, API calls) and can thrash the machine. Launch the next PR only as a slot frees.
 - **Each PR is independent on disk**: its own fork branch `pr-iterate/N` and its own worktree `C:\PowerToys-<hash>`. Git operations across PRs don't collide, so parallelism is safe.
 - Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
 - Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
@@ -27,7 +27,7 @@ orchestrator:
 
 ## Serialize the local builds
 
-Parallel C++/MSBuild builds contend badly (CPU, disk, and shared intermediate state) and can corrupt each other. **Allow only one build at a time across the whole batch.** Give the children a simple mutex: a lock file (e.g. `<clone>\.pr-review-build.lock`) or a build queue the orchestrator hands out. A child that needs to build waits for the lock, builds, releases. Everything else (mirror, rebase, push, Copilot polling, fixing code) still runs fully in parallel — only the compile step is serialized.
+Parallel C++/MSBuild builds contend badly (CPU, disk, and shared intermediate state) and can corrupt each other. **Allow only one build at a time across the whole batch.** Give the children a simple mutex: a lock file (e.g. `<clone>\.pr-review-build.lock`) or a build queue the orchestrator hands out. A child acquires the lock for each compilation—the final fork build and any required upstream/suggestion-candidate builds—only after its Copilot loop converges, then releases it. Do not hold the lock while waiting for Copilot or processing findings. A rebuild is required if code changes after the successful build. Everything else (mirror, rebase, push, Copilot polling, fixing code) remains parallel.
 
 ## Shared state — do these ONCE, not per child
 
@@ -45,4 +45,4 @@ Some steps touch shared resources and must not race:
 
 ## If sub-agents aren't available (pipelined parallel fallback)
 
-If the environment can't spawn background sub-agents, still **pipeline the waits** in the single agent instead of fully serializing: for *all* PRs, do mirror → rebase → push → **request Copilot review** up front so every PR's ~10-min review clock runs at once; then cycle through processing whichever review returns first (fix → push → re-request), building one PR at a time. Use a `manage_schedule` monitor per PR when loops must continue across turns. At no point should an independent PR wait for another PR to converge before its own mirror/review request begins.
+If the environment can't spawn background sub-agents, still **pipeline the waits** in the single agent instead of fully serializing: for *all* PRs, do mirror → rebase → validate scope → save the exact validation plan → **request Copilot review** up front so every review clock runs at once; then cycle through processing whichever review returns first (fix → push → re-request). Build each converged PR one at a time under the lock; do not wait to request another PR's review until a build finishes. Use a `manage_schedule` monitor per PR when loops must continue across turns. At no point should an independent PR wait for another PR to converge before its own mirror/review request begins.

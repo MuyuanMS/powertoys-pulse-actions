@@ -41,12 +41,17 @@ If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/G
 | --- | --- | --- |
 | **None** | No `[PR N]` fork PR and no `pr-iterate/N` fork branch | Step 1 (fresh mirror) |
 | **Branch pushed, no fork PR** | `pr-iterate/N` ref exists, no `[PR N]` PR | Step 1 (create the fork PR from the existing branch) |
-| **Fork PR exists, no local worktree** | `[PR N]` PR exists, `git worktree list` has no `pr-iterate/N` | Step 2 (create worktree), then re-sync per Step 2b before building |
-| **Worktree exists, never built / build was red** | Worktree present, no prior successful build | Step 2b (re-sync) → Step 3 (build) |
-| **Loop unfinished** | Fork PR has 1+ unresolved Copilot thread, or newest commit post-dates newest Copilot review | Step 5/6 (resume the loop; set `last_review_timestamp` to the newest already-processed review so resolved threads are not re-fixed) |
-| **Loop clean, built** | Zero unresolved Copilot threads and worktree builds | Step 8–9 (summarize + draft the review) |
+| **Fork PR exists, no local worktree** | `[PR N]` PR exists, `git worktree list` has no `pr-iterate/N` | Step 2 (create worktree), then re-sync per Step 2b and verify scope |
+| **Worktree exists, no validation plan** | Worktree is present but the checkpoint has no saved focused commands | Step 2b (re-sync) → Step 2c (verify scope) → Step 3 (derive and save the plan) |
+| **Review request pending or loop unfinished** | A saved Copilot request is pending, there are unresolved threads, or newest commit post-dates newest Copilot review | Step 4 (resume/check the saved request) or Step 5/6 (continue the loop); do not build while waiting |
+| **Loop clean, not yet built** | Fresh zero-comment review, zero unresolved threads, no passing build for the converged head | Step 7 (run the saved plan under the build lock) |
+| **Loop clean and built** | Fresh zero-comment review, zero unresolved threads, passing build for the exact converged head | Step 8–9 (summarize + draft the review) |
 
-Across sessions, always rebuild before drafting even when prior loop traces are clean. Build claims and old dashboard payloads are not durable. Preserve code/review traces, then regenerate schema-version-2 `review-data.json` from the current head.
+Across sessions, rebuild the converged head before drafting even when prior
+loop traces are clean. Build claims and old dashboard payloads are not durable.
+Do not build an obsolete pre-review head just to populate the checkpoint.
+Preserve the validation plan and code/review traces, then regenerate
+schema-version-2 `review-data.json` from the current head.
 
 **0c. Re-sync before continuing.** Whenever you resume onto an existing branch/worktree, first bring the fork's `main` and the PR branch up to date (Step 2 sync + Step 2b rebase) so you do not build or review against stale `main`. If a rebase conflicts and you are not confident, stop and ask rather than guessing.
 
@@ -136,6 +141,7 @@ Prevents meaningless Copilot reviews caused by diff bloat. After rebase and push
    c. Force-push the rebased branch (or a new `-v2` branch if force-push is blocked).
    d. Create a new fork PR against the now-synced main (Step 1's `gh pr create`, including `--label pr-review`).
    e. Re-validate: repeat 1–3.
-5. Only proceed to Step 3 (build) and Step 4 (review) once the diff is validated.
+5. Once the diff is validated, derive and checkpoint the focused validation
+   plan (Step 3), then request Copilot (Step 4) without a pre-review build.
 
 **Why this matters:** Copilot reviews ALL files in the PR diff. If the fork PR shows 110 files changed when the original touches 3, Copilot wastes its review capacity on unrelated code and produces useless comments.
