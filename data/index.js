@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-16T11:59:00.1499737+08:00",
+  "generated_at": "2026-10-16T12:56:12.9042283+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 971
   },
   "impact": {
-    "as_of": "2026-10-16T11:59:00.1499737+08:00",
+    "as_of": "2026-10-16T12:56:12.9042283+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1098,7 +1098,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-16T03:36:09Z",
-      "updated_at": "2026-10-16T03:36:31Z",
+      "updated_at": "2026-10-16T03:57:01Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1342,7 +1342,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T08:05:27Z",
-      "updated_at": "2026-10-15T17:17:57Z",
+      "updated_at": "2026-10-16T04:01:40Z",
       "comments": 1,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -1436,7 +1436,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1450,7 +1450,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1036,
+        "fork_title": "[PR 51323] [Deps] Bump System.CommandLine from 2.0.1 to 2.0.12",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51323",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1036"
+      }
     },
     {
       "id": "pr-51322",
@@ -1470,7 +1478,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1486,7 +1494,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1034,
+        "fork_title": "[PR 51322] FancyZones/ImageResizer CLI: report parse errors instead of crashing on non-numeric option values",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51322",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1034"
+      }
     },
     {
       "id": "pr-51321",
@@ -1652,7 +1668,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1667,7 +1683,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1035,
+        "fork_title": "[PR 51297] [PowerRename] Compare names ordinally so ß to ss renames apply",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51297-review",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1035"
+      }
     },
     {
       "id": "pr-51295",
