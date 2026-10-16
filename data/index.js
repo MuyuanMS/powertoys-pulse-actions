@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-17T06:48:04.185633+08:00",
+  "generated_at": "2026-10-17T07:02:06.3049356+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 985
   },
   "impact": {
-    "as_of": "2026-10-17T06:48:04.185633+08:00",
+    "as_of": "2026-10-17T07:02:06.3049356+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1119,7 +1119,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1055,
+        "fork_title": "[PR 51375] Mouse Pointer Crosshairs: extend across all monitors",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51375",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1055"
+      }
     },
     {
       "id": "pr-51373",
