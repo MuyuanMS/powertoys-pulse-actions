@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-16T16:14:19.8458401+08:00",
+  "generated_at": "2026-10-16T16:44:12.7188039+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 177,
-    "open_issues": 13221,
-    "community": 12295,
+    "open_issues": 13222,
+    "community": 12296,
     "artifacts": 982
   },
   "impact": {
-    "as_of": "2026-10-16T16:14:19.8458401+08:00",
+    "as_of": "2026-10-16T16:44:12.7188039+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1115,7 +1115,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "pending",
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1047,
+        "fork_title": "[PR 51359] [Image Resizer] Honor encoding options and preserve metadata",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51359",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1047"
+      }
     },
     {
       "id": "pr-51358",
@@ -3312,18 +3320,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post inline review comments"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-General",
         "Ready for review"
@@ -5152,11 +5157,11 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-09-17T20:12:27Z",
-      "updated_at": "2026-10-01T04:55:13Z",
+      "updated_at": "2026-10-16T08:26:31Z",
       "comments": 3,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
@@ -7096,8 +7101,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-11T21:23:17Z",
-      "updated_at": "2026-10-16T01:08:17Z",
-      "comments": 31,
+      "updated_at": "2026-10-16T08:19:20Z",
+      "comments": 32,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -7816,7 +7821,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-45972",
@@ -7853,7 +7858,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-45927",
@@ -8004,7 +8009,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "issue-36350",
@@ -162494,6 +162499,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51360",
+      "kind": "issue",
+      "number": 51360,
+      "url": "https://github.com/microsoft/PowerToys/issues/51360",
+      "title": "[Dedupe Digest] 2026-10-16",
+      "author": "app/github-actions",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "dedupe-digest"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-16T08:18:17Z",
+      "updated_at": "2026-10-16T08:18:18Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-51354",
       "kind": "issue",
       "number": 51354,
@@ -163085,8 +163121,8 @@ window.BOARD_INDEX = {
       "number": 51327,
       "url": "https://github.com/microsoft/PowerToys/issues/51327",
       "title": "[Dedupe Digest] 2026-10-15",
-      "author": "app/github-actions",
-      "state": "open",
+      "author": "github-actions[bot]",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -163104,10 +163140,12 @@ window.BOARD_INDEX = {
       "labels": [
         "dedupe-digest"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-10-15T08:19:22Z",
-      "updated_at": "2026-10-15T08:19:24Z",
-      "comments": 0,
+      "updated_at": "2026-10-16T08:18:20Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -166269,7 +166307,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51136",
       "title": "Proposal: Modernized “PowerToys 2026 Pro Edition” Icon (High‑Resolution, Scalable Redesign)",
       "author": "Edmaker",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -166289,7 +166327,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-09T04:32:05Z",
-      "updated_at": "2026-10-09T05:46:15Z",
+      "updated_at": "2026-10-16T08:32:21Z",
       "comments": 3,
       "priority": null
     },
