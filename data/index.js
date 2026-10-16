@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-16T13:19:38.7645725+08:00",
+  "generated_at": "2026-10-16T13:38:31.101498+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 178,
     "open_issues": 13232,
     "community": 12306,
-    "artifacts": 977
+    "artifacts": 980
   },
   "impact": {
-    "as_of": "2026-10-16T13:19:38.7645725+08:00",
+    "as_of": "2026-10-16T13:38:31.101498+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -100,7 +100,10 @@ window.BOARD_INDEX = {
   "artifact_numbers": [
     51356,
     51346,
+    51345,
     51344,
+    51343,
+    51323,
     51322,
     51321,
     51320,
@@ -1243,13 +1246,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1329,13 +1332,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1476,13 +1479,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1789,7 +1792,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1808,7 +1811,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1043,
+        "fork_title": "[PR 51292] fix(common): publish native general settings atomically",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51292",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1043"
+      }
     },
     {
       "id": "pr-51288",
@@ -1917,7 +1928,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1932,7 +1943,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1042,
+        "fork_title": "[PR 51236] [Runner] Fix false-positive Win+Shift+C shortcut conflict on Windows 11",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51236",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1042"
+      }
     },
     {
       "id": "pr-51222",
@@ -5333,15 +5352,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 785,
-        "fork_title": "[PR 50545] feat: Add Microsoft DSC FancyZonesLayouts resource",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50545",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/785"
-      }
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50539",
