@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T01:34:32.466296+08:00",
+  "generated_at": "2026-10-19T01:58:38.8180097+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,19 +85,20 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 181,
-    "open_issues": 12265,
-    "community": 11375,
-    "artifacts": 983
+    "open_prs": 182,
+    "open_issues": 12266,
+    "community": 11377,
+    "artifacts": 984
   },
   "impact": {
-    "as_of": "2026-10-19T01:34:32.466296+08:00",
+    "as_of": "2026-10-19T01:58:38.8180097+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51392,
     51383,
     51377,
     51375,
@@ -1084,6 +1085,49 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51392",
+      "kind": "pr",
+      "number": 51392,
+      "url": "https://github.com/microsoft/PowerToys/pull/51392",
+      "title": "[MouseWithoutBorders] Fix InputInjector startup probe and fall back to SendInput on COMException",
+      "author": "wandugu",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Without Borders",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-18T17:29:28Z",
+      "updated_at": "2026-10-18T17:35:08Z",
+      "comments": 3,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1065,
+        "fork_title": "[PR 51392] Mouse Without Borders: Fix InputInjector startup probe and COMException fallback",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51392",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1065"
+      }
+    },
+    {
       "id": "pr-51383",
       "kind": "pr",
       "number": 51383,
@@ -1767,7 +1811,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4665,7 +4709,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -28878,13 +28922,44 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47678",
+      "id": "issue-51394",
       "kind": "issue",
-      "number": 47678,
-      "url": "https://github.com/microsoft/PowerToys/issues/47678",
-      "title": "URI/shortcut exection recorder",
-      "author": "ReginaldTang",
-      "state": "closed",
+      "number": 51394,
+      "url": "https://github.com/microsoft/PowerToys/issues/51394",
+      "title": "CmdPal: Make host configuration file writes atomic and recoverable",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-18T17:44:02Z",
+      "updated_at": "2026-10-18T17:48:08Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51393",
+      "kind": "issue",
+      "number": 51393,
+      "url": "https://github.com/microsoft/PowerToys/issues/51393",
+      "title": "[Mouse Without Borders] Unhandled COMException (0x8007007A) in InputInjector.InjectMouseInput drops TCP connection and causes reconnect loops",
+      "author": "wandugu",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -28900,12 +28975,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage"
+        "Needs-Author-Feedback",
+        "Product-Mouse Without Borders"
       ],
       "assignees": [],
-      "created_at": "2026-05-06T07:44:19Z",
-      "updated_at": "2026-05-06T07:45:36Z",
-      "comments": 0,
+      "created_at": "2026-10-18T17:31:37Z",
+      "updated_at": "2026-10-18T17:35:54Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -28932,14 +29008,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
         "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Mouse Without Borders"
       ],
       "assignees": [],
       "created_at": "2026-10-18T16:45:40Z",
-      "updated_at": "2026-10-18T17:21:21Z",
-      "comments": 1,
+      "updated_at": "2026-10-18T17:49:47Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -140929,12 +141005,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47449",
+      "id": "issue-47678",
       "kind": "issue",
-      "number": 47449,
-      "url": "https://github.com/microsoft/PowerToys/issues/47449",
-      "title": "Power Display: Add Twinkle Tray-like brightness shortcuts to Keyboard Manager",
-      "author": "ghost",
+      "number": 47678,
+      "url": "https://github.com/microsoft/PowerToys/issues/47678",
+      "title": "URI/shortcut exection recorder",
+      "author": "ReginaldTang",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -140951,13 +141027,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
-        "duplicate"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-04-29T20:08:43Z",
-      "updated_at": "2026-04-29T20:22:05Z",
-      "comments": 2,
+      "created_at": "2026-05-06T07:44:19Z",
+      "updated_at": "2026-05-06T07:45:36Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -211338,35 +211413,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-51393",
-      "kind": "issue",
-      "number": 51393,
-      "url": "https://github.com/microsoft/PowerToys/issues/51393",
-      "title": "[Mouse Without Borders] Unhandled COMException (0x8007007A) in InputInjector.InjectMouseInput drops TCP connection and causes reconnect loops",
-      "author": "wandugu",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [],
-      "assignees": [],
-      "created_at": "2026-10-18T17:31:37Z",
-      "updated_at": "2026-10-18T17:31:37Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-9688",
       "kind": "issue",
       "number": 9688,
@@ -272952,6 +272998,38 @@ window.BOARD_INDEX = {
       "created_at": "2023-03-09T11:00:33Z",
       "updated_at": "2025-10-20T05:54:43Z",
       "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-47449",
+      "kind": "issue",
+      "number": 47449,
+      "url": "https://github.com/microsoft/PowerToys/issues/47449",
+      "title": "Power Display: Add Twinkle Tray-like brightness shortcuts to Keyboard Manager",
+      "author": "ghost",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "duplicate"
+      ],
+      "assignees": [],
+      "created_at": "2026-04-29T20:08:43Z",
+      "updated_at": "2026-04-29T20:22:05Z",
+      "comments": 2,
       "priority": null
     },
     {
