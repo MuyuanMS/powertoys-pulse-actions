@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-18T13:36:51.9200055+08:00",
+  "generated_at": "2026-10-18T13:55:51.8058811+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 181,
     "open_issues": 12259,
     "community": 11370,
-    "artifacts": 982
+    "artifacts": 983
   },
   "impact": {
-    "as_of": "2026-10-18T13:36:51.9200055+08:00",
+    "as_of": "2026-10-18T13:55:51.8058811+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51383,
     51377,
     51375,
     51373,
@@ -1094,13 +1095,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
