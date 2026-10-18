@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T00:10:55.8461169+08:00",
+  "generated_at": "2026-10-19T00:33:31.0525265+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 983
   },
   "impact": {
-    "as_of": "2026-10-19T00:10:55.8461169+08:00",
+    "as_of": "2026-10-19T00:33:31.0525265+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2113,11 +2113,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 1052,
-        "fork_title": "[PR 51283] [UI Tests] Treat warnings as errors in module UI test projects",
+        "fork_number": 1061,
+        "fork_title": "[PR 51283] Isolated current-head review recovery",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51283-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1052"
+        "fork_branch": "pr-iterate/51283-f4386966",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1061"
       }
     },
     {
@@ -3003,7 +3003,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3069,11 +3069,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 992,
-        "fork_title": "[PR 51148] KBM new editor: suspend engine while remap dialog is open",
+        "fork_number": 1060,
+        "fork_title": "[PR 51148] Exact-base KBM suspension recovery review",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51148",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/992"
+        "fork_branch": "review-head/51148-ed71df9-r5-20261019",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1060"
       }
     },
     {
@@ -3264,7 +3264,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3344,7 +3344,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3514,10 +3514,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-10-14T07:14:22Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
