@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T05:53:23.4082611+08:00",
+  "generated_at": "2026-10-19T06:00:29.8621184+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 184,
+    "open_prs": 183,
     "open_issues": 12265,
     "community": 11376,
-    "artifacts": 986
+    "artifacts": 985
   },
   "impact": {
     "as_of": "2026-10-19T04:12:05.7714025+08:00",
@@ -99,7 +99,6 @@ window.BOARD_INDEX = {
   },
   "artifact_numbers": [
     51396,
-    51395,
     51392,
     51383,
     51377,
@@ -1129,49 +1128,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51396-41a434cf",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/1067"
-      }
-    },
-    {
-      "id": "pr-51395",
-      "kind": "pr",
-      "number": 51395,
-      "url": "https://github.com/microsoft/PowerToys/pull/51395",
-      "title": "[UI Tests] Park cursor off taskbar during ZoomIt tray wait (Win10 News feed)",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-ZoomIt",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-18T17:53:27Z",
-      "updated_at": "2026-10-18T19:50:22Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "CLEAN",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1066,
-        "fork_title": "[PR 51395] [UI Tests] Park cursor off taskbar during ZoomIt tray wait (Win10 News feed)",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51395",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1066"
       }
     },
     {
