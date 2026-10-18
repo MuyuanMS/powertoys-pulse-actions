@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T02:19:43.6211519+08:00",
+  "generated_at": "2026-10-19T02:36:09.6555905+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 985
   },
   "impact": {
-    "as_of": "2026-10-19T02:19:43.6211519+08:00",
+    "as_of": "2026-10-19T02:36:09.6555905+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2018,7 +2018,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6773,7 +6773,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6781,7 +6781,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Consider approval of setup-node pin"
+      },
       "labels": [
         "dependencies",
         "github_actions",
