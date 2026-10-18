@@ -2,26 +2,76 @@
   "number": 50772,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-17T02:08:00.5530698Z",
-  "evaluated_at": "2026-09-24T19:44:03Z",
+  "generated_at": "2026-10-19T01:08:35.7516756+08:00",
+  "evaluated_at": "2026-10-19T01:08:35.7516756+08:00",
   "source_updated_at": "2026-09-24T19:00:11Z",
   "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
   "title": "[Peek] Add preview support for EML and MSG email files",
   "url": "https://github.com/microsoft/PowerToys/pull/50772",
   "status": {
     "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The adapter-only MSBuild attempt reached the isolated adapter target but failed with 28 analyzer diagnostics (CA1707, SA1101, SA1204, SA0001); no test assembly or test result was produced, and the product project was not rebuilt. Source-only classification found CA1707/SA1101/SA1204 are private adapter style issues and SA0001 is adapter configuration noise, not product findings. No analyzer repair or rerun was performed; the product differential remains unverified."
+    "label": "Validated MIME delimiter inline suggestion",
+    "detail": "One validated inline suggestion corrects multipart MIME delimiter matching. The production parser differential reproduced failure on the exact upstream parser and passed both candidate cases; the final minimized literal also passed the affected-project build. The latest substantive automated review has zero published comments and zero unresolved threads. These results cover the parser and focused compilation, not Email preview UI, WebView2, MSG handling or a full application build."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review the pinned MIME delimiter suggestion and explicitly choose whether to post it.",
+  "proposed_comments": [
+    {
+      "id": "mime-boundary-midline",
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "Actual hash-pinned production parser differential: expected upstream InvalidDataException with positive control passing; literal candidate passes both cases. UI behavior is not claimed."
+      },
+      "title": "MIME boundaries must match delimiter lines",
+      "body": "### MIME boundaries must match delimiter lines\n\n**Severity:** `medium`\n\nIn a valid multipart email, `prefix --b suffix` is ordinary body text when `b` is the declared boundary. This splitter cuts at every `--b` substring, truncating the text and parsing the suffix as a malformed child, which causes the `.eml` preview to fail. Match complete delimiter lines with a valid suffix and return the intervening original bytes.\n\n```suggestion\n            string delimiter = $@\"(?m)^--{Regex.Escape(boundary)}(?<closing>--)?[ \\t]*(?:\\r?\\n|$)\";\n            int start = -1;\n            foreach (Match match in Regex.Matches(body, delimiter, RegexOptions.None, TimeSpan.FromSeconds(1)))\n            {\n                if (start >= 0)\n                {\n                    int end = match.Index;\n                    if (end > start && data[end - 1] == '\\n')\n                    {\n                        end--;\n                        if (end > start && data[end - 1] == '\\r')\n                        {\n                            end--;\n                        }\n                    }\n\n                    if (end > start)\n                    {\n                        yield return data[start..end];\n                    }\n                }\n\n                if (match.Groups[\"closing\"].Success)\n                {\n                    yield break;\n                }\n\n                start = match.Index + match.Length;\n            }\n\n            if (start >= 0 && start < data.Length)\n            {\n                yield return data[start..];\n```",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmlMimeParser.cs",
+      "line": 110,
+      "startLine": 98,
+      "side": "RIGHT",
+      "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
+      "in_diff": true,
+      "start_line": 98
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50772",
+      "type": "post_review",
+      "label": "Post one inline suggestion",
+      "source_updated_at": "2026-09-24T19:00:11Z",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
+        "comments": [
+          {
+            "id": "mime-boundary-midline",
+            "kind": "inline",
+            "severity": "medium",
+            "confidence": {
+              "score": 96,
+              "rationale": "Actual hash-pinned production parser differential: expected upstream InvalidDataException with positive control passing; literal candidate passes both cases. UI behavior is not claimed."
+            },
+            "title": "MIME boundaries must match delimiter lines",
+            "body": "### MIME boundaries must match delimiter lines\n\n**Severity:** `medium`\n\nIn a valid multipart email, `prefix --b suffix` is ordinary body text when `b` is the declared boundary. This splitter cuts at every `--b` substring, truncating the text and parsing the suffix as a malformed child, which causes the `.eml` preview to fail. Match complete delimiter lines with a valid suffix and return the intervening original bytes.\n\n```suggestion\n            string delimiter = $@\"(?m)^--{Regex.Escape(boundary)}(?<closing>--)?[ \\t]*(?:\\r?\\n|$)\";\n            int start = -1;\n            foreach (Match match in Regex.Matches(body, delimiter, RegexOptions.None, TimeSpan.FromSeconds(1)))\n            {\n                if (start >= 0)\n                {\n                    int end = match.Index;\n                    if (end > start && data[end - 1] == '\\n')\n                    {\n                        end--;\n                        if (end > start && data[end - 1] == '\\r')\n                        {\n                            end--;\n                        }\n                    }\n\n                    if (end > start)\n                    {\n                        yield return data[start..end];\n                    }\n                }\n\n                if (match.Groups[\"closing\"].Success)\n                {\n                    yield break;\n                }\n\n                start = match.Index + match.Length;\n            }\n\n            if (start >= 0 && start < data.Length)\n            {\n                yield return data[start..];\n```",
+            "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmlMimeParser.cs",
+            "line": 110,
+            "startLine": 98,
+            "side": "RIGHT",
+            "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
+            "in_diff": true,
+            "start_line": 98
+          }
+        ]
+      }
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-17T02:08:00.5530698Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-19T01:08:35.7516756+08:00"
   },
   "freshness": {
     "queued_at": "2026-09-25T07:46:19Z",
@@ -31,5 +81,48 @@
     "number": 900,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/900"
   },
-  "fork_branch": "pr-iterate/50772"
+  "fork_branch": "pr-iterate/50772",
+  "needs_revalidation": false,
+  "summary": "One validated inline suggestion corrects multipart MIME delimiter matching. The production parser differential reproduced failure on the exact upstream parser and passed both candidate cases; the final minimized literal also passed the affected-project build. The latest substantive automated review has zero published comments and zero unresolved threads. These results cover the parser and focused compilation, not Email preview UI, WebView2, MSG handling or a full application build.",
+  "blockers": [],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "mime-boundary-midline"
+      ],
+      "scope": "Final minimized literal; affected Peek.FilePreviewer project compilation with pinned reference providers. Historical production differential used the same parser source in an earlier binary."
+    },
+    "line_ending_safety": {
+      "head_sha": "d4e0cc00a8c87e08a3c6fda0e392ec5fbf11911f",
+      "result": "passed",
+      "checked_comment_ids": [
+        "mime-boundary-midline"
+      ],
+      "files": [
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmlMimeParser.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 135,
+          "cr_only_count": 0
+        }
+      ]
+    },
+    "limitations": [
+      "No UI/WebView2, MSG, full-application or new-binary behavioral execution is claimed."
+    ]
+  },
+  "review_coverage": {
+    "actual_request_count": 7,
+    "latest_result_substantive": true,
+    "latest_result_zero_comments": true,
+    "unresolved_threads": 0,
+    "automated_convergence": true,
+    "approval_ready": false
+  }
 }
