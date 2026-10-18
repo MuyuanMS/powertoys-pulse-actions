@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-18T15:28:32.1774112+08:00",
+  "generated_at": "2026-10-18T15:47:40.2247427+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 181,
-    "open_issues": 12261,
-    "community": 11371,
+    "open_issues": 12260,
+    "community": 11370,
     "artifacts": 983
   },
   "impact": {
-    "as_of": "2026-10-18T15:28:32.1774112+08:00",
+    "as_of": "2026-10-18T15:47:40.2247427+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -352326,37 +352326,6 @@ window.BOARD_INDEX = {
       "created_at": "2021-03-20T00:51:48Z",
       "updated_at": "2025-03-03T11:14:56Z",
       "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-38228",
-      "kind": "issue",
-      "number": 38228,
-      "url": "https://github.com/microsoft/PowerToys/issues/38228",
-      "title": "Mouse Without Borders version compatibility",
-      "author": "Iemand005",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2025-03-29T16:30:03Z",
-      "updated_at": "2026-04-21T07:23:34Z",
-      "comments": 3,
       "priority": null
     },
     {
