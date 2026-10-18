@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-18T14:29:51.0409498+08:00",
+  "generated_at": "2026-10-18T14:45:43.1365654+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 181,
-    "open_issues": 12259,
-    "community": 11370,
+    "open_issues": 12260,
+    "community": 11371,
     "artifacts": 983
   },
   "impact": {
-    "as_of": "2026-10-18T14:29:51.0409498+08:00",
+    "as_of": "2026-10-18T14:45:43.1365654+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -29018,13 +29018,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-16346",
+      "id": "issue-51384",
       "kind": "issue",
-      "number": 16346,
-      "url": "https://github.com/microsoft/PowerToys/issues/16346",
-      "title": "New feature request: fast thumbnails preloading for user selected folders",
-      "author": "arturdd",
-      "state": "open",
+      "number": 51384,
+      "url": "https://github.com/microsoft/PowerToys/issues/51384",
+      "title": "自动开启了很多我并没有打开的插件功能",
+      "author": "flouebluez",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -29036,17 +29036,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy",
-        "Product-File Explorer"
+        "Issue-Bug",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2022-02-14T09:48:28Z",
-      "updated_at": "2026-07-25T01:00:57Z",
-      "comments": 14,
+      "created_at": "2026-10-18T06:34:10Z",
+      "updated_at": "2026-10-18T06:39:40Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -56825,8 +56825,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-17T18:42:55Z",
-      "comments": 294,
+      "updated_at": "2026-10-18T06:38:52Z",
+      "comments": 295,
       "priority": null
     },
     {
@@ -87566,6 +87566,39 @@ window.BOARD_INDEX = {
       "created_at": "2024-03-05T15:15:33Z",
       "updated_at": "2024-04-17T12:26:54Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-13378",
+      "kind": "issue",
+      "number": 13378,
+      "url": "https://github.com/microsoft/PowerToys/issues/13378",
+      "title": "[Keyboard Manager] Only apply keys and shortcuts to specific keyboards",
+      "author": "Dudeplayz",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Resolution-Duplicate",
+        "Idea-Enhancement",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2021-09-23T08:30:21Z",
+      "updated_at": "2026-10-11T16:16:19Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -315873,12 +315906,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-13378",
+      "id": "issue-43310",
       "kind": "issue",
-      "number": 13378,
-      "url": "https://github.com/microsoft/PowerToys/issues/13378",
-      "title": "[Keyboard Manager] Only apply keys and shortcuts to specific keyboards",
-      "author": "Dudeplayz",
+      "number": 43310,
+      "url": "https://github.com/microsoft/PowerToys/issues/43310",
+      "title": "Power Tool Crash Bug \"Something went wrong\"",
+      "author": "fawzib-dev",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -315891,18 +315924,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Issue-Bug",
         "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-Keyboard Manager"
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2021-09-23T08:30:21Z",
-      "updated_at": "2026-10-11T16:16:19Z",
-      "comments": 1,
+      "created_at": "2025-11-05T14:13:25Z",
+      "updated_at": "2026-04-30T09:26:59Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -354390,13 +354423,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-43310",
+      "id": "issue-16346",
       "kind": "issue",
-      "number": 43310,
-      "url": "https://github.com/microsoft/PowerToys/issues/43310",
-      "title": "Power Tool Crash Bug \"Something went wrong\"",
-      "author": "fawzib-dev",
-      "state": "closed",
+      "number": 16346,
+      "url": "https://github.com/microsoft/PowerToys/issues/16346",
+      "title": "New feature request: fast thumbnails preloading for user selected folders",
+      "author": "arturdd",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -354408,18 +354441,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-General"
+        "Idea-New PowerToy",
+        "Product-File Explorer"
       ],
       "assignees": [],
-      "created_at": "2025-11-05T14:13:25Z",
-      "updated_at": "2026-04-30T09:26:59Z",
-      "comments": 3,
+      "created_at": "2022-02-14T09:48:28Z",
+      "updated_at": "2026-07-25T01:00:57Z",
+      "comments": 14,
       "priority": null
     },
     {
