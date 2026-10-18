@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-18T13:16:47.1499332+08:00",
+  "generated_at": "2026-10-18T13:36:51.9200055+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 180,
+    "open_prs": 181,
     "open_issues": 12259,
-    "community": 11369,
+    "community": 11370,
     "artifacts": 982
   },
   "impact": {
-    "as_of": "2026-10-18T13:16:47.1499332+08:00",
+    "as_of": "2026-10-18T13:36:51.9200055+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1082,6 +1082,41 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-51383",
+      "kind": "pr",
+      "number": 51383,
+      "url": "https://github.com/microsoft/PowerToys/pull/51383",
+      "title": "[ZoomIt] Don't register Ctrl+Alt hotkeys that swallow AltGr characters",
+      "author": "dark13b",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-ZoomIt",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-18T05:22:19Z",
+      "updated_at": "2026-10-18T05:22:39Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-51381",
       "kind": "pr",
