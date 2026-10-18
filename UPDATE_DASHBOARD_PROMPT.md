@@ -39,6 +39,8 @@ Before starting:
    when a skill is missing. Run `Install-Skills.ps1 -Update` from that clean
    checkout and read its current skill entry points/references. Record the
    loaded source commit; do not continue with an older in-memory prompt.
+   Run `Install-Skills.ps1 -VerifyOnly` and verify all four sibling skills,
+   not only the updater. Existing installed copies are backed up on update.
 
 Use the `powertoys-dashboard-update` skill as the orchestrator. Follow all its
 dependency, freshness, artifact-schema, validation, publication, and approval
@@ -51,6 +53,14 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- in drain mode follow `powertoys-dashboard-update/references/drain-dispatch.md`:
+  execute its private-ledger dispatch plan after completions and due cloud
+  checks. Idle historical agents and unchanged queue snapshots never suppress
+  runnable work. A PR-only non-CmdPal drain uses the dedicated
+  `DRAIN_PRS_PROMPT.md` and the same `-ExcludeCmdPal` scope at its final gate;
+- keep the regular scheduled update all-area, including CmdPal, when no drain
+  is active; while a drain is active, service that same run instead of starting
+  overlapping work. Retire a temporary drain watchdog at completion;
 - after each PR's mirror/rebase/scope checks, derive and checkpoint the exact
   focused validation commands from its changed paths, then request Copilot
   without a pre-review compile. Process findings while the request is pending;

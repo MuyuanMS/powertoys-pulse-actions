@@ -61,6 +61,21 @@ if (@($reviewContractFiles | Where-Object { -not (Test-Path $_) }).Count -gt 0) 
       $promptText -notmatch 'checkpoint the exact\s+focused validation commands') {
     $errors.Add('Dashboard update prompt must pipeline Copilot requests and preserve resumable validation plans.')
   }
+  $drainReference = Join-Path $skillsRoot 'powertoys-dashboard-update\references\drain-dispatch.md'
+  $drainPrompt = Join-Path $PSScriptRoot 'DRAIN_PRS_PROMPT.md'
+  if (-not (Test-Path $drainReference) -or -not (Test-Path $drainPrompt)) {
+    $errors.Add('Missing PR-drain dispatch contract or copyable recovery prompt.')
+  } else {
+    $drainText = Get-Content $drainReference -Raw
+    $recoveryText = Get-Content $drainPrompt -Raw
+    if ($drainText -notmatch 'Get-PrReviewDispatchPlan.ps1' -or
+        $recoveryText -notmatch 'Install-Skills.ps1 -VerifyOnly' -or
+        $recoveryText -notmatch 'INCLUDING CmdPal' -or
+        $recoveryText -notmatch 'five-minute drain watchdog' -or
+        $recoveryText -notmatch 'FailOnStale') {
+      $errors.Add('PR-drain recovery must enforce suite freshness, active dispatch, scoped completion and all-area schedule recovery.')
+    }
+  }
 }
 
 $forbiddenFiles = Get-ChildItem $skillsRoot -Recurse -File | Where-Object {
@@ -235,6 +250,10 @@ foreach ($script in $scripts) {
 foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1', 'Test-CopilotReviewDiscovery.ps1')) {
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
+}
+foreach ($testName in @('Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1')) {
+  & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-dashboard-update\tests\$testName")
+  if ($LASTEXITCODE -ne 0) { $errors.Add("Drain reliability regression test failed: $testName") }
 }
 
 $runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
@@ -539,6 +558,24 @@ if (-not (Test-Path $checkpointScript)) {
       ConvertFrom-Json
     if ($formerlyOwned.stage -ne 'review_in_progress' -or $formerlyOwned.head_sha -ne ('e' * 40)) {
       $errors.Add('PR review checkpoint writer did not requeue a legacy owned_elsewhere artifact.')
+    }
+    & $checkpointScript -Dashboard $checkpointRoot -Number 34568 `
+      -HeadSha ('e' * 40) -SourceUpdatedAt '2026-08-25T00:00:00Z' `
+      -Phase building -Detail 'Preserve the actual substantive evaluation time.' `
+      -PreserveEvaluatedAt '8/24/2026 10:20:30' -PreserveQueuedAt '2026-08-23T10:20:30Z'
+    $timestamps = Get-Content (Join-Path $checkpointRoot 'data\items\34568.json') -Raw |
+      ConvertFrom-Json
+    if ([datetimeoffset]$timestamps.evaluated_at -ne [datetimeoffset]'2026-08-24T10:20:30Z' -or
+        [datetimeoffset]$timestamps.freshness.queued_at -ne [datetimeoffset]'2026-08-23T10:20:30Z') {
+      $errors.Add('PR checkpoint timestamps were not preserved as UTC across suite installation.')
+    }
+    try {
+      & $checkpointScript -Dashboard $checkpointRoot -Number 34568 `
+        -HeadSha ('e' * 40) -SourceUpdatedAt '2026-08-25T00:00:00Z' `
+        -Phase building -Detail 'Reject invalid timestamps.' -PreserveEvaluatedAt 'not-a-date'
+      $errors.Add('PR checkpoint writer accepted an invalid preserved timestamp.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Cannot preserve evaluated_at*') { throw }
     }
   } catch {
     $errors.Add("PR review checkpoint validation failed: $($_.Exception.Message)")

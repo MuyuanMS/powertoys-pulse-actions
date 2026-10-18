@@ -21,8 +21,10 @@ param(
         Join-Path $PSScriptRoot '..\..\..\..'
     }),
     [string]$Upstream = 'microsoft/PowerToys',
-    [int]$Limit = 200,
+    [ValidateRange(1, 2147483647)]
+    [int]$Limit = [int]::MaxValue,
     [string]$PullRequestsJsonPath,
+    [switch]$ExcludeCmdPal,
     [switch]$AsJson,
     [switch]$FailOnStale
 )
@@ -163,11 +165,23 @@ $pullRequests = if ($PullRequestsJsonPath) {
 }
 
 $queue = [System.Collections.Generic.List[object]]::new()
+$excludedCmdPal = [System.Collections.Generic.List[int]]::new()
 foreach ($pr in $pullRequests) {
     $number = [int]$pr.number
     $artifact = Get-Artifact $number
 
     if ($pr.isDraft) {
+        continue
+    }
+    $labelNames = @($pr.labels | ForEach-Object {
+        if ($_ -is [string]) { $_ } else { [string]$_.name }
+    })
+    if ($ExcludeCmdPal -and (
+        $pr.is_cmdpal -eq $true -or
+        ($labelNames -join '|') -match '(?i)Command Palette|CmdPal' -or
+        [string]$pr.title -match '(?i)\bCmdPal\b|Command Palette'
+    )) {
+        $excludedCmdPal.Add($number)
         continue
     }
     $artifactHead = if ($artifact) { [string]$artifact.head_sha } else { '' }
@@ -247,6 +261,7 @@ $result = [pscustomobject]@{
     dashboard = $Dashboard
     stale_count = $queue.Count
     stale_prs = $queue.ToArray()
+    excluded_cmdpal = $excludedCmdPal.ToArray()
 }
 
 if ($AsJson) {

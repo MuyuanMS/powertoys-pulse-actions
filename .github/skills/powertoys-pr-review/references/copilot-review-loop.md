@@ -41,6 +41,13 @@ completion: the review may have completed asynchronously. Require the actual
 matching submitted review. Do not infer a clean pass from an empty first page
 or from the absence of an assignment.
 
+Review effort is not an extra completion gate: a submitted Lite review is not
+automatically a failure. Inspect the actual body and findings against the same
+convergence criteria. A timeout/no-analysis service response is not substantive
+review, but do not invent a requirement for an unavailable "full" tier.
+Repeated service failure needs a bounded diagnostic and an exact manual
+remediation, not unlimited identical requests.
+
 For bounded workers, if the immediate check finds no review, checkpoint
 `waiting_copilot` and return the slot. Before the coordinator republishes a
 waiting checkpoint, recheck once with the read-only reader; if a result arrived,
@@ -135,7 +142,15 @@ After both conditions hold, run the serialized Step 7 build before marking the
 review complete or proceeding to Step 9. If the final build changes any code,
 request another Copilot review and rebuild after that loop converges.
 
-Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0; a non-zero count means resume the loop (fix/resolve/re-request) — do not present yet.
+At the eight-round limit, finish assessing and replying to the final review
+and preserve independently validated findings privately. If convergence is
+still absent, return a current-head manual-review blocker with the exhausted
+rounds, exact remaining concerns and concrete remediation. The dashboard
+coordinator publishes that terminal blocker without approval/clean-review
+actions and continues other PRs. Do not keep the PR in an endless resumable
+loop, reset its counter, claim it is clean, or silently authorize round nine.
+
+Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence; a non-zero count means resume the loop (fix/resolve/re-request) within the round cap, or include the remaining concerns in the explicit manual-review blocker at the cap — never present them as clean.
 
 ## Step 8: Summarize the converged net diff
 

@@ -24,7 +24,12 @@ Use `-Update` to replace previously installed copies:
 
 ```powershell
 pwsh -NoProfile -File .\powertoys-pulse-actions\Install-Skills.ps1 -Update
+pwsh -NoProfile -File .\powertoys-pulse-actions\Install-Skills.ps1 -VerifyOnly
 ```
+
+Updates back up existing installations outside the skills directory and verify
+every file of all four skills. `-VerifyOnly` refuses stale or extra local
+overrides without modifying the installation.
 
 Repository-level use is also supported: copy the four directories from
 `.github/skills` into another repository's `.github/skills`.
@@ -89,6 +94,11 @@ state, board counts, deployment URL, and whether any upstream action occurred.
 
 For the complete copyable version, use
 [`UPDATE_DASHBOARD_PROMPT.md`](./UPDATE_DASHBOARD_PROMPT.md).
+
+For recovering a stalled PR-only drain outside Command Palette, use
+[`DRAIN_PRS_PROMPT.md`](./DRAIN_PRS_PROMPT.md) in the owning session. It also
+repairs the schedule handoff: regular updates include CmdPal when no drain is
+active; active-drain ticks dispatch existing work without starting a duplicate.
 
 ## Feedback
 

@@ -32,6 +32,8 @@ param(
     [int]$ForkPr,
     [string]$ForkBranch,
     [string]$Fork = $env:POWERTOYS_FORK_REPO,
+    [string]$PreserveEvaluatedAt,
+    [string]$PreserveQueuedAt,
     [string]$Dashboard = $(if ($env:POWERTOYS_DASHBOARD_PATH) {
         $env:POWERTOYS_DASHBOARD_PATH
     } else {
@@ -41,6 +43,29 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+function ConvertTo-UtcIsoTimestamp {
+    param($Value, [string]$Field)
+    if ($Value -is [datetimeoffset]) {
+        return $Value.UtcDateTime.ToString('o', [Globalization.CultureInfo]::InvariantCulture)
+    }
+    if ($Value -is [datetime]) {
+        return $Value.ToUniversalTime().ToString('o', [Globalization.CultureInfo]::InvariantCulture)
+    }
+    $parsed = [datetimeoffset]::MinValue
+    $styles = [Globalization.DateTimeStyles]::AssumeUniversal -bor
+        [Globalization.DateTimeStyles]::AdjustToUniversal
+    if (-not [datetimeoffset]::TryParse(
+        [string]$Value,
+        [Globalization.CultureInfo]::GetCultureInfo('en-US'),
+        $styles,
+        [ref]$parsed
+    )) {
+        throw "Cannot preserve $Field as a UTC timestamp: '$Value'."
+    }
+    return $parsed.UtcDateTime.ToString('o', [Globalization.CultureInfo]::InvariantCulture)
+}
+
 $Dashboard = (Resolve-Path $Dashboard).Path
 if (Test-Path (Join-Path $Dashboard '.git')) {
     & (Join-Path $PSScriptRoot 'Assert-CanonicalDashboardTarget.ps1') `
@@ -79,8 +104,10 @@ $artifact = [ordered]@{
     owes = 'us'
     pending_author = $false
     generated_at = $now
-    evaluated_at = if ($sameHead -and $existing.evaluated_at) {
-        [string]$existing.evaluated_at
+    evaluated_at = if ($PreserveEvaluatedAt) {
+        ConvertTo-UtcIsoTimestamp $PreserveEvaluatedAt 'evaluated_at'
+    } elseif ($sameHead -and $existing.evaluated_at) {
+        ConvertTo-UtcIsoTimestamp $existing.evaluated_at 'evaluated_at'
     } else {
         $now
     }
@@ -109,8 +136,10 @@ $artifact = [ordered]@{
         checkpoint_at = $now
     }
     freshness = [ordered]@{
-        queued_at = if ($sameHead -and $existing.freshness.queued_at) {
-            [string]$existing.freshness.queued_at
+        queued_at = if ($PreserveQueuedAt) {
+            ConvertTo-UtcIsoTimestamp $PreserveQueuedAt 'freshness.queued_at'
+        } elseif ($sameHead -and $existing.freshness.queued_at) {
+            ConvertTo-UtcIsoTimestamp $existing.freshness.queued_at 'freshness.queued_at'
         } else {
             $now
         }
