@@ -2,29 +2,243 @@
   "number": 51213,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-18T20:02:27.3712407Z",
-  "evaluated_at": "2026-10-13T03:25:49Z",
+  "generated_at": "2026-10-19T06:51:25.9611589+08:00",
+  "evaluated_at": "2026-10-19T06:51:25.9611589+08:00",
   "source_updated_at": "2026-10-14T19:01:02Z",
   "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
   "title": "[Settings] Fix hang in SendInput while bringing window to foreground",
   "url": "https://github.com/microsoft/PowerToys/pull/51213",
   "status": {
     "glyph": "...",
-    "label": "Local validation running",
-    "detail": "The final intended eighth review contained three comments, all disposed with no unresolved threads. Two requests were optional or unsupported; the zero-window-handle guard was retained for focused validation. An unintended automated ninth request occurred after a review-branch update and is recorded as a cap overrun, not convergence or a reset allowance. Further automated requests are stopped. Exact affected-project and separate literal-candidate builds/tests remain pending; no author-facing proposal, current-head clean review or validation pass is claimed."
+    "label": "Three validated foreground-input inline suggestions",
+    "detail": "Three source-grounded inline suggestions cover two corrections: restoring the send-admission flag after worker startup failure, and an atomic zero-window guard with its fake-input fixture adaptation. The final exact public literals compiled and both selected off-caller/STA non-pumping tests passed. A separate earlier private harness passed four cases, including injected startup failure/retry and zero-handle no-input checks; those extra cases are not part of the public candidate. The final build exited zero but required forced cleanup of an owned helper, followed by zero children and explicit lock release. Optional Join assertion hardening is omitted. Nine historical automated requests exceed the eight-request limit; no automated convergence or approval readiness is claimed."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review the startup correction and complete atomic zero-window pair before explicitly deciding whether to post them. No upstream action has been taken.",
+  "proposed_comments": [
+    {
+      "id": "foreground-injector-startup-guard",
+      "kind": "inline",
+      "severity": "P2",
+      "path": "src/common/ManagedCommon/ForegroundInputInjector.cs",
+      "side": "RIGHT",
+      "start_line": 43,
+      "line": 48,
+      "body": "### Restore the send guard when worker startup fails\n\n**Severity:** `medium`\n\n`_sendInProgress` is set before constructing and starting the worker. If either startup step throws, `Send` never runs its `finally`, so the flag remains set and subsequent calls skip injection indefinitely. Reset the guard on this startup-failure path, then rethrow rather than swallowing the startup exception.\n\n**Suggested change:**\n```suggestion\n            try\n            {\n                var sendThread = new Thread(Send)\n                {\n                    IsBackground = true,\n                    Name = \"PowerToys foreground input\",\n                };\n                sendThread.Start();\n            }\n            catch\n            {\n                Volatile.Write(ref _sendInProgress, 0);\n                throw;\n            }\n```\n\nVerify a simulated failure before the first start clears the guard and a subsequent real thread start succeeds; retain the normal send/finally behavior.",
+      "in_diff": true,
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "confidence": {
+        "score": 82,
+        "rationale": "The admission flag is visibly set before Thread construction/start and normally reset only by the worker finally. A startup exception bypasses that finally; the candidate includes a deterministic before-start throw/retry test."
+      }
+    },
+    {
+      "id": "foreground-zero-hwnd",
+      "kind": "inline",
+      "severity": "P2",
+      "path": "src/common/ManagedCommon/WindowHelpers.cs",
+      "side": "RIGHT",
+      "start_line": 24,
+      "line": 24,
+      "body": "### Skip foreground input for a zero window handle (1/2)\n\n**Severity:** `medium`\n\nThe public overload routes here. With `IntPtr.Zero`, the existing already-foreground guard is skipped, so the method injects synthetic input and then calls foreground APIs even though zero cannot identify a window. Return before either side effect.\n\n**Suggested change:**\n```suggestion\n            if (handle == IntPtr.Zero)\n            {\n                return;\n            }\n\n            // There's no foreground lock to get past if the window is already in the foreground, so don't send input.\n```\n\nApply with the fixture update (2/2). Verify a zero-handle call through the fake-injector overload returns without invoking the injected action; keep the nonzero foreground path unchanged.",
+      "in_diff": true,
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "confidence": {
+        "score": 80,
+        "rationale": "The public overload routes to this changed shared implementation. A zero HWND bypasses the already-foreground condition and currently reaches synthetic input and foreground APIs; the literal candidate test verifies the injected action is not called without invoking real SendInput."
+      },
+      "selection_group": {
+        "position": 1,
+        "id": "zero-hwnd-with-fixture",
+        "total": 2,
+        "atomic": true,
+        "title": "Zero HWND guard and fake-input fixture"
+      }
+    },
+    {
+      "id": "foreground-zero-hwnd-fixture",
+      "kind": "inline",
+      "severity": "P2",
+      "path": "src/common/ManagedCommon.UnitTests/WindowHelpersTests.cs",
+      "side": "RIGHT",
+      "start_line": 20,
+      "line": 22,
+      "body": "### Preserve fake-input coverage with the zero-handle guard (2/2)\n\n**Severity:** `medium`\n\nThe fake-input tests use `NoWindow` to exercise the injection path without a real window. After adding the shared zero-handle return (1/2), zero would skip that path and invalidate the off-caller and STA non-pumping assertions. Use a nonzero invalid HWND for those existing tests. A zero-handle regression should instead pass `IntPtr.Zero` and assert that its fake injector is not called.\n\n```suggestion\n    // Minus one is not a window, so the real SetForegroundWindow/AttachThreadInput calls that\n    // BringToForeground makes after the faked input fail without touching the desktop.\n    private static readonly IntPtr NoWindow = new(-1);\n```\n\nApply only with (1/2), then run the fake-injector zero-handle, off-caller and STA non-pumping cases.",
+      "in_diff": true,
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "confidence": {
+        "score": 90,
+        "rationale": "The existing fake-input tests deliberately use zero as an invalid HWND. A shared zero guard would bypass their injected actions; a nonzero invalid sentinel preserves the original fake-input coverage without a real SendInput call."
+      },
+      "selection_group": {
+        "position": 2,
+        "id": "zero-hwnd-with-fixture",
+        "total": 2,
+        "atomic": true,
+        "title": "Zero HWND guard and fake-input fixture"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51213",
+      "type": "post_review",
+      "label": "Post three inline suggestions",
+      "source_updated_at": "2026-10-14T19:01:02Z",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+        "comments": [
+          {
+            "id": "foreground-injector-startup-guard",
+            "kind": "inline",
+            "severity": "P2",
+            "path": "src/common/ManagedCommon/ForegroundInputInjector.cs",
+            "side": "RIGHT",
+            "start_line": 43,
+            "line": 48,
+            "body": "### Restore the send guard when worker startup fails\n\n**Severity:** `medium`\n\n`_sendInProgress` is set before constructing and starting the worker. If either startup step throws, `Send` never runs its `finally`, so the flag remains set and subsequent calls skip injection indefinitely. Reset the guard on this startup-failure path, then rethrow rather than swallowing the startup exception.\n\n**Suggested change:**\n```suggestion\n            try\n            {\n                var sendThread = new Thread(Send)\n                {\n                    IsBackground = true,\n                    Name = \"PowerToys foreground input\",\n                };\n                sendThread.Start();\n            }\n            catch\n            {\n                Volatile.Write(ref _sendInProgress, 0);\n                throw;\n            }\n```\n\nVerify a simulated failure before the first start clears the guard and a subsequent real thread start succeeds; retain the normal send/finally behavior.",
+            "in_diff": true,
+            "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+            "confidence": {
+              "score": 82,
+              "rationale": "The admission flag is visibly set before Thread construction/start and normally reset only by the worker finally. A startup exception bypasses that finally; the candidate includes a deterministic before-start throw/retry test."
+            }
+          },
+          {
+            "id": "foreground-zero-hwnd",
+            "kind": "inline",
+            "severity": "P2",
+            "path": "src/common/ManagedCommon/WindowHelpers.cs",
+            "side": "RIGHT",
+            "start_line": 24,
+            "line": 24,
+            "body": "### Skip foreground input for a zero window handle (1/2)\n\n**Severity:** `medium`\n\nThe public overload routes here. With `IntPtr.Zero`, the existing already-foreground guard is skipped, so the method injects synthetic input and then calls foreground APIs even though zero cannot identify a window. Return before either side effect.\n\n**Suggested change:**\n```suggestion\n            if (handle == IntPtr.Zero)\n            {\n                return;\n            }\n\n            // There's no foreground lock to get past if the window is already in the foreground, so don't send input.\n```\n\nApply with the fixture update (2/2). Verify a zero-handle call through the fake-injector overload returns without invoking the injected action; keep the nonzero foreground path unchanged.",
+            "in_diff": true,
+            "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+            "confidence": {
+              "score": 80,
+              "rationale": "The public overload routes to this changed shared implementation. A zero HWND bypasses the already-foreground condition and currently reaches synthetic input and foreground APIs; the literal candidate test verifies the injected action is not called without invoking real SendInput."
+            },
+            "selection_group": {
+              "position": 1,
+              "id": "zero-hwnd-with-fixture",
+              "total": 2,
+              "atomic": true,
+              "title": "Zero HWND guard and fake-input fixture"
+            }
+          },
+          {
+            "id": "foreground-zero-hwnd-fixture",
+            "kind": "inline",
+            "severity": "P2",
+            "path": "src/common/ManagedCommon.UnitTests/WindowHelpersTests.cs",
+            "side": "RIGHT",
+            "start_line": 20,
+            "line": 22,
+            "body": "### Preserve fake-input coverage with the zero-handle guard (2/2)\n\n**Severity:** `medium`\n\nThe fake-input tests use `NoWindow` to exercise the injection path without a real window. After adding the shared zero-handle return (1/2), zero would skip that path and invalidate the off-caller and STA non-pumping assertions. Use a nonzero invalid HWND for those existing tests. A zero-handle regression should instead pass `IntPtr.Zero` and assert that its fake injector is not called.\n\n```suggestion\n    // Minus one is not a window, so the real SetForegroundWindow/AttachThreadInput calls that\n    // BringToForeground makes after the faked input fail without touching the desktop.\n    private static readonly IntPtr NoWindow = new(-1);\n```\n\nApply only with (1/2), then run the fake-injector zero-handle, off-caller and STA non-pumping cases.",
+            "in_diff": true,
+            "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+            "confidence": {
+              "score": 90,
+              "rationale": "The existing fake-input tests deliberately use zero as an invalid HWND. A shared zero guard would bypass their injected actions; a nonzero invalid sentinel preserves the original fake-input coverage without a real SendInput call."
+            },
+            "selection_group": {
+              "position": 2,
+              "id": "zero-hwnd-with-fixture",
+              "total": 2,
+              "atomic": true,
+              "title": "Zero HWND guard and fake-input fixture"
+            }
+          }
+        ]
+      }
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-18T20:02:27.3712407Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-19T06:51:25.9611589+08:00"
   },
   "freshness": {
     "queued_at": "2026-10-13T03:36:54.9121043Z",
     "checkpoint_at": "2026-10-18T20:02:27.3712407Z"
+  },
+  "summary": "Three source-grounded inline suggestions cover two corrections: restoring the send-admission flag after worker startup failure, and an atomic zero-window guard with its fake-input fixture adaptation. The final exact public literals compiled and both selected off-caller/STA non-pumping tests passed. A separate earlier private harness passed four cases, including injected startup failure/retry and zero-handle no-input checks; those extra cases are not part of the public candidate. The final build exited zero but required forced cleanup of an owned helper, followed by zero children and explicit lock release. Optional Join assertion hardening is omitted. Nine historical automated requests exceed the eight-request limit; no automated convergence or approval readiness is claimed.",
+  "needs_revalidation": false,
+  "blockers": [],
+  "review_coverage": {
+    "actual_request_count": 9,
+    "automated_round_cap": 8,
+    "automated_convergence": false,
+    "approval_ready": false
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "foreground-injector-startup-guard",
+        "foreground-zero-hwnd",
+        "foreground-zero-hwnd-fixture"
+      ],
+      "scope": "Final three literal replacements applied verbatim on pinned upstream, without automatic indentation. Focused project compile exited zero; two selected fake-input off-caller/STA tests passed."
+    },
+    "line_ending_safety": {
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "result": "passed",
+      "checked_comment_ids": [
+        "foreground-injector-startup-guard",
+        "foreground-zero-hwnd",
+        "foreground-zero-hwnd-fixture"
+      ],
+      "files": [
+        {
+          "path": "src/common/ManagedCommon.UnitTests/WindowHelpersTests.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 194,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/common/ManagedCommon/ForegroundInputInjector.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 80,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/common/ManagedCommon/WindowHelpers.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 79,
+          "cr_only_count": 0
+        }
+      ]
+    },
+    "focused_tests": {
+      "head_sha": "c7acd87be5894affb8f5ca92205c90b29d8603e5",
+      "result": "passed",
+      "total": 2,
+      "executed": 2,
+      "passed": 2,
+      "failed": 0,
+      "scope": "Final exact-literal candidate: off-caller input and STA non-pumping fixture behavior only."
+    },
+    "limitations": [
+      "The final build required forced owned-helper cleanup after exit zero; the job was empty before explicit lock release. This was not natural build-process drain.",
+      "Private four-case harness results include a startup-failure seam and dedicated zero-handle assertion not present in the final public candidate.",
+      "Earlier automatically indented four-block materialization is not used as final public-literal evidence.",
+      "No whole-application build, physical input or desktop interaction, exact-upstream clean review, fresh zero-comment convergence or approval is claimed.",
+      "Nine historical requests against the eight-request allowance are preserved; no further automated request is permitted."
+    ]
   }
 }
