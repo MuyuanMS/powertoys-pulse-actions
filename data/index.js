@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T01:58:38.8180097+08:00",
+  "generated_at": "2026-10-19T02:19:43.6211519+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,19 +85,20 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 182,
+    "open_prs": 183,
     "open_issues": 12266,
     "community": 11377,
-    "artifacts": 984
+    "artifacts": 985
   },
   "impact": {
-    "as_of": "2026-10-19T01:58:38.8180097+08:00",
+    "as_of": "2026-10-19T02:19:43.6211519+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51395,
     51392,
     51383,
     51377,
@@ -1084,6 +1085,49 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-51395",
+      "kind": "pr",
+      "number": 51395,
+      "url": "https://github.com/microsoft/PowerToys/pull/51395",
+      "title": "[UI Tests] Park cursor off taskbar during ZoomIt tray wait (Win10 News feed)",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-ZoomIt",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-18T17:53:27Z",
+      "updated_at": "2026-10-18T18:07:51Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "APPROVED",
+      "ci_state": "pending",
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1066,
+        "fork_title": "[PR 51395] [UI Tests] Park cursor off taskbar during ZoomIt tray wait (Win10 News feed)",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51395",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1066"
+      }
+    },
     {
       "id": "pr-51392",
       "kind": "pr",
@@ -3020,7 +3064,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3106,7 +3150,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3510,12 +3554,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T23:26:56Z",
-      "updated_at": "2026-10-12T02:24:21Z",
+      "updated_at": "2026-10-18T18:06:43Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 950,
@@ -6089,15 +6133,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 815,
-        "fork_title": "[PR 50333] Fix Advanced Paste text case hotkey metadata",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50333-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/815"
-      }
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50253",
@@ -7619,7 +7655,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_blocked",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
