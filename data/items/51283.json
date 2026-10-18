@@ -2,29 +2,95 @@
   "number": 51283,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-18T20:28:56.7524347Z",
-  "evaluated_at": "2026-10-18T19:18:32.2107423Z",
+  "generated_at": "2026-10-19T05:53:23.4082611+08:00",
+  "evaluated_at": "2026-10-19T05:53:23.4082611+08:00",
   "source_updated_at": "2026-10-17T23:43:06Z",
   "head_sha": "f4386966e802678f610442b5f8044fde0b9143f8",
   "title": "[UI Tests] Treat warnings as errors in module UI test projects",
   "url": "https://github.com/microsoft/PowerToys/pull/51283",
   "status": {
     "glyph": "...",
-    "label": "Local validation running",
-    "detail": "A single focused validation attempt restored both required projects and compiled the automation library, but the candidate harness did not compile, so no parser contract test ran. Harness-only WinForms ambiguity and generated-file/header issues were separated from unchanged template nullable diagnostics; the latter are not assumed harmless or synthetic. The harness has since been repaired to compile the unchanged parser bodies in isolation, retaining the page-up/page-down, spaced-label and unknown-token cases. Execution of that repaired harness remains pending. The automated review limit is exhausted; no clean review, validated suggestion or author-action proposal is claimed."
+    "label": "Grounded activation-key parsing review note",
+    "detail": "One source-grounded inline review note identifies dropped activation-key tokens in the UI-test migration parsers and gives a coordinated implementation and verification path. A focused harness of the corrected, source-matched parser bodies compiled and passed all four parser contract tests with natural zero-child drain. This does not establish whole-template or full-project compilation: separate synthetic-template nullable diagnostics remain unverified in an ordinary generated project. The historical automated-review cap remains exhausted; no clean-convergence or approval-ready claim is made."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review the pinned inline parser note and explicitly decide whether to post it. No upstream action has been taken.",
+  "proposed_comments": [
+    {
+      "id": "shortcut-parser-pgdn-pgup",
+      "kind": "inline",
+      "title": "Preserve the activation key when parsing Settings shortcuts",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "The Settings-to-HelpText producer, actual PgDn/PgUp labels, both parser fallthroughs, and the nonempty caller guard are all present at the pinned upstream head; focused tests of both unchanged parser method bodies pass."
+      },
+      "path": ".github/skills/ui-tests-migration/templates/ModuleEndToEndTests.cs",
+      "line": 122,
+      "side": "RIGHT",
+      "body": "### Preserve the activation key when parsing Settings shortcuts\n**Severity:** `medium`\n\n**Affected code:** `.github/skills/ui-tests-migration/templates/ModuleEndToEndTests.cs` (`ParseShortcutText`); the same parser also appears in `.github/skills/ui-tests-migration/templates/TestHelper.cs` and the pattern in `.github/skills/ui-tests-migration/references/patterns-and-pitfalls.md`.\n\n**Problem:** The current `ShortcutSeparators` split treats spaces inside a key name as separators, and both parsers silently skip tokens they do not recognize. Settings puts `HotkeySettings.ToString()` in `EditButton.HelpText`; that formatter uses the keyboard-layout names `PgDn`/`PgUp` for VK_NEXT/VK_PRIOR. Thus `Win + PgDn` is reduced to `[LWin]`, which passes the `keys.Length > 0` guard before the test sends the incomplete chord.\n\n**Why it matters:** The generated UI test may omit the configured activation key, so it cannot reliably verify that the module opens with its actual shortcut.\n\n**Suggested change:** In both independent parser implementations, split on `+` and trim the chord boundaries without splitting spaces within a key name; map normalized `PgDn`/`PgUp` to `Key.PageDown`/`Key.PageUp` (and accept whitespace-normalized enum names); throw `FormatException` for an unsupported token rather than silently dropping it. Keep the parser recipe in `patterns-and-pitfalls.md` aligned, without making the standalone template depend on the optional helper file.\n\n**Verification:** Cover `Win + PgDn`, `Alt + PgUp`, and `Win + Page Down` in both parser implementations, and verify `Win + Unknown` throws instead of yielding a modifier-only chord.",
+      "in_diff": true,
+      "head_sha": "f4386966e802678f610442b5f8044fde0b9143f8"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51283",
+      "type": "post_review",
+      "label": "Post one inline review note",
+      "source_updated_at": "2026-10-17T23:43:06Z",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "f4386966e802678f610442b5f8044fde0b9143f8",
+        "comments": [
+          {
+            "id": "shortcut-parser-pgdn-pgup",
+            "kind": "inline",
+            "title": "Preserve the activation key when parsing Settings shortcuts",
+            "severity": "medium",
+            "confidence": {
+              "score": 92,
+              "rationale": "The Settings-to-HelpText producer, actual PgDn/PgUp labels, both parser fallthroughs, and the nonempty caller guard are all present at the pinned upstream head; focused tests of both unchanged parser method bodies pass."
+            },
+            "path": ".github/skills/ui-tests-migration/templates/ModuleEndToEndTests.cs",
+            "line": 122,
+            "side": "RIGHT",
+            "body": "### Preserve the activation key when parsing Settings shortcuts\n**Severity:** `medium`\n\n**Affected code:** `.github/skills/ui-tests-migration/templates/ModuleEndToEndTests.cs` (`ParseShortcutText`); the same parser also appears in `.github/skills/ui-tests-migration/templates/TestHelper.cs` and the pattern in `.github/skills/ui-tests-migration/references/patterns-and-pitfalls.md`.\n\n**Problem:** The current `ShortcutSeparators` split treats spaces inside a key name as separators, and both parsers silently skip tokens they do not recognize. Settings puts `HotkeySettings.ToString()` in `EditButton.HelpText`; that formatter uses the keyboard-layout names `PgDn`/`PgUp` for VK_NEXT/VK_PRIOR. Thus `Win + PgDn` is reduced to `[LWin]`, which passes the `keys.Length > 0` guard before the test sends the incomplete chord.\n\n**Why it matters:** The generated UI test may omit the configured activation key, so it cannot reliably verify that the module opens with its actual shortcut.\n\n**Suggested change:** In both independent parser implementations, split on `+` and trim the chord boundaries without splitting spaces within a key name; map normalized `PgDn`/`PgUp` to `Key.PageDown`/`Key.PageUp` (and accept whitespace-normalized enum names); throw `FormatException` for an unsupported token rather than silently dropping it. Keep the parser recipe in `patterns-and-pitfalls.md` aligned, without making the standalone template depend on the optional helper file.\n\n**Verification:** Cover `Win + PgDn`, `Alt + PgUp`, and `Win + Page Down` in both parser implementations, and verify `Win + Unknown` throws instead of yielding a modifier-only chord.",
+            "in_diff": true,
+            "head_sha": "f4386966e802678f610442b5f8044fde0b9143f8"
+          }
+        ]
+      }
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-18T20:28:56.7524347Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-19T05:53:23.4082611+08:00"
   },
   "freshness": {
     "queued_at": "2026-10-18T19:18:32.2107423Z",
     "checkpoint_at": "2026-10-18T20:28:56.7524347Z"
+  },
+  "summary": "One source-grounded inline review note identifies dropped activation-key tokens in the UI-test migration parsers and gives a coordinated implementation and verification path. A focused harness of the corrected, source-matched parser bodies compiled and passed all four parser contract tests with natural zero-child drain. This does not establish whole-template or full-project compilation: separate synthetic-template nullable diagnostics remain unverified in an ordinary generated project. The historical automated-review cap remains exhausted; no clean-convergence or approval-ready claim is made.",
+  "needs_revalidation": false,
+  "blockers": [],
+  "validation": {
+    "parser_contracts": {
+      "head_sha": "f4386966e802678f610442b5f8044fde0b9143f8",
+      "result": "passed",
+      "total": 4,
+      "executed": 4,
+      "passed": 4,
+      "failed": 0,
+      "scope": "Focused source-matched parser-body harness, including PgDn, PgUp, spaced labels and rejected unknown tokens. Harness compilation and actual VSTest both exited zero with natural owned-child drain."
+    },
+    "limitations": [
+      "No full generated-template or 26-project compilation is established.",
+      "Synthetic-template CS8793 and CS8604 diagnostics outside the parser harness have not been reproduced in an ordinary generated project.",
+      "A runner receipt error was reconciled offline against the retained passing TRX without rerunning tests.",
+      "No fresh zero-comment automated convergence or UI interaction is claimed."
+    ]
   }
 }
