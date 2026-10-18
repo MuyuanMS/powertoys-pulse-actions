@@ -57,6 +57,28 @@ schema-version-2 `review-data.json` from the current head.
 
 For teammates migrating from an older skill version, follow [migration-and-resume.md](./migration-and-resume.md). Never publish an old decisions file; regenerate and reapprove the validated public payload.
 
+### Recovery when fork main cannot be safely synchronized
+
+If fork `main` has private/divergent history or policy forbids changing it,
+do not turn base synchronization into a permanent operator-approval loop.
+The normal-main instructions below apply only when that synchronization is
+safe and authorized. Otherwise, use isolated review feature branches with
+an exact upstream base, leaving remote main and dirty shared worktrees intact.
+
+Under the operator's fork-work authorization, fetch the pinned upstream base
+and head, preserve the existing fork branch, create a uniquely named
+`review-base/<N>-<sha>` branch at the upstream base and a corresponding
+review head in a clean worktree. Carry forward only adjudicated review fixes;
+do not replace existing history or transfer old-head validation. Push these
+feature refs normally, without force, and reuse an existing compatible review
+PR or create one isolated recovery PR when necessary. Sanitize references.
+Verify the fork base/head and changed-file scope before requesting review.
+Avoid changing the base and head of a live PR in separate steps that briefly
+expose a broad unrelated diff to automation. Record the superseded lane and
+request identities so subsequent resumes do not duplicate it. Ask only for
+genuine ambiguous product/conflict decisions or missing permissions, not for
+ordinary feature-branch creation already authorized by the operator.
+
 ## Step 1: Mirror the PR
 
 Given PR number `N` from `microsoft/PowerToys`:
