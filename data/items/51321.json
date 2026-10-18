@@ -2,26 +2,74 @@
   "number": 51321,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-17T01:06:32.2141881Z",
-  "evaluated_at": "2026-10-16T05:09:51.2832019Z",
+  "generated_at": "2026-10-19T04:02:27.0486568+08:00",
+  "evaluated_at": "2026-10-19T04:02:27.0486568+08:00",
   "source_updated_at": "2026-10-15T06:37:27Z",
   "head_sha": "22af7453421fdc02388f3be1a43751ce0fa0416d",
   "title": "build.ps1: pass SolutionDir when building a single project",
   "url": "https://github.com/microsoft/PowerToys/pull/51321",
   "status": {
     "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The clean spelling-checker checkout is now located at the exact workflow action pin. Source inspection shows jq and zip are unconditional dependencies even for a one-file run; they cannot be omitted as upload-only features. The inspected local tool roots lack those utilities and required Perl modules for workflow-equivalent SARIF output. ExtUtils::Manifest is an indirect CPAN-bootstrap failure, not a checker-declared requirement. The exact prerequisite gap and scoped future command are recorded; no spelling run, dependency installation or current-candidate validation has occurred."
+    "label": "Scoped build-script review note",
+    "detail": "One current-revision inline note addresses the omitted inferred SolutionDir for checkout paths containing spaces. Argument captures and evaluation of the affected project establish the project-local intermediate-directory fallback. No actual MSIX contamination, product build or spelling pass is claimed. The eight-request automated review limit is exhausted without convergence; this scoped note is not an approval or a completed whole-PR review."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Manually review the pinned note and remaining build-script changes before choosing whether to post. Preserve explicit caller overrides while passing the inferred property as one argument; do not remove the space guard alone.",
+  "proposed_comments": [
+    {
+      "id": "51321-solutiondir-spaces",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "head_sha": "22af7453421fdc02388f3be1a43751ce0fa0416d",
+      "path": "tools/build/build-common.ps1",
+      "line": 220,
+      "side": "RIGHT",
+      "body": "**[P2] Preserve inferred `SolutionDir` for spaced checkout paths**\n\nWhen the inferred solution directory contains a space, this branch warns and omits `/p:SolutionDir`, and the single-project call to `RunMSBuild` receives no inferred value. On the pinned `PowerRenameContextMenu.vcxproj`, evaluating without that property resolves `SolutionDir` and `IntDir` under the project directory; passing the inferred spaced solution root instead moves `IntDir` under that root. `OutDir` remains under `$(RepoRoot)`, so this is not an `OutDir` relocation. Because the project’s pre-build command runs `MakeAppx.exe pack /d .`, keeping intermediates in the project tree can undermine the isolation intended for package input; actual MSIX contamination was not reproduced. Please pass the inferred solution directory to `RunMSBuild` as a separate parameter and argv element before caller-supplied `ExtraArgs`, so an explicit `/p:SolutionDir` still wins, and reset the value for each project. Do not remove this guard alone: `RunMSBuild` splits `ExtraArgs` on spaces.",
+      "confidence": {
+        "score": 82,
+        "rationale": "Pinned source, argument captures and actual-project property evaluation establish the omitted-property fallback and intermediate-directory placement. Actual package contamination and spelling validation are unverified."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51321",
+      "type": "post_review",
+      "label": "Post inline review note",
+      "source_updated_at": "2026-10-15T06:37:27Z",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "One prose inline comment; no apply-ready patch. Automated review did not converge, and this is not approval readiness.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "22af7453421fdc02388f3be1a43751ce0fa0416d",
+        "comments": [
+          {
+            "id": "51321-solutiondir-spaces",
+            "kind": "inline",
+            "in_diff": true,
+            "severity": "medium",
+            "head_sha": "22af7453421fdc02388f3be1a43751ce0fa0416d",
+            "path": "tools/build/build-common.ps1",
+            "line": 220,
+            "side": "RIGHT",
+            "body": "**[P2] Preserve inferred `SolutionDir` for spaced checkout paths**\n\nWhen the inferred solution directory contains a space, this branch warns and omits `/p:SolutionDir`, and the single-project call to `RunMSBuild` receives no inferred value. On the pinned `PowerRenameContextMenu.vcxproj`, evaluating without that property resolves `SolutionDir` and `IntDir` under the project directory; passing the inferred spaced solution root instead moves `IntDir` under that root. `OutDir` remains under `$(RepoRoot)`, so this is not an `OutDir` relocation. Because the project’s pre-build command runs `MakeAppx.exe pack /d .`, keeping intermediates in the project tree can undermine the isolation intended for package input; actual MSIX contamination was not reproduced. Please pass the inferred solution directory to `RunMSBuild` as a separate parameter and argv element before caller-supplied `ExtraArgs`, so an explicit `/p:SolutionDir` still wins, and reset the value for each project. Do not remove this guard alone: `RunMSBuild` splits `ExtraArgs` on spaces.",
+            "confidence": {
+              "score": 82,
+              "rationale": "Pinned source, argument captures and actual-project property evaluation establish the omitted-property fallback and intermediate-directory placement. Actual package contamination and spelling validation are unverified."
+            }
+          }
+        ]
+      }
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-17T01:06:32.2141881Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-19T04:02:27.0486568+08:00"
   },
   "freshness": {
     "queued_at": "2026-10-16T05:09:51.2832019Z",
@@ -31,5 +79,24 @@
     "number": 1046,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/1046"
   },
-  "fork_branch": "pr-iterate/51321"
+  "fork_branch": "pr-iterate/51321",
+  "validation": {
+    "upstream_head": {
+      "head_sha": "22af7453421fdc02388f3be1a43751ce0fa0416d",
+      "result": "not_run",
+      "detail": "No affected-product build or package target ran. Exact-source PowerShell parsing, argument-capture fixtures and evaluation-only project property queries were performed."
+    },
+    "limitations": [
+      "No actual MSIX contamination reproduction or package creation.",
+      "The earlier candidate-spaces fixture exited successfully, but its raw assertion output was not retained; no stronger evidence is claimed.",
+      "Exact-head spelling validation remains unverified.",
+      "Eight automated requests did not produce a final zero-comment convergence result."
+    ]
+  },
+  "review_coverage": {
+    "actual_request_count": 8,
+    "automated_round_cap": 8,
+    "automated_convergence": false,
+    "approval_ready": false
+  }
 }
