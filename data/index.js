@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-18T12:44:34.6863589+08:00",
+  "generated_at": "2026-10-18T13:16:47.1499332+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 982
   },
   "impact": {
-    "as_of": "2026-10-18T12:44:34.6863589+08:00",
+    "as_of": "2026-10-18T13:16:47.1499332+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -3688,11 +3688,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Product-Advanced Paste",
         "Product-Mouse Without Borders"
       ],
       "assignees": [],
       "created_at": "2026-10-05T23:06:33Z",
-      "updated_at": "2026-10-17T02:35:18Z",
+      "updated_at": "2026-10-18T04:38:27Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
