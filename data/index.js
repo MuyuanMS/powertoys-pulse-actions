@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-19T11:50:57.689963+08:00",
+  "generated_at": "2026-10-19T15:17:27.2060716+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 182,
-    "open_issues": 12265,
-    "community": 11376,
-    "artifacts": 984
+    "open_prs": 181,
+    "open_issues": 12266,
+    "community": 11377,
+    "artifacts": 982
   },
   "impact": {
-    "as_of": "2026-10-19T11:50:57.689963+08:00",
+    "as_of": "2026-10-19T15:17:27.2060716+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -103,7 +103,6 @@ window.BOARD_INDEX = {
     51383,
     51377,
     51375,
-    51373,
     51370,
     51325,
     51323,
@@ -239,7 +238,6 @@ window.BOARD_INDEX = {
     50816,
     50809,
     50804,
-    50801,
     50795,
     50793,
     50791,
@@ -603,7 +601,7 @@ window.BOARD_INDEX = {
     30981,
     48498,
     48496,
-    30974,
+    48493,
     30973,
     48490,
     48488,
@@ -921,7 +919,6 @@ window.BOARD_INDEX = {
     23780,
     48837,
     41294,
-    48493,
     23724,
     6151,
     41103,
@@ -1032,6 +1029,7 @@ window.BOARD_INDEX = {
     1643,
     49135,
     1585,
+    30974,
     5962,
     1489,
     1488,
@@ -1208,7 +1206,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1064,
@@ -1236,7 +1234,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1253,7 +1251,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1068,
+        "fork_title": "[PR 51381] CmdPal: Replace SupersedingAsyncGate with a coalescing runner",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51381",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1068"
+      }
     },
     {
       "id": "pr-51380",
@@ -1273,7 +1279,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1290,7 +1296,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1069,
+        "fork_title": "[PR 51380] CmdPal: Refine superseding value gate lifecycle",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51380",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1069"
+      }
     },
     {
       "id": "pr-51377",
@@ -1361,18 +1375,19 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Mouse Utilities",
         "Product-Mouse Pointer Crosshairs"
       ],
       "assignees": [],
       "created_at": "2026-10-16T22:14:10Z",
-      "updated_at": "2026-10-16T22:14:57Z",
-      "comments": 3,
+      "updated_at": "2026-10-19T07:07:45Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1055,
@@ -1380,49 +1395,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51375",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/1055"
-      }
-    },
-    {
-      "id": "pr-51373",
-      "kind": "pr",
-      "number": 51373,
-      "url": "https://github.com/microsoft/PowerToys/pull/51373",
-      "title": "[UI Tests] Let Calculator settle before verifying foreground in KBM tests",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_blocked",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Keyboard Manager",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-16T21:22:12Z",
-      "updated_at": "2026-10-16T21:22:33Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "UNKNOWN",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 1054,
-        "fork_title": "[PR 51373] [UI Tests] Let Calculator settle before verifying foreground in KBM tests",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51373",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/1054"
       }
     },
     {
@@ -1459,7 +1431,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51370",
@@ -1495,7 +1467,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1053,
@@ -1790,12 +1762,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T06:52:14Z",
-      "updated_at": "2026-10-15T06:52:42Z",
-      "comments": 1,
+      "updated_at": "2026-10-19T05:49:23Z",
+      "comments": 2,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1048,
@@ -2004,7 +1976,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1035,
@@ -2083,7 +2055,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1043,
@@ -2183,7 +2155,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1061,
@@ -3056,7 +3028,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 989,
@@ -3351,12 +3323,11 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-Workspaces",
-        "0.102",
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-08T07:15:54Z",
-      "updated_at": "2026-10-16T14:20:26Z",
+      "updated_at": "2026-10-19T04:17:50Z",
       "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -4038,7 +4009,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -4055,7 +4026,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1070,
+        "fork_title": "[PR 50982] CmdPal: Move global keyboard handling to a dedicated thread",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50982",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1070"
+      }
     },
     {
       "id": "pr-50968",
@@ -4604,7 +4583,7 @@ window.BOARD_INDEX = {
       "number": 50879,
       "url": "https://github.com/microsoft/PowerToys/pull/50879",
       "title": "Add Text Expander module",
-      "author": "randomusername13579",
+      "author": "howdyimgary",
       "state": "open",
       "is_draft": true,
       "is_community": true,
@@ -4798,7 +4777,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 900,
@@ -5496,7 +5475,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 890,
@@ -5803,7 +5782,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 1057,
@@ -6846,15 +6825,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 819,
-        "fork_title": "[PR 49825] Fix uninstall with mixed PowerToys install scopes",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49825-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/819"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49817",
@@ -7206,15 +7177,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 817,
-        "fork_title": "[PR 49412] Add audio feedback using custom .wav files (exact-head review)",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49412-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/817"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49350",
@@ -7655,7 +7618,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 1062,
@@ -23608,8 +23571,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-18T06:34:10Z",
-      "updated_at": "2026-10-18T06:39:40Z",
-      "comments": 0,
+      "updated_at": "2026-10-19T05:55:59Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -29671,8 +29634,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-16T14:38:37Z",
-      "updated_at": "2026-10-16T14:38:37Z",
-      "comments": 0,
+      "updated_at": "2026-10-19T05:34:32Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -44104,14 +44067,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce virtual-desktop overlay"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
@@ -44119,8 +44079,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-26T12:15:57Z",
-      "updated_at": "2026-09-26T12:20:48Z",
-      "comments": 1,
+      "updated_at": "2026-10-19T06:53:35Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -109636,36 +109596,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30974",
+      "id": "issue-48493",
       "kind": "issue",
-      "number": 30974,
-      "url": "https://github.com/microsoft/PowerToys/issues/30974",
-      "title": "GTK+4 GUI made with PyGObject doesn't obey FancyZones",
-      "author": "kitizl",
+      "number": 48493,
+      "url": "https://github.com/microsoft/PowerToys/issues/48493",
+      "title": "Update notification still showing with GPO set to disable notification for updtes",
+      "author": "tglass0508",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "needs_information",
+      "owes": "author",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
-        "Product-FancyZones",
+        "Area-Setup/Install",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-01-15T23:14:16Z",
-      "updated_at": "2024-01-16T12:21:21Z",
-      "comments": 0,
+      "created_at": "2026-06-11T13:48:47Z",
+      "updated_at": "2026-07-10T13:34:14Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -293294,42 +293257,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-48493",
-      "kind": "issue",
-      "number": 48493,
-      "url": "https://github.com/microsoft/PowerToys/issues/48493",
-      "title": "Update notification still showing with GPO set to disable notification for updtes",
-      "author": "tglass0508",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "needs_information",
-      "owes": "author",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Area-Setup/Install",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2026-06-11T13:48:47Z",
-      "updated_at": "2026-07-10T13:34:14Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-27226",
       "kind": "issue",
       "number": 27226,
@@ -324880,13 +324807,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-42638",
+      "id": "issue-51397",
       "kind": "issue",
-      "number": 42638,
-      "url": "https://github.com/microsoft/PowerToys/issues/42638",
-      "title": "Dark mode scheduling doesn't work.",
-      "author": "compito",
-      "state": "closed",
+      "number": 51397,
+      "url": "https://github.com/microsoft/PowerToys/issues/51397",
+      "title": "キーボードマネージャーの動作",
+      "author": "muchomuchosp-lab",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -324903,14 +324830,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Needs-Author-Feedback",
         "Needs-Triage",
-        "duplicate",
-        "Product-LightSwitch"
+        "Product-Keyboard Manager"
       ],
       "assignees": [],
-      "created_at": "2025-10-20T05:54:58Z",
-      "updated_at": "2026-04-30T09:47:48Z",
-      "comments": 2,
+      "created_at": "2026-10-19T04:53:17Z",
+      "updated_at": "2026-10-19T04:57:51Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -385716,6 +385643,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-30974",
+      "kind": "issue",
+      "number": 30974,
+      "url": "https://github.com/microsoft/PowerToys/issues/30974",
+      "title": "GTK+4 GUI made with PyGObject doesn't obey FancyZones",
+      "author": "kitizl",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2024-01-15T23:14:16Z",
+      "updated_at": "2024-01-16T12:21:21Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-9414",
       "kind": "issue",
       "number": 9414,
@@ -392813,6 +392773,40 @@ window.BOARD_INDEX = {
       "created_at": "2022-06-09T07:14:34Z",
       "updated_at": "2026-10-11T16:07:42Z",
       "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-42638",
+      "kind": "issue",
+      "number": 42638,
+      "url": "https://github.com/microsoft/PowerToys/issues/42638",
+      "title": "Dark mode scheduling doesn't work.",
+      "author": "compito",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "duplicate",
+        "Product-LightSwitch"
+      ],
+      "assignees": [],
+      "created_at": "2025-10-20T05:54:58Z",
+      "updated_at": "2026-04-30T09:47:48Z",
+      "comments": 2,
       "priority": null
     },
     {
