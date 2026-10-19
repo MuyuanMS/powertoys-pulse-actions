@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51311",
+  "number": 51311,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triaged",
+  "generated_at": "2026-10-19T07:45:16Z",
+  "evaluated_at": "2026-10-19T07:45:16Z",
+  "source_updated_at": "2026-10-15T01:47:21Z",
+  "title": "Quick Accent doesn't activate anymore after pressing 1, after pressing another character e.g. 2",
+  "url": "https://github.com/microsoft/PowerToys/issues/51311",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a specific sequential-key failure on PowerToys 0.101.2362.0, including loss of further Quick Accent use until the feature is restarted. Current owner code processes numeric keys only when the selected accent language has a mapping and normally clears the active owner on key-up, so the cause is unconfirmed. A low-confidence, testable state-cleanup hypothesis is suitable for a reproduction-first candidate, not an implementation-ready design.",
+    "evidence": [
+      "The reporter says 2 plus left/right opens accent choices, but 1 plus left/right does not show the picker and leaves Quick Accent unusable until manually toggled off and on.",
+      "The reporter identifies PowerToys 0.101.2362, Windows 10 IoT Enterprise build 19045.7807, system installation, and not running as administrator.",
+      "The sole comment is automated triage at 2026-10-15T01:47:20Z; it says the attached archive could not be analyzed as an invalid archive and that public reproduction steps are sufficient. Its contents were not accessed or copied.",
+      "Current upstream PowerAccent source has language-dependent numeric mappings and explicit owner/toolbar reset logic; it does not establish which transition fails."
+    ],
+    "recommended_action": "Run the paired maintainer reproduction with a language that maps both 1 and 2, then trace key-down/key-up and cancel/hide transitions before approving any implementation-grade design.",
+    "evaluated_at": "2026-10-19T07:45:16Z",
+    "source_updated_at": "2026-10-15T01:47:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing upstream fix or MuyuanMS/PowerToys issue, PR, or branch trace was found for #51311. A PowerAccent code change is applicable if reproduction confirms the reported loss of input response; the specific failing transition remains unverified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover Quick Accent after a failed numeric-key gesture",
+      "root_cause": "The reported 2-to-1 sequence followed by feature-wide loss of response is consistent with an incomplete numeric owner gesture leaving KeyboardListener state stale. This is only a hypothesis: current OnKeyUp clears letterPressed and hides the toolbar on a normal active-owner release, and the issue does not state the selected Quick Accent language.",
+      "plan": [
+        "Reproduce on the reported Windows 10 build; record the selected Quick Accent language and activation mode and confirm that both numeric keys have mappings.",
+        "Trace KeyboardListener::OnKeyDown and KeyboardListener::OnKeyUp through 2, navigation, release, 1, navigation, and release; verify that owner cleanup and cancel/hide callbacks clear m_toolbarVisible and letterPressed.",
+        "Only if the trace confirms stale state, correct the specific release/cancel transition so an unsuccessful second digit gesture cannot disable later gestures, while preserving valid selection and normal key forwarding.",
+        "Add a regression for a successful 2 gesture followed by a failed 1 gesture and then another numeric and alphabetic gesture, plus a no-mapping control."
+      ],
+      "verification": [
+        "Run focused PowerAccent unit coverage and a PowerAccent end-to-end test on Windows 10 build 19045 with the reproducing language and activation settings.",
+        "Verify configured 1 and 2 mappings open and navigate the picker, and a failed 1 attempt does not prevent later Quick Accent activation or alter unrelated key input."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The user-visible failure is specific, but selected accent language is unknown and current source has a normal key-up cleanup path; reproduction and state tracing could disprove the hypothesis cheaply."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent reportedly stops opening after a successful digit-key picker sequence is followed by 1, and remains unresponsive until manually restarted.",
+    "known_information": [
+      "PowerToys 0.101.2362 on Windows 10 IoT Enterprise build 19045.7807; system installation; not running as administrator; English (US) keyboard locale.",
+      "Reported sequence uses 2 with left/right to choose accents, then 1 with left/right; the latter shows no picker and Quick Accent must be toggled off/on to recover.",
+      "The sole automated triage comment says the linked archive was rejected as an invalid archive format and considers the public reproduction steps sufficient. Diagnostic contents were not accessed.",
+      "The selected Quick Accent language/character set is not stated; Windows keyboard locale does not establish that setting."
+    ],
+    "inferences": [
+      "A stuck owner/toolbar gesture state is one plausible explanation for feature-wide loss of response, but current source has explicit normal key-up cleanup and no failing transition has been observed.",
+      "Whether the selected language maps both digits 1 and 2 affects whether both gestures should open a picker and which activation branch is exercised."
+    ],
+    "analysis": "The report is concrete enough for maintainer reproduction without requesting another archive. The smallest useful next step is to reproduce with a language that maps both digits, then determine whether the owner-release/cancel lifecycle leaves state behind. Keep the confidence red and do not treat the hypothesis as an implementation-ready design.",
+    "initial_investigation": [
+      "At upstream source head 1b33221dfa19f30d71409eb550807883fb27283a, PowerAccent.Common/CharacterMappings.cs contains numeric mappings for language-specific entries including Special and Pinyin; the configured language is material.",
+      "PowerAccentKeyboardService/KeyboardListener.cpp::OnKeyDown gates a new owner gesture on the configured language mapping and captures activation settings. OnKeyUp clears the active owner and, for a visible toolbar, calls the hide callback and clears visible state. This is counterevidence to assuming an unconditional stale-state bug and narrows the required trace.",
+      "No direct linked issue or fix was cited in the live discussion. Searched MuyuanMS/PowerToys issues, PRs, and branch names; no #51311 trace was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "The Quick Accent selected language/character set and activation mode used for the 2-to-1 sequence.",
+        "why_needed": "Numeric accent mappings vary by selected language, while the issue states only the Windows keyboard locale; this confirms whether both digits should open a picker and which activation branch is involved.",
+        "how_to_collect": "Read the Quick Accent settings page during reproduction; no full settings export or diagnostic archive is needed."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-quick-accent-digit-state-51311",
+      "type": "reproduce",
+      "label": "Reproduce Quick Accent digit-key failure",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "PowerAccent (Quick Accent)",
+        "version_requirement": "First use PowerToys 0.101.2362.0 if available, then verify on the current stable build; target Windows 10 IoT Enterprise build 19045.7807 when available.",
+        "prerequisites": [
+          "Enable Quick Accent and use a configured language with mappings for both 1 and 2 (for example, the Special or Pinyin mappings in current upstream source).",
+          "Use the reported left/right activation behavior and record the Quick Accent activation setting.",
+          "Release all keys between the two digit sequences."
+        ],
+        "steps": [
+          "Start PowerToys and confirm the selected Quick Accent language and activation setting.",
+          "Hold 2 and press left/right to open and navigate the choices; release all keys and verify Quick Accent returns to idle.",
+          "Hold 1 and press left/right; observe whether the picker appears and navigation works.",
+          "If the second sequence fails, test whether a later mapped digit and an alphabetic key can still open Quick Accent before toggling the feature.",
+          "Record KeyboardListener key-down/key-up and show/cancel/hide state transitions; do not capture or publish unrelated user diagnostics."
+        ],
+        "expected_result": "Each configured numeric key opens and navigates its accent choices. A failed second gesture must not leave Quick Accent unusable or prevent a later valid gesture.",
+        "setup_requirements": [
+          "Record the selected Quick Accent language and activation mode; do not infer the feature mapping from the English (US) Windows keyboard locale.",
+          "Run on the reported Windows build when possible, then compare with the current stable build."
+        ]
+      }
+    },
+    {
+      "id": "design-51311",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation only after the paired reproduction confirms a PowerAccent state-cleanup defect; this action does not write upstream."
+    }
+  ],
+  "pending_author": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Candidate only; no upstream or dashboard write was made."
+  }
+}

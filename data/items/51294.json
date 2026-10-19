@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 5,
+  "number": 51294,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-10-19T07:42:05.627Z",
+  "evaluated_at": "2026-10-19T07:42:05.627Z",
+  "source_updated_at": "2026-10-14T06:58:55Z",
+  "title": "Keyboard Manager doesn't take the physical keyboard layout into account",
+  "url": "https://github.com/microsoft/PowerToys/issues/51294",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "status": {
+    "glyph": "🧪",
+    "label": "Reproduce locally",
+    "detail": "Repro steps are specific; the key-event path is not yet grounded enough for a design."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Reproduce across layouts",
+    "reason": "Verify the reported Japanese-keyboard/French-layout behavior and capture key identities before designing a fix."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a concrete two-layout repro, and the only follow-up says the Store reports 0.98.1 as current. Focused source review found active-HKL-dependent key-name lookup, but did not trace the low-level remap event path; that is not enough to assert a root cause.",
+    "evidence": [
+      "Reporter identifies PowerToys 0.98.1, Microsoft Store, Windows 11 Home 25H2, a physical Japanese keyboard, and registered Japanese QWERTY plus French AZERTY layouts.",
+      "Reporter remaps IME Convert and Non-Convert to Space; the remaps work in Japanese layout and produce no output in French AZERTY.",
+      "The issue includes a diagnostic ZIP; the public automated triage comment says archive validation failed. No private diagnostic contents are reproduced here.",
+      "The author replied that the Store reports 0.98.1 as up to date; this is the latest issue activity."
+    ],
+    "recommended_action": "Reproduce on a current supported build with both layouts and trace the physical scan code and virtual-key values at the Keyboard Manager input/remap boundary; only then choose a code change.",
+    "evaluated_at": "2026-10-19T07:42:05.627Z",
+    "source_updated_at": "2026-10-14T06:58:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching MuyuanMS fork issue, PR, or branch was found. A repository change may be appropriate if the reported physical key loses a stable identity across the active-layout boundary; this remains a red hypothesis pending maintainer reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Convert and Non-Convert key identity across input layouts",
+      "root_cause": "Hypothesis only: Windows may deliver a different or absent virtual-key identity for these physical Japanese keys when French AZERTY is active, causing the configured Keyboard Manager mapping not to match.",
+      "plan": [
+        "Trace the Keyboard Manager low-level input and remap path for the physical Convert and Non-Convert keys under Japanese QWERTY and French AZERTY; record scan-code and virtual-key identity before/after layout switching.",
+        "If the active layout changes the identity used for matching, preserve the physical scan-code identity for these special keys at the remap boundary without changing unrelated virtual-key mappings.",
+        "Add focused coverage for both active layouts and verify both physical keys still emit the configured Space output."
+      ],
+      "verification": [
+        "Repeat the reported mapping on a current supported build with Japanese and French layouts installed; verify both keys emit a space in each layout.",
+        "Run focused Keyboard Manager key-remapping tests covering the physical key identity and existing virtual-key behavior."
+      ],
+      "confidence": {
+        "score": 39,
+        "level": "red",
+        "rationale": "The issue is directly reproducible from the supplied steps, but inspected code only proves key-name lookup uses the active HKL; it does not establish that this is the runtime remap failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Two physical Japanese IME keys are remapped to Space, but the mapping stops working after switching the active Windows input layout to French AZERTY.",
+    "known_information": [
+      "The reporter names PowerToys 0.98.1 from Microsoft Store and Windows 11 Home 25H2.",
+      "The physical keyboard is Japanese; the registered layouts are Japanese QWERTY and French AZERTY.",
+      "IME Convert and Non-Convert remapped to Space work under Japanese layout and emit nothing under French AZERTY.",
+      "A public bot comment says the attached bug-report archive failed archive validation; the reporter then said Store update reports 0.98.1 as current."
+    ],
+    "inferences": [
+      "The dependence on active layout is consistent with the OS or remap path presenting these special physical keys differently across HKLs, but this has not been confirmed at the input hook.",
+      "An active issue about Keyboard Manager profiles and IMEs (#33774) is a related feature discussion, not the same physical-key remapping failure."
+    ],
+    "analysis": "The public repro distinguishes the failure by active input layout, so maintainer-side reproduction and event identity tracing are more useful than requesting another general diagnostic archive. Current source provides one layout-sensitive clue but not proof of the failing remap path.",
+    "initial_investigation": [
+      "At upstream commit 1b33221dfa19f30d71409eb550807883fb27283a, src/common/interop/keyboard_layout.cpp::LayoutMap::LayoutMapImpl::UpdateLayout reads GetKeyboardLayout(0) and uses ToUnicodeEx to generate key names. This is confirmed layout-dependent key-name lookup, not evidence of the low-level remap input failure.",
+      "Checked related issue #33774 (IME/profile feature request), #32344 (different Japanese IME/modifier remap behavior), and closed #17015 (older Japanese keyboard key mapping); none establishes the same failure or a fix.",
+      "No upstream PR/timeline cross-reference or matching MuyuanMS fork issue, PR, or branch was found for #51294."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Keyboard Manager fix design"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the two-layout key mismatch",
+      "note": "The public report has a specific reproducer; validate the input identity before committing to a fix.",
+      "reproduce": {
+        "title": "Verify Convert and Non-Convert remaps across Japanese and French layouts",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.101.2362 or current supported stable build",
+        "prerequisites": [
+          "Windows 11 with a Japanese physical keyboard.",
+          "Install and register both Japanese QWERTY and French AZERTY input layouts.",
+          "Enable Keyboard Manager and remap IME Convert and IME Non-Convert to Space."
+        ],
+        "setup": [
+          "Start with Japanese QWERTY active and confirm the two remaps work before switching layouts."
+        ],
+        "steps": [
+          "Switch the active Windows input layout to French AZERTY.",
+          "Press the physical Convert key and then the physical Non-Convert key in a text field.",
+          "Repeat with Japanese QWERTY active as the control.",
+          "If the failure reproduces, trace scan-code and virtual-key identity at the Keyboard Manager input/remap boundary for both layouts."
+        ],
+        "expected_result": "Both physical keys emit a space in both layouts, or the trace identifies the exact point at which their remap identity changes."
+      }
+    }
+  ]
+}

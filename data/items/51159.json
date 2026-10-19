@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 5,
+  "number": 51159,
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/51159",
+  "title": "constantly re-enabling features I do NOT want",
+  "evaluated_at": "2026-10-19T07:35:47Z",
+  "source_updated_at": "2026-10-13T12:01:10Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The reporter and commenters describe disabled modules returning to defaults after suspected updates/reboots, but neither the exact modules nor a repeatable trigger is identified. Source inspection confirms per-module persisted state and explicit Group Policy overrides, but does not establish a defect that re-enables a saved false value. A targeted recurrence trace is needed before proposing a code fix.",
+    "evidence": [
+      "The reporter identifies PowerToys 0.101.2362 from Microsoft Store and suspects updates; two commenters report resets around updates/reboots, including a FancyZones-only user.",
+      "Settings UI serializes individual enabled modules under the GeneralSettings enabled object; the EnabledModules model has default-on values for some modules.",
+      "Runner apply_module_status_update writes a changed module state to the enabled settings object and applies a configured Group Policy state when present; no issue evidence identifies a policy or a specific module-state transition."
+    ],
+    "recommended_action": "Request the specific modules and exact update/restart/runtime event, plus a fresh /bugreport captured immediately after the next recurrence; do not propose a root cause until that evidence distinguishes settings loss from runtime or policy re-enablement."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report describes a plausible bug, but current evidence does not scope a reproducible code path or support a concrete fix plan. Reassess after the targeted state/trigger evidence arrives."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter says several disabled PowerToys features return to their defaults, apparently around app updates; commenters similarly report resets after updates or reboots, but the modules and exact timing are not pinned down.",
+    "known_information": [
+      "The reporter used PowerToys 0.101.2362 from Microsoft Store and suspects the behavior occurs on app updates.",
+      "One commenter says enabled/disabled functions revert around app updates or reboots; another says default apps came back between reboots while they primarily use FancyZones.",
+      "No diagnostic ZIP or specific module list is present in the issue body or discussion."
+    ],
+    "inferences": [
+      "The reports may share a module-state persistence problem, but the exact transition and whether state changes at update, startup, or runtime remain unknown.",
+      "Current source shows persisted per-module booleans and policy-enforced states; neither path is established as the cause in these reports."
+    ],
+    "analysis": "The comments provide useful corroboration and suggest update/reboot timing, but do not identify the same set of features or a common event sequence. Since the settings model already persists module state and the runner can apply policy overrides, exact before/after modules and timing are needed before selecting a non-speculative fix.",
+    "initial_investigation": [
+      "Inspected Settings.UI.Library/EnabledModules.cs and GeneralSettings.cs: feature enabled values are modeled individually under the serialized enabled property, with defaults that vary by module.",
+      "Inspected runner/general_settings.cpp: explicit module changes update the saved enabled object, while a configured Group Policy rule can override a requested status.",
+      "No diagnostic archive or matching open fork issue/PR was found for #51159; fork issue and PR searches returned no matching mirror."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Name the specific modules that were disabled and which ones returned to enabled, and state whether each was changed from the PowerToys dashboard or another configuration method.",
+        "why_needed": "The modules and source of the state change determine which persisted setting and runner path to inspect.",
+        "how_to_collect": "After the next recurrence, record the module names and before/after states; include whether the device is organization-managed or PowerToys policy is configured."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Clarify whether re-enabling occurs immediately after a PowerToys update, after a Windows/PowerToys restart, or later while PowerToys stays running; include the version at recurrence.",
+        "why_needed": "This distinguishes an upgrade/settings-load path from startup or in-session re-enablement.",
+        "how_to_collect": "Record the event immediately before the next observed reset and the PowerToys version shown at that time."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic ZIP captured immediately after the next recurrence.",
+        "why_needed": "The report lacks state-transition details needed to investigate the runner/settings path.",
+        "how_to_collect": "Immediately after reproducing, comment /bugreport, then attach the generated ZIP."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm re-enabled modules and trigger",
+      "comment": {
+        "body": "Thanks for reporting PowerToys 0.101.2362 from the Microsoft Store and noting that you suspect app updates. Other commenters report similar resets around updates or reboots, including one who mainly uses FancyZones. To tell whether a saved module state is being lost or a module is being re-enabled at startup or while running, could you please:\n\n1. Name the specific modules you turned off and which came back on, and say whether you changed them in the PowerToys dashboard or another configuration method.\n2. Confirm what happened immediately before the reset (PowerToys update, Windows/PowerToys restart, or time passing while PowerToys stayed running), and the version shown when it recurred. If this is an organization-managed device or PowerToys policy is configured, please mention that too.\n3. After the next recurrence, comment `/bugreport` immediately and attach the generated ZIP so it captures the state close to the event."
+      }
+    }
+  ],
+  "generated_at": "2026-10-19T08:14:15.3938428Z"
+}

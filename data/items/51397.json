@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 5,
+  "number": 51397,
+  "kind": "issue",
+  "title": "キーボードマネージャーの動作",
+  "url": "https://github.com/microsoft/PowerToys/issues/51397",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-19T07:35:57Z",
+  "evaluated_at": "2026-10-19T07:35:57Z",
+  "source_updated_at": "2026-10-19T04:57:51Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Two symptoms are described in Japanese and diagnostic ZIPs are already supplied, but the exact intended physical-key mappings and meaning of 'cannot delete' are not specified. Ask for those discriminators rather than another ZIP or a translation-only response.",
+    "evidence": [
+      "The body reports PowerToys 0.100.0 from Microsoft Store on Windows build 26300, elevated, per-user, with Japanese language and locale.",
+      "The author describes being unable to remove a j/slash remapping and not obtaining '?' from remapped slash plus remapped Shift; expected/actual sections are empty.",
+      "Two public diagnostic attachment links are already present. Both were downloaded privately and verified to contain the same archive.",
+      "There is one automated comment asking for translation and a stable-version retest; no author reply follows. Needs-Author-Feedback is currently present.",
+      "The editor's deletion transaction can fail at several distinct checks; a warning alone does not identify which check failed or explain the separate shifted-symbol behavior."
+    ],
+    "recommended_action": "Ask in Japanese, with an English direct-request lead-in, for exact mapping direction/layout and a short deletion sequence/current-version result. Do not propose an ungrounded keycode or persistence fix.",
+    "evaluated_at": "2026-10-19T07:35:57Z",
+    "source_updated_at": "2026-10-19T04:57:51Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A specific PowerToys fix is not yet scoped: deletion and shifted punctuation may be separate problems, and intended key direction, active layout and deletion outcome remain ambiguous. Existing diagnostics are not a substitute for those behavioral facts."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Japanese Keyboard Manager report combines an undeletable key mapping with a remapped Shift/slash sequence that does not produce a question mark. The existing archives avoid a repeat diagnostics request, but expected mappings and the exact failure transition remain unclear.",
+    "known_information": [
+      "Reported version 0.100.0; Microsoft Store installation; elevated per-user execution; Windows build 26300; Japanese OS language and locale.",
+      "The report names j, /, 」, Alt and Shift in its description but does not give an unambiguous physical-key source-to-target table.",
+      "Both ZIP attachment links resolve to the same archive; the relevant Keyboard Manager diagnostic/configuration material was inspected privately.",
+      "The expected and actual behavior fields are empty. No screenshot or recording of the delete operation is supplied.",
+      "The issue is open and unassigned, with Product-Keyboard Manager, Needs-Triage and Needs-Author-Feedback labels; no author reply follows the automated comment."
+    ],
+    "inferences": [
+      "Japanese OS locale alone does not establish a JIS physical keyboard, active Windows keyboard layout, or IME mode.",
+      "Failure to delete and failure to synthesize shifted punctuation should be investigated independently until a shared cause is demonstrated.",
+      "A generic deletion warning cannot establish a particular failed transaction stage or justify changing virtual-key conversion."
+    ],
+    "analysis": "The report is understandable enough to ask a focused Japanese follow-up, not to require an English rewrite. Request only exact physical mappings/layout and the observable deletion transition/current-version result; do not ask for the supplied archive again or repeat diagnostic contents.",
+    "initial_investigation": [
+      "Read the complete live body and sole automated comment; inspected both linked ZIPs privately and verified identical hashes without publishing their configuration or log contents.",
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs and Interop/KeyboardMappingService.cs at upstream main 1b33221dfa19f30d71409eb550807883fb27283a, plus RemappingHelper.cs.",
+      "DeleteMapping_Click confirms deletion then calls HandleRemappingDelete; DeleteMappingTransaction returns false for lock/reload failure, missing mapping identity, or later transaction failure. No one cause can be inferred from the UI symptom.",
+      "Current-main source is not evidence that the reporter's 0.100.0 runtime used the same implementation or that any later change fixes it.",
+      "No timeline cross-reference, issue-number-matched upstream PR, or matching MuyuanMS/PowerToys issue/PR/branch trace was found. No canonical main artifact exists."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Exact physical source key to target key for each involved remapping, JIS/US physical keyboard, active Windows keyboard layout and IME on/off state, and the actual output of the attempted '?' combination.",
+        "why_needed": "Distinguishes mapping-direction ambiguity and layout-dependent shifted punctuation from a reproducible remapping defect.",
+        "how_to_collect": "Reply with a small source -> target table or a cropped Keyboard Manager screenshot with unrelated mappings hidden, then name the physical keyboard/layout, IME state and keys pressed together."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact delete operation and outcome, including whether the row remains immediately, returns only after reopening, or has gone while remapping remains active; whether each symptom still occurs on current stable.",
+        "why_needed": "Separates editor transaction failure, saved-state restoration and engine state, and establishes whether the old-version report remains current.",
+        "how_to_collect": "After updating from the official Microsoft Store/GitHub release if possible, provide numbered delete/confirm/close/reopen steps and observed result, or a short cropped recording; if unable to update, say so."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-key-sequence-51397",
+      "type": "request_info",
+      "label": "Confirm physical key mappings and deletion behavior",
+      "comment": {
+        "body": "Thank you for the two ZIP links and the Japanese description. Please confirm the exact key mappings and deletion behavior below; another ZIP or an English rewrite is not needed for this question.\n\n診断ZIPと日本語の説明ありがとうございます。削除できない問題と「?」を入力できない問題を切り分けるため、次の2点を教えてください。\n\n1. 対象の各設定を「物理的に押すキー → 割り当て先キー」の表で示してください（j、/、」と、Alt/Shiftの設定）。対象部分だけのスクリーンショットでも構いません。JIS/USなどの物理キーボード、Windowsで選択中のキーボード配列、IMEのオン/オフ、および「?」を入力するために実際に同時押ししたキーと出力された文字（または何も出ないこと）も教えてください。日本語のWindowsであることだけでは、使用中の配列を特定できません。\n2. 可能であればMicrosoft Storeまたは公式GitHubリリースから現在の安定版へ更新し、両方の症状が残るか確認してください。削除操作については、削除・確認・エディターを閉じる・開き直す順に、どの時点で行が残る／戻るのかを番号付きの手順、または対象部分だけの短い録画で示してください。行は消えるのにキーの割り当てだけ残る場合も、そのように教えてください。更新できない場合はその旨をお知らせください。\n\nこれにより、配列による記号入力の違いと、削除・保存・実行中の状態のどこで問題が起きているかを区別できます。画像や録画はGitHubのWeb画面から添付し、無関係な設定や個人情報は隠してください。"
+      }
+    }
+  ]
+}

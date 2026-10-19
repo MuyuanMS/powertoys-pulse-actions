@@ -2,159 +2,52 @@
   "schemaVersion": 5,
   "number": 50149,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "evaluated_at": "2026-09-04T10:45:19Z",
-  "source_updated_at": "2026-09-03T12:58:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50149",
   "title": "SHIFT(hold) + NUMBER not working to switch between Fancy zones personal layouts",
+  "evaluated_at": "2026-10-19T07:35:47Z",
+  "source_updated_at": "2026-10-13T09:29:27Z",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The regression is localized to the drag-time FancyZones keyboard condition and has a safe state boundary.",
+    "status": "duplicate_or_handled",
+    "rationale": "The reported Shift+number / number-during-drag regression is covered by an open fork design trace and an upstream draft PR proposing the matching FancyZones change. This is in-progress coverage, not a resolved or merged fix. Later comments also mention separate Explorer zoning/persistence symptoms, which are not covered by that PR.",
     "evidence": [
-      "The report says Shift+number and secondary-button-then-number stopped changing layouts in version 0.101.2362.",
-      "Related Issue 21277 documents drag-time quick layout switching as existing behavior.",
-      "Current FancyZones code requires Win+Ctrl+Alt+digit for the drag-time path; blame points to PR 48569."
+      "The body describes Shift+number failing while dragging in v0.101.2362.0; comments confirm the secondary-button flow, report workarounds, and include later Explorer placement symptoms.",
+      "Live fork issue #633 contains an approved design for the same drag-time quick-layout path and identifies FancyZones::OnKeyDown plus the modifier guard.",
+      "Upstream draft PR #50695 is open and changes src/modules/fancyzones/FancyZonesLib/FancyZones.cpp to restore the prior bare-digit drag path; the scope matches the primary symptom.",
+      "Focused source inspection shows FancyZones::OnKeyDown requires Win+Ctrl+Alt even while dragging; merged PR #48569 introduced that guard. PR #50695 remains draft and unmerged."
     ],
-    "recommended_action": "Approve the fork design for implementation."
+    "recommended_action": "Reuse the existing fork design and PR #50695; do not create a competing design. Keep unrelated Explorer placement/persistence reports distinct and do not represent them as fixed by this PR."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt covers the over-restrictive active-drag condition.",
-    "existing_fix_urls": []
+    "status": "existing_fix",
+    "rationale": "An existing approved fork-side design and an open upstream draft PR target the exact reported FancyZones drag-time layout-switch regression; coverage is pending and limited to that behavior.",
+    "existing_fix_urls": [
+      "https://github.com/MuyuanMS/PowerToys/issues/633",
+      "https://github.com/microsoft/PowerToys/pull/50695"
+    ]
   },
-  "proposed_fixes": [
-    {
-      "title": "Restore safe quick-layout switching during an active FancyZones drag",
-      "root_cause": "PR 48569 changed the drag-time digit condition to require Win+Ctrl+Alt, so the historical Shift+number and secondary-button drag paths fall through.",
-      "plan": [
-        "In FancyZones::OnKeyDown, distinguish a live move-size session from stale DraggingState by requiring both IsDragging and a non-null active WindowMouseSnap.",
-        "Accept digit and numpad digit during that live session while retaining Win+Ctrl+Alt+digit outside a drag.",
-        "Add regressions for Shift and secondary-button switching plus the stale-drag number-key safety case."
-      ],
-      "verification": [
-        "During a window drag, Shift+2 changes to layout 2 and a secondary-button drag followed by 1 changes to layout 1.",
-        "After a window is destroyed mid-drag, digits typed in another application are not consumed by FancyZones."
-      ],
-      "confidence": {
-        "score": 88,
-        "level": "green",
-        "rationale": "The issue behavior, related historical behavior, current condition, and regression commit align directly."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "A FancyZones regression removed the simple drag-time layout shortcuts that let users switch personal layouts while positioning a window.",
+    "summary": "The original report and several replies describe loss of the earlier number-key layout switch during a FancyZones drag; the discussion also contains separate window-placement complaints.",
     "known_information": [
-      "The affected release is 0.101.2362.0.",
-      "The affected module is FancyZones.",
-      "The reporter can still switch layouts with Win+Alt+Ctrl+number, but that is not usable during the reported drag flow.",
-      "Related Issue 21277 establishes that drag-time quick switching was previously supported."
+      "The reporter identified PowerToys v0.101.2362.0 and said Shift+number stopped switching personal layouts while moving windows.",
+      "Commenters describe the same loss with the non-primary mouse-button drag flow; others report the Win+Ctrl+Alt+number workaround or a Keyboard Manager remapping workaround.",
+      "One commenter says downgrading to v0.100.2 restored the shortcut for a period; another says the latest preview still had the problem.",
+      "A later comment reports separate Explorer/Obsidian zone-placement and post-restart placement symptoms; those are not the same behavior as the reported drag-time hotkey regression.",
+      "Fork issue #633 has an approved design, and upstream PR #50695 remains open as a draft."
     ],
     "inferences": [
-      "The regression is more likely an over-broad keyboard guard than a failure to recognize the configured layouts.",
-      "The live WindowMouseSnap object is a safer activity signal than DraggingState alone."
+      "The primary shortcut regression is strongly consistent with the Win+Ctrl+Alt guard added to FancyZones drag-time layout switching.",
+      "The open PR is likely to address the primary shortcut symptom, but no merged fix or runtime verification is evidenced; the separate Explorer placement reports may have another cause."
     ],
-    "analysis": "The current code path still handles digit selection, but its drag branch now requires three modifiers. Restricting bare digits to a live snapper preserves the stale-state protection that motivated the regression change while restoring the documented interaction.",
+    "analysis": "The present source and existing proposal point to the same narrowly scoped FancyZones keyboard condition, so a second design would duplicate active work. The issue discussion has broadened beyond that condition; only the original drag-time shortcut symptom is covered by the existing trace.",
     "initial_investigation": [
-      "Local source inspection identified FancyZones::OnKeyDown, MoveSizeStart/End, and DraggingState as the control flow.",
-      "Git blame tied the changed condition to commit dd26d86580 / PR 48569.",
-      "Fork mirror Issue 633 contains the detailed design and adversary approval."
+      "Inspected FancyZonesLib/FancyZones.cpp::FancyZones::OnKeyDown: the drag branch requires Win, Ctrl, Alt, and a digit; the non-drag branch separately retains the modifier shortcut.",
+      "Read upstream PR #48569, which introduced the guard while fixing stuck-drag key capture, and open draft PR #50695, which proposes restoring the prior drag behavior.",
+      "Read live MuyuanMS/PowerToys issue #633; it already contains an approved design for the same behavior. No matching fork PR was found.",
+      "Read the complete current issue body and comments, including reports of additional Explorer placement symptoms; no diagnostic archive was needed for this source-confirmed hotkey path."
     ],
     "information_gaps": []
   },
-  "design": {
-    "root_cause": "FancyZones::OnKeyDown treats drag-time quick-layout switching as valid only when Win, Ctrl, and Alt are pressed. That condition was introduced to prevent stale drag state from stealing number keys, but it also rejects the active-drag Shift+number and secondary-button+number behaviors.",
-    "evidence": [
-      "[Observed] The reporter reproduces the regression only after version 0.101.2362.",
-      "[Observed] Related Issue 21277 records the prior drag-time behavior.",
-      "[Observed] Current source has the restrictive modifier condition; git blame identifies PR 48569.",
-      "[Inferred] A non-null WindowMouseSnap during move-size is the appropriate additional liveness guard."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
-        "purpose": "Handles keyboard input and move-size lifecycle.",
-        "symbols": [
-          "FancyZones::OnKeyDown",
-          "FancyZones::MoveSizeStart",
-          "FancyZones::MoveSizeEnd"
-        ]
-      },
-      {
-        "path": "src/modules/fancyzones/FancyZonesLib/DraggingState.cpp",
-        "purpose": "Tracks whether a drag interaction is active.",
-        "symbols": [
-          "DraggingState::IsDragging",
-          "DraggingState::Enable",
-          "DraggingState::Disable"
-        ]
-      },
-      {
-        "path": "src/modules/fancyzones/FancyZones.UITests/DragWindowTests.cs",
-        "purpose": "Provides drag and layout-switching regression coverage.",
-        "symbols": [
-          "new drag-time quick-layout regression tests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
-        "symbols": [
-          "FancyZones::OnKeyDown"
-        ],
-        "current_behavior": "The drag branch requires Win+Ctrl+Alt+digit, so Shift+digit and secondary-button+digit are ignored.",
-        "change": "Allow a digit only when DraggingState reports a drag and the active WindowMouseSnap exists; keep the modifier-heavy path for non-drag input.",
-        "code_block": "bool activeDrag = m_draggingState.IsDragging() && m_windowMouseSnapper != nullptr;\\nbool quickLayout = digitPressed != -1 && (activeDrag || (!dragging && win && ctrl && alt));\\nif (quickLayout) { PostQuickLayoutKey(digitPressed); }",
-        "edge_cases": [
-          "Clear or reject the path when a window is destroyed and the snapper is null.",
-          "Preserve numpad digit handling and existing quick-layout trace events.",
-          "Do not consume ordinary digits outside a live drag."
-        ],
-        "tests": [
-          "Add Shift+digit during drag coverage.",
-          "Add secondary-button-then-digit coverage.",
-          "Preserve the destroy-mid-drag number typing regression."
-        ]
-      }
-    ],
-    "verify": [
-      "Build FancyZonesLib with tools\\build\\build.ps1 -Platform x64 -Configuration Release -Project src\\modules\\fancyzones\\FancyZonesLib\\FancyZonesLib.vcxproj.",
-      "Build and run the existing FancyZones native tests with vstest.console.exe after locating the produced test DLL.",
-      "Enable two personal layouts, drag a window, press Shift+2, and confirm layout 2 is active without ending the drag.",
-      "Destroy or abort a drag, focus Notepad, and confirm number keys type normally."
-    ],
-    "risks": [
-      "A stale active-drag signal could capture digits; requiring the live snapper and clearing it on every move-size exit limits that risk.",
-      "UI tests need an interactive desktop and clean FancyZones settings."
-    ],
-    "alternatives": [
-      "Keeping Win+Ctrl+Alt during drag preserves the regression but breaks existing behavior.",
-      "Adding a new setting increases surface area and does not fix the accidental guard."
-    ]
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 633,
-    "fork_title": "[Issue 50149] FancyZones quick layout switching during drag",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/633"
-  },
-  "adversary": {
-    "rounds": 1,
-    "verdict": "No blocking objections; approve design.",
-    "notes": "The live snapper guard retains the stale-state protection."
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design for Issue 50149",
-      "mirror_issue": 633,
-      "comment": {
-        "body": "Approve the fork-side FancyZones design for Issue 50149 and allow the implementation workflow to begin."
-      }
-    }
-  ]
+  "actions": [],
+  "generated_at": "2026-10-19T08:14:15.3790264Z"
 }

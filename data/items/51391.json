@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 5,
+  "number": 51391,
+  "kind": "issue",
+  "title": "Mouse Without Borders: Service fails to start when user profile path contains a space / non-ASCII character",
+  "url": "https://github.com/microsoft/PowerToys/issues/51391",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-10-19T07:35:57Z",
+  "evaluated_at": "2026-10-19T07:35:57Z",
+  "source_updated_at": "2026-10-18T17:49:47Z",
+  "pending_author": false,
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The space-containing profile path overlaps issue 51160 and its existing draft fix, PR 51163. However, the reported service immediately stopping and the possible non-ASCII contribution are not established as covered by that PR. Consolidate investigation without claiming the entire report is fixed or that Unicode is the cause.",
+    "evidence": [
+      "The reporter says service mode fails while non-service mode works, and manually quoting the service ImagePath argument did not resolve the failure.",
+      "In https://github.com/microsoft/PowerToys/issues/51391#issuecomment-6253134824 the reporter confirms standalone Mouse Without Borders works, explicitly relates this report to issue 51160, and asks to retain the non-ASCII observation.",
+      "https://github.com/microsoft/PowerToys/issues/51160 documents argument truncation in Worker.RunMeUnderSystemAccount for space-containing profile paths.",
+      "https://github.com/microsoft/PowerToys/pull/51163 is an open draft at head d662b8589740bbcbb3c1eb879e658152daf1f671. Its diff quotes the child-process LocalAppData argument and fixes a missing desktop/path separator; it does not change service registration.",
+      "The live issue is open, unassigned, and labeled Needs-Team-Response rather than Needs-Author-Feedback."
+    ],
+    "recommended_action": "Post a related-work explanation linking issue 51160 and draft PR 51163, explicitly preserving the service-exit and non-ASCII observations as additional validation cases.",
+    "evaluated_at": "2026-10-19T07:35:57Z",
+    "source_updated_at": "2026-10-18T17:49:47Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Draft PR 51163 is a concrete existing fix attempt for the overlapping child-process argument-quoting defect. Its coverage is partial: neither a non-ASCII-specific defect nor the reported immediate service exit has been verified as resolved.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51163"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Mouse Without Borders service mode fails on a Windows profile containing both a space and an accented character. Correcting the registered service argument alone did not help. The reporter subsequently switched successfully to standalone Mouse Without Borders and requested consolidation with the existing spaces-in-profile report.",
+    "known_information": [
+      "Reported PowerToys version is 0.102.2862, installed machine-wide through WinGet, on Windows 11 build 26300.",
+      "The same machines connect without service mode; a second machine without spaces or special characters works in service mode.",
+      "The service reportedly stops immediately even after the service ImagePath argument is quoted.",
+      "No diagnostic ZIP is attached.",
+      "The automated comment at 2026-10-18T17:21:20Z requested a PowerToys bug report ZIP. The reporter replied at 2026-10-18T17:49:35Z: \"The zip file would not add any useful information to this bug.\"",
+      "PR 51163 remains a draft and has not been presented as a released fix."
+    ],
+    "inferences": [
+      "Quoting only the service registration argument can leave the separately constructed child-process command lines unfixed.",
+      "Because the affected account contains both a space and an accented character, the report does not independently demonstrate a Unicode handling defect.",
+      "The immediate service exit may require investigation beyond the connection/configuration mismatch documented in issue 51160."
+    ],
+    "analysis": "Existing work should receive this additional test case rather than creating a competing plan. The reporter has already answered the automated ZIP request and supplied a concrete reproduction scenario; another blanket request for the same ZIP is not justified by this pass.",
+    "initial_investigation": [
+      "Read the entire issue and both comments, including the author's response to the automated diagnostic request.",
+      "Read issue 51160 and its discussion, and inspected PR 51163's body, state, head and complete diff.",
+      "In src/modules/MouseWithoutBorders/ModuleInterface/dllmain.cpp, service registration and the LocalAppData argument are constructed separately from the child-process command lines in App/Service/Worker.cs.",
+      "Worker.RunMeUnderSystemAccount contains the unquoted LocalAppData arguments and missing separator addressed by PR 51163.",
+      "No cross-reference timeline entries were present on issue 51391.",
+      "Fresh pass: confirmed current upstream main 1b33221dfa19f30d71409eb550807883fb27283a still has unquoted child LocalAppData command-line concatenation in Worker.RunMeUnderSystemAccount.",
+      "Re-read the complete live body/comments and linked issue 51160. PR 51163 remains OPEN/DRAFT at d662b8589740bbcbb3c1eb879e658152daf1f671, updated 2026-10-09T22:28:28Z; inspected its complete two-hunk diff.",
+      "Current service registration in ModuleInterface/dllmain.cpp uses a separately constructed command line; PR 51163 does not alter that code.",
+      "Searches of MuyuanMS/PowerToys issues, PRs and branch refs found no issue-number-matched trace; existing upstream PR coverage is nevertheless sufficient to avoid a competing design.",
+      "No canonical main artifact exists for this issue number."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Explain related service-path fix and remaining coverage",
+      "comment": {
+        "body": "Thanks for testing the quoted service ImagePath and explaining that standalone Mouse Without Borders works. This overlaps https://github.com/microsoft/PowerToys/issues/51160, with an existing draft fix at https://github.com/microsoft/PowerToys/pull/51163.\n\nThere are two separate argument boundaries: the registered service command line and the command lines used by the service to launch Mouse Without Borders on the Windows desktops. PR 51163 addresses the latter, so quoting ImagePath alone does not test that fix.\n\nWe should retain your space-plus-accented-character profile as an additional validation case for that work. The immediate service exit and any non-ASCII-specific failure are not yet shown to be resolved by the draft PR; this should not be treated as a confirmed released fix or a proven Unicode root cause."
+      }
+    },
+    {
+      "id": "reproduce-51391",
+      "type": "reproduce",
+      "label": "Validate existing service-path fix and Unicode boundary",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "prerequisites": [
+          "Two Windows test machines; machine-wide PowerToys with service-mode permissions; use non-personal disposable test accounts.",
+          "Compare reporter build 0.102.2862 with a maintainer-built candidate of existing PR 51163, not a competing new implementation.",
+          "Use account/profile names with ASCII/no-space, ASCII+space, non-ASCII/no-space and non-ASCII+space to separate the two variables."
+        ],
+        "steps": [
+          "1. In each test account pair the machines and confirm non-service mode connectivity.",
+          "2. Enable Use Service and record separately the Windows service state and whether the remote connection survives.",
+          "3. Inspect the registered service command-line boundary separately from the child-process arguments and the configuration location actually selected; do not publish keys or private account paths.",
+          "4. Repeat with PR 51163's existing candidate and compare all four account-name variants. Preserve an immediate service exit as a separate failure if it remains.",
+          "5. Do not classify the non-ASCII-specific or service-exit behavior as fixed until this matrix succeeds."
+        ],
+        "expected": "Service mode remains running and retains connectivity using the correct user's settings for every account-name variant; any remaining failure is attributed to the boundary observed, not presumed to be Unicode."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Mouse Without Borders"
+  ]
+}

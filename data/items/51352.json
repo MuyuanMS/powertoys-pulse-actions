@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 5,
+  "number": 51352,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "title": "Command Palette: running, but UI doesn't work",
+  "url": "https://github.com/microsoft/PowerToys/issues/51352",
+  "state": "OPEN",
+  "stage": "triage",
+  "pending_author": false,
+  "evaluated_at": "2026-10-19T07:35:05.083767Z",
+  "generated_at": "2026-10-19T07:35:05.083767Z",
+  "source_updated_at": "2026-10-15T21:18:46Z",
+  "summary": "Command Palette has no usable UI, shortcut, dock, or Settings after an Insider update; reinstalling and resetting configuration did not help, and the discussion says rollback removed the affected-build logs.",
+  "next_action": "Request the currently failing build's diagnostic ZIP and whether a completely fresh Command Palette instance opens.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The reported activation timeout narrows the investigation to the running Command Palette instance, but it does not identify why its window never became available. The supplied archive cannot establish the original preview-build failure after the maintainer-confirmed rollback. A version-matched capture and cold-start comparison are more useful than another reset or a speculative activation patch.",
+    "evidence": [
+      "The reporter identifies 0.102.2862, lists four reinstall/reset attempts, and supplies a diagnostic ZIP.",
+      "The reporter's public comment identifies a 32-second timeout in Program.RedirectActivationTo: https://github.com/microsoft/PowerToys/issues/51352#issuecomment-6202112341",
+      "A collaborator explicitly says reinstalling 0.101 destroyed the 0.102 logs: https://github.com/microsoft/PowerToys/issues/51352#issuecomment-6202496181"
+    ],
+    "recommended_action": "Request the currently failing build's diagnostic ZIP and whether a completely fresh Command Palette instance opens.",
+    "evaluated_at": "2026-10-19T07:35:05.083767Z",
+    "source_updated_at": "2026-10-15T21:18:46Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report does not yet identify an applicable PowerToys code correction. No fix is proposed from an unlocalized symptom; this is not a conclusion that the behavior is expected or externally owned.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Command Palette has no usable UI, shortcut, dock, or Settings after an Insider update; reinstalling and resetting configuration did not help, and the discussion says rollback removed the affected-build logs.",
+    "known_information": [
+      "The report says the shortcut, dock bar and Command Palette Settings all fail; reinstalling PowerToys/Command Palette, removing extensions and removing settings did not restore them.",
+      "The reporter supplies a ZIP and a public activation-timeout excerpt; a collaborator says the subsequent rollback deleted the 0.102 logs.",
+      "The report identifies Windows 11 build 26300, Polish locale and an elevated PowerToys runner; these facts do not establish Command Palette process elevation or causality.",
+      "Labels are Issue-Bug, Needs-Triage and Product-Command Palette, with no assignee or linked fix."
+    ],
+    "inferences": [
+      "A stuck or not-yet-ready existing Command Palette instance could explain failures across launch surfaces, but the public timeout alone cannot distinguish a startup failure from an activation-delivery failure.",
+      "Neither third-party extensions nor Windhawk/Rainmeter are established causes; the failed reset attempts do not identify a code correction."
+    ],
+    "analysis": "The reported activation timeout narrows the investigation to the running Command Palette instance, but it does not identify why its window never became available. The supplied archive cannot establish the original preview-build failure after the maintainer-confirmed rollback. A version-matched capture and cold-start comparison are more useful than another reset or a speculative activation patch.",
+    "initial_investigation": [
+      "Pinned current Program.DecideRedirection redirects subsequent launches to a registered instance; RedirectActivationTo logs cancellation after 32 seconds: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs#L111-L168",
+      "Program.OnActivated handles an existing MainWindow and otherwise drops redirected arguments with a warning. That is a distinct observable branch, not proof it caused this report: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs#L170-L190",
+      "The supplied archive was inspected privately for affected-version coverage; no diagnostic contents or machine-specific paths are reproduced here.",
+      "Full live discussion and timeline contain no linked fix; upstream PR number search and fork issue/PR/branch inventories found no matching fix trace."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The version currently exhibiting the failure after rollback/reinstallation.",
+        "why_needed": "Correlate the next diagnostic capture with the failing build rather than the removed preview logs.",
+        "how_to_collect": "Copy the version shown in PowerToys About when the failure recurs."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether launching Command Palette with no previous Command Palette process running also fails.",
+        "why_needed": "Distinguish initial window creation failure from reactivation of an already-running instance.",
+        "how_to_collect": "After saving work and exiting PowerToys, close any remaining Command Palette process in Task Manager, restart PowerToys and try one launch; report whether a window appears."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic ZIP immediately after the failure on the identified build.",
+        "why_needed": "The affected 0.102 logs were removed during rollback, so the existing archive is not sufficient to localize the original failure.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing; if Settings or the tray cannot open, run BugReportTool.exe from the PowerToys installation directory."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-51352-request-evidence",
+      "type": "request_info",
+      "label": "Request matching-build startup report",
+      "comment": {
+        "body": "Thanks for the detailed reinstall/reset attempts, the ZIP, and the 32-second activation-timeout excerpt. The discussion notes that reinstalling 0.101 removed the 0.102 logs, so another reset would not tell us why the original instance failed.\n\nPlease provide:\n1. The PowerToys version currently showing the failure, as displayed in About.\n2. Whether a fresh Command Palette instance also fails: after saving work, exit PowerToys, close any remaining Command Palette process in Task Manager, restart PowerToys and try one launch. Does its window appear?\n3. Immediately after that failed launch on the identified build, add a comment containing `/bugreport` and attach the generated ZIP. If PowerToys Settings or the tray cannot open, run `BugReportTool.exe` from the PowerToys installation directory instead.\n\nThis distinguishes a startup/window-creation failure from reactivation of an existing instance and gives us logs from the build actually failing."
+      }
+    }
+  ]
+}

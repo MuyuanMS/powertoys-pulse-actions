@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 5,
+  "issue_number": 51328,
+  "title": "[Mouse Without Borders] Input events arrive out of order: two concurrent MainTCPRoutine threads inject via SendInput without ordering guarantees",
+  "url": "https://github.com/microsoft/PowerToys/issues/51328",
+  "state": "OPEN",
+  "evaluated_at": "2026-10-19T07:35:49Z",
+  "source_updated_at": "2026-10-15T08:45:41Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter supplies a detailed two-machine reproduction and an on/off test in which reducing the peer to one socket stops the reported transpositions. Current upstream code confirms that socket receive paths can dispatch input on their caller threads, and that an exception in packet processing can end a receive loop. Treat the ordering defect and injection-failure containment as separate changes.",
+    "evidence": [
+      "The issue reports identical PowerToys 0.101.2362.0 builds on two machines, repeated character and space transpositions, and a firewall control test: one remaining connection still carries input and the observed transpositions stop.",
+      "The issue also reports SendInputEx failures followed by reconnects; no diagnostic archive was attached, and raw diagnostic contents are not reproduced here.",
+      "In current upstream main, MouseWithoutBorders SocketStuff.MainTCPRoutine receives packages and calls Receiver.ProcessPackage; Receiver dispatches keyboard and mouse input, including to InputSimulation.SendMouse.",
+      "Current Common.DoSomethingInTheInputSimulationThread documentation says execution remains on the caller thread, which is the socket receiver thread; this does not serialize calls from separate receive threads.",
+      "Current SocketStuff.MainTCPRoutine catches processing exceptions and exits its receive loop, consistent with the reported connection loss when an injection exception escapes."
+    ],
+    "recommended_action": "Approve a focused design for one ordered input path and separate packet-level injection-failure containment. Preserve the existing evidence and avoid treating related clipboard, service-process, or UIPI issues as the cause of the ordering defect.",
+    "evaluated_at": "2026-10-19T07:35:49Z",
+    "source_updated_at": "2026-10-15T08:45:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching upstream or MuyuanMS/PowerToys fix PR or issue trace was found for #51328. The linked issues #49147, #44177, and #33346 are open but describe separate concerns; no PR coverage for them was found."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Route injectable MWB input through one ordered receive path",
+      "root_cause": "Likely input-order race: separate per-socket receive paths can dispatch keyboard and mouse packets on their own caller threads without a shared ordering boundary. The issue's one-socket control test supports this explanation.",
+      "plan": [
+        "Trace the peer connection setup and identify which socket paths can carry keyboard or mouse input.",
+        "Route injectable input through one designated bidirectional socket, or establish an equivalent shared sequencing boundary before Receiver.ProcessPackage; keep unrelated control or clipboard traffic separate where needed.",
+        "Add coverage showing that concurrent socket activity cannot reorder input and that reconnects preserve the selected input path."
+      ],
+      "verification": [
+        "On two physical computers, reproduce the reported normal-speed typing scenario with both connections active and verify received text order.",
+        "Repeat with the single designated input path and across reconnects; verify input remains functional in both directions and no transpositions occur."
+      ],
+      "confidence": {
+        "score": 87,
+        "level": "green",
+        "rationale": "The reported one-socket on/off experiment is strong evidence, and the current code confirms that receive-thread input dispatch lacks a shared ordering boundary. A two-machine test remains necessary to validate the implementation."
+      }
+    },
+    {
+      "title": "Contain an individual input-injection exception at the packet boundary",
+      "root_cause": "A reported SendInputEx exception can escape input processing into MainTCPRoutine; current receive-loop error handling exits that loop, so one failed injection can terminate the connection.",
+      "plan": [
+        "Handle injection exceptions at the input packet boundary so a failed injection does not escape and terminate the socket receive loop.",
+        "Define safe recovery for partially applied key or mouse state, and retain diagnostic visibility without flooding logs.",
+        "Add focused coverage proving a failed injection does not prevent subsequent packets from being received; investigate the underlying SendInput failure independently."
+      ],
+      "verification": [
+        "Exercise the reported injection-failure path and verify the receive loop remains active for subsequent packets.",
+        "Confirm recovery does not leave a key or mouse button stuck; separately investigate the reported insufficient-buffer failure."
+      ],
+      "confidence": {
+        "score": 87,
+        "level": "green",
+        "rationale": "The issue provides a failure sequence, and current receive-loop code confirms that an escaping processing exception ends the loop. Containment would not itself fix the underlying SendInput failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter describes persistent input transpositions between two same-version MWB peers and a separate injection-error/reconnect symptom. The reported single-connection control stops the transpositions while input remains functional.",
+    "known_information": [
+      "The issue reports two Windows machines on the same PowerToys build, with the receiver running UseService, and supplies detailed reproduction conditions.",
+      "The reporter says transpositions affect characters and spaces, and reports that reducing the active peer connection count from two to one stops them.",
+      "The issue includes a module-log excerpt and a failure/reconnect timeline; this artifact summarizes that evidence without copying diagnostic contents or machine-specific paths.",
+      "The issue has one automated triage comment and no substantive follow-up. No bug-report ZIP or other attachment was present.",
+      "Linked issues #49147, #44177, and #33346 remain open and concern clipboard-channel failure, UseService duplicate processes, and elevated-window input behavior respectively."
+    ],
+    "inferences": [
+      "The one-socket control and current per-socket dispatch design make concurrent receive-thread input ordering the likely cause of the transpositions; this is not proven solely by source inspection.",
+      "The reported injection exception likely terminates a receive loop because the current receive loop exits after an exception escapes packet processing.",
+      "The ordering defect and exception-containment defect are separable and should not be collapsed into one speculative fix."
+    ],
+    "analysis": "Focused source review supports both reported paths: SocketStuff.MainTCPRoutine dispatches received packages to Receiver.ProcessPackage, and current input dispatch stays on the socket caller thread rather than a shared injection thread. A single designated input path is more defensible than merely adding a lock, which would serialize calls but would not establish their original cross-socket order. The exception path should be contained without claiming that it fixes the underlying SendInput error.",
+    "initial_investigation": [
+      "Reviewed current upstream main: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs (MainTCPRoutine), src/modules/MouseWithoutBorders/App/Core/Receiver.cs (ProcessPackage), src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs (SendMouse and SendInputEx), and src/modules/MouseWithoutBorders/App/Core/Common.cs (input-thread dispatch).",
+      "Confirmed in current code that input dispatch remains on the caller/socket-receiver thread; separate receive paths therefore have no shared ordering boundary at that point.",
+      "Confirmed the receive loop's exception handling exits after a packet-processing exception.",
+      "Checked upstream and fork issue/PR searches for #51328 and for PR coverage of the three linked issues; no matching fix trace was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve MWB ordering and injection-recovery design"
+    }
+  ],
+  "number": 51328,
+  "kind": "issue",
+  "generated_at": "2026-10-19T08:14:15.452658Z"
+}

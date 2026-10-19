@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51303",
+  "number": 51303,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "generated_at": "2026-10-19T07:45:16Z",
+  "evaluated_at": "2026-10-19T07:45:16Z",
+  "source_updated_at": "2026-10-14T14:17:10Z",
+  "title": "Keyboard Manager remappings are ignored in Windows Terminal",
+  "url": "https://github.com/microsoft/PowerToys/issues/51303",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue supplies an exact Caps Lock-to-Esc remap and the Windows Terminal/PowerShell/WSL versions, but does not establish whether Terminal is elevated or whether the same remap works in another app. Those facts distinguish an OS integrity-level input-injection boundary from a Terminal-specific path before a code fix is justified.",
+    "evidence": [
+      "PowerToys 0.102.2814; remap Caps Lock to Esc; failure occurs in Windows Terminal 1.24.11911.0 running PowerShell 7.4.6 or WSL2 2.7.3.0 with Ubuntu 24.04.5.",
+      "The live body does not state whether PowerToys or Terminal is elevated and does not report a same-session comparison in Notepad or another ordinary app.",
+      "The sole live comment is automated triage at 2026-10-14T14:17:09Z, which cites #28728 as a possible duplicate, not a confirmed duplicate decision."
+    ],
+    "recommended_action": "Request only elevation/install-scope status and one same-session comparison, then reclassify based on whether the failure is limited to elevated Terminal or remains in non-elevated Terminal and other apps.",
+    "evaluated_at": "2026-10-19T07:45:16Z",
+    "source_updated_at": "2026-10-14T14:17:10Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No code fix is supportable until elevation and cross-application evidence rule out a UIPI/integrity-level boundary or other Terminal-specific behavior. This is a no-design disposition pending the targeted answer, not a claim that Keyboard Manager cannot be responsible."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A specific Caps Lock-to-Esc remap is reportedly ignored in Windows Terminal, including a WSL2 session, but the report does not say whether Terminal is elevated or whether the same remap fails outside Terminal.",
+    "known_information": [
+      "PowerToys 0.102.2814; Windows Terminal 1.24.11911.0; PowerShell 7.4.6 or WSL2 2.7.3.0 with Ubuntu 24.04.5; nvim in WSL2.",
+      "The configured remap is Caps Lock to Esc; the reporter expects Esc and reports that Caps Lock is triggered instead.",
+      "No diagnostic archive or author follow-up is present. Automated triage lists #28728 as a possible duplicate."
+    ],
+    "inferences": [
+      "If Windows Terminal is elevated while PowerToys is not, UIPI may block synthetic input; the current evidence does not establish this.",
+      "If the remap fails only in non-elevated Windows Terminal but succeeds in Notepad, a Terminal-specific input path is more likely; neither comparison is reported."
+    ],
+    "analysis": "The previous #28728 report described the same Terminal symptom and a maintainer asked whether Terminal was running as administrator; that issue was later closed after no author answer, so it supplies a useful discriminator but no fix. Current Keyboard Manager code uses a SendVirtualInput abstraction and explicitly accounts for injection being blocked by UIPI in a remap path. Ask for the two narrow facts before proposing a competing design.",
+    "initial_investigation": [
+      "At upstream source head 1b33221dfa19f30d71409eb550807883fb27283a, KeyboardManager InputInterface::SendVirtualInput abstracts synthetic input; KeyboardEventHandlers.cpp includes handling/comments for injection blocked by UIPI. This supports checking integrity levels but does not prove that the reported remap fails for that reason.",
+      "Read the complete linked #28728 issue: it reports remapping failing in Windows Terminal but working in Chrome/Edge; a maintainer asked whether Terminal ran as administrator, and the issue later closed as stale with no response or documented fix: https://github.com/microsoft/PowerToys/issues/28728.",
+      "No exact #51303 issue, PR, or branch trace was found in MuyuanMS/PowerToys."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "install_scope",
+        "information": "Whether PowerToys and Windows Terminal are elevated, and whether they run in the same Windows user session.",
+        "why_needed": "A higher-integrity Terminal can reject injected input from a non-elevated PowerToys process; this changes whether a code fix is applicable.",
+        "how_to_collect": "In Task Manager > Details, enable the Elevated column and report Yes/No for both PowerToys and Windows Terminal; state whether both use the same Windows user. No screenshot is needed."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Caps Lock-to-Esc works in Notepad in the same session and whether it still fails in a non-elevated Windows Terminal.",
+        "why_needed": "This separates an application-specific Terminal path from a general Keyboard Manager remapping/injection failure.",
+        "how_to_collect": "With the same PowerToys configuration, test the remap in Notepad and in a non-elevated Windows Terminal, then report each result."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-terminal-elevation-remap-51303",
+      "type": "request_info",
+      "label": "Confirm Terminal elevation and remap behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the exact Caps Lock-to-Esc mapping and the Windows Terminal, PowerShell, and WSL versions. One key distinction is not in the report yet: whether the Terminal process is elevated, and whether the same mapping works in another app.\n\nPlease provide:\n1. Whether PowerToys and Windows Terminal are elevated and whether they run under the same Windows user. In Task Manager > Details, enable the Elevated column and report Yes or No for each.\n2. Whether Caps Lock-to-Esc works in Notepad in the same session; if possible, also test a non-elevated Windows Terminal.\n\nThis will distinguish an OS integrity-level input-injection boundary from a Terminal-specific input path and determine whether a Keyboard Manager code change is indicated."
+      }
+    }
+  ],
+  "pending_author": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "The request is a draft only and has not been posted."
+  }
+}

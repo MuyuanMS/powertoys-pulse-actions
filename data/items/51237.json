@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 5,
+  "number": 51237,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-10-19T07:42:05.627Z",
+  "evaluated_at": "2026-10-19T07:42:05.627Z",
+  "source_updated_at": "2026-10-13T16:02:23Z",
+  "title": "Zancy Zones crashes or shuts",
+  "url": "https://github.com/microsoft/PowerToys/issues/51237",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "status": {
+    "glyph": "🧪",
+    "label": "Reproduce locally",
+    "detail": "The Shift-drag sequence is specific; the failure mechanism is not confirmed."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Reproduce Shift-drag recovery failure",
+    "reason": "Trace the Shift state and zone visibility through drag end before proposing a second fix."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue gives a direct Shift-drag sequence and describes loss of the overlay until FancyZones is toggled. A diagnostic ZIP was attached again after the automated triage reported invalid structure. Source already contains a related drag-start Shift resynchronization fix, so the exact runtime state must be captured before proposing a different change.",
+    "evidence": [
+      "Reporter uses PowerToys v0.101.2362 with auto-update on Windows 11 and reports FancyZones zones disappear when dragging a window onto a zone while holding Shift.",
+      "Reporter says zones remain unavailable until FancyZones is disabled and enabled; a later drag again causes the reported failure.",
+      "A PowerToys report ZIP is linked in the body and was attached again in the author’s reply; the public automated triage said its archive validation failed. No private diagnostic contents are reproduced here.",
+      "Labels include Needs-Team-Response; the author did respond with the report attachment, so the report is not waiting on author feedback."
+    ],
+    "recommended_action": "Reproduce with the reporter’s Shift-drag sequence and capture FancyZones shift-state, drag-state, and overlay visibility transitions through Shift-up and drag end; distinguish this from the already-fixed drag-start stale-state case.",
+    "evaluated_at": "2026-10-19T07:42:05.627Z",
+    "source_updated_at": "2026-10-13T16:02:23Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching MuyuanMS fork issue, PR, or branch was found. A separate state-transition correction may be appropriate if reproduction shows that Shift-up or drag-end leaves FancyZones overlay state latched; do not duplicate the existing drag-start resynchronization fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep FancyZones zone visibility consistent after Shift-drag release",
+      "root_cause": "Hypothesis only: the shift/drag state transition may leave the overlay hidden or the drag state stale after a Shift-drag ends; the current report does not establish which transition fails.",
+      "plan": [
+        "Reproduce with the current reported build, record the FancyZones shift-drag setting, and trace FancyZones::OnKeyboardInput, DraggingState::SetShiftState, UpdateDraggingState, and zone-overlay visibility through Shift-down, Shift-up, mouse release, and the next drag.",
+        "Do not repeat the existing drag-start GetAsyncKeyState resynchronization change; first establish whether the failed state is a missing key-up, drag-end cleanup, or an overlay visibility transition.",
+        "If a state remains inconsistent after a reproduced transition, correct that specific transition and add a focused regression test for Shift-up/drag-end followed by another drag."
+      ],
+      "verification": [
+        "Repeat the issue sequence and confirm the zones remain available after releasing Shift and the mouse button.",
+        "Perform another drag without toggling FancyZones; confirm normal zone display and snapping continue."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The behavior and affected state machine are supported by the report and source, but no trace confirms which event or overlay transition fails. Related issue #29257 already fixed a different stale Shift state at drag start."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Holding Shift during a FancyZones window drag hides the zone overlay, and toggling FancyZones is the only reported way to restore it.",
+    "known_information": [
+      "The reporter uses PowerToys v0.101.2362 on Windows 11 and identifies FancyZones.",
+      "Dragging a window onto a zone while holding Shift makes zones disappear; toggling FancyZones off and on restores them temporarily.",
+      "The author reattached the diagnostic ZIP in a comment after an automated triage reply reported the archive could not be analyzed; this artifact does not copy diagnostic contents.",
+      "The author’s attachment reply is the latest activity, and Needs-Team-Response is set."
+    ],
+    "inferences": [
+      "The inability to show zones again may involve a stale shift/drag or overlay visibility state, but the report does not identify the exact transition.",
+      "Existing closed issue #29257 concerned intermittent Shift-key failures and has a committed drag-start Shift-state resync in current source; the current Shift-drag overlay symptom may be different and is not established as covered."
+    ],
+    "analysis": "The new report is specific enough for a maintainer-side reproduction. The current FancyZones state machine combines Shift and secondary-mouse state to compute dragging, while Shift transitions arrive through the raw-input path. Prior code history already addressed stale Shift state at drag start; any new proposal should trace mid-drag and cleanup transitions instead of duplicating that fix.",
+    "initial_investigation": [
+      "At upstream commit 1b33221dfa19f30d71409eb550807883fb27283a, src/modules/fancyzones/FancyZonesLib/DraggingState.cpp::Enable, SetShiftState, and UpdateDraggingState seed Shift at drag start, accept raw-input updates, and derive dragging from Shift XOR secondary-mouse state.",
+      "Closed issue #29257 (https://github.com/microsoft/PowerToys/issues/29257) has Resolution-Fix Committed and a fix in current source that re-seeds Shift at drag start for stale transitions after RDP/wake/unlock. Its reported symptom was intermittent Shift-key failure/phantom zones, not this post-Shift-drag overlay loss; treat it as related context, not proof that #51237 is fixed.",
+      "No cross-reference to an upstream PR and no matching MuyuanMS issue, PR, or branch was found for #51237."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused FancyZones fix design"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the Shift-drag overlay loss",
+      "note": "The public steps are sufficient for a maintainer-side reproduction; capture the setting and state transitions before selecting a fix.",
+      "reproduce": {
+        "title": "Verify FancyZones remains available after Shift-drag",
+        "module": "FancyZones",
+        "version_requirement": "PowerToys 0.101.2362 or current supported stable build",
+        "prerequisites": [
+          "Windows 11 with FancyZones enabled.",
+          "Use a simple two-zone layout on one monitor.",
+          "Record the current Shift-drag setting before testing."
+        ],
+        "setup": [
+          "Use an ordinary resizable window and keep the same monitor/layout for each run."
+        ],
+        "steps": [
+          "Begin dragging the window toward a FancyZone while holding Shift.",
+          "Move it over a visible zone, then release Shift and the mouse button.",
+          "Observe whether the zone overlay remains available for another drag.",
+          "Repeat the next drag without toggling FancyZones; if the overlay disappears, trace Shift state, drag state, and overlay visibility through key-up and drag-end."
+        ],
+        "expected_result": "Zones remain available after the Shift-drag ends, and a subsequent drag works without disabling and re-enabling FancyZones."
+      }
+    }
+  ]
+}

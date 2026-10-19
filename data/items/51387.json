@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 5,
+  "number": 51387,
+  "kind": "issue",
+  "title": "Power Display does not start at login: named pipe connection times out after 5 s and the process is killed",
+  "url": "https://github.com/microsoft/PowerToys/issues/51387",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "pending_author": false,
+  "generated_at": "2026-10-19T07:35:47Z",
+  "evaluated_at": "2026-10-19T07:35:47Z",
+  "source_updated_at": "2026-10-18T08:22:54Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "proposed_fixes": [],
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The repeated cold-login timestamps match the five-second handshake and termination path. Existing draft IPC work already replaces that path, so the useful next step is controlled verification against that work rather than a competing timeout design.",
+    "evidence": [
+      "The reporter lists four cold-login failures and a later successful manual launch in under one second.",
+      "A 45-second autorun delay reportedly avoids the failure; default delay is three seconds.",
+      "Current main waits five seconds for the pipe and terminates the process on handshake failure.",
+      "Open draft PR #50253 replaces Power Display's custom handshake and removes this fixed startup wait.",
+      "Open draft PR #49951 changes listener creation/connection handling but retains the five-second wait."
+    ],
+    "recommended_action": "Reproduce cold-login startup on the reported version and compare with draft PR #50253, coordinating overlapping IPC work before any new design.",
+    "evaluated_at": "2026-10-19T07:35:47Z",
+    "source_updated_at": "2026-10-18T08:22:54Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Draft PR #50253 is a concrete existing implementation attempt covering the reported fatal startup-handshake path. Its diff removes the five-second custom wait. It has not merged and is not proven to resolve this cold-login report; reuse this work for verification instead of duplicating it.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50253"
+    ]
+  },
+  "issue_context": {
+    "summary": "Power Display is launched at cold login, fails its initial pipe handshake after about five seconds and is terminated. Later manual launch succeeds. Existing IPC replacement work changes the failing startup path but needs issue-specific verification.",
+    "known_information": [
+      "The report specifies stable 0.101.2362, auto-update, a non-elevated per-user installation and Windows 11 Pro build 26300.",
+      "Reported monitor is a BenQ EX3210R with DDC/CI; system language is French.",
+      "Public log excerpts show startup, a roughly five-second gap, connection failure and forced termination on four logins.",
+      "The reporter says the failed launch produces no application-startup entry, while manual Launch connects in approximately 0.6 seconds.",
+      "The issue is open, unassigned and has no comments or diagnostic attachment.",
+      "PRs #50253 and #49951 are both open drafts, not shipped fixes."
+    ],
+    "inferences": [
+      "Early-session initialization delay is plausible, but the excerpts do not distinguish it from pipe connection-state handling.",
+      "Replacing the custom handshake may remove the fatal deadline; draft status and source inspection alone do not prove startup reliability.",
+      "Absence of an application log does not identify WinUI or DDC/CI as the cause."
+    ],
+    "analysis": "The earlier timeout/retry proposal omitted concrete overlapping IPC work. Reuse #50253 and test the exact cold-login behavior, preserving bounded shutdown and responsiveness. Do not request another generic evidence checklist or promise that either draft fixes the report.",
+    "initial_investigation": [
+      "Read the complete live body; verified there are no comments or linked timeline entries.",
+      "https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayProcessManager.cpp",
+      "Read bodies and relevant diffs of #50253 and #49951. #50253 removes client_timeout_millis and uses TwoWayPipeMessageIPC; #49951 retains the 5000-ms wait while changing connection handling.",
+      "Checked focused owning-file history and startup PR search.",
+      "Searched all-state MuyuanMS/PowerToys issues/PRs and matching branch refs for #51387; no matching issue-specific fork trace was found.",
+      "No local cold-login, delayed-client or candidate-build test was executed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Power Display cold-login timeout",
+      "reproduce": {
+        "title": "Measure Power Display startup connection at cold login",
+        "module": "Power Display",
+        "version_requirement": "Begin with PowerToys 0.101.2362 and compare with the current stable build.",
+        "prerequisites": [
+          "Windows 11; build 26300 most closely matches the report.",
+          "Power Display enabled and PowerToys Run at startup enabled.",
+          "Use a non-elevated per-user installation to match the report.",
+          "A DDC/CI display; the reported device is BenQ EX3210R."
+        ],
+        "setup": [
+          "Use the default three-second autorun task delay and record the original task configuration.",
+          "Prepare to correlate Power Display module-interface and application startup timestamps.",
+          "For a deterministic development test, arrange a delayed pipe client exceeding five seconds without modifying the production installation."
+        ],
+        "steps": [
+          "1. With the default three-second autorun delay, reboot and sign in without opening Settings.",
+          "2. Try Win+Ctrl+Shift+P; correlate process launch, pipe connection and termination timestamps.",
+          "3. If unavailable, use Settings > Power Display > Launch and compare connection timing.",
+          "4. Repeat with the reported 45-second autorun delay as a control, then restore the original task.",
+          "5. In an isolated development installation of existing draft PR #50253, repeat the original cold-login sequence and a controlled delayed-client test.",
+          "6. Verify disable/exit during startup and permanent client failure leave no orphaned process or stuck operation. Coordinate with overlapping draft #49951 before choosing another change."
+        ],
+        "expected_result": "Power Display starts automatically after login and the flyout opens without manual Launch. Startup recovery remains bounded and cancelable, with no orphaned process or pending I/O."
+      }
+    }
+  ]
+}

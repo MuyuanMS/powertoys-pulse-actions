@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 5,
+  "number": 51293,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-10-19T07:42:05.627Z",
+  "evaluated_at": "2026-10-19T07:42:05.627Z",
+  "source_updated_at": "2026-10-14T06:15:38Z",
+  "title": "为什么我的PowerRename在点击右键，出现右键菜单后没有显示",
+  "url": "https://github.com/microsoft/PowerToys/issues/51293",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "status": {
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The reported menu surface and PowerRename menu-mode setting are not identified."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Show both menu surfaces",
+    "reason": "Determine whether the item is missing from the Windows 11 first-level menu, the classic menu, or both before assigning code work."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report confirms PowerRename is enabled and describes a right-click on multiple selected files, but does not say whether the Windows 11 first-level menu or the classic “Show more options” menu was checked, nor which menu-mode setting is selected. A newer open issue (#51316) records the exact pattern of items missing in “Extended context menu only”; no distinct fix should be proposed until this discriminator is known.",
+    "evidence": [
+      "Reporter uses PowerToys v0.101.2362 from Microsoft Store on Windows 11 with Chinese (Simplified) language, says PowerRename is enabled, and reports no PowerRename item after selecting multiple files and opening the context menu.",
+      "The issue has no comments; a diagnostic ZIP is attached. Its private contents are not included in this artifact.",
+      "The live labels are Issue-Bug and Needs-Triage; no assignee is set."
+    ],
+    "recommended_action": "Ask for a screenshot of the complete first-level and classic context menus and confirmation of whether PowerRename appears in the classic menu for the same selected local files.",
+    "evaluated_at": "2026-10-19T07:42:05.627Z",
+    "source_updated_at": "2026-10-14T06:15:38Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No separate fix plan is justified yet: the missing-menu mode is unspecified and open issue #51316 already tracks missing/duplicate file-tool entries in the extended menu. Reassess whether this is the same failure after the requested menu-surface evidence."
+  },
+  "proposed_fixes": null,
+  "issue_context": {
+    "summary": "PowerRename is enabled, but the reporter cannot find its entry after right-clicking a multi-file selection in Windows 11.",
+    "known_information": [
+      "PowerToys v0.101.2362, Microsoft Store install; Windows 11, Simplified Chinese.",
+      "PowerRename is enabled in PowerToys settings and is absent from the reported context menu after selecting multiple files.",
+      "The issue body links a PowerToys diagnostic ZIP; its contents have not been reproduced here."
+    ],
+    "inferences": [
+      "The symptom may be limited to Windows 11 first-level menu presentation, the configured extended-menu-only mode, Shell extension registration, or selected-object eligibility; none is confirmed.",
+      "Open issue #51316 is closely related because its report says file-tool items disappear in extended-only mode, but #51293 does not specify that setting or menu surface."
+    ],
+    "analysis": "PowerRename’s shell extension checks enablement, whether the selected objects are renamable, and whether extended verbs are requested; the report does not distinguish those gates or the Windows 11 menu tier. Existing open registration/missing-menu trackers make a new fix speculative. One screenshot plus a same-selection comparison resolves the routing question.",
+    "initial_investigation": [
+      "At upstream commit 1b33221dfa19f30d71409eb550807883fb27283a, src/modules/powerrename/dll/PowerRenameExt.cpp::CPowerRenameMenu::Initialize and QueryContextMenu check that PowerRename is enabled, a renamable object is selected, and the configured extended-menu mode matches the shell request.",
+      "The existing PowerRenameContextMenuTests distinguish Windows 11 tier-1 and classic Explorer menus; PowerRenameRuntimeRegistration registers the classic ContextMenuHandlers paths. This makes menu-surface confirmation material.",
+      "Open related issue #51316 (https://github.com/microsoft/PowerToys/issues/51316) reports missing/duplicate File Locksmith, PowerRename, and Image Resizer entries depending on context-menu mode; open #48951 (https://github.com/microsoft/PowerToys/issues/48951) tracks missing PowerRename/File Locksmith registration; #44232 (https://github.com/microsoft/PowerToys/issues/44232) is an older Windows 10 Chinese report with different install/elevation details. These are related, not proven exact duplicates or fixes.",
+      "No matching issue mirror, PR, or branch was found in MuyuanMS/PowerToys; no upstream PR cross-reference was found for #51293."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the full Windows 11 first-level context menu and the classic menu after selecting “Show more options” for the same file selection.",
+        "why_needed": "This distinguishes a tier-1 presentation issue from the classic Shell extension path that the current related issue tracks.",
+        "how_to_collect": "Capture both menus with Windows Snipping Tool and attach the images to the issue."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Confirm whether PowerRename appears in the classic menu for the same selection, and whether the setting is “Default and extended context menu” or “Extended context menu only.”",
+        "why_needed": "The extension’s menu callback checks the extended-verb flag; this result routes the report to the existing menu-mode tracker or a separate registration/selection investigation.",
+        "how_to_collect": "Check PowerRename settings, then open “Show more options” for the same selected local files and report which surface contains the item."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Show PowerRename in both menu surfaces",
+      "comment": {
+        "body": "您已说明使用 PowerToys v0.101.2362（Microsoft Store）、Windows 11，且 PowerRename 已启用；选中多个文件后右键菜单中没有 PowerRename。要区分 Windows 11 第一层菜单与 PowerRename 的经典 Shell 菜单路径，请提供：\n\n1. 同一组文件右键后第一层菜单，以及选择“显示更多选项”后的完整菜单截图。\n2. 请确认 PowerRename 设置选择的是“默认和扩展上下文菜单”还是“仅扩展上下文菜单”，并说明“显示更多选项”后的菜单里是否出现 PowerRename。\n\n这些信息可以判断该问题是否与现有的扩展菜单缺失问题相同，或是否需要单独检查 Shell 注册/所选文件资格。\n\nPlease provide the two menu screenshots and confirm which PowerRename context-menu setting is selected, as described above."
+      }
+    }
+  ]
+}

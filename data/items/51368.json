@@ -1,0 +1,107 @@
+{
+  "type": "issue",
+  "number": 51368,
+  "title": "Mouse Highlighter (Ripple): hex color input parses RGBA as ARGB, shifting channels and dropping blue on 6-digit values",
+  "url": "https://github.com/microsoft/PowerToys/issues/51368",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "evaluated_at": "2026-10-19T07:38:06.745Z",
+  "source_updated_at": "2026-10-16T15:33:05Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue supplies exact 6- and 8-digit values and expected/observed channels. The current settings page uses the shared ColorPicker with its hex textbox bound directly to a Windows Color, while Mouse Highlighter persists ARGB-formatted strings. A narrowly scoped UI adapter could accept the requested CSS RGBA notation while preserving the existing stored format. Confidence remains yellow because the app delegates hex parsing to the framework control and the public report does not prove the framework-level implementation path.",
+    "evidence": [
+      "The issue body reports PowerToys v0.101.2362 and specifies exact inputs and expected channel values for #3366CC and #3366CC80.",
+      "The sole issue comment is automated triage; it confirms the report has concrete reproduction values and says the attached archive was rejected as oversized.",
+      "MouseUtilsPage.xaml uses ColorPickerButton for both Ripple primary and secondary colors, binding SelectedColor two-way.",
+      "ColorPickerButton.xaml enables the WinUI ColorPicker hex input and binds its Color directly; the PowerToys control does not implement a custom hex parser on this path.",
+      "MouseHighlighterProperties uses ARGB-formatted defaults such as #a6BFFF00 and #a600BFFF, so preserving persisted ARGB representation is a compatibility requirement."
+    ],
+    "recommended_action": "Run the targeted maintainer reproduction below; if confirmed, design an opt-in CSS RGBA input adapter for these Ripple pickers while preserving existing ARGB settings serialization."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No upstream or MuyuanMS/PowerToys fix trace was found. The reported channel shift is consistent with a format mismatch at the ColorPicker input boundary, but the exact parser behavior and safe UI adaptation still need targeted confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Accept CSS RGBA in Mouse Highlighter Ripple color input",
+      "root_cause": "Hypothesis: Ripple color text entry inherits the framework ColorPicker's ARGB-oriented parsing while the issue expects CSS #RRGGBB/#RRGGBBAA; the Windows Color value then flows into existing ARGB settings storage.",
+      "plan": [
+        "Confirm the reported channel mapping in the Mouse Highlighter Ripple pickers on the reported or current build before changing behavior.",
+        "If confirmed, add an opt-in format adapter scoped to the Mouse Highlighter primary and secondary color pickers; parse #RRGGBB with alpha FF and #RRGGBBAA as CSS RGBA, then convert the channels into Windows.UI.Color's ARGB fields.",
+        "Keep existing MouseHighlighterProperties settings strings and all other ColorPickerButton callers in their current ARGB format; do not reinterpret existing saved values.",
+        "Add focused tests for both input lengths, alpha handling, exact RGB channel order, and settings round-trip compatibility."
+      ],
+      "verification": [
+        "In Mouse Highlighter Ripple mode, enter #3366CC and verify RGB 33/66/CC with alpha FF.",
+        "Enter #3366CC80 and verify RGB 33/66/CC with alpha 80.",
+        "Close and reopen Settings and verify the displayed colors remain unchanged and existing ARGB-formatted settings still load correctly."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The current XAML and settings model establish the framework ColorPicker boundary and ARGB persistence, and the reported examples identify a concrete format mismatch. The parser is framework-owned and no PowerToys-specific hex conversion exists on this path, so a maintainer reproduction is needed before selecting the adapter implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "In Ripple mode, entering common CSS-style hex colors in the primary or secondary color picker reportedly shifts the channels and can drop the blue channel. The issue gives exact expected and observed values but no follow-up beyond automated triage.",
+    "known_information": [
+      "The report identifies PowerToys v0.101.2362 and Mouse Highlighter Ripple mode.",
+      "The issue gives reproducible examples: #3366CC and #3366CC80, with expected CSS RGBA channel mapping and observed ARGB-shifted values.",
+      "The issue has one automated triage comment; it says the attached archive was rejected as oversized and that the body contains enough information to reproduce the visual issue.",
+      "The current MouseUtilsPage.xaml uses ColorPickerButton for Ripple primary and secondary colors and binds SelectedColor two-way.",
+      "The current ColorPickerButton.xaml delegates hexadecimal text entry to a WinUI ColorPicker and binds its Color property; no PowerToys-owned hex parser is visible in this path.",
+      "MouseHighlighterProperties stores default colors in #AARRGGBB-like notation."
+    ],
+    "inferences": [
+      "The mismatch likely occurs at the input-format boundary between CSS RGBA notation and the framework ColorPicker's Windows Color representation; this is a hypothesis, not a confirmed parser defect.",
+      "A UI-only opt-in conversion could meet the stated expectation without changing persisted settings, but should be validated before implementation."
+    ],
+    "analysis": "The report is specific enough to define acceptance criteria and the current owner code shows a small, localized settings path. However, PowerToys delegates parsing to WinUI and uses ARGB-formatted stored values, so the fast pass cannot establish that the framework behavior is a regression or decide a safe shared-control change. A targeted maintainer reproduction is the appropriate next step; do not ask the reporter to repeat evidence already supplied.",
+    "initial_investigation": [
+      "Inspected current upstream MouseUtilsPage.xaml, ColorPickerButton.xaml/.xaml.cs, MouseHighlighterProperties.cs, and MouseHighlighterSettings.cs at commit 1b33221dfa19f30d71409eb550807883fb27283a.",
+      "The two Ripple color controls bind through ColorPickerButton to Windows.UI.Color; its XAML shows the framework hex input and its code-behind has no custom parse/format logic.",
+      "The persisted defaults use ARGB-like strings; any RGBA input change must preserve this existing storage contract.",
+      "The automated issue comment reports the diagnostic archive was rejected as oversized; no archive contents were used.",
+      "No matching issue or PR trace was found in MuyuanMS/PowerToys, and no upstream linked fix was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Design RGBA-aware Ripple color input"
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify Ripple RGBA hex parsing",
+      "reproduce": {
+        "module": "Mouse Utilities - Mouse Highlighter",
+        "version": "PowerToys v0.101.2362.0 or a current main build",
+        "prerequisites": [
+          "Windows desktop",
+          "Mouse Highlighter enabled",
+          "Ripple highlight mode selected"
+        ],
+        "steps": [
+          "Open the primary color picker and type #3366CC into its hex input.",
+          "Record the displayed RGB and alpha channels; repeat in the secondary picker.",
+          "Enter #3366CC80 and record the displayed RGB and alpha channels.",
+          "Close and reopen Settings and confirm the resulting colors persist without changing pre-existing ARGB-formatted settings."
+        ],
+        "expected_result": "#3366CC maps to R=33, G=66, B=CC, A=FF; #3366CC80 maps to R=33, G=66, B=CC, A=80, and the same colors remain after reopening Settings.",
+        "setup_requirements": "No external asset or special setup is required."
+      }
+    }
+  ],
+  "schemaVersion": 5,
+  "kind": "issue",
+  "generated_at": "2026-10-19T08:14:15.4190629Z"
+}

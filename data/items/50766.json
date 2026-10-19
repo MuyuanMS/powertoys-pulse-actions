@@ -4,85 +4,75 @@
   "number": 50766,
   "kind": "issue",
   "track": "triage",
-  "stage": "reproduction_ready",
-  "generated_at": "2026-09-24T19:39:00Z",
-  "evaluated_at": "2026-09-24T19:39:00Z",
-  "source_updated_at": "2026-09-24T13:41:00Z",
-  "title": "Always stay on top behavior not working correctly",
+  "stage": "waiting_on_author",
+  "generated_at": "2026-10-19T07:45:16Z",
+  "evaluated_at": "2026-10-19T07:45:16Z",
+  "source_updated_at": "2026-10-14T11:09:39Z",
+  "title": "Always stay on top” behavior not working correctly",
   "url": "https://github.com/microsoft/PowerToys/issues/50766",
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The report gives a direct current-version sequence and a clear expected/actual result. A maintainer reproduction can distinguish a Dock-specific topmost regression from an interaction with fullscreen or window activation policy.",
+    "status": "waiting_on_author",
+    "rationale": "A maintainer has already asked which application should be above the Dock and whether the setup is multi-monitor; no reporter response is present. The issue is labeled Needs-Author-Feedback, and the existing reproduction artifact predates this newer request. Do not post a duplicate request or treat the earlier generic reproduction as current.",
     "evidence": [
-      "The reporter identifies Command Palette Dock and version 0.101.2652.0.",
-      "The steps enable Always stay on top, open another normal or maximized application, and observe the Dock.",
-      "The expected behavior is topmost placement except during fullscreen; the reported behavior is that the Dock goes behind ordinary windows.",
-      "The reporter states the behavior is reproducible."
+      "The original report identifies Command Palette Dock 0.101.2652.0 from Microsoft Store, says Always stay on top is enabled, and reports the Dock behind another normal or maximized application; fullscreen is explicitly an exception.",
+      "A community comment reports the reverse symptom in Command Palette version 0.11.11762.0: Always stay on top does not get disabled properly.",
+      "Maintainer zadjii-msft asked on 2026-10-14T11:09:33Z for the target application and whether the setup is multi-monitor. No author response follows; live labels include Needs-Author-Feedback."
     ],
-    "recommended_action": "Reproduce on a current build with normal, maximized, and fullscreen windows, then inspect the Dock topmost update path if ordinary-window coverage fails.",
-    "evaluated_at": "2026-09-24T19:39:00Z",
-    "source_updated_at": "2026-09-24T13:41:00Z"
+    "recommended_action": "Wait for the reporter to name the target application and confirm monitor topology; then reproduce the ordinary/maximized/fullscreen transitions on a current build.",
+    "evaluated_at": "2026-10-19T07:45:16Z",
+    "source_updated_at": "2026-10-14T11:09:39Z",
+    "waiting_since": "2026-10-14T11:09:33Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A code fix may be applicable, but the lightweight pass does not establish whether the failure is in the setting, window activation handling, monitor lifecycle, or fullscreen exception logic."
+    "rationale": "The Dock code owns topmost state, but the requested target-window and monitor facts are needed to identify which transition fails. No specific code change can be justified before that reproduction; this does not claim the reported behavior is expected or resolved."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Command Palette Dock reportedly loses topmost placement over ordinary windows even though Always stay on top is enabled.",
+    "summary": "The Dock reportedly drops behind ordinary windows with Always stay on top enabled, while another commenter sees the inverse state transition; the maintainer needs the exact target app and monitor topology to reproduce a path.",
     "known_information": [
-      "The issue targets Command Palette on PowerToys 0.101.2652.0 from the Microsoft Store.",
-      "Always stay on top is enabled in Dock settings.",
-      "The reporter observes the Dock behind another normal or maximized application.",
-      "Fullscreen behavior is explicitly intended to be an exception.",
-      "No diagnostic archive or discussion follow-up is attached."
+      "Command Palette Dock 0.101.2652.0 from Microsoft Store; Always stay on top is enabled; the Dock goes behind a normal or maximized application.",
+      "Fullscreen behavior is explicitly intended as an exception, and the reporter says the issue is reproducible.",
+      "A separate commenter on 2026-10-11 reports Always stay on top not being disabled properly in Command Palette 0.11.11762.0.",
+      "Maintainer zadjii-msft asked for the target application and whether the setup is multi-monitor on 2026-10-14; those answers are absent. The issue has Needs-Author-Feedback and Needs-Triage labels."
     ],
     "inferences": [
-      "The failure may be caused by topmost state not being reapplied after activation or by an overly broad fullscreen/window-state check.",
-      "A controlled repro with ordinary and fullscreen windows can separate those possibilities."
+      "The opposite reports may involve different activation/fullscreen or monitor transitions, but do not establish a shared root cause.",
+      "The current Dock implementation changes z-order based on AlwaysOnTop and a fullscreen/busy state flag; the target window and topology may distinguish which transition is involved."
     ],
-    "analysis": "The issue is specific enough to reproduce without asking the reporter for generic logs. The next discriminating evidence is the Dock window state across ordinary, maximized, and fullscreen transitions.",
+    "analysis": "The existing maintainer request already targets the missing discriminators, so another generic request or speculative fix adds no value. The prior reproduction action should remain hidden while the reporter's specific answer is outstanding.",
     "initial_investigation": [
-      "Read the complete issue body and confirmed there are no comments or attachments.",
-      "Recorded the explicit fullscreen exception so reproduction does not treat expected fullscreen behavior as a failure."
+      "At upstream source head 1b33221dfa19f30d71409eb550807883fb27283a, DockWindow.xaml.cs::UpdateTopmostState computes topmost state from the setting and fullscreen flag, then calls SetWindowPos with HWND_TOPMOST, HWND_NOTOPMOST, or HWND_BOTTOM. This code fact does not prove a defect without the requested transition details.",
+      "The existing #50766 artifact was generated on 2026-09-24 and contains a broad reproduction action; it predates the maintainer's current request and is not current evidence.",
+      "No exact #50766 issue, PR, or branch trace was found in MuyuanMS/PowerToys."
     ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "reproduce-dock-topmost-50766",
-      "type": "reproduce",
-      "label": "Reproduce Dock topmost failure",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "Command Palette Dock",
-        "version_requirement": "PowerToys 0.101.2652.0 or newer current build",
-        "prerequisites": [
-          "Command Palette Dock enabled",
-          "Always stay on top enabled",
-          "One ordinary window and one maximized window available",
-          "A fullscreen application available to verify the documented exception"
-        ],
-        "steps": [
-          "Open Command Palette Dock settings and enable Always stay on top.",
-          "Open an ordinary application window and verify whether the Dock remains above it.",
-          "Repeat with a maximized but non-fullscreen window.",
-          "Enter fullscreen in a test application and record whether the Dock hides as expected.",
-          "Leave fullscreen and check whether the Dock returns above ordinary windows.",
-          "If the failure reproduces, capture the Dock window state before and after each transition."
-        ],
-        "expected_result": "The Dock remains above ordinary and maximized non-fullscreen windows, may hide during fullscreen, and returns to topmost placement after leaving fullscreen.",
-        "setup_requirements": [
-          "Record PowerToys version and installation scope.",
-          "Record which window transition first causes the Dock to lose topmost placement."
-        ]
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "information": "The exact ordinary or maximized application the reporter expects the Dock to remain above.",
+        "why_needed": "This identifies the foreground-window behavior the maintainer should reproduce and avoids testing a different activation/fullscreen path.",
+        "how_to_collect": "Reply with the application name and whether it is ordinary or maximized when the Dock goes behind it."
+      },
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Whether the Dock is used with one or multiple monitors and, if multiple, which display hosts the Dock and target application.",
+        "why_needed": "The maintainer asked this because monitor-specific positioning and foreground transitions may change the observed z-order behavior.",
+        "how_to_collect": "Reply with monitor count and identify the display containing the Dock and tested application; no screenshot or full hardware inventory is needed."
       }
+    ]
+  },
+  "actions": [],
+  "author_wait_evidence": [
+    {
+      "author": "zadjii-msft",
+      "url": "https://github.com/microsoft/PowerToys/issues/50766#issuecomment-6166985941",
+      "created_at": "2026-10-14T11:09:33Z",
+      "requested_evidence": "Name the application the Dock should remain above and confirm whether the setup is multi-monitor."
     }
   ],
-  "pending_author": false,
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made."
-  }
+    "detail": "Candidate only; no upstream or dashboard write was made."
+  },
+  "pending_author": true
 }

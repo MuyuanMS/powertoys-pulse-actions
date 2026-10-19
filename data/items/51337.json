@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 5,
+  "number": 51337,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "title": "[Auto Hide Cursor] Pointer stays hidden while an elevated (admin) window is in the foreground",
+  "url": "https://github.com/microsoft/PowerToys/issues/51337",
+  "state": "OPEN",
+  "stage": "triage",
+  "pending_author": false,
+  "evaluated_at": "2026-10-19T07:35:05.083767Z",
+  "generated_at": "2026-10-19T07:35:05.083767Z",
+  "source_updated_at": "2026-10-15T15:34:16Z",
+  "summary": "Auto Hide Cursor reportedly remains globally hidden when a medium-integrity worker misses mouse input over an elevated foreground window. The existing timer receives cursor coordinates but never restores a hidden cursor.",
+  "next_action": "Consider for the coordinator's bounded design batch; first reproduce using physical pointer movement and verify timer recovery requirements.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter provides two concrete elevation-sensitive reproductions and a controlled normal/elevated comparison. Current state code has no timer-based recovery once hidden. A bounded movement-recovery design is justified, but the integrity-level mechanism and real pointer behavior still need maintainer verification; no full design or implementation has been completed.",
+    "evidence": [
+      "The report supplies typing and idle reproductions on 0.102.2862.0 Insider, a normal-window control, measured hook/position differences, and confirmed workarounds of elevated PowerToys or disabling Auto Hide Cursor.",
+      "State.OnTimer returns None when m_hidden is true; State.OnMouseInput is the normal input restoration path.",
+      "The worker polls cursor position on its existing 100 ms timer, providing an independent observation point.",
+      "Merged PR 50803 removes injected-event filtering for touchpad recovery; it does not add restoration when the hook receives no movement callbacks."
+    ],
+    "recommended_action": "Consider for the coordinator's bounded design batch; first reproduce using physical pointer movement and verify timer recovery requirements.",
+    "evaluated_at": "2026-10-19T07:35:05.083767Z",
+    "source_updated_at": "2026-10-15T15:34:16Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked issue fix, matching upstream PR, or existing fork issue/PR/branch covers missed-hook recovery. PR 50803 addresses delivered injected callbacks, not absent callbacks.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover a hidden cursor from independently observed pointer movement",
+      "root_cause": "Confirmed code gap: OnTimer ignores all positions once hidden, leaving normal recovery dependent on OnMouseInput. The reporter's elevated-window callback loss is a supported but not independently reproduced explanation for reaching that gap.",
+      "plan": [
+        "First reproduce the report on 0.102.2862.0 with a non-elevated runner, physical mouse movement, and normal/elevated foreground controls; compare hook delivery against successful position polling.",
+        "In AutoHideCursorWorker.cpp, make cursor-position acquisition report failure rather than representing a failed GetCursorPos as coordinate (0,0); preserve the existing single-threaded state/action queue.",
+        "In AutoHideCursorState.h, evaluate valid sampled movement while hidden before the OnTimer early return; reuse the intentional-movement threshold, request Show, and reset idle timing so the next tick cannot immediately re-hide. Cover typing-only mode as well as idle mode.",
+        "Add AutoHideCursorStateTests.cpp cases for hide-on-typing then timer-only recovery, idle hide then timer-only recovery, unchanged/sub-threshold positions, post-recovery idle delay, and absence of false movement from failed samples.",
+        "Verify compatibility with PR 50803: delivered synthetic/touchpad movement must continue restoring the cursor. Do not require administrator execution as the default repair."
+      ],
+      "verification": [
+        "Build and run the native Auto Hide Cursor state tests using the repository build/vstest workflow.",
+        "For both triggers, compare non-elevated and elevated foreground windows with a non-elevated PowerToys runner; move a physical pointer after hide and confirm visibility returns without changing focus.",
+        "Repeat with typing-only and idle-only configurations, stationary/sub-threshold jitter, multi-monitor coordinates, and touchpad input; confirm restoration and no immediate re-hide.",
+        "Verify disabling/stopping the utility and existing worker failure/restore paths still restore the system cursor scheme."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The missing recovery branch is directly visible and the report includes a strong control comparison. Runtime integrity-boundary behavior, physical versus injected input and sampling edge cases remain unverified; this is a fast-pass candidate, not a converged design."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Auto Hide Cursor reportedly remains globally hidden when a medium-integrity worker misses mouse input over an elevated foreground window. The existing timer receives cursor coordinates but never restores a hidden cursor.",
+    "known_information": [
+      "The report gives precise typing and idle steps, Windows 11 build 26300.9711 and non-administrator PowerToys 0.102.2862.0.",
+      "The reporter says the pointer restores over a normal foreground app but remains hidden over an elevated app, and elevation of PowerToys or disabling the utility works around it.",
+      "The reported measurements use injected moves from an elevated helper; they are reporter evidence, not maintainer-run proof of physical-input behavior.",
+      "Current OnTimer receives a position but returns without restoring whenever hidden; the worker invokes it on its existing 100 ms loop.",
+      "No assignee, linked fix or matching fork trace was found; Issue-Bug, Needs-Triage and Product-Mouse Utilities are present."
+    ],
+    "inferences": [
+      "Missing hook callbacks across the integrity boundary plausibly strand the hidden state, but the exact OS/hook cause is not independently confirmed.",
+      "A guarded position-sampling recovery path is likely to mitigate this failure without demanding administrator execution; input semantics and idle timing must be verified."
+    ],
+    "analysis": "The reporter provides two concrete elevation-sensitive reproductions and a controlled normal/elevated comparison. Current state code has no timer-based recovery once hidden. A bounded movement-recovery design is justified, but the integrity-level mechanism and real pointer behavior still need maintainer verification; no full design or implementation has been completed.",
+    "initial_investigation": [
+      "Pinned State.OnMouseInput restores after intentional movement, whereas OnTimer ignores an already-hidden state: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h#L95-L123",
+      "Worker.Run already samples positions for OnTimer, and its helper does not check GetCursorPos success: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp#L129-L166",
+      "Current MouseHookProc accepts injected movement; merged https://github.com/microsoft/PowerToys/pull/50803 fixes an earlier delivered-input filtering problem, not missing callback delivery.",
+      "Upstream issue timeline, issue-number PR searches, topical cursor/elevation searches, fork issue/PR searches and fork branch inventory found no existing implementation for this report."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Independent reproduction with physical pointer movement across normal and elevated foreground windows.",
+        "why_needed": "The reported diagnostic comparison uses injected movement; maintainer reproduction must confirm the actual missed-hook path before selecting the recovery design.",
+        "how_to_collect": "Maintainer executes the paired local reproduction action; no additional reporter logs are requested."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-51337-design",
+      "type": "approve_design",
+      "label": "Design missed-input cursor recovery",
+      "note": "Fast-pass candidate for the bounded design batch, not a completed implementation-grade design. No fork mirror has been created; any future fork workflow remains approval-gated."
+    },
+    {
+      "id": "issue-51337-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce elevated-window cursor recovery",
+      "note": "Maintainer-side integrity/input validation; do not request another reporter checklist.",
+      "reproduce": {
+        "title": "Compare Auto Hide Cursor recovery over normal and elevated windows",
+        "module": "Mouse Utilities / Auto Hide Cursor",
+        "version_requirement": "Start with reported 0.102.2862.0 Insider; repeat against current source when preparing a fix.",
+        "prerequisites": [
+          "Windows 11; reported system is build 26300.9711.",
+          "PowerToys running as the interactive user without administrator elevation.",
+          "Permission to open an elevated Windows Terminal; a physical mouse or touchpad."
+        ],
+        "setup": [
+          "Save work and keep a non-elevated window available to recover pointer visibility.",
+          "Enable Auto Hide Cursor with hide-on-typing; test hide-on-idle separately.",
+          "Use physical movement first; keep injected-helper measurements as a separate control."
+        ],
+        "steps": [
+          "1. With a normal foreground app, type to hide the pointer, then physically move it; record recovery.",
+          "2. Press Win+X then A to open Terminal (Admin); after the keypress hides the pointer, move physically over the elevated window and record whether it returns.",
+          "3. If UAC changes the sequence, use the independent idle variant: put elevated Terminal in front, wait for the configured idle timeout, then move physically.",
+          "4. Return focus to a normal app and record recovery; disable Auto Hide Cursor if needed to restore visibility.",
+          "5. In a maintainer debug session, compare MouseHookProc delivery and valid GetCursorPos samples while hidden in both controls; do not replace this with a compile-only check.",
+          "6. Repeat after an eventual candidate change and confirm recovery works for both triggers without immediate re-hide; retain touchpad/injected-input coverage from PR 50803."
+        ],
+        "expected_result": "Physical pointer movement restores the global cursor over either integrity-level foreground window without a focus change; the normal-window control remains unchanged.",
+        "attachments": []
+      }
+    }
+  ]
+}

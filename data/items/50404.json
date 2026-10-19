@@ -1,165 +1,60 @@
 {
-  "schemaVersion": 5,
+  "type": "issue",
   "number": 50404,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-12T00:59:02Z",
-  "evaluated_at": "2026-09-12T00:59:02Z",
-  "source_updated_at": "2026-09-11T21:18:20Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50404",
   "title": "FancyZones layouts change",
-  "author": "UniCodd",
-  "authorAssociation": "NONE",
+  "url": "https://github.com/microsoft/PowerToys/issues/50404",
+  "state": "OPEN",
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 2,
+  "evaluated_at": "2026-10-19T07:38:06.745Z",
+  "source_updated_at": "2026-10-17T10:07:29Z",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The new user comment confirms that the regression is specifically bare-digit layout switching during an active drag and traces it to merged PR #48569. Current code intentionally requires Win+Ctrl+Alt+digit during a drag, but that same PR also added EVENT_OBJECT_DESTROY cleanup and unconditional drag-state disablement. Restoring bare digits only while a verified move/size operation is active is now a concrete compatibility design question, not merely user confusion.",
+    "status": "duplicate_or_handled",
+    "rationale": "The issue's current discussion already points to an open draft PR that directly restores the reported bare-digit layout switch. That PR has not been agreed with core contributors and is not merged, so this is existing coverage rather than a resolved upstream bug; do not create a competing design.",
     "evidence": [
-      "The reporter supplies a numbered current-release reproduction for assigned layout digits no longer switching layouts.",
-      "A second user reproduced after a clean install and identified commit dd26d8658 / PR #48569 as the behavior change first shipped in v0.101.2211.0.",
-      "PR #48569 is merged and changed changeLayoutWhileDragging from any digit during a drag to Win+Ctrl+Alt+digit.",
-      "The same merged change added EVENT_OBJECT_DESTROY handling and ensures MoveSizeEnd/AbortMoveSize disable drag state.",
-      "Current LayoutApplyHotKeyTests explicitly call digit-only wording obsolete and test Win+Ctrl+Alt+digit during drag.",
-      "Issue #410 is the historical stuck-drag number-key capture failure; issue #50149 separately reports Shift+digit during drag.",
-      "Focused source/history review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
+      "The report identifies FancyZones v0.101.2362.0 and provides steps to switch layouts with digits while dragging.",
+      "The 2026-10-17 issue comment points maintainers to PR #50695 and asks them to decide whether restoring the old behavior is acceptable.",
+      "PR #50695 is still OPEN and draft; its body proposes reverting the Win+Ctrl+Alt gate for drag-time switching, says core-contributor agreement is pending, and says no automated coverage was added.",
+      "Merged PR #48569 introduced the Win+Ctrl+Alt requirement as part of fixing destroyed-window stuck-drag state; current FancyZones.cpp still applies that gate while dragging."
     ],
-    "recommended_action": "Evaluate a compatibility-safe restoration of bare-digit switching only during a confirmed active drag, with regression coverage for destroyed-window cleanup and ordinary typing.",
-    "evaluated_at": "2026-09-12T00:59:02Z",
-    "source_updated_at": "2026-09-11T21:18:20Z"
+    "recommended_action": "Reuse the existing discussion and draft PR #50695 for the maintainer product decision; do not prepare a parallel fix plan."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The current behavior is intentional, but the latest evidence shows an undocumented regression from the established drag workflow. Because PR #48569 also hardened drag teardown, a narrowly gated restoration can be evaluated without restoring global number-key capture."
+    "status": "existing_fix",
+    "rationale": "Open draft PR #50695 directly covers the reported behavior by restoring the previous bare-digit path. It is only a proposed upstream change; the issue remains open pending maintainer agreement and PR validation.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50695"
+    ]
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "FancyZones v0.101 removed the established bare-digit layout switch during window dragging. A second user traced the change to PR #48569 and argues that its separate destroyed-window cleanup now permits a safer drag-only restoration.",
+    "summary": "The reporter and later commenters describe the loss of bare-digit quick layout switching while dragging, following a FancyZones change that added a modifier requirement to address stuck-drag key swallowing. The latest comment already requests a decision on the open draft restoration PR.",
     "known_information": [
-      "The report is on PowerToys 0.101.2362.0 and provides clear setup and reproduction steps.",
-      "A second user reproduced after a clean install and identified PR #48569 / commit dd26d8658 as the change.",
-      "Current code requires Win+Ctrl+Alt for quick-layout digits even while dragging.",
-      "PR #48569 also added destroyed-window handling and unconditional drag-state cleanup.",
-      "Current UI tests describe digit-only behavior as obsolete.",
-      "Issue #410 documents the original danger of stale drag state stealing number keys.",
-      "Issue #50149 is a separate Shift+digit activation report.",
-      "Live upstream issue activity was reviewed through 2026-09-11T21:18:20Z."
+      "The issue reports PowerToys v0.101.2362.0 and gives reproduction steps using configured FancyZones layouts and digits 0-9.",
+      "A commenter attributes the behavior change to PR #48569 and quotes the added Win+Ctrl+Alt requirement.",
+      "PR #48569 merged a destroy-event/drag cleanup change and a modifier gate; its summary explains the gate was intended to avoid number keys being swallowed if drag state became stuck.",
+      "PR #50695 is an open draft proposing a one-line restoration and explicitly states that core-contributor agreement and tests are pending.",
+      "The latest issue comment links PR #50695 and asks for a maintainer decision; no separate assignee is set."
     ],
     "inferences": [
-      "A drag-only digit path can likely be restored without reintroducing global key capture if it is gated on verified live move/size state.",
-      "Whether to restore the workflow or document the new chord remains a maintainer product decision."
+      "The reported behavior is consistent with the current drag-time modifier condition in FancyZones.cpp.",
+      "Whether the gate remains necessary after the destroyed-window cleanup is a maintainer behavior/safety decision; the available discussion does not establish that the original stuck-state risk is impossible."
     ],
-    "analysis": "The new comment invalidates the prior simple 'expected behavior' disposition: this is an explicit behavior regression introduced inside a safety fix. The source now has stronger cleanup invariants than the old implementation, so the right next step is a focused compatibility design and local regression matrix rather than asking the reporter to use four keys.",
+    "analysis": "The report has a reproducible symptom and specific code history, but a current draft PR already owns the proposed change and asks the same unresolved product question. Reuse that work instead of generating another design. The issue is not considered fixed because the PR is still draft and unmerged.",
     "initial_investigation": [
-      "Read the full issue body and both comments, including the exact diff and release boundary supplied by the second reporter.",
-      "Reviewed merged PR #48569, its four commits, changed FancyZones files, and relationship to #410.",
-      "Inspected current FancyZones::OnKeyDown, drag cleanup, EVENT_OBJECT_DESTROY handling, and LayoutApplyHotKeyTests.",
-      "Reviewed #13585 and #50149 and confirmed neither is a direct duplicate of the newly clarified bare-digit-during-drag regression.",
-      "Focused source/history review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
+      "Live upstream issue body and all four comments reviewed; the attached report is not needed to assess this keyboard behavior, and the issue triage comment says its archive could not be analyzed due to an oversized entry.",
+      "Current upstream source at commit 1b33221dfa19f30d71409eb550807883fb27283a has changeLayoutWhileDragging gated by Win+Ctrl+Alt; the adjacent comment cites the stuck-drag key-stealing rationale.",
+      "Reviewed merged PR #48569 and open draft PR #50695, including their descriptions, comments, reviews, and changed-file summaries.",
+      "No matching MuyuanMS/PowerToys issue or PR trace was found for #50404."
     ],
     "information_gaps": []
   },
-  "linked_work": {
-    "duplicates": [
-      {
-        "number": 13585,
-        "url": "https://github.com/microsoft/PowerToys/issues/13585",
-        "state": "CLOSED",
-        "title": "FancyZones: Shortcuts for Layouts Not Changing Layout",
-        "relationship": "historical similar report, not a direct duplicate; it concerned Win+Ctrl+Alt shortcuts and was shipped fixed in 0.47.1"
-      }
-    ],
-    "related_issues": [
-      {
-        "number": 50149,
-        "url": "https://github.com/microsoft/PowerToys/issues/50149",
-        "state": "OPEN",
-        "title": "SHIFT(hold) + NUMBER not working to switch between Fancy zones personal layouts",
-        "relationship": "separate Shift+number-during-drag scenario in the same release"
-      },
-      {
-        "number": 410,
-        "url": "https://github.com/microsoft/PowerToys/issues/410",
-        "state": "CLOSED",
-        "title": "PowerToys steals my number keys!",
-        "relationship": "historical input-capture issue motivating the current safety behavior"
-      }
-    ],
-    "related_prs": [
-      {
-        "number": 48569,
-        "url": "https://github.com/microsoft/PowerToys/pull/48569",
-        "state": "MERGED",
-        "title": "[FancyZones] Fix stuck drag state and swallowed keys when a window is destroyed mid-drag",
-        "relationship": "current behavior rationale; requires Win+Ctrl+Alt while dragging"
-      }
-    ],
-    "covering_prs": []
-  },
-  "actions": [
-    {
-      "id": "approve_design-50404",
-      "type": "approve_design",
-      "label": "Design drag-only digit shortcut restoration",
-      "primary": true,
-      "confirm": true,
-      "design": {
-        "title": "Restore bare-digit quick layouts only for a verified active drag"
-      }
-    },
-    {
-      "id": "reproduce-50404",
-      "type": "reproduce",
-      "label": "Verify FancyZones drag-only digit safety",
-      "primary": false,
-      "confirm": true,
-      "reproduce": {
-        "title": "Compare drag-only digit behavior with stale-drag cleanup",
-        "module": "FancyZones",
-        "prerequisites": [
-          "At least two configured FancyZones layouts with quick-layout numbers"
-        ],
-        "steps": [
-          "Assign quick-layout digits 0-2 and open a normal application window.",
-          "Begin dragging the window with the configured FancyZones activation mode and press a bare assigned digit.",
-          "End the drag, focus a text field, and type the same digit.",
-          "Repeat while destroying the dragged window mid-drag, then type digits in another app.",
-          "Verify Win+Ctrl+Alt+digit still switches layouts."
-        ],
-        "expected_result": "A product-approved compatibility build may accept bare digits only during a verified active drag; digits outside or after an aborted/destroyed drag must remain untouched.",
-        "version_requirement": "Current upstream main"
-      },
-      "note": "Display-only reproduction plan; it does not post to GitHub."
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Restore bare-digit quick layouts only for a verified active drag",
-      "root_cause": "PR #48569 coupled its stale-drag safety fix with a new Win+Ctrl+Alt requirement for the drag-specific quick-layout path, removing the prior bare-digit behavior even during a valid move/size operation.",
-      "plan": [
-        "Separate the global Win+Ctrl+Alt quick-layout chord from the drag-only digit shortcut in FancyZones::OnKeyDown.",
-        "Permit a bare assigned digit only when m_windowMouseSnapper exists and DraggingState confirms an active move/size operation.",
-        "Preserve EVENT_OBJECT_DESTROY, MoveSizeEnd, and AbortMoveSize cleanup so a destroyed window cannot leave digit capture active.",
-        "Add UI coverage for bare digit during a live drag, ordinary digits outside a drag, destroyed-window drag cleanup, and the existing Win+Ctrl+Alt path."
-      ],
-      "verification": [
-        "During an active FancyZones drag, a configured bare digit switches layouts.",
-        "Outside an active drag, ordinary number keys are never swallowed.",
-        "Destroying the dragged window clears the state and subsequent number typing reaches the foreground app.",
-        "Win+Ctrl+Alt+digit continues to work in and out of drag."
-      ],
-      "confidence": {
-        "score": 83,
-        "level": "yellow",
-        "rationale": "The exact behavior-changing commit and current guard are known. Product approval is still required because the current test deliberately codifies the new chord and the safety invariant must be revalidated."
-      }
-    }
-  ]
+  "actions": [],
+  "schemaVersion": 5,
+  "kind": "issue",
+  "generated_at": "2026-10-19T08:14:15.4072252Z"
 }

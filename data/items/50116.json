@@ -2,77 +2,99 @@
   "schemaVersion": 5,
   "number": 50116,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "FrenchPie",
-  "confidence": "High",
-  "status": {
-    "glyph": "✅",
-    "label": "Duplicate or handled",
-    "detail": "The setup failure belongs in the open canonical KeysNotMatched investigation."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Close as duplicate of #27945",
-    "reason": "Preserve the settings-overwrite workaround as canonical evidence."
-  },
-  "generated_at": "2026-09-12T01:02:28.217857Z",
-  "evaluated_at": "2026-09-12T01:02:28.217857Z",
-  "source_updated_at": "2026-08-26T05:59:40Z",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The failure and workaround fall within the open KeysNotMatched reports #27945 and #26717. Keeping another independent fix plan would duplicate the canonical connection/settings investigation.",
-    "evidence": [
-      "The reporter tried generated and manual 16-character keys, setup flows, IP mapping, and reinstalling.",
-      "Editing both settings.json files while MWB is closed establishes a working connection.",
-      "Open issues #27945 and #26717 already track persistent KeysNotMatched/invalid-key setup failures."
-    ],
-    "recommended_action": "Close as duplicate of #27945 and carry the UI-overwrite workaround there.",
-    "evaluated_at": "2026-09-12T01:02:28.217857Z",
-    "source_updated_at": "2026-08-26T05:59:40Z"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A code fix may be required, but the open canonical KeysNotMatched issue already owns this failure family."
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "Mouse Without Borders rejects matching keys entered through its UI, while manually placing the same SecurityKey in both settings files works when MWB is stopped.",
-    "known_information": [
-      "PowerToys 0.101.2362 via WinGet is affected.",
-      "The same manual key works when written directly to both settings files with MWB stopped.",
-      "MWB settings use a file watcher and asynchronous SaveSettings calls around SecurityKey updates."
-    ],
-    "inferences": [
-      "A settings write/reload race is plausible, but duplicate consolidation should precede a separate design."
-    ],
-    "analysis": "The working manual-file workaround proves the network peers can agree on a key and focuses the canonical issue on UI persistence/reload rather than key validity.",
-    "initial_investigation": [
-      "Read the full issue and three comments through 2026-08-26T05:59:40Z.",
-      "Verified #27945 and #26717 remain open for KeysNotMatched/invalid key behavior.",
-      "Reviewed MouseWithoutBorders/App/Class/Setting.cs, which watches settings.json and asynchronously saves SecurityKey changes.",
-      "The maintainer requested /bugreport, but no reporter response is present."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "post_comment",
-      "label": "Close as duplicate of #27945",
-      "comment": {
-        "body": "Thanks for the detailed troubleshooting and the useful workaround. This belongs with the open Mouse Without Borders `KeysNotMatched` investigation in #27945 (with closely related setup failures also recorded in #26717). Please consolidate this report there and include the key detail that entering the same value through the UI fails, while writing the identical `SecurityKey` to both `settings.json` files with MWB stopped succeeds. That distinction focuses the existing investigation on settings persistence/reload rather than key generation or network reachability."
-      }
-    }
-  ],
   "title": "Mouse without border: KeysNotMatched",
   "url": "https://github.com/microsoft/PowerToys/issues/50116",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "pending_author": false,
+  "generated_at": "2026-10-19T07:35:47Z",
+  "evaluated_at": "2026-10-19T07:35:47Z",
+  "source_updated_at": "2026-10-17T20:06:07Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "comments": 3
+  "comments": 4,
+  "proposed_fixes": [],
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The new October report adds persistence and magic-number evidence, while #27945 now links concrete key-edit persistence PR #51377. Existing implementation work covers the strongest supported mechanism; do not repeat the stale broad duplicate closure or create a competing design.",
+    "evidence": [
+      "The original reporter tried generated and simple manual keys, multiple entry methods, IP mapping and reinstalling.",
+      "The original workaround is to write matching settings with MWB closed.",
+      "The October 17 commenter reports persistence on 0.102.2862.0 in both installation scopes and a working stopped-PowerToys file-edit workaround.",
+      "The same commenter reports a 22-character entry truncated to 16 characters with different magic numbers; truncation and persistence must not be assumed to be the same defect.",
+      "#27945 now links open PR #51377, whose diff updates stored Settings.MyKey together with Encryption.MyKey in frmMatrix.UpdateKey."
+    ],
+    "recommended_action": "Verify the reported UI-edit/reload sequence against existing PR #51377 on matched-version test peers; preserve any residual truncation or version-mismatch issue separately.",
+    "evaluated_at": "2026-10-19T07:35:47Z",
+    "source_updated_at": "2026-10-17T20:06:07Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR #51377 implements and adds tests for the key-edit persistence path described in #27945. Current main's frmMatrix.UpdateKey changes only Encryption.MyKey, while the reload path can adopt the persisted key. This concrete attempt strongly matches the manual-file workaround, but does not establish that all invalid-key symptoms or long-key truncation are resolved.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51377"
+    ]
+  },
+  "issue_context": {
+    "summary": "MWB rejects keys entered through its UI while stopped-process file edits work. A new 0.102.2862.0 report adds differing magic numbers and truncation observations. An existing PR addresses typed-key persistence, so it should be tested rather than replaced by another fix plan.",
+    "known_information": [
+      "The original version is 0.101.2362.0 installed with WinGet; attempts included simple 16-character manual keys, so special-character escaping alone does not explain all attempts.",
+      "The October 17 commenter reports the same failure on 0.102.2862.0 with both per-user and machine-wide installs.",
+      "Both reports say stopped-process manual settings edits restore connection.",
+      "A maintainer requested /bugreport and /reportbug in August; no ZIP has since been attached, but a new commenter supplied substantive behavior evidence.",
+      "The issue remains open and unassigned, with four comments and no Needs-Author-Feedback label.",
+      "PR #51377 is open and non-draft; #27945's latest comment explicitly explains the stored/live-key divergence it addresses."
+    ],
+    "inferences": [
+      "Typed-key persistence is a substantially better-grounded explanation than attributing every failure to arbitrary concurrent-file access.",
+      "The new report predates any merge of #51377; it is not evidence that the PR has failed.",
+      "The overview in #51077 also flags protocol-version mismatch as an alternative. Both peers' exact versions are not established, so that alternative is not disproved.",
+      "The 22-to-16-character truncation observation may be a separate UI behavior; no independent correction is proposed from that observation alone."
+    ],
+    "analysis": "The canonical artifact stopped at an August duplicate recommendation and misses both the October behavior evidence and the linked concrete fix. Reclassify fix coverage as existing_fix, drop the stale close proposal, and provide a maintainer-side regression comparison using the existing PR. Do not ask for secret keys or infer a generic write race from related file-lock reports.",
+    "initial_investigation": [
+      "Read the entire live body and all four comments, including the October 17 update; exhausted timeline pagination.",
+      "The non-digest timeline reference is #51077, whose overview flags version incompatibility as a possible competing cause.",
+      "Inspected #27945 and its latest linked #51377 explanation, plus #26717, #26537 and #48708 as background rather than proven duplicates.",
+      "https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseWithoutBorders/App/Form/frmMatrix.cs#L506-L521",
+      "https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseWithoutBorders/App/Class/Setting.cs#L93-L181",
+      "Read PR #51377 body and frmMatrix.cs diff: typed valid keys are applied to both settings and runtime key, with reload/invalid-input regression tests.",
+      "Searched all-state MuyuanMS/PowerToys issues/PRs and matching branch refs for #50116; no matching issue-specific trace was found. Reuse the upstream PR rather than invent another fork plan.",
+      "No two-machine connection test or build of #51377 was executed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify typed-key persistence with PR #51377",
+      "reproduce": {
+        "title": "Compare MWB typed-key persistence before and after the existing fix",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Use identical PowerToys versions on both peers. Start with reported 0.102.2862.0 or 0.101.2362.0, then compare an isolated development build of PR #51377.",
+        "prerequisites": [
+          "Two Windows test machines with MWB enabled and a working permitted network connection.",
+          "Use disposable test settings and preserve the original configuration.",
+          "Use a non-sensitive synthetic key; never publish actual pairing keys or complete settings files."
+        ],
+        "setup": [
+          "Ensure both peers use the same exact build and record installation scope.",
+          "Prepare two distinct valid synthetic 16-character keys and identify the legacy MWB matrix form separately from PowerToys Settings."
+        ],
+        "steps": [
+          "1. Establish a baseline connection using a known test key.",
+          "2. In the MWB matrix form, enter the same different valid test key on both peers and apply the change.",
+          "3. Check whether connection and displayed magic-number agreement reflect the edited key; reopen the form and restart MWB to force persistence/reload.",
+          "4. If the key reverts, compare with the reported workaround: fully exit PowerToys on both machines, apply the same test key to the relevant settings, then restart. Do not edit live settings.",
+          "5. Repeat the UI-edit/reload test in an isolated build of existing PR #51377 and run its key-persistence/invalid-input tests.",
+          "6. Separately record whether a 22-character entry is truncated and whether the two settings surfaces behave differently. Do not treat this as proof of the persistence defect."
+        ],
+        "expected_result": "An accepted UI key edit survives reload and restart and produces matching peer state. Rejected input leaves both stored and runtime keys unchanged. Any remaining failure is separated from mismatched versions or long-key truncation."
+      }
+    }
+  ]
 }

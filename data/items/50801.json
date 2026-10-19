@@ -2,13 +2,6 @@
   "schemaVersion": 5,
   "number": 50801,
   "kind": "issue",
-  "track": "triage",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-27T00:03:11Z",
-  "evaluated_at": "2026-09-27T00:03:11Z",
-  "source_updated_at": "2026-09-26T12:20:48Z",
   "title": "Windows virtual desktop switch flash/overlay disappeared after enabling PowerToys Snap and/or Workspaces",
   "url": "https://github.com/microsoft/PowerToys/issues/50801",
   "labels": [
@@ -16,70 +9,75 @@
     "Product-FancyZones",
     "Needs-Triage"
   ],
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-19T07:35:57Z",
+  "evaluated_at": "2026-10-19T07:35:57Z",
+  "source_updated_at": "2026-10-19T06:53:35Z",
   "judgment": {
     "status": "reproducible",
-    "rationale": "The report provides the feature toggle, exact virtual-desktop keyboard shortcut, before/after behavior, Windows build, and PowerToys version. It is specific enough for maintainer-side reproduction without a generic request for diagnostics; the responsible integration remains unknown.",
+    "rationale": "The original overlay-only report now has a second reporter describing complete loss of desktop switching, restored by disabling FancyZones. These are distinct observations with a useful on/off comparison, not proof of one root cause.",
     "evidence": [
-      "PowerToys 0.96.1 and Windows 11 Pro build 26100 are stated.",
-      "The native desktop-switch overlay appeared before enabling Snap Pages / Layout Design, but not afterward when switching with Ctrl+Win+Right/Left.",
-      "Disabling Override Windows Snap did not restore the overlay; no other reporter follow-up exists."
+      "The body reports PowerToys 0.96.1 on Windows 11 Pro build 26100 and Ctrl+Win+Left/Right losing the native overlay after enabling the described Snap/Layout feature.",
+      "Disabling Override Windows Snap did not restore the original reporter's overlay.",
+      "The 2026-10-19 comment reports that desktop switching itself stops and disabling FancyZones restores it: https://github.com/microsoft/PowerToys/issues/50801#issuecomment-6261282635.",
+      "Current FancyZones::OnKeyDown excludes plain Win+Ctrl from its ordinary arrow snap condition; a separate configured monitor-rotation chord can consume arrows. Neither establishes what happened on the reported 0.96.1 build."
     ],
-    "recommended_action": "Reproduce the desktop-switch overlay behavior with FancyZones on the reported OS/build before choosing a fix design.",
-    "evaluated_at": "2026-09-27T00:03:11Z",
-    "source_updated_at": "2026-09-26T12:20:48Z"
+    "recommended_action": "Run an on/off reproduction matrix and distinguish missing animation from a swallowed desktop-switch shortcut before selecting a fix.",
+    "evaluated_at": "2026-10-19T07:35:57Z",
+    "source_updated_at": "2026-10-19T06:53:35Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The visible symptom has a maintainer-ready repro, but the report alone does not identify whether FancyZones, another PowerToys module, or Windows controls the missing shell overlay; a code fix cannot yet be scoped."
+    "rationale": "A repository fix is not yet sufficiently scoped: the two reports describe different effects, the exact enabling setting is ambiguous, and no failing code branch is confirmed. This is not a finding that the behavior is expected or outside PowerToys ownership."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "The Windows virtual-desktop switch overlay reportedly stops appearing after enabling PowerToys Snap/Layout Design, even with Override Windows Snap disabled.",
+    "summary": "A virtual-desktop switch overlay disappeared after enabling a PowerToys layout feature; a newer commenter instead loses desktop switching altogether and restores it by disabling FancyZones.",
     "known_information": [
-      "The report names Windows 11 Pro build 26100 and PowerToys 0.96.1.",
-      "The trigger is Ctrl+Win+Right/Left after enabling Snap Pages / Layout Design.",
-      "The same Windows overlay appeared before the feature was enabled.",
-      "Disabling Override Windows Snap did not bring it back."
+      "Original environment: PowerToys 0.96.1, Windows 11 Pro build 26100, auto-update installation.",
+      "Original shortcut: Ctrl+Win+Left/Right. Override Windows Snap being disabled did not restore the overlay.",
+      "The newer commenter supplies a FancyZones enabled/disabled comparison but no PowerToys or Windows version.",
+      "The issue remains open, unassigned, and labeled Product-FancyZones and Needs-Triage. No attachment is supplied."
     ],
     "inferences": [
-      "The setting transition correlates with the symptom; the report does not prove which hook or Windows component suppresses the overlay."
+      "FancyZones interception is worth testing because of the newer on/off comparison, but the missing overlay and missing switch may have different causes.",
+      "The original report's informal feature name does not unambiguously identify a specific FancyZones option.",
+      "Current-main modifier guards are counterevidence against assuming the ordinary snap handler always swallows Ctrl+Win+Arrow; they do not disprove a version-specific or configured-chord conflict."
     ],
-    "analysis": "The existing before/after comparison and keyboard sequence support a focused local repro. Observe the Windows shell overlay with PowerToys off and FancyZones on, then isolate the specific feature before proposing code changes.",
+    "analysis": "The public report supports maintainer reproduction without another generic diagnostics request. Preserve the new distinction, compare the original version and current stable, and identify the exact setting and event consumer before designing code changes.",
     "initial_investigation": [
-      "Read the live body and automated triage comment; no additional evidence, linked fix, or reporter response changes the concrete repro."
+      "Read the complete live body and both comments, including the new FancyZones-disable comparison.",
+      "Inspected src/modules/fancyzones/FancyZonesLib/FancyZones.cpp at upstream main 1b33221dfa19f30d71409eb550807883fb27283a: OnKeyDown and IsMonitorRotationChordDown.",
+      "The ordinary snap branch requires Win without Ctrl/Shift, or Win+Ctrl+Alt; configured monitor rotation is a separate earlier interception path.",
+      "No cross-reference timeline entries or matching upstream PR search results were found. Searches of MuyuanMS/PowerToys issues, PRs and branch refs found no matching issue-number trace.",
+      "The canonical main artifact still covered only 2026-09-26 activity and incorrectly said no additional reporter follow-up existed."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "reproduce-desktop-overlay-50801",
+      "id": "reproduce-50801",
       "type": "reproduce",
-      "label": "Reproduce virtual-desktop overlay",
-      "primary": true,
+      "label": "Reproduce overlay versus blocked desktop switching",
       "reproduce": {
         "module": "FancyZones",
         "prerequisites": [
-          "Windows 11 Pro build 26100 or a matching Windows 11 build",
-          "PowerToys 0.96.1 where available",
-          "Create at least two Windows virtual desktops"
+          "A Windows 11 test machine with at least two virtual desktops; start with build 26100 and PowerToys 0.96.1 when available, then compare current stable.",
+          "Record the exact UI option selected for the report's Snap Pages / Layout Design wording; do not assume that is an actual option name."
         ],
         "steps": [
-          "With PowerToys disabled, switch between desktops using Ctrl+Win+Right/Left and note whether the native Windows desktop-switch overlay appears.",
-          "Enable PowerToys and FancyZones Snap Pages / Layout Design, then use the same shortcut and observe the overlay.",
-          "Disable Override Windows Snap and repeat; if the overlay remains absent, disable FancyZones and repeat to isolate the setting."
+          "1. With PowerToys exited, use Ctrl+Win+Left/Right and record separately whether the active desktop changes and whether the native overlay appears.",
+          "2. Enable PowerToys with FancyZones disabled and repeat as a runner-only control.",
+          "3. Enable FancyZones and the identified layout option. Repeat the shortcut, recording desktop identity and overlay separately.",
+          "4. Disable Override Windows Snap while retaining FancyZones, repeat, then disable FancyZones entirely and repeat.",
+          "5. On builds exposing monitor rotation, record its configured chord and repeat with that feature disabled. Inspect the hook branch only if the switch itself is suppressed.",
+          "6. Compare original and current stable results; do not equate an animation-only failure with full shortcut suppression."
         ],
-        "expected": "The native Windows overlay remains visible when switching virtual desktops."
+        "expected": "Ctrl+Win+Left/Right changes desktops and retains the native Windows switch indication in the baseline and FancyZones-enabled comparisons."
       }
     }
-  ],
-  "status": {
-    "glyph": "!",
-    "label": "Ready to reproduce",
-    "detail": "Exact shortcut and before/after settings comparison are supplied; the owning path remains unconfirmed."
-  },
-  "next_action": {
-    "glyph": "->",
-    "label": "Reproduce virtual-desktop overlay",
-    "reason": "Isolate the FancyZones/Windows interaction before planning a fix."
-  }
+  ]
 }
