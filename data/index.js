@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-22T02:21:39.3382546+08:00",
+  "generated_at": "2026-10-22T02:48:09.7494141+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 187,
+    "open_prs": 188,
     "open_issues": 12304,
     "community": 11413,
-    "artifacts": 1312
+    "artifacts": 1313
   },
   "impact": {
-    "as_of": "2026-10-22T02:21:39.3382546+08:00",
+    "as_of": "2026-10-22T02:48:09.7494141+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -126,6 +126,7 @@ window.BOARD_INDEX = {
     51214,
     51213,
     51210,
+    51209,
     51208,
     51206,
     51197,
@@ -1413,6 +1414,48 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51469",
+      "kind": "pr",
+      "number": 51469,
+      "url": "https://github.com/microsoft/PowerToys/pull/51469",
+      "title": "cmdpal: make sure Mike reviews things",
+      "author": "zadjii-msft",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "mirror",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-21T18:28:10Z",
+      "updated_at": "2026-10-21T18:30:51Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "APPROVED",
+      "ci_state": "pending",
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1103,
+        "fork_title": "[PR 51469] cmdpal: make sure Mike reviews things",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51469-d359e44d",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1103"
+      }
+    },
+    {
       "id": "pr-51466",
       "kind": "pr",
       "number": 51466,
@@ -1445,7 +1488,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "pending",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNSTABLE",
       "mirror": {
         "kind": "pr",
         "fork_number": 1102,
@@ -3388,13 +3431,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
