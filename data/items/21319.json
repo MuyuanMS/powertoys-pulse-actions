@@ -2,32 +2,119 @@
   "number": 21319,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-08T23:32:24Z",
+  "generated_at": "2026-10-20T20:11:11Z",
+  "evaluated_at": "2026-10-20T20:09:33Z",
+  "source_updated_at": "2026-10-11T16:50:16Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix hypothesis; reproduce current hotkey path",
+    "detail": "Several reports describe shell/application shortcuts observing the original Win key despite remapping; confirm current behavior first."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Reproduce Win-to-Alt system shortcut",
+    "reason": "Check whether Windows still receives the physical Win chord while the application receives mapped Alt."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "approve-win-alt-21319",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve focused fork-side investigation after current reproduction; no upstream write."
+    },
+    {
+      "id": "reproduce-win-alt-21319",
+      "type": "reproduce",
+      "label": "Reproduce Win-to-Alt system shortcut",
+      "reproduce": {
+        "title": "Check physical Win-to-Alt shortcut delivery",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current PowerToys and supported Windows build",
+        "prerequisites": [
+          "Enable Left Win→Left Alt remap.",
+          "Use an app with Alt+G and Alt+S shortcuts; observe Windows Game Bar hotkeys."
+        ],
+        "setup": [],
+        "steps": [
+          "Test physical Left Win+G and Left Win+S with remap enabled; record app and shell behavior.",
+          "Compare with Keyboard Manager disabled.",
+          "Repeat reverse Left Alt/Left Win mapping if available; record any extra chord or stuck modifier."
+        ],
+        "expected_result": "Physical Left Win maps to the intended application Alt shortcut without unintended shell Win/Alt activation or stuck modifier; record current behavior if not."
+      }
+    }
+  ],
+  "confidence": "Yellow",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The original Blender repro and later comments confirm related Win/Alt shortcut interference across apps and current Windows. A plausible hypothesis is that shell-registered Win shortcuts still see the physical source key, but current OS behavior and hook path need reproduction.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Open Issue-Bug with Needs-Triage, Needs-Team-Response, Product-Keyboard Manager labels; no assignee.",
+      "Original report maps Left Win→Left Alt; Blender Alt+G fails or Game Bar responds while Alt+S works; reports PowerToys 0.63 and Blender 3.3.x.",
+      "Later comments report Win+R/Win+G interference; August 2025 commenter reports Windows 11 24H2 build 26100.4946 and PowerToys 0.92.1.",
+      "Latest comment (2026-03-08) says #43826 may be a duplicate; #43826 is closed but has no public closure rationale, so relation is related, not confirmed duplicate."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-08T23:32:24Z"
-  }
+    "recommended_action": "Reproduce Left Win→Left Alt on current Windows/PowerToys, comparing application Alt shortcuts and shell/Game Bar chord before proposing an input change.",
+    "evaluated_at": "2026-10-20T20:09:33Z",
+    "source_updated_at": "2026-10-11T16:50:16Z"
+  },
+  "title": "Remapping physical [Left Win] -> to [Left Alt] key, cause issues with shortcuts in some app",
+  "url": "https://github.com/microsoft/PowerToys/issues/21319",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No confirmed fix is linked. Cross-application and shell-hotkey reports support a testable input-delivery hypothesis, but current behavior must be verified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Win-to-Alt remap semantics for system shortcuts",
+      "root_cause": "Hypothesis: the shell still observes physical Left Win while Keyboard Manager exposes remapped Left Alt, producing an unintended Win/Alt chord or consuming the application shortcut. Hook ordering, reserved hotkey behavior, and app-specific handling remain competing explanations.",
+      "plan": [
+        "On current Windows, reproduce Left Win→Left Alt and compare Alt+G/Alt+S in an app with whether Game Bar or another shell hotkey activates.",
+        "Trace key-down/up and shell/application-visible modifiers for the failing chord; check OS-reserved hotkeys before changing global remap behavior.",
+        "If the source modifier leaks through, normalize it at the remap boundary and cover Win→Alt, reverse mapping, key-up ordering, and unaffected shell shortcuts."
+      ],
+      "verification": [
+        "Verify physical Left Win+G acts as Alt+G without unintended shell/Game Bar activation.",
+        "Verify Win+E and ordinary Alt chords still work and no modifier sticks after release."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "Multiple users report related symptoms, but reserved OS shortcuts and app behavior leave the exact failing component uncertain."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remapping physical Left Win to Left Alt breaks selected application shortcuts, and reports suggest the original Win chord may still reach shell hotkeys.",
+    "known_information": [
+      "Open Issue-Bug, Needs-Triage, Needs-Team-Response, Product-Keyboard Manager; no assignee.",
+      "Original report says Left Win→Left Alt makes Blender Alt+G fail while Alt+S works; PowerToys 0.63 and Blender 3.3.x.",
+      "Later comments describe Game Bar interference, including Windows 11 24H2/PowerToys 0.92.1.",
+      "Latest comment (2026-03-08) mentions #43826 as a possible duplicate; it is closed but has no closure rationale."
+    ],
+    "inferences": [
+      "Physical Win may still be visible to shell-registered shortcuts after remapping, but this is not confirmed.",
+      "Reports may share an input boundary issue; reverse mappings and applications differ."
+    ],
+    "analysis": "Specific reports justify maintainer-side reproduction rather than generic reporter logs. Keep a yellow hypothesis because shell reservation, hook ordering and application handling remain plausible alternatives.",
+    "initial_investigation": [
+      "Read body and discussion including latest #43826 reference and 2025 current-version report.",
+      "Checked #43826 live: closed, describes reverse Alt/Win mapping and Game Bar-like behavior, but has no closure comment; treated only as related evidence.",
+      "Reviewed live labels, assignees and updatedAt; no confirmed fix or maintainer resolution for #21319."
+    ],
+    "information_gaps": []
+  },
+  "schemaVersion": 5
 }

@@ -1,33 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 32126,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:44:00Z",
+  "evaluated_at": "2026-10-20T16:44:00Z",
   "source_updated_at": "2024-03-30T09:42:27Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32126",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproduce MWB matrix propagation",
+    "detail": "The UI/device ordering report is actionable for reproduction, but Windows edition is not a demonstrated cause."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare accepted and received device matrices",
+    "reason": "Determine whether ordering is overwritten during persistence, peer propagation or reconnect."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report supplies a two-PC layout swap that does not change traversal. The public discussion contains only a bot suggestion; the old empty-assignee handled claim was unsupported.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.79.0 on Windows 11 Pro/Home reportedly keeps the Pro computer on the left despite swapping layout.",
+      "MachineStuff.cs exposes MachineMatrix, sends individual matrix entries in SendMachineMatrix and updates/persists received entries in UpdateMachineMatrix.",
+      "Related issue 31017 concerns ordering resets; issue 29279 has a different vertical/UI symptom and does not prove resolution.",
+      "The broad MWB tracking issue 51077 is not an implementation for this report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce on two physical PCs and trace the accepted, persisted and peer-received matrix before designing a synchronization fix.",
+    "evaluated_at": "2026-10-20T16:44:00Z",
     "source_updated_at": "2024-03-30T09:42:27Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A conditional matrix-state correction is relevant; no targeted linked fix or active ownership evidence covers the report."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep accepted MWB device order consistent across peers",
+      "root_cause": "Unconfirmed: the local accepted matrix may not persist or may be overwritten by peer matrix propagation/reconnect. The reported Pro/Home difference is correlation, not an identified edition-specific code path.",
+      "plan": [
+        "Reproduce a two-machine swap and compare UI order, local MachineMatrix, persisted state and the matrix received by the other PC.",
+        "Trace SendMachineMatrix/UpdateMachineMatrix and reconnect processing to identify the first state that diverges.",
+        "If peer propagation overwrites a newly accepted order, correct the confirmed update sequencing/commit boundary; if the local accept path is wrong, fix that path instead.",
+        "Add tests for reversed pairs, unused matrix slots, reconnect/restart and accepting a layout from either endpoint."
+      ],
+      "verification": [
+        "Accepted device order matches actual left/right traversal immediately and after reconnect/restart.",
+        "Both PCs display the same accepted matrix.",
+        "Two-row and disabled/unused-slot arrangements retain existing behavior."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "Source identifies the matrix persistence and packet boundaries, but no runtime comparison establishes whether the UI save, peer overwrite or traversal calculation fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders reportedly ignores a two-PC layout reversal, leaving one Windows 11 Pro device always to the left.",
+    "known_information": [
+      "The two Windows editions, PowerToys version and ineffective swap are supplied.",
+      "Only a similarity bot commented; there is no concrete linked fix.",
+      "The source propagates and persists a shared machine matrix across endpoints."
+    ],
+    "inferences": [
+      "A state disagreement is plausible; assigning causation to Windows edition is not supported."
+    ],
+    "analysis": "A two-physical-PC reproduction is more useful than generic logs. Related broad tracking and older closed layout reports do not make this issue handled.",
+    "initial_investigation": [
+      "Read the complete body, bot comment and cross-reference timeline.",
+      "Inspected MachineMatrix, SendMachineMatrix and UpdateMachineMatrix in MachineStuff.cs.",
+      "Compared related layout reports without assuming their fixes cover this case."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32126",
+      "type": "approve_design",
+      "label": "Review device-order investigation",
+      "description": "Approve the bounded matrix diagnosis and conditional correction, not an unverified Windows-edition fix."
+    },
+    {
+      "id": "reproduce-32126",
+      "type": "reproduce",
+      "label": "Reproduce two-PC layout reversal",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "prerequisites": [
+          "Use two physical Windows PCs with matching current PowerToys versions and working MWB connectivity.",
+          "Record Windows editions, device aliases and the initial matrix; use a development build to trace matrix updates. Do not publish connection keys."
+        ],
+        "steps": [
+          "Place PC A left of PC B, accept and confirm traversal.",
+          "Swap them in settings on PC A, accept and compare both PCs' UI, persisted matrix and received matrix.",
+          "Repeat the swap from PC B.",
+          "Reconnect and restart each endpoint separately; record when accepted order first differs from actual traversal."
+        ],
+        "expected_result": "The accepted order is propagated consistently and controls traversal regardless of Windows edition.",
+        "setup_prompt": "Prepare two physical MWB-capable PCs on a trusted network, verify baseline connectivity, and capture non-sensitive matrix order before/after each accepted swap. Use aliases rather than real hostnames in shared evidence."
+      }
+    }
+  ]
 }

@@ -1,33 +1,92 @@
 {
+  "schemaVersion": 5,
   "number": 33815,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Peek becomes unresponsive during repeated JPEG preview",
+  "url": "https://github.com/microsoft/PowerToys/issues/33815",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-09-11T20:15:00Z",
   "status": {
     "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Related memory fix merged; verify hang coverage",
+    "detail": "PR #34484 fixes unmanaged bitmap leakage. It may explain repeated-preview failure, but the reported unclosable process has not been confirmed resolved."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Validate JPEG navigation after bitmap disposal fix",
+    "reason": "Check the merged fix before proposing duplicate disposal work; distinguish memory growth from a remaining hang."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report supplies repeated JPEG navigation and a ZIP. A concrete merged disposal fix addresses a related mechanism, so first validate its coverage rather than inventing a competing fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "0.82.0 report describes repeated JPEG previews, unresponsiveness and inability to close the process; a ZIP and screenshot are attached.",
+      "The sole commenter explicitly connects the symptom to #33593 and proposed fix #34484, without guaranteeing resolution.",
+      "https://github.com/microsoft/PowerToys/pull/34484 merged on 2024-09-16; FilePreview.xaml.cs now disposes replaced disposable previewers according to its description.",
+      "https://github.com/microsoft/PowerToys/pull/45402 is closed unmerged; its author states the change was an empty placeholder, not an implementation."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Exercise repeated JPEG navigation on a build containing #34484 and investigate any remaining unresponsiveness separately.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-11T20:15:00Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged PR #34484 addresses the unmanaged-bitmap leak raised in the discussion. Coverage is plausible but partial: no reviewed evidence proves it fixes the unclosable hang. Closed placeholder PR #45402 is not a shipped fix.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/34484"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Peek stopped responding while cycling JPEG images; a subsequently merged previewer-disposal fix targets a related bitmap leak, but end-to-end hang resolution remains unverified.",
+    "known_information": [
+      "The report includes a diagnostic ZIP and screenshot from 0.82.0.",
+      "The suggested memory-leak fix #34484 is merged and includes a described sustained-memory navigation test.",
+      "Direct issue-specific PR #45402 was closed because it contained placeholder code.",
+      "The issue remains open and unassigned."
+    ],
+    "inferences": [
+      "Resource exhaustion could explain repeated-preview failure, but inability to terminate may indicate a separate mechanism."
+    ],
+    "analysis": "Do not claim the issue is solved from a related merge, and do not count a closed empty PR as implementation. Existing concrete disposal work should be validated before duplicating it.",
+    "initial_investigation": [
+      "Reviewed the report, full discussion, timeline and related PR search.",
+      "Read #34484's merged state, affected files, disposal explanation and manual validation; read #45402's unmerged state and placeholder closure comment.",
+      "Identified src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs as the previewer lifetime owner; the attached ZIP was not downloaded or analyzed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-33815",
+      "type": "reproduce",
+      "label": "Verify JPEG hang after merged disposal fix",
+      "primary": true,
+      "reproduce": {
+        "module": "Peek",
+        "version": "A current stable build confirmed to contain merged PR #34484",
+        "prerequisites": [
+          "A folder of varied JPEG images and a developer process-memory view.",
+          "Use a normal interactive session; do not assume the old hang is reproduced."
+        ],
+        "steps": [
+          "Open a JPEG in Peek and repeatedly navigate forward/back through the image folder.",
+          "Record process memory over several minutes and after repeated previewer replacement.",
+          "Close Peek normally and check that its UI remains responsive and releases previews.",
+          "If a hang occurs, record whether memory is growing and whether normal close works; capture a developer hang trace to distinguish disposal from another wait."
+        ],
+        "expected_result": "Memory remains bounded during repeated navigation and the window remains closable. A remaining hang is not dismissed solely because #34484 merged.",
+        "setup_prompt": "Prepare a local folder of ordinary generated JPEG test images with varied dimensions, without private photos, for repeated Peek navigation and memory measurement.",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/issues/33815",
+          "https://github.com/microsoft/PowerToys/pull/34484"
+        ]
+      }
+    }
+  ]
 }

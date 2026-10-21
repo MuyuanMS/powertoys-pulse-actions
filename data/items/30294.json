@@ -2,32 +2,125 @@
   "number": 30294,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-20T10:00:42Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "📦",
+    "label": "Reproduce redirected-folder installation",
+    "detail": "The per-user installer fails with a cross-drive Roaming junction; a later release changed the failure to a silent exit rather than confirming a fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare junction and ordinary-profile installs",
+    "reason": "The report already supplies scope, folder shape, screenshots and a historical installer log."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "30294-junction-repro",
+      "type": "reproduce",
+      "label": "Reproduce Roaming-junction installation",
+      "reproduce": {
+        "title": "Compare per-user installation with ordinary and redirected Roaming folders",
+        "module": "Setup / installer",
+        "version_requirement": "Latest stable per-user installer first; 0.76.1 original and 0.82.0-era changed failure as historical controls",
+        "prerequisites": [
+          "Disposable Windows VM/account snapshot with a second local NTFS volume and sufficient space.",
+          "Do not redirect an active user's Roaming directory or change a production profile.",
+          "Obtain the existing report's public installer log before interpreting any new trace."
+        ],
+        "setup_prompt": "Prepare two disposable Windows test profiles from a clean snapshot: an ordinary local Roaming directory and a non-destructive fixture whose Roaming junction points to an accessible directory on a second local NTFS volume. Preserve identical directory permissions and record how to restore the snapshot. Do not alter the signed-in production profile or use a network drive as a substitute for the reported local junction.",
+        "steps": [
+          "Install the same per-user package under the ordinary profile and record successful component and known-folder resolution.",
+          "Repeat under the cross-volume Roaming-junction profile using the same user scope and account privileges; capture installer transaction logs and the first failing action.",
+          "Compare unelevated and elevated launches only as controls; do not assume elevation fixes a missing path because the author already tried it.",
+          "Check whether the latest build still fails or exits silently, and separate the first path-validation/component failure from a downstream rollback.",
+          "If reproducing historical builds, compare the 0.82.0-era behavior that the reporter says changed from an error to silent exit."
+        ],
+        "expected_result": "Installation succeeds when the user's known-folder target is accessible through a valid local junction. Any unsupported case returns a diagnostic error rather than silently exiting.",
+        "attachments": [
+          {
+            "label": "Original 0.76.1 installer log",
+            "url": "https://github.com/microsoft/PowerToys/files/13615070/powertoys-bootstrapper-msi-0.76.1_20231208152138.log"
+          }
+        ]
+      }
+    },
+    {
+      "id": "30294-known-folder-plan",
+      "type": "approve_design",
+      "label": "Approve redirected-folder installer investigation",
+      "note": "Conditional plan; identify the current failing installer action before modifying setup."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "A clear local junction prerequisite, per-user scope and historical log enable maintainer reproduction. The later silent exit is unresolved, not evidence of a fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report specifies a cross-drive AppData Roaming junction, per-user installer and failure even when elevated.",
+      "The author says the 0.82.0-era installer now exits silently: https://github.com/microsoft/PowerToys/issues/30294#issuecomment-2241068906",
+      "#32780 is closed as a duplicate, but its mapped-network-drive folder-redirection setup differs from the original local junction."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Use an isolated per-user junction fixture to identify the first failing setup action before approving a fix.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-20T10:00:42Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A setup path-resolution/component-destination correction is applicable if the junction failure persists. The cited release-note improvement did not resolve the reporter's failure, and no directly covering fixing PR was identified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve accessible redirected user folders without silent installer failure",
+      "root_cause": "Hypothesis: a per-user installer action validates or constructs a component destination using an unresolved/unavailable Roaming path instead of the accessible junction target. The exact action and any later DSC component involvement remain unconfirmed.",
+      "plan": [
+        "Compare current per-user installer traces for ordinary and cross-volume-junction profiles, starting from the existing log and identifying the first failure rather than the final rollback code.",
+        "Locate the failing known-folder/destination-resolution action in the current installer tree; resolve the supported user-folder target consistently and validate accessibility in the actual install context without rewriting user junctions.",
+        "Ensure a failure preserves a useful installer diagnostic instead of silent exit; keep mapped network drives and unsupported/unavailable targets as separate tested cases.",
+        "Add integration regression coverage for per-user local cross-volume junctions and verify normal per-machine/per-user installs are unchanged."
+      ],
+      "verification": [
+        "A valid accessible local Roaming junction installs and upgrades successfully without modifying the junction.",
+        "Ordinary profiles still install; unavailable or permission-denied targets fail clearly and roll back cleanly.",
+        "Confirm current behavior separately from the historical 0.82.0 release-note claim."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The folder-shape dependency is specific and reproducible, but no current installer action has yet been traced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Per-user PowerToys installation regressed when Roaming is a junction to another local drive. A later installer stopped showing the error but still did not complete.",
+    "known_information": [
+      "Original 0.76.1 report includes screenshots, a bootstrapper/MSI log and explicit per-user scope.",
+      "Elevation was already tried without success.",
+      "The 0.82.0-era follow-up says silent exit, not successful installation.",
+      "The live issue is open and unassigned; duplicate #32780 concerns mapped-drive redirection."
+    ],
+    "inferences": [
+      "Known-folder resolution or install-context access is plausible; neither DSC nor permissions is proven as the root cause.",
+      "Mapped-drive and local-junction failures may share setup handling but require separate controls."
+    ],
+    "analysis": "Do not request installer scope or generic logs already supplied. Reproduce the exact local-junction shape in an isolated profile and distinguish the current first failure before modifying installer behavior.",
+    "initial_investigation": [
+      "Read the full report, its release-note follow-up and public timeline.",
+      "Read #32780, including its explicit duplicate closure and different all-users/network-drive setup.",
+      "A direct issue-number PR search found no concrete covering fix; the release-note quotation is not an issue-resolution claim.",
+      "No installer execution or attachment-log root-cause analysis was performed in this pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "installer_log",
+        "information": "First failing action in a current per-user installer run under the exact accessible local-junction fixture.",
+        "why_needed": "Separates obsolete DSC behavior, current destination resolution and unrelated network-drive access failures.",
+        "how_to_collect": "Maintainer compares transaction logs from the disposable ordinary/junction profiles above, first consulting the already attached historical log."
+      }
+    ]
   }
 }

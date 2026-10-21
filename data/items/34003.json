@@ -2,32 +2,108 @@
   "number": 34003,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-26T01:01:24Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "💥",
+    "label": "Settings crash trigger missing",
+    "detail": "Event Viewer and a diagnostic ZIP are already supplied. The originating WinUI exception and the Settings operation that triggers it are not established."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🔎",
+    "label": "Request Settings crash sequence",
+    "reason": "Ask for the missing action sequence, not the same Event Viewer entry or diagnostic archive again."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "34003-settings-trigger",
+      "type": "request_info",
+      "label": "Request Settings crash sequence",
+      "comment": {
+        "body": "Thanks for the PowerToys.Settings.exe Event Viewer entry and PowerToysReport_2024-07-26-09-01-11.zip. The event establishes the 0.82.1 Settings crash with code 0xc000027b, but KERNELBASE.dll alone does not identify the originating UI operation. A focused scan of the supplied Settings text logs did not establish that originating exception, so please do not resend the same ZIP or event.\n\nPlease provide:\n1. The shortest numbered sequence that triggers the crash: does Settings fail before any page opens, when opening a particular page, or after changing one specific control? Name that page/control and whether the crash happens every time.\n2. Whether the same sequence still fails on the latest stable PowerToys, including the tested version shown in About (or the executable's Properties > Details if Settings cannot stay open).\n\nThis selects the startup or page-initialization path for a targeted maintainer investigation rather than treating KERNELBASE.dll as the root cause."
+      }
+    },
+    {
+      "id": "34003-exception-context-plan",
+      "type": "approve_design",
+      "label": "Approve Settings exception-localization plan",
+      "note": "Red-confidence investigation candidate, not a proven behavioral fix; preserve the originating exception before changing error handling."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The supplied event and archive establish a Settings failure, but the triggering operation and actionable originating exception are still missing.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report includes a Settings 0.82.1 crash event with exception 0xc000027b and Windows kernel version 19041.",
+      "The author already supplied diagnostics: https://github.com/microsoft/PowerToys/issues/34003#issuecomment-2251760890",
+      "A focused in-memory text scan of the supplied archive did not identify an originating XAML/unhandled/stowed-exception message; this is not crash-dump analysis."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for the exact Settings operation and current-build confirmation, then localize the original exception before proposing a behavioral repair.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-26T01:01:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Settings UI exception-localization and subsequent targeted error-path correction is applicable, but no root-cause-specific fix or linked implementation was found. The candidate deliberately does not claim that an unrelated logged warning caused the crash."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve the originating Settings UI exception and correct its failing operation",
+      "root_cause": "Hypothesis: a Settings startup/navigation UI operation raises a WinRT stowed exception that escapes without enough operation context to identify the underlying failure. The event's 0xc000027b is consistent with this boundary, but does not identify a resource, dependency or page as the cause.",
+      "plan": [
+        "Use the reporter's exact operation on a matching Windows test environment and a current build, breaking on the originating exception rather than the final KERNELBASE event.",
+        "Trace the matching Settings app startup/navigation handler and existing unhandled-exception logging; preserve the original exception/HRESULT and current page/operation through that boundary without swallowing arbitrary UI exceptions.",
+        "Only after localization, repair the demonstrated resource, lifetime or operation precondition at its owner; do not treat optional missing-tool warnings or a generic catch-all as a crash fix.",
+        "Add a regression for the exact failing operation and an exception-context logging check that avoids personal paths/settings values."
+      ],
+      "verification": [
+        "The original numbered sequence no longer crashes on the affected Windows/build combination.",
+        "A fault-injected equivalent preserves the originating error and operation context; normal startup and unrelated Settings pages remain functional."
+      ],
+      "confidence": {
+        "score": 24,
+        "level": "red",
+        "rationale": "The event establishes a stowed-exception boundary, not its origin; no operation-specific repair can yet be justified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Settings 0.82.1 crashes with a Windows Application Error entry naming KERNELBASE.dll and code 0xc000027b. The author subsequently supplied the requested diagnostic archive, but no triggering page/action is described.",
+    "known_information": [
+      "The report supplies the faulting Settings executable version and exception code.",
+      "PowerToysReport_2024-07-26-09-01-11.zip is already public in the author's comment.",
+      "Live issue is open, unassigned and labeled Product-Settings/Severity-Medium.",
+      "The archive's Settings logs contain optional-tool/settings warnings, but none was correlated to the reported terminal crash."
+    ],
+    "inferences": [
+      "KERNELBASE.dll is the recorded exception boundary, not evidence of a Windows kernel defect.",
+      "A WinUI operation failure is plausible; the responsible page, resource or dependency remains unknown."
+    ],
+    "analysis": "A second blanket ZIP/Event Viewer request would ignore evidence already supplied. Request the minimal action sequence and current-build result, then use the archive and an operation-specific debugger trace to identify a real fix.",
+    "initial_investigation": [
+      "Read the complete report and both comments; enumerated cross-reference #39027 without treating title similarity as a proven duplicate.",
+      "Inspected the already supplied ZIP in memory, enumerated Settings text logs and scanned for originating XAML/unhandled/stowed-exception text; did not perform dump or binary event-log analysis.",
+      "Did not equate informational missing-pwsh warnings with the terminal crash.",
+      "No fixing PR appeared in the reviewed timeline or direct issue-number PR search."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The shortest Settings startup/page/control sequence that triggers the crash and whether it is repeatable.",
+        "why_needed": "Selects the owning UI operation for a useful originating-exception trace.",
+        "how_to_collect": "Reply with numbered steps, naming the first page/control reached or saying the crash occurs before any page opens."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether that same sequence still fails on the latest stable build and its tested version.",
+        "why_needed": "Avoids patching a historical Settings/runtime path that may no longer be present.",
+        "how_to_collect": "Read About or the Settings executable's Properties > Details if the UI cannot remain open."
+      }
+    ]
   }
 }

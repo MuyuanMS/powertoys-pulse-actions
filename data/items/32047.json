@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 32047,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-08-02T17:18:45Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Verify existing recovery fixes",
+    "detail": "Accidental Space activation and a stuck overlay are distinct. Merged fixes cover stale timers and focus-loss recovery, not a proven complete resolution of this report."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare activation and dismissal",
+    "reason": "Check current behavior against the existing fixes before proposing another keyboard-state change."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The discussion supplies discriminating rapid-release and Space-activation cases. Related public fixes now exist, so first verify their coverage rather than invent duplicate implementation work.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/32047#issuecomment-2079357987 suggests releasing the shortcut quickly.",
+      "https://github.com/microsoft/PowerToys/issues/32047#issuecomment-2265828805 distinguishes accidental Space activation from remaining stuck.",
+      "https://github.com/microsoft/PowerToys/issues/31988 documents similar stuck-toolbar cases and explicitly distinguishes same-window timing from focus-loss recovery.",
+      "PRs https://github.com/microsoft/PowerToys/pull/48944 and https://github.com/microsoft/PowerToys/pull/50212 are merged."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce fast typing and rapid-release cases on a build containing both merged fixes; test focus change separately and only plan work for a remaining failure.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-08-02T17:18:45Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR 48944 invalidates stale delayed-render generations, and PR 50212 adds foreground-change recovery for an orphaned toolbar. They cover concrete portions of the reported family of failures. Neither proves that same-window rapid-release sticking or unwanted valid Space activation is resolved.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/48944",
+      "https://github.com/microsoft/PowerToys/pull/50212"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Quick Accent appears unexpectedly during typing and sometimes remains visible despite Escape or clicking away. The discussion separates accidental activation from failure to dismiss.",
+    "known_information": [
+      "Original version is 0.77.0 from Microsoft Store; a commenter associates sticking with releasing the shortcut too quickly.",
+      "Space is an activation key in the discussed configuration, making a held final letter plus Space a possible normal trigger.",
+      "The related issue 31988 remains open and contains both focus-loss and same-window timing reports.",
+      "PR 48944 merged on 2026-07-01; PR 50212 merged on 2026-09-11. The latter explicitly leaves same-window lost-key-up recovery outside its scope.",
+      "The live issue has no assignees; no outstanding reporter request is present."
+    ],
+    "inferences": [
+      "Some apparently random invocations may be valid activations rather than a defect.",
+      "A residual same-window timing failure may remain even when foreground-change recovery works."
+    ],
+    "analysis": "The current maintainable next step is a local coverage matrix for the existing fixes, not a blanket duplicate closure or a new timer/watchdog plan. No current-build behavioral test was performed in this pass.",
+    "initial_investigation": [
+      "Read all four original comments and all linked 31988 discussion, plus the complete public cross-reference timeline.",
+      "Read the descriptions and merged states of PRs 48944, 49701 and 50212; press-and-hold isolation in 49701 is separate from legacy Space activation.",
+      "Current KeyboardListener.cpp registers a foreground event hook; PowerAccent.cs uses DelayedDisplayState, consistent with the existing recovery and render-generation work.",
+      "Similarity-only references do not establish that the entire original issue is a duplicate."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which failure modes remain on a build containing the merged recovery changes.",
+        "why_needed": "Avoids reimplementing a merged fix and separates unwanted activation policy from stale visible state.",
+        "how_to_collect": "Maintainer: run the activation/dismissal matrix below with Space enabled and disabled, both with and without a foreground-window change."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "verify-accent-recovery",
+      "type": "reproduce",
+      "label": "Verify rapid-release and focus-loss recovery",
+      "reproduce": {
+        "title": "Separate accidental Quick Accent activation from a stuck toolbar",
+        "module": "Quick Accent",
+        "version_requirement": "A current build containing merged PRs 48944 and 50212; original report used 0.77.0.",
+        "prerequisites": [
+          "Use Notepad and a second ordinary application, with one accent-capable language set enabled.",
+          "Record activation mode and input delay; use a legacy Space/arrow mode, not press-and-hold, for the original case."
+        ],
+        "steps": [
+          "Enable Space activation and type ordinary words rapidly, overlapping the final letter with Space; distinguish a legitimate invocation from an orphaned toolbar.",
+          "Deliberately invoke an accent and release the letter and trigger rapidly near the configured delay, repeating without changing foreground window.",
+          "Repeat, but switch foreground application with the mouse while the toolbar is visible; confirm it dismisses without inserting an unwanted character.",
+          "Use arrows-only activation and repeat ordinary typing to separate the Space-trigger configuration from dismissal failures.",
+          "For any residual failure, record the precise mode, delay, release order and whether a foreground change occurred before changing code."
+        ],
+        "expected_result": "A finished or cancelled gesture must not leave a stale toolbar. Focus-loss recovery and stale-timer cancellation should work; valid Space activation alone is not evidence of a bug."
+      }
+    }
+  ]
 }

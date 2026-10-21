@@ -1,0 +1,129 @@
+{
+  "track": "triage",
+  "stage": "awaiting_design_approval",
+  "source_updated_at": "2026-10-08T09:53:14Z",
+  "title": "≤0.100.x clients can never detect v0.101.x — 4-part release tag unparseable by old VersionHelper (silent \"up to date\")",
+  "url": "https://github.com/microsoft/PowerToys/issues/51120",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "pending_author": false,
+  "status": {
+    "glyph": "🎯",
+    "label": "Legacy-client update reachability plan needed",
+    "detail": "The incompatibility is substantiated; release-side bridge versus manual-upgrade mitigation needs validation."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue and automated diagnostic summary identify a concrete compatibility gap: ≤0.100.x clients parse only three version components, while later official release tags use four; parse failure leaves the update result at “up to date.” PR #49414 introduced the new format after 0.100.2 shipped. Those binaries cannot be patched in place, so remediation must be a release/channel bridge or explicit manual-upgrade path.",
+    "evidence": [
+      "Reporter uses 0.100.2 Stable and describes Settings saying up-to-date when the release API returns v0.101.2362.0.",
+      "The diagnostic archive summary says UpdateState.json confirms an update check ran and reported current without an error.",
+      "Automated triage confirms the old parser only accepts three components.",
+      "Merged PR #49414 (2026-08-06) documents the 4-part MSI-safe release version scheme, after 0.100.2 shipped.",
+      "Latest Stable is v0.101.2362.0; latest Preview is v0.102.2911.0."
+    ],
+    "recommended_action": "Test update reachability from an actual 0.100.x client; determine whether a three-part bridge release is viable, otherwise provide a clear manual upgrade path.",
+    "evaluated_at": "2026-10-20T20:10:01.525Z",
+    "source_updated_at": "2026-10-08T09:53:14Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The cause is credibly identified, but shipped clients cannot receive a code change through the current updater; the proposed remediation is a release-level bridge/manual-upgrade plan whose feasibility needs maintainer validation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore an upgrade path for pre-0.101 clients",
+      "root_cause": "Clients shipped before 4-part version support treat the current 4-part release tag as unparsable, and their update check silently retains the installed version. A current-source parser change alone cannot repair those installed binaries.",
+      "plan": [
+        "Reproduce the update check with a clean 0.100.2 client and current stable metadata; verify parser failure and the up-to-date result.",
+        "Ask release engineering whether a higher three-part compatibility bridge release can be safely upgraded by affected clients; if not, publish direct manual-upgrade guidance through release notes/documentation.",
+        "Validate the chosen route from 0.100.2 through to current stable, including version ordering, install behavior, and subsequent 4-part update checks."
+      ],
+      "verification": [
+        "Run an update check from unmodified 0.100.2 against current official metadata and record the result.",
+        "If a bridge is selected, verify old client offers/installs it and bridged client recognizes a current 4-part release.",
+        "If no bridge is feasible, verify official manual-upgrade instructions point to a signed current installer and explain legacy update detection."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The parser/tag mismatch is supported by the diagnostic summary and merged versioning PR; bridge-release feasibility is unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A 0.100.2 installation reportedly misses the current update because its shipped parser cannot read the four-part tag introduced after that build.",
+    "known_information": [
+      "PowerToys 0.100.2 Stable, GitHub installation, system installation, not elevated.",
+      "Reporter says the release API returns v0.101.2362.0 while Settings says up-to-date.",
+      "Diagnostic summary says update check ran and returned current without an error.",
+      "Reporter cites VersionHelper::fromString and PR #49414; the merged PR documents the 4-part release format.",
+      "No user comments, assignee, duplicate link, or linked fix are present.",
+      "Latest Stable is v0.101.2362.0; latest Preview is v0.102.2911.0."
+    ],
+    "inferences": [
+      "The failure is consistent with the reported parser analysis; no independent execution on a 0.100.x binary was performed in this pass.",
+      "A current parser fix cannot update a client unable to discover the release; immediate mitigation is distribution/manual guidance.",
+      "No release-policy decision about a bridge is recorded."
+    ],
+    "analysis": "The issue supplies diagnostic confirmation and PR #49414 corroborates when the new format was introduced. Since an old binary cannot be remotely patched and current Stable still uses a four-part tag, the maintainer action is to test reachability and decide a release-level migration, not request more logs.",
+    "initial_investigation": [
+      "Read the full issue and one automated triage comment, including diagnostic summary, API example, environment, and updatedAt.",
+      "Verified PR #49414 is merged and documents the 4-part MSI-safe version scheme; it merged after 0.100.2 shipped.",
+      "Checked live releases: v0.101.2362.0 is Latest Stable; v0.102.2911.0 is Preview.",
+      "No linked issue or fix was identified in the live thread."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-legacy-update-bridge-51120",
+      "type": "approve_design",
+      "label": "Plan legacy-client upgrade path",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a release-level mitigation investigation; not approval to change upstream releases or post a comment."
+    },
+    {
+      "id": "reproduce-legacy-update-check-51120",
+      "type": "reproduce",
+      "label": "Verify 0.100.x update detection",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "General - update checking",
+        "version_requirement": "Unmodified PowerToys 0.100.2 Stable and current official release metadata",
+        "prerequisites": [
+          "Use an isolated test machine or VM with the official 0.100.2 installer.",
+          "Do not change registry policy or network settings; record the latest release tag."
+        ],
+        "steps": [
+          "Install and launch PowerToys 0.100.2.",
+          "Trigger Settings update check or restart and wait for the scheduled check.",
+          "Record the Settings result and latest release tag returned by GitHub.",
+          "Compare with a current 0.101+ installation supporting the 4-part parser."
+        ],
+        "expected_result": "The old client should either offer a supported upgrade route or maintainers should confirm no automatic route and document manual upgrade.",
+        "setup_requirements": [
+          "Keep the test isolated from production profile.",
+          "Record exact installed version and release tag without personal diagnostic data."
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51120,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:01.525Z",
+  "evaluated_at": "2026-10-20T20:10:01.525Z",
+  "revalidation_history": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No upstream or fork issue/PR writes were made."
+  }
+}

@@ -2,32 +2,129 @@
   "number": 34014,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-27T11:46:18Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce stale zone-cycle membership",
+    "detail": "The report already has a six-stage Firefox tab-detach sequence, screenshots, shortcut settings and diagnostics. The remaining discriminator is maintainer-side window membership tracing."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Trace Firefox detach and zone cycling",
+    "reason": "Do not request another generic ZIP when the complete sequence and existing archive already support a local experiment."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "34014-firefox-cycle-repro",
+      "type": "reproduce",
+      "label": "Reproduce Firefox detach zone cycling",
+      "reproduce": {
+        "title": "Verify zone-cycle membership after detaching and moving Firefox tabs",
+        "module": "FancyZones",
+        "version_requirement": "Latest stable first; original PowerToys 0.82.1 with Firefox 128.0. Use Chrome as the reporter's non-reproducing control.",
+        "prerequisites": [
+          "Two monitors with distinct zones; retain a one-monitor control because the report says multi-monitor transitions reproduce more often.",
+          "Enable 'Switch between windows in the current zone'; use the reported Win+F11/Win+F12 shortcuts or equivalent nonconflicting test bindings.",
+          "Use non-sensitive tabs and retain the public report's screenshot sequence and zone layout as references."
+        ],
+        "steps": [
+          "Create three Firefox tabs in one window placed in a zone.",
+          "Detach tab 2 by dragging the tab itself into a new window in the same zone; confirm zone cycling switches between the first two windows.",
+          "Detach tab 3 in the same way and observe the automatic snap back reported in step 4.",
+          "Drag that third window to another monitor outside the original zone, then focus one of the first two windows and cycle forward/backward.",
+          "Repeat after snapping the third window into a different populated zone. Record foreground HWND, work area and stored zone membership across detach/move events to identify the first stale association.",
+          "Repeat with Chrome and a normal title-bar drag, then with one monitor, without assuming Firefox's tab-detach event sequence equals a standard move."
+        ],
+        "expected_result": "Cycling from the original zone visits only windows currently assigned there; the detached/moved window does not steal focus or redirect subsequent cycling to another zone.",
+        "attachments": [
+          {
+            "label": "Illustrated tab-detach reproduction",
+            "url": "https://github.com/microsoft/PowerToys/issues/34014"
+          },
+          {
+            "label": "Original diagnostic archive",
+            "url": "https://github.com/user-attachments/files/16382727/PowerToysReport_2024-07-25-13-32-38.zip"
+          }
+        ]
+      }
+    },
+    {
+      "id": "34014-membership-plan",
+      "type": "approve_design",
+      "label": "Approve zone-membership lifecycle investigation",
+      "note": "Lightweight candidate only; confirm HWND/event transitions before modifying assignment bookkeeping."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report contains an unusually complete reproducer and diagnostics. Public cycling code supports a stale-assignment hypothesis, but lifecycle tracing is needed before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report supplies Firefox 128.0, PowerToys 0.82.1, six illustrated stages, zone settings and a diagnostic ZIP.",
+      "Chrome does not reproduce in the reporter's test; cross-monitor moves increase frequency.",
+      "Public main LayoutAssignedWindows::CycleWindows obtains a stored zone set, validates window existence and virtual-desktop membership, then switches focus; the failing detach/move invalidation path has not been proven."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the existing Firefox/Chrome comparison while tracing window identities and zone assignment lifecycle, then repair only the stale transition demonstrated.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-27T11:46:18Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A FancyZones assignment lifecycle correction is applicable if the reported state transition is reproduced. No timeline-linked or direct issue-number fixing PR was found."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Invalidate obsolete zone membership after Firefox tab-detach moves",
+      "root_cause": "Hypothesis: Firefox's tab-detach/reused-window event sequence leaves the moved window in the original work area's stored assignment or cycle ordering. Cycling then focuses that window, and the next shortcut follows its new foreground work area.",
+      "plan": [
+        "Trace HWND creation/reuse, move events, work-area selection and assignment maps throughout the supplied six-stage Firefox sequence; compare Chrome and ordinary title-bar movement.",
+        "Locate the first inconsistent transition in FancyZonesLib WorkArea assignment/dismissal and LayoutAssignedWindows bookkeeping; remove old work-area membership when the demonstrated detach/move transition requires it, maintaining both window-to-zone and cycle-order indexes together.",
+        "Retain deliberate multi-zone assignments and virtual-desktop behavior; do not replace assignment semantics with a blanket geometric-containment check or browser process exclusion.",
+        "Add tests around assignment, dismissal, HWND reuse and cycling order, then exercise the multi-monitor browser scenario in both cycle directions."
+      ],
+      "verification": [
+        "The detached third window is excluded from the old zone's cycling after moving away or joining another zone.",
+        "Forward/reverse cycling remains in the intended zone for both Firefox and Chrome, including repeated detach/rejoin and a normal drag.",
+        "Closed/reused handles, virtual desktops and valid multi-zone assignments do not introduce stale or missing cycle entries."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The focus redirection matches stale stored membership and the public cycling flow, but no event trace yet identifies the exact missed invalidation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Detaching Firefox tabs and moving a resulting window out of its original FancyZone can leave it in that zone's switch list. Cycling focuses the moved window, then switches or stalls in the wrong zone.",
+    "known_information": [
+      "The report provides complete numbered stages, screenshots, zone and shortcut settings, and a PowerToys diagnostic ZIP.",
+      "Firefox 128.0 on PowerToys 0.82.1 is affected; Chrome was tested without reproduction.",
+      "The author specifically drags tab headers rather than title bars and observes worse behavior across monitors.",
+      "The live issue is open and unassigned, with no comments."
+    ],
+    "inferences": [
+      "Stored assignment or cycle ordering may outlive the tab-detach/move transition.",
+      "Foreground-based work-area selection can explain the subsequent redirection once the wrong window is focused, but does not itself prove an erroneous implementation."
+    ],
+    "analysis": "The public evidence already supports local reproduction; another generic reporter request would add little. The candidate must follow actual HWND/events and preserve intentional zoning semantics rather than assume any window outside a rectangle is stale.",
+    "initial_investigation": [
+      "Read the full illustrated report and confirmed no comments, assignees or timeline-linked fixes.",
+      "A direct issue-number PR search returned no covering implementation.",
+      "Read public main FancyZonesLib/LayoutAssignedWindows.cpp: cycling uses stored zone sets and checks existence/current virtual desktop before focusing a candidate.",
+      "Inspected the foreground-window/work-area cycling entry point as an ownership locator; did not execute the browser reproduction or claim the exact invalidation bug is confirmed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Current-build HWND and assignment-map transition that first retains the moved tab window in the original zone.",
+        "why_needed": "Selects the exact lifecycle repair and distinguishes stale assignment from a browser-specific foreground/event interaction.",
+        "how_to_collect": "Maintainer runs the provided Firefox/Chrome reproduction with local assignment/event tracing; use existing screenshots and ZIP rather than ask the reporter to perform code debugging."
+      }
+    ]
   }
 }

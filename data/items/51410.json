@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 5,
+  "number": 51410,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:12.397Z",
+  "evaluated_at": "2026-10-20T16:40:12.397Z",
+  "source_updated_at": "2026-10-20T10:53:56Z",
+  "updated_at": "2026-10-20T10:53:56Z",
+  "state": "open",
+  "title": "CmdPal: Duplicate pinned commands are discarded without cleanup (EXT26.L5)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51410",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "source_updated_at": "2026-10-20T10:53:56Z",
+    "evidence": [
+      "The report says InitializeCommands initializes/subscribes the pinned candidate before duplicate-ID rejection and omits Cleanup.",
+      "The issue states subscription counts were not tested.",
+      "A 2026-10-20 commenter offered to investigate InitializeCommands/CreateTopLevelViewModel/Cleanup and partial-initialization safety; the issue is unassigned."
+    ],
+    "recommended_action": "Use the concrete maintainer reproduction to validate the proposed mechanism before design approval.",
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:40:12.397Z",
+    "rationale": "Source inspection supports initialization before deduplication, but subscription accumulation is unmeasured. A contributor offered to inspect this path; no assignee or matching issue-number PR was found, so confirm that offer before competing implementation."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching fix was identified in the focused issue-number search; keep the mechanism as a hypothesis pending reproduction."
+  },
+  "issue_context": {
+    "information_gaps": [],
+    "inferences": "The proposed mechanism is evidence-based but not confirmed beyond the confidence level recorded; the paired action is needed to reduce uncertainty.",
+    "summary": "Duplicate pinned-command candidates may subscribe before their ID is rejected and be discarded without cleanup; a commenter offered to investigate this exact lifecycle.",
+    "analysis": "Source inspection supports initialization before deduplication, but subscription accumulation is unmeasured. A contributor offered to inspect this path; no assignee or matching issue-number PR was found, so confirm that offer before competing implementation.",
+    "known_information": [
+      "The report says InitializeCommands initializes/subscribes the pinned candidate before duplicate-ID rejection and omits Cleanup.",
+      "The issue states subscription counts were not tested.",
+      "A 2026-10-20 commenter offered to investigate InitializeCommands/CreateTopLevelViewModel/Cleanup and partial-initialization safety; the issue is unassigned."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and upstream update timestamp.",
+      "Checked the status/title of obvious linked issues and searched upstream PRs by issue number; no matching results were returned, which does not prove that no broader work exists."
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-51410-approve-design",
+      "requiresApproval": true,
+      "design": {
+        "title": "Investigate the reported Command Palette behavior"
+      },
+      "label": "Approve bounded issue investigation",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "confirm": true,
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "expected_result": "Rejected duplicate candidates release subscriptions once; retained and unique commands remain usable.",
+        "prerequisites": [
+          "Provider test double exposing initialization, subscription and cleanup counts."
+        ],
+        "module": "Command Palette command providers",
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "steps": [
+          "1. Return a pinned command whose ID duplicates an existing top-level command.",
+          "2. Load repeatedly and count event subscriptions and cleanup calls.",
+          "3. Repeat with a unique pinned command and a partial initialization failure."
+        ]
+      },
+      "type": "reproduce",
+      "label": "Reproduce the reported CmdPal lifecycle failure",
+      "id": "issue-51410-reproduce"
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "root_cause": "A duplicate candidate may attach subscriptions before the ID check and remain uncleaned after rejection; the leak is plausible but not measured.",
+      "title": "Investigate the reported Command Palette behavior",
+      "verification": [
+        "Load repeatedly with a duplicate pinned ID and inspect candidate subscription/cleanup counts.",
+        "Verify a unique pinned command remains usable and duplicate rejection does not clean the retained command.",
+        "Test cleanup after partial initialization failure."
+      ],
+      "confidence": {
+        "rationale": "The source ordering is described but subscription accumulation and partial-init cleanup safety are unmeasured; another contributor expressed interest.",
+        "level": "yellow",
+        "score": 65
+      },
+      "plan": [
+        "Confirm whether the contributor who offered to investigate has taken ownership.",
+        "Trace candidate initialization and deduplication to establish subscriptions attached before rejection.",
+        "Clean up rejected candidates exactly once without cleaning the retained instance; verify partial initialization is safe.",
+        "Add repeated-load subscription-count and unique-pinned-command tests."
+      ]
+    }
+  ]
+}

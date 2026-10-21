@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51417,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:43.539Z",
+  "evaluated_at": "2026-10-20T16:40:43.539Z",
+  "source_updated_at": "2026-10-20T01:50:54Z",
+  "updated_at": "2026-10-20T01:50:54Z",
+  "state": "open",
+  "title": "CmdPal: Failed band unsubscribe skips child cleanup (EXT26.C3)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51417",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "rationale": "An isolated test reproduced an uncleaned child after two cleanup calls; source ordering explains the early return. Preserve the terminal guard against late initialization while separating unsubscribe from child cleanup.",
+    "evaluated_at": "2026-10-20T16:40:43.539Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "evidence": [
+      "The isolated test reproduced failed unsubscribe and uncleaned child after two cleanup attempts.",
+      "UnsafeCleanup marks cleanup started and clears subscription state before removing ItemsChanged.",
+      "The cited DockBandViewModel UnsafeCleanup path is present in current source."
+    ],
+    "status": "actionable_design",
+    "source_updated_at": "2026-10-20T01:50:54Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Keep the terminal guard but isolate ItemsChanged removal from local cleanup.",
+        "Clear caches and clean each child independently even if unsubscribe fails.",
+        "Keep cleanup idempotent and avoid unsafe unsubscribe retry without ownership evidence.",
+        "Test unsubscribe failure, child cleanup once and late-initialization rejection."
+      ],
+      "verification": [
+        "Throw on ItemsChanged removal, call SafeCleanup twice, and verify children/cache cleanup completes once.",
+        "Attempt late initialization and verify terminal guard prevents repopulation.",
+        "Run focused DockBand lifecycle tests."
+      ],
+      "title": "Correct the reported Command Palette lifecycle failure",
+      "root_cause": "UnsafeCleanup sets its terminal guard before remote event removal; a throw skips cache and children, while the second call returns immediately.",
+      "confidence": {
+        "level": "yellow",
+        "rationale": "The failure is reproduced after a second cleanup call and the guard/order are source-confirmed; late initialization and idempotency need regression coverage.",
+        "score": 78
+      }
+    }
+  ],
+  "issue_context": {
+    "information_gaps": [],
+    "known_information": [
+      "The isolated test reproduced failed unsubscribe and uncleaned child after two cleanup attempts.",
+      "UnsafeCleanup marks cleanup started and clears subscription state before removing ItemsChanged.",
+      "The cited DockBandViewModel UnsafeCleanup path is present in current source."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "analysis": "An isolated test reproduced an uncleaned child after two cleanup calls; source ordering explains the early return. Preserve the terminal guard against late initialization while separating unsubscribe from child cleanup.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and related issue status; no upstream code or public issue action was performed."
+    ],
+    "summary": "DockBandViewModel marks cleanup terminal before removing ItemsChanged, so an exception can skip cache/child cleanup and cannot be retried."
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "design": {
+        "title": "Correct the reported Command Palette lifecycle failure"
+      },
+      "confirm": true,
+      "id": "issue-51417-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "label": "Approve bounded CmdPal lifecycle investigation"
+    },
+    {
+      "id": "issue-51417-reproduce",
+      "reproduce": {
+        "steps": [
+          "1. Initialize a band with children and configure event removal to throw.",
+          "2. Call SafeCleanup twice and inspect cache and child cleanup counts.",
+          "3. Attempt late initialization after cleanup."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "expected_result": "Unsubscribe failure does not skip child/cache cleanup; children are cleaned once and late initialization is rejected.",
+        "module": "Command Palette Dock bands",
+        "prerequisites": [
+          "Dock-band test double with child commands and a throwing ItemsChanged removal accessor."
+        ]
+      },
+      "label": "Reproduce CmdPal lifecycle failure",
+      "type": "reproduce"
+    }
+  ]
+}

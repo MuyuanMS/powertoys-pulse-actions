@@ -2,32 +2,109 @@
   "number": 37356,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:18:08Z",
+  "generated_at": "2026-10-20T16:48:58Z",
+  "evaluated_at": "2026-10-20T16:48:58Z",
+  "source_updated_at": "2026-10-14T13:03:47Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "detail": "The current SendTextInput helper iterates every wchar_t and sends each as Unicode input, with no special handling for a period. Since the current report still reproduces on 0.102.2803, the string may be truncated before this helper or rejected by the receiving application; the failing boundary is unknown.",
+    "label": "Design candidate",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Trace the configured send-text value from Settings persistence through the engine call to SendTextInput and reproduce with a plain text editor.",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review Preserve punctuation in Keyboard Manager Send text mappings",
+      "primary": true,
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "confirm": true
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Send text punctuation",
+      "reproduce": {
+        "prerequisites": [
+          "Use a benign test shortcut configured to send test@example.com.",
+          "Test in Notepad and one other plain text field."
+        ],
+        "version_requirements": "PowerToys 0.102.2803 or current supported build",
+        "steps": [
+          "Save the Send text mapping and reopen Settings to confirm the stored value.",
+          "Invoke it in Notepad and record the exact output.",
+          "Trace/compare the value loaded by Keyboard Manager with the argument received by SendTextInput.",
+          "Repeat in a second plain text field to separate input dispatch from target behavior."
+        ],
+        "module": "Keyboard Manager",
+        "expected_result": "The complete configured string test@example.com is injected, including characters after the period."
+      }
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "evaluated_at": "2026-10-20T16:48:58Z",
+    "source_updated_at": "2026-10-14T13:03:47Z",
+    "status": "actionable_design",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report's example is test@example.com but actual text ends at test@example.",
+      "The issue was originally seen on 0.88.0 and a 2026-10-14 commenter says it still occurs on 0.102.2803.",
+      "KeyboardManager common Helpers.cpp::SendTextInput iterates the entire input string and sends each wchar_t as a Unicode key event; it has no period-specific branch."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:18:08Z"
+    "rationale": "The current SendTextInput helper iterates every wchar_t and sends each as Unicode input, with no special handling for a period. Since the current report still reproduces on 0.102.2803, the string may be truncated before this helper or rejected by the receiving application; the failing boundary is unknown.",
+    "recommended_action": "Trace the configured send-text value from Settings persistence through the engine call to SendTextInput and reproduce with a plain text editor."
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/37356",
+  "title": "Keyboard Manager: inserting text string with a dot",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A code correction may be appropriate, but the confidence and uncertainty are stated in the proposed plan."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The exact symptom is current, but the helper's per-character loop rules out only one obvious hypothesis; truncation boundary is not located."
+      },
+      "title": "Preserve punctuation in Keyboard Manager Send text mappings",
+      "verification": [
+        "Enter test@example.com, close/reopen Settings, invoke the shortcut in Notepad, and verify the complete string appears.",
+        "Verify punctuation and subsequent text survive mapping reload and multiline text behavior remains unchanged."
+      ],
+      "plan": [
+        "Reproduce with test@example.com in a plain text editor and another target application.",
+        "Trace the value from Settings serialization and loaded mapping through KeyboardEventHandlers to Helpers::SendTextInput; compare code points at each boundary.",
+        "If an earlier parser truncates the value, preserve the full configured string and add a persistence/dispatch test; if the helper receives the complete string, investigate target-side behavior before changing injection.",
+        "Add regression coverage for periods and the full email-like text."
+      ],
+      "root_cause": "Red hypothesis: the configured text value may be truncated or altered before SendTextInput, or a target app may handle the injected sequence differently. The helper itself has no period-specific handling and the exact boundary is unconfirmed."
+    }
+  ],
+  "issue_context": {
+    "known_information": [
+      "The report's example is test@example.com but actual text ends at test@example.",
+      "The issue was originally seen on 0.88.0 and a 2026-10-14 commenter says it still occurs on 0.102.2803.",
+      "KeyboardManager common Helpers.cpp::SendTextInput iterates the entire input string and sends each wchar_t as a Unicode key event; it has no period-specific branch."
+    ],
+    "analysis": "The report has a precise current example and source narrows one candidate boundary. Trace the value into the helper before proposing a parser or injection change.",
+    "information_gaps": [],
+    "inferences": [
+      "If the helper receives the complete string, truncation must occur earlier in configuration/dispatch or in the target application's handling; this has not been traced."
+    ],
+    "summary": "Keyboard Manager's Send text shortcut truncates an email-like string at the period; source helper itself iterates each character, so the source of truncation remains upstream or target-specific.",
+    "initial_investigation": [
+      "Inspected KeyboardManager common Helpers.cpp::SendTextInput; the character loop does not treat '.' specially.",
+      "Reviewed latest report confirming recurrence on 0.102.2803; no linked fix identified."
+    ]
   }
 }

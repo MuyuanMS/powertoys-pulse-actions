@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 5,
+  "number": 51388,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_queued",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:11Z",
+  "evaluated_at": "2026-10-20T16:40:11Z",
+  "source_updated_at": "2026-10-18T08:53:58Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51388",
+  "title": "[FancyZones] Unassigned Rotate windows across monitors shortcut hook gets stuck during drag operations",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The open report provides a repeatable drag sequence, PowerToys 0.101.2362, a three-display setup, video, and a diagnostic ZIP. Source inspection confirms FancyZones tracks rotation key state on low-level key events and resets it on key-up/settings changes, but does not identify why a release is lost or why the overlay appears with no assigned shortcut; the hypothesis remains red.",
+    "evidence": [
+      "PowerToys 0.101.2362 from Microsoft Store; Windows 11; three displays.",
+      "Steps enable monitor rotation with no shortcut, drag a folder/network path in File Explorer, release, then type.",
+      "Reporter says assigning a shortcut or disabling rotation prevents the symptom.",
+      "FancyZonesApp forwards low-level key events; FancyZones updates monitor-rotation KeyState on key-down/up and resets it when rotation settings change."
+    ],
+    "recommended_action": "Reproduce with the rotation shortcut unassigned while tracing key-up delivery and rotation state across drag completion.",
+    "evaluated_at": "2026-10-20T16:40:11Z",
+    "source_updated_at": "2026-10-18T08:53:58Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository-side change is plausible, but the current causal hypothesis requires verification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent stale monitor-rotation key state after drag operations",
+      "root_cause": "Red hypothesis: a key-up lost or reordered during drag leaves FancyZones rotation state active; no-hotkey configuration may also require a guard against activation. Neither mechanism is confirmed.",
+      "confidence": {
+        "rationale": "The state machine is scoped, but no evidence identifies the dropped event or the condition that starts the overlay.",
+        "level": "red",
+        "score": 34
+      },
+      "verification": [
+        "Repeat the reporter’s three-display Explorer/network-path drag sequence with no shortcut assigned.",
+        "After each drag, verify no overlay persists and ordinary keypresses reach the foreground app.",
+        "Repeat with a shortcut assigned and verify intentional rotation still works."
+      ],
+      "plan": [
+        "Reproduce with rotation shortcut assigned and unassigned while tracing low-level key-down/up and KeyState across drag start/release.",
+        "Verify whether drag completion or no-hotkey configuration leaves a key recorded down/consumed.",
+        "If stale state is confirmed, reset only the affected state at the verified drag-completion boundary and guard preview activation when no valid hotkey exists.",
+        "Add focused coverage for key-state reset and unassigned-hotkey behavior."
+      ]
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones can leave keyboard handling and monitor-rotation overlays active after drag-and-drop when rotation is enabled without an assigned shortcut; the exact key-event transition remains unknown.",
+    "known_information": [
+      "PowerToys 0.101.2362 from Microsoft Store; Windows 11; three displays.",
+      "Steps enable monitor rotation with no shortcut, drag a folder/network path in File Explorer, release, then type.",
+      "Reporter says assigning a shortcut or disabling rotation prevents the symptom.",
+      "FancyZonesApp forwards low-level key events; FancyZones updates monitor-rotation KeyState on key-down/up and resets it when rotation settings change."
+    ],
+    "inferences": [
+      "A lost or reordered key-up during drag could leave rotation state inconsistent, but this is not confirmed.",
+      "The unassigned-shortcut condition suggests a missing valid-hotkey guard may be involved; source evidence does not yet confirm it."
+    ],
+    "analysis": "The detailed report supports maintainer-side reproduction without a generic information request. Source narrows the stateful path, but the correct fix depends on observing which key events arrive during drag.",
+    "initial_investigation": [
+      "Inspected FancyZonesApp low-level hook forwarding and FancyZones monitor-rotation key-state updates/reset.",
+      "No confirmed cause or covering PR was found; a diagnostic bot’s window-handle correlation is not treated as causality."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "description": "Reproduce with the rotation shortcut unassigned while tracing key-up delivery and rotation state across drag completion.",
+      "label": "Approve FancyZones hook-state investigation"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "version_requirements": "PowerToys 0.101.2362 or current supported build; Windows 11; three displays",
+        "module": "FancyZones",
+        "prerequisites": [
+          "Enable Rotate windows across monitors and leave its shortcut unassigned.",
+          "Use File Explorer and a repeatable drag target such as a network path."
+        ],
+        "steps": [
+          "Perform a drag-and-drop operation and release it.",
+          "Type ordinary letters and observe monitor-number overlays or unintended system shortcuts.",
+          "Repeat after assigning a rotation shortcut, then with the feature disabled."
+        ],
+        "expected_result": "Drag operations do not leave the key hook or rotation overlay active; ordinary keys continue to reach the foreground app."
+      },
+      "label": "Trace FancyZones rotation hook during drag"
+    }
+  ],
+  "status": {
+    "detail": "The open report provides a repeatable drag sequence, PowerToys 0.101.2362, a three-display setup, video, and a diagnostic ZIP. Source inspection confirms FancyZones tracks rotation key state on low-level key events and resets it on key-up/settings changes, but does not identify why a release is lost or why the overlay appears with no assigned shortcut; the hypothesis remains red.",
+    "glyph": "🎯",
+    "label": "Design candidate"
+  },
+  "next_action": "Reproduce with the rotation shortcut unassigned while tracing key-up delivery and rotation state across drag completion."
+}

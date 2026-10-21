@@ -1,33 +1,70 @@
 {
+  "schemaVersion": 5,
   "number": 33508,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:32:53.3072416Z",
+  "evaluated_at": "2026-10-20T23:32:53.3072416Z",
   "source_updated_at": "2024-06-28T19:48:20Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "ℹ️",
+    "label": "Shell-history integration boundary",
+    "detail": "Run passes the initial command as a shell startup argument; terminal interactive history is a separate store."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Explain history ownership",
+    "reason": "Distinguish an enhancement to interactive shell history from PowerToys Run's own query history."
   },
-  "actions": [],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "not_actionable",
+    "rationale": "The report asks for a command passed during process startup to become an interactive shell history entry. Current Shell plugin startup arguments explain the behavior; the cited bot matches concern Run's own history, which is different. A cross-shell history integration needs an explicit enhancement contract, not a demonstrated regression fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report names 0.81.1, PowerShell 7.4.3 and Windows Terminal 1.20.11381.0 and describes Up-arrow history after Shell-plugin launch.",
+      "https://github.com/microsoft/PowerToys/blob/main/src/modules/launcher/Plugins/Microsoft.Plugin.Shell/Main.cs: PrepareProcessStartInfo uses cmd /k or PowerShell -NoExit -C, including inside wt.exe.",
+      "The Shell plugin also maintains its own _settings.Count history, separate from the launched shell's interactive input.",
+      "Inspected #21991 and #33403: they concern PowerToys query/history collection, not terminal-session Up-arrow history."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Explain the separate history stores and let maintainers decide whether shell-specific interactive-history integration should be an enhancement.",
+    "evaluated_at": "2026-10-20T23:32:53.3072416Z",
     "source_updated_at": "2024-06-28T19:48:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No history regression or broken existing shell-history integration is demonstrated: the launcher passes startup arguments, not interactive keystrokes. Adding entries safely across CMD, PowerShell and PSReadLine would require a new explicit behavior/privacy contract."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Commands launched through Run's Shell plugin execute, but the user cannot recall the initial command with the new shell session's Up-arrow history.",
+    "known_information": [
+      "The desired history belongs to the launched shell session/tab, not Run's search history.",
+      "The report supplies versions and short reproduction steps.",
+      "The only comment is an automated similarity list.",
+      "The live issue remains open, labeled Issue-Bug and unassigned."
+    ],
+    "inferences": [
+      "The startup-argument versus interactive-input distinction accounts for the symptom without implying that execution failed.",
+      "A shell-specific history integration could be useful, but its desired persistence and privacy semantics need a maintainer decision."
+    ],
+    "analysis": "Do not mark the bot's history matches as duplicate fixes or conflate query storage with PSReadLine/CMD interactive history. A maintainer-facing scope explanation is sufficient for this lightweight pass.",
+    "initial_investigation": [
+      "Read the full report and sole comment.",
+      "Verified current upstream Shell.Main.PrepareProcessStartInfo builds /k and -NoExit -C startup commands and keeps a separate Run-side history.",
+      "Read #21991 and #33403 to establish why those matches do not resolve this issue; the inspected timeline contains no concrete fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "explain-shell-history",
+      "type": "post_comment",
+      "label": "Explain startup versus interactive history",
+      "comment": {
+        "body": "Thanks for the clear Up-arrow reproduction and shell/Terminal versions. Run currently sends the initial command as a shell startup argument (for example cmd /k or PowerShell -NoExit -C), rather than entering it at an interactive prompt. The new shell owns its interactive history, separately from Run's own command/query history. Consequently the bot-linked Run-history issues do not cover this request. Supporting recall of startup commands would need an explicit shell-specific integration, including which history store is updated and whether commands persist. Maintainers can consider that as an enhancement; the report does not establish a regression in an existing interactive-history feature."
+      }
+    }
+  ]
 }

@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51053",
+  "number": 51053,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T20:08:31.553Z",
+  "evaluated_at": "2026-10-20T20:08:31.553Z",
+  "source_updated_at": "2026-10-06T15:42:10Z",
+  "title": "Advanced Paste moderation request rejected by OpenAI",
+  "url": "https://github.com/microsoft/PowerToys/issues/51053",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce moderation endpoint rejection",
+    "detail": "Reporter supplied an API comparison; current code makes a separate moderation request, but compatible fallback policy is not established."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce moderation endpoint response",
+    "reason": "Confirm endpoint behavior and preserve moderation before choosing a compatibility change."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Reporter compares OpenAI moderation endpoint 403 with successful chat completions using inline moderation. Current PromptModerationService directly calls the moderation client, matching the separate request path. Endpoint-specific access or compatibility is plausible, but safe fallback policy is unconfirmed.",
+    "evidence": [
+      "Issue describes /v1/moderations returning 403 while chat completions with inline moderation succeed.",
+      "Current PromptModerationService calls ModerationClient.ClassifyTextAsync separately.",
+      "Related #47292 concerns Responses API/model support and does not establish this moderation failure.",
+      "No comments or linked fix PR."
+    ],
+    "recommended_action": "Approve bounded compatibility investigation and reproduce with a maintainer test account before choosing any fallback that preserves prompt safety.",
+    "evaluated_at": "2026-10-20T20:08:31.553Z",
+    "source_updated_at": "2026-10-06T15:42:10Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The endpoint comparison and separate moderation call support investigating endpoint-specific compatibility. Any safe alternate path remains a hypothesis and must be tested."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve prompt moderation when the OpenAI endpoint is unavailable",
+      "root_cause": "Hypothesis: the account can use chat completions but cannot access /v1/moderations, while PromptModerationService requires a distinct ModerationClient request. A 403 may reflect endpoint access policy, not an invalid key; no safe fallback is confirmed.",
+      "plan": [
+        "Reproduce with a maintainer-controlled credential and same model; record status and endpoint without exposing secrets.",
+        "Compare direct moderation and chat completion behavior using the same credential.",
+        "If a supported inline or alternate moderation path exists, add explicit capability-aware routing without silently bypassing moderation.",
+        "Add focused tests for success, endpoint denial, and safe fallback."
+      ],
+      "verification": [
+        "Verify endpoint behavior against chat completion with same test configuration.",
+        "Confirm Advanced Paste does not proceed without approved moderation when the moderation endpoint fails.",
+        "Run focused Advanced Paste moderation tests and build."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The reported comparison matches the separate request path, but endpoint policy and a safe compatible fallback need maintainer confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste's separate OpenAI moderation request reportedly returns 403 although chat completions work with the same configuration.",
+    "known_information": [
+      "Reporter compares /v1/moderations 403 with successful inline chat-completion moderation.",
+      "Current PromptModerationService calls ModerationClient.ClassifyTextAsync separately.",
+      "Related #47292 is a distinct Responses API/model support path.",
+      "No comments or linked fix PR."
+    ],
+    "inferences": [
+      "Failure may be specific to endpoint access for the account/model.",
+      "An alternate path is unproven; moderation must not be bypassed."
+    ],
+    "analysis": "Reproduce with a controlled credential and determine endpoint access policy before deciding whether a supported fallback exists. A fix must retain successful moderation as a precondition.",
+    "initial_investigation": [
+      "Read issue body, API comparison, labels, comments, and updatedAt.",
+      "Inspected current PromptModerationService separate ModerationClient call.",
+      "Compared #47292; it does not establish this endpoint failure."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-moderation-investigation-51053",
+      "type": "approve_design",
+      "label": "Approve moderation compatibility investigation",
+      "primary": true,
+      "confirm": true,
+      "note": "Fast-pass hypothesis only; no code design or upstream action authorized."
+    },
+    {
+      "id": "reproduce-moderation-403-51053",
+      "type": "reproduce",
+      "label": "Reproduce OpenAI moderation endpoint denial",
+      "primary": false,
+      "confirm": false,
+      "note": "Use maintainer-controlled credentials; never expose secrets.",
+      "reproduce": {
+        "title": "Compare OpenAI moderation and chat requests",
+        "module": "Advanced Paste",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Use a maintainer-controlled credential and approved test prompt.",
+          "Use same model and credential for both requests; do not log secrets."
+        ],
+        "steps": [
+          "Enable prompt moderation and invoke the same input; record status and endpoint.",
+          "Use the same credential for the inline chat-completion comparison.",
+          "Confirm Advanced Paste blocks the prompt when the moderation request fails."
+        ],
+        "expected_result": "Determine endpoint access policy and ensure no prompt proceeds without an approved moderation result."
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Assessment only; no upstream issue, label, assignment, or comment action was taken."
+  }
+}

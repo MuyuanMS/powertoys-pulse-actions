@@ -3,70 +3,43 @@
   "kind": "issue",
   "track": "fix",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The conflict is real at the Win32 registration layer but is labeled too specifically. Current HotkeyConflictManager calls RegisterHotKey as a probe and treats ERROR_HOTKEY_ALREADY_REGISTERED as a SystemConflict, even though that result can also mean another application registered the chord. The Settings UI then presents that category as a system shortcut and links generic Windows documentation. Because Color Picker uses its own activation path, the chord can still work while the probe reports an owner conflict.",
     "evidence": [
-      "The reporter reproduces the warning with Color Picker Win+Shift+C on Windows 11 build 26200 and confirms that Color Picker still opens.",
-      "Collaborator Jay-o-Way confirms that Win+Shift+C was historically assigned to Cortana/Charms but is generally deprecated on modern Windows 11.",
-      "Current HotkeyConflictManager::HasConflictWithSystemHotkey probes RegisterHotKey and returns true only for ERROR_HOTKEY_ALREADY_REGISTERED.",
-      "The Win32 error does not identify whether Windows or another application owns the registration.",
-      "Current serialization places every such probe failure in sysConflicts, and Settings renders it as a system conflict.",
-      "Issue #50402 shows a separate conflict-attribution ambiguity and does not establish that Win+Shift+C itself is free.",
-      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
+      "The reporter reproduced the warning on Windows 11 build 26200 with PowerToys 0.101.2362 and says Color Picker still opens.",
+      "A maintainer discussed the legacy Cortana/Charms assignment; the reporter agreed the warning may be too indiscriminate.",
+      "The October 4 comment asks whether a PR is needed and includes a screenshot.",
+      "Open PR #51236 explicitly lists Closes #50239 and updates hotkey-conflict detector tests and implementation."
     ],
-    "recommended_action": "Approve a conflict-provenance design that preserves the warning but stops claiming every registration collision is a documented Windows shortcut.",
-    "evaluated_at": "2026-09-12T00:59:02Z",
-    "source_updated_at": "2026-09-03T02:28:22Z"
+    "evaluated_at": "2026-10-20T20:06:42.94Z",
+    "status": "duplicate_or_handled",
+    "rationale": "The report describes Win+Shift+C being reported as a system shortcut conflict on Windows 11 despite Color Picker working. An open upstream PR explicitly closes #50239 and changes the runner conflict detector, so this is covered by an active fix attempt.",
+    "source_updated_at": "2026-10-13T14:19:02Z",
+    "recommended_action": "Track the existing upstream fix PR #51236; do not propose duplicate issue work while it remains open."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The current source proves the classification flaw: ERROR_HOTKEY_ALREADY_REGISTERED is lossy owner evidence, yet the result is serialized as SystemConflict. The safe fix is to represent unknown external ownership honestly rather than suppress the collision."
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51236"
+    ],
+    "status": "existing_fix",
+    "rationale": "Open PR #51236 explicitly closes this issue and changes the runner conflict detector and its unit tests to fix the false-positive Win+Shift+C conflict. The PR is not merged yet."
   },
-  "proposed_fixes": [
-    {
-      "title": "Distinguish unknown external hotkey ownership from documented Windows shortcuts",
-      "root_cause": "HotkeyConflictManager uses a temporary RegisterHotKey call as its only system-conflict probe. ERROR_HOTKEY_ALREADY_REGISTERED proves that the chord is already registered, but not who owns it; the code stores that result in sysConflictHotkeyMap and the UI labels it as a system shortcut.",
-      "plan": [
-        "Replace the boolean HasConflictWithSystemHotkey result with provenance that distinguishes a known in-app owner from an unknown external RegisterHotKey collision.",
-        "Serialize unknown external conflicts separately or with explicit provenance instead of sysConflicts/System.",
-        "Update Settings conflict text and links so unknown external ownership does not imply a documented Windows shortcut; preserve the warning and exact chord.",
-        "Add focused tests for successful probe registration, ERROR_HOTKEY_ALREADY_REGISTERED, in-app conflicts, and self-conflict exclusion."
-      ],
-      "verification": [
-        "Win+Shift+C on the affected Windows 11 build is shown as reserved by Windows or another application, not falsely asserted to be a documented system shortcut.",
-        "Known PowerToys-to-PowerToys conflicts still name both modules.",
-        "A free chord produces no warning, and a temporary successful registration is always unregistered."
-      ],
-      "confidence": {
-        "score": 91,
-        "level": "green",
-        "rationale": "The exact classification path is present in current source and directly explains both the warning and misleading documentation link; the fix can preserve safety without assuming the external owner."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Color Picker's working Win+Shift+C shortcut is reported as a system conflict on Windows 11. Current code can prove only that RegisterHotKey reports an existing registration, not that a documented Windows shortcut owns it.",
-    "known_information": [
-      "The report uses PowerToys 0.101.2362 on Windows 11 build 26200.",
-      "Color Picker still activates with Win+Shift+C despite the warning.",
-      "The conflict UI links to a Windows shortcut list that does not document the chord for current Windows 11.",
-      "Win+Shift+C historically invoked Cortana or Charms on older Windows.",
-      "Current runner code classifies ERROR_HOTKEY_ALREADY_REGISTERED as SystemConflict without identifying the owner.",
-      "Live upstream issue activity was reviewed through 2026-09-03T02:28:22Z."
+    "summary": "Color Picker Win+Shift+C was reported as a Windows system conflict despite working; an upstream pull request now explicitly addresses the issue.",
+    "initial_investigation": [
+      "Read the full issue body and all five comments.",
+      "Inspected PR #51236 state, summary, checklist, and changed paths; it explicitly closes this issue and updates conflict detector tests and implementation.",
+      "No duplicate issue was established."
     ],
     "inferences": [
-      "Windows or another process may still reserve Win+Shift+C even though the public Windows 11 shortcut page does not list it.",
-      "The actionable defect is conflict provenance and wording, not necessarily the existence of a collision."
+      "The active PR appears to cover the reported false-positive; final outcome still depends on merge and verification."
     ],
-    "analysis": "Suppressing the warning would discard a real registration collision. The source-supported correction is to stop equating an anonymous RegisterHotKey collision with a documented Windows-owned shortcut and to present an accurate external-owner warning.",
-    "initial_investigation": [
-      "Read the complete issue and all four comments, including the current-build retest and historical shortcut explanation.",
-      "Inspected runner HotkeyConflictManager::HasConflict, HasConflictWithSystemHotkey, AddHotkey, and conflict JSON serialization.",
-      "Inspected Settings GlobalHotkeyConflictManager and conflict-view consumption.",
-      "Reviewed cross-reference #50402 and found a separate attribution case rather than a direct duplicate.",
-      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
-    ],
-    "information_gaps": []
+    "analysis": "Existing upstream work directly claims and changes the code implicated by the issue. Preserve the earlier detailed investigation as history, but withdraw the old design action and avoid a competing fix proposal.",
+    "information_gaps": [],
+    "known_information": [
+      "The reporter uses PowerToys 0.101.2362 on Windows 11 build 26200 and says the shortcut works despite the warning.",
+      "The discussion includes a maintainer explanation of the legacy Cortana/Charms assignment and an October 4 request for a PR; a screenshot is attached to that comment.",
+      "Open PR #51236 explicitly says Closes #50239, updates the runner conflict detector and tests, and remains unmerged."
+    ]
   },
   "design": {
     "root_cause": "The runner uses RegisterHotKey failure as an owner-blind collision probe. ERROR_HOTKEY_ALREADY_REGISTERED is stored in sysConflictHotkeyMap and serialized as a System conflict, so Settings tells users a chord belongs to Windows even when the owner may be another application or a legacy reservation.",
@@ -191,44 +164,11 @@
     "verdict": "No blocking objection to the conditional catalog design; exact entry and version policy must be confirmed.",
     "notes": "Do not implement a Color Picker-only suppression."
   },
-  "actions": [
-    {
-      "id": "approve_design-50239",
-      "type": "approve_design",
-      "label": "Approve shortcut-conflict design",
-      "primary": true,
-      "confirm": true,
-      "design": {
-        "title": "Exclude obsolete Win+Shift+C from current Windows system conflicts"
-      }
-    },
-    {
-      "id": "reproduce-50239",
-      "type": "reproduce",
-      "label": "Verify Win+Shift+C conflict applicability",
-      "primary": false,
-      "confirm": true,
-      "reproduce": {
-        "title": "Verify whether Win+Shift+C is a current Windows 11 conflict",
-        "module": "Settings shortcut conflict detection",
-        "prerequisites": [],
-        "steps": [
-          "On current Windows 11, set Color Picker activation to Win+Shift+C.",
-          "Open the PowerToys dashboard and shortcut-conflict details and record the exact reported system entry.",
-          "Activate Color Picker with Win+Shift+C and verify that the chord is functional.",
-          "Run the system shortcut matcher for Win+Shift+C, Win+C, and Win+Ctrl+C and compare the matched catalog entries."
-        ],
-        "expected_result": "Windows 11 should not report an obsolete Cortana/Charms conflict for a working Win+Shift+C chord; active Win+C and Win+Ctrl+C conflicts remain unchanged.",
-        "version_requirement": "Current upstream main on Windows 11"
-      },
-      "note": "Display-only reproduction plan; it does not post to GitHub."
-    }
-  ],
+  "actions": [],
   "schemaVersion": 5,
-  "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-12T00:59:02Z",
-  "evaluated_at": "2026-09-12T00:59:02Z",
-  "source_updated_at": "2026-09-03T02:28:22Z",
+  "generated_at": "2026-10-20T20:06:42.94Z",
+  "evaluated_at": "2026-10-20T20:06:42.94Z",
+  "source_updated_at": "2026-10-13T14:19:02Z",
   "title": "Shortcut Conflict shown when there's no documented conflict.",
   "url": "https://github.com/microsoft/PowerToys/issues/50239",
   "labels": [
@@ -240,5 +180,8 @@
   "comments": 4,
   "author": "gungfujoe",
   "authorAssociation": "NONE",
-  "pending_author": false
+  "pending_author": false,
+  "updated_at": "2026-10-13T14:19:02Z",
+  "stage": "triage_revalidated",
+  "design_history_note": "Historical design from earlier triage; superseded for current action by active PR #51236."
 }

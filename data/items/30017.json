@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 30017,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "STL thumbnail generation consumes excessive CPU and memory",
+  "url": "https://github.com/microsoft/PowerToys/issues/30017",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-09-19T12:13:36Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔧",
+    "label": "Bound STL thumbnail resource use",
+    "detail": "Reports correlate large meshes with extreme memory/CPU use. Current code limits output dimensions but loads the input mesh through StLReader."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Profile bounded synthetic STL cases",
+    "reason": "Distinguish mesh expansion, repeated Explorer requests and retained resources before selecting limits."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Multiple reports and a concrete large-file workload support a maintainer-generated performance test. Input complexity is not bounded by the observed output-dimension check.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original 0.75.1 report suspects a roughly 2 GB STL and describes 40% CPU on 32 threads with more than 16 GB RAM.",
+      "The author describes repeating memory-growth/CPU spikes; later commenters report relief after uninstalling or disabling STL thumbnails.",
+      "StlThumbnailProvider.GetThumbnail(Stream,uint) checks output dimensions, null and zero-length streams, then calls StLReader.Read(stream).",
+      "The reviewed timeline links duplicate #45343; no concrete fix PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Profile controlled mesh sizes and repeated thumbnail requests, then approve resource-budget enforcement appropriate for shell thumbnail generation.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-19T12:13:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The repository-owned provider can reject or bound excessive thumbnail workloads; no existing concrete fix appeared in the reviewed linked work."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply input-complexity budgets before STL thumbnail mesh allocation",
+      "root_cause": "Hypothesis: loading a large STL into StLReader and a full WPF mesh expands the file into much larger managed/rendering structures, while repeated shell thumbnail requests amplify allocation. Pulses alone do not prove a leak.",
+      "plan": [
+        "Profile src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.cs around StLReader.Read and rendering using increasing binary/ASCII mesh sizes and repeated calls.",
+        "Before full parsing, apply a documented conservative input/triangle budget suitable for thumbnails; safely validate binary headers and overflow, and use bounded handling for ASCII rather than trusting a declared count.",
+        "Return the existing no-thumbnail result for over-budget inputs; if profiling shows retained resources, deterministically release only the demonstrated stream/bitmap/rendering owners rather than treating every allocation spike as a leak.",
+        "Add UnitTests-StlThumbnailProvider coverage for normal meshes, over-budget inputs, malformed counts, nonseekable/error streams where supported and repeated generation."
+      ],
+      "verification": [
+        "Representative small/medium STL thumbnails remain correct.",
+        "Over-budget STL inputs return promptly without full mesh allocation and without destabilizing Explorer.",
+        "Repeated accepted inputs have bounded retained memory; repeated rejected requests do not repeatedly parse the oversized file."
+      ],
+      "confidence": {
+        "score": 80,
+        "level": "yellow",
+        "rationale": "The inspected unbounded read and independent large-file reports support the resource-amplification hypothesis, but profiling must establish the dominant allocation and a suitable budget."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Large STL thumbnail workloads cause repeated severe CPU and memory spikes; disabling the provider alleviates the symptoms for affected users.",
+    "known_information": [
+      "Original reporter identifies a roughly 2 GB model and quantifies resource usage.",
+      "Later comments independently report severe usage with many or massive STL files.",
+      "Current provider reads a full model before rendering a thumbnail; the visible maximum-size guard limits image dimensions, not model complexity.",
+      "Live issue is open and unassigned."
+    ],
+    "inferences": [
+      "Full mesh expansion and repeated thumbnail requests may explain the usage; retained-memory leakage has not been established."
+    ],
+    "analysis": "A synthetic workload can test the suspected boundary without asking for a proprietary multi-gigabyte model. Start with bounded cases and treat safe refusal as an option for shell thumbnails.",
+    "initial_investigation": [
+      "Reviewed the report, all three comments, timeline duplicate and related PR search.",
+      "Inspected upstream StlThumbnailProvider.GetThumbnail and located its sibling UnitTests-StlThumbnailProvider project."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-30017",
+      "type": "reproduce",
+      "label": "Profile STL input size and repeated requests",
+      "primary": true,
+      "reproduce": {
+        "module": "File Explorer / STL thumbnail provider",
+        "version": "Current stable provider; original report 0.75.1",
+        "prerequisites": [
+          "Use generated nonprivate STL assets and an isolated developer test session.",
+          "Set a conservative memory/time stop threshold; do not begin by loading a 2 GB model on a normal workstation."
+        ],
+        "steps": [
+          "Generate valid binary and ASCII STL cases with increasing triangle counts and a small known-good control.",
+          "Measure single thumbnail calls with managed/native memory and CPU around parse versus render.",
+          "Repeat calls for the same file and then request thumbnails through Explorer to detect amplification.",
+          "Stop at the preset resource threshold, then test over-budget rejection in the candidate without fully loading the mesh.",
+          "Compare retained memory after requests complete to distinguish temporary expansion from a leak."
+        ],
+        "expected_result": "Normal thumbnails remain correct and oversized workloads are bounded or rejected before excessive allocations.",
+        "setup_prompt": "Generate a small reproducible corpus of valid binary and ASCII STL files with deterministic increasing triangle counts. Include malformed-count and empty controls. Default to modest sizes, print file sizes/counts, and require an explicit developer decision before creating very large assets; do not use proprietary CAD models."
+      }
+    },
+    {
+      "id": "approve-design-30017",
+      "type": "approve_design",
+      "label": "Approve STL thumbnail resource-budget plan",
+      "confirm": true,
+      "note": "Profile first and choose evidence-based limits; this lightweight plan does not claim a confirmed memory leak."
+    }
+  ]
 }

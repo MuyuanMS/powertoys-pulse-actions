@@ -1,60 +1,103 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 9040,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2024-09-25T15:23:51Z",
+  "title": "FancyZones sizing of Remote Desktop and VM connection windows",
   "url": "https://github.com/microsoft/PowerToys/issues/9040",
-  "title": "FancyZones does no work correctly with Remote Desktop Connection Windows",
   "author": "Scimitar21",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Needs-Team-Response"
   ],
-  "comments": 25,
-  "confidence": "Medium",
+  "stage": "triaged",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
+  "source_updated_at": "2024-09-25T15:23:51Z",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🔗",
+    "label": "Partial existing fix; split RDP and VM scenarios",
+    "detail": "Open PR #51033 addresses the final Hyper-V VMConnect comment, not all original mstsc fullscreen/restore or remote-layout reports."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🧪",
+    "label": "Validate each connection-window scenario separately",
+    "reason": "Do not duplicate VMConnect work or assume it fixes the original RDP window-growth behavior."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "reproducible",
+    "rationale": "The long discussion mixes local mstsc geometry, layouts inside remote sessions and Hyper-V guest resizing. Public steps already support reproduction, and new linked work covers only the last of these.",
     "evidence": [
-      "Labels: Issue-Bug, Product-FancyZones, Needs-Team-Response",
-      "Candidate sources: hot_comments",
-      "Missing: numbered reliable reproduction steps, fresh PowerToys bug-report ZIP."
+      "Original 0.29.3 report gives a local mstsc zone/fullscreen/restore sequence; the author later observed window growth even without PowerToys.",
+      "A commenter retested 0.47.0 after suggested merged PR #11776 and still observed growth; that PR only avoids zoning minimized windows.",
+      "The May 2024 discussion explicitly separates local RDP-window sizing from layouts inside remote sessions.",
+      "The final September 2024 comment concerns a Hyper-V Virtual Machine Connection guest not filling a 3837x1390 zone.",
+      "Open https://github.com/microsoft/PowerToys/pull/51033 targets #51032 and that final VMConnect comment via drag-resize notifications, not the entire RDP discussion."
     ],
-    "recommended_action": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Keep VMConnect under #51032/#51033 and reproduce the original mstsc case independently with PowerToys on/off controls.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-25T15:23:51Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR #51033 is a concrete partial fix attempt for the Hyper-V VMConnect portion only. Original mstsc growth and remote-session layout persistence are not established as covered. Merged #11776 did not resolve the original symptom according to a subsequent test.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51033",
+      "https://github.com/microsoft/PowerToys/issues/51032"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "This issue combines local RDP client resizing, remote-session layout persistence and a later Hyper-V guest-size complaint. A new open PR addresses only the Hyper-V drag-snap scenario.",
+    "known_information": [
+      "The original report includes Windows build, admin state and fullscreen/restore steps.",
+      "The author says RDP geometry also changes with PowerToys absent.",
+      "Later comments distinguish remote layout reset from the local window-growth symptom.",
+      "PR #51033 is open and describes a VMConnect-specific drag notification fix, with keyboard/non-drag snapping intentionally unchanged.",
+      "No current assignee or outstanding needs-author-feedback label exists."
+    ],
+    "inferences": [
+      "Original RDP growth may be an external client/window-management issue, but a current controlled comparison is needed.",
+      "The VMConnect implementation cannot be assumed to fix unrelated mstsc or remote desktop layout behavior."
+    ],
+    "analysis": "Withdraw the generic request for steps and a fresh ZIP: the discussion already supplies concrete scenarios. A scoped maintainer test and explicit partial-fix accounting avoid both duplicate implementation and premature closure.",
+    "initial_investigation": [
+      "Reviewed the full report and all 25 comments, paginated timeline and related PR search.",
+      "Read #11776's merged scope and #51033's live open state, described resize ordering, affected WindowMouseSnap/WindowUtils/WorkArea files and stated validation limits."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-9040",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "reproduce-9040",
+      "type": "reproduce",
+      "label": "Separate mstsc restore from VMConnect guest sizing",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 9040,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "reproduce": {
+        "module": "FancyZones",
+        "version": "Current stable build; validate PR #51033 separately if a candidate is available",
+        "prerequisites": [
+          "A reachable RDP host and classic mstsc client.",
+          "For the distinct VMConnect test, a Hyper-V enhanced-session guest and elevation needed to manipulate VMConnect.",
+          "Keep monitor/DPI and zone geometry fixed; record whether PowerToys runs locally or remotely."
+        ],
+        "steps": [
+          "On the local PC, put mstsc into a zone, switch to fullscreen, restore down, and repeat while measuring the outer window rectangle.",
+          "Repeat the fullscreen/restore sequence with PowerToys fully exited to test the author's external-behavior observation.",
+          "Treat layouts inside the remote session as a separate test, not a pass/fail for the local mstsc window.",
+          "For VMConnect, Shift-drag the window into a zone and compare outer size with guest resolution.",
+          "Validate the VMConnect scenario against #51033 separately; do not infer that it fixes mstsc restore or remote-session layout persistence."
+        ],
+        "expected_result": "Original mstsc restore behavior is classified independently. The VMConnect candidate makes the guest follow a drag-snap resize within its stated scope.",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/issues/9040",
+          "https://github.com/microsoft/PowerToys/issues/51032",
+          "https://github.com/microsoft/PowerToys/pull/51033"
+        ]
+      }
     }
   ]
 }

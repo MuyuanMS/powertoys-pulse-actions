@@ -2,32 +2,90 @@
   "number": 46349,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-20T22:00:29Z",
+  "generated_at": "2026-10-20T16:50:55Z",
+  "evaluated_at": "2026-10-20T16:50:55Z",
+  "source_updated_at": "2026-10-12T20:15:22Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "detail": "For an explicit --expire-at date/time that is already past, SetExpirableKeepAwake cancels existing state, logs an error, and returns before establishing an expirable state; the CLI does not surface a failure result. Preserve time-only rollover to the next day (#41205).",
+    "label": "Design candidate"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Reject an absolute past expiry as a CLI error before changing Awake state; preserve time-only next-day semantics.",
+  "actions": [
+    {
+      "primary": true,
+      "note": "Queues a design for maintainer approval; no upstream write occurs.",
+      "confirm": true,
+      "label": "Review Awake expired-CLI input fix",
+      "type": "approve_design"
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "source_updated_at": "2026-10-12T20:15:22Z",
+    "rationale": "For an explicit --expire-at date/time that is already past, SetExpirableKeepAwake cancels existing state, logs an error, and returns before establishing an expirable state; the CLI does not surface a failure result. Preserve time-only rollover to the next day (#41205).",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue gives an explicit past date/time and expects Awake to report expiry and exit.",
+      "Manager.SetExpirableKeepAwake calls CancelExistingThread, logs a past-target error, and returns before scheduling.",
+      "The time-only case is separately expected to roll to tomorrow per #41205."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-20T22:00:29Z"
+    "evaluated_at": "2026-10-20T16:50:55Z",
+    "recommended_action": "Reject an absolute past expiry as a CLI error before changing Awake state; preserve time-only next-day semantics.",
+    "status": "actionable_design"
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/46349",
+  "title": "[Awake] Awake should exit if a past expiry time is provided",
+  "labels": [
+    "Issue-Bug",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "fix_assessment": {
+    "rationale": "Source confirms an early-return path for past explicit expiry; a narrow CLI validation/error path is directly testable.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reject expired absolute Awake CLI expiry values",
+      "root_cause": "An absolute past expiry reaches SetExpirableKeepAwake, which cancels current state, logs, and returns without a clear CLI failure result.",
+      "plan": [
+        "Distinguish time-only expiry from explicit date-and-time expiry during CLI parsing.",
+        "For an explicit absolute expiry at or before now, report an error and return nonzero before changing Awake mode.",
+        "Leave time-only expiry rollover-to-next-day behavior unchanged.",
+        "Add tests for past absolute, future absolute, past time-only, and malformed expiry values."
+      ],
+      "verification": [
+        "Run with a past explicit date and verify error, nonzero exit, and no non-expiring Awake state.",
+        "Run --expire-at=00:00:00 after midnight and verify next-day scheduling remains intact.",
+        "Verify future explicit expiry still enters expirable mode."
+      ],
+      "confidence": {
+        "score": 89,
+        "level": "green",
+        "rationale": "The source early-return and reported absolute-date case align; tests isolate it from time-only rollover."
+      }
+    }
+  ],
+  "issue_context": {
+    "initial_investigation": [
+      "Inspected Awake/Core/Manager.cs SetExpirableKeepAwake: CancelExistingThread precedes past-time check; branch logs and returns before scheduling.",
+      "Issue explicitly cross-references #41205 for time-only rollover; preserve that distinct behavior."
+    ],
+    "analysis": "Validate an explicit absolute timestamp before changing Awake state and return a CLI error; keep time-only rollover separate.",
+    "known_information": [
+      "The report lists an absolute past timestamp and a time-only past value as separate cases.",
+      "For explicit past date/time the reporter expects a message and exit; time-only past should roll to tomorrow per #41205.",
+      "Manager.SetExpirableKeepAwake logs and returns when expireAt <= DateTimeOffset.Now after cancelling existing state."
+    ],
+    "inferences": [
+      "The early return explains lack of explicit error result; exact resulting mode depends on caller/state lifecycle."
+    ],
+    "information_gaps": [],
+    "summary": "Awake CLI accepts an explicit past expiry timestamp, logs the condition in the manager, and returns without a clear failure result; the user expects the CLI to exit rather than leave non-expiring behavior."
   }
 }

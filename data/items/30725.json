@@ -2,32 +2,125 @@
   "number": 30725,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-26T19:53:49Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce capture-overlay movement",
+    "detail": "The report has a recording and third-monitor steps; related public work identifies FancyZones new-window movement and a confirmed Greenshot capture-form exclusion workaround."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare Greenshot overlay exclusions",
+    "reason": "A maintainer can run the known setting/exclusion controls without asking for another generic recording."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "30725-greenshot-repro",
+      "type": "reproduce",
+      "label": "Reproduce Greenshot capture-overlay move",
+      "reproduce": {
+        "title": "Verify FancyZones movement of a Greenshot capture window",
+        "module": "FancyZones",
+        "version_requirement": "Latest stable first; original 0.76.2 reference. Related 0.84.1 report uses Greenshot 1.2.10 build 6.",
+        "prerequisites": [
+          "Three monitors for the original report, preferably including different resolutions/scaling; Greenshot installed.",
+          "Use non-sensitive test content and record the original FancyZones settings before changing controls."
+        ],
+        "steps": [
+          "Enable FancyZones and 'Move newly created windows to the current active monitor'; begin a Greenshot region capture on the third display, comparing overlay position to the supplied recording.",
+          "Repeat with that FancyZones option off, holding display arrangement and capture target constant.",
+          "Restore the option and exclude 'Greenshot capture form' in FancyZones as advised in #30040; repeat the identical capture.",
+          "If only the enabled/unexcluded case fails, inspect the capture window's creation, class/style and rectangle at FancyZones new-window handling; compare a normal newly opened application window.",
+          "Restore original settings and record whether the saved screenshot and live selection overlay each remain aligned."
+        ],
+        "expected_result": "Greenshot's capture overlay stays aligned with its capture display; FancyZones does not reposition it, while normal application new-window movement still works.",
+        "attachments": [
+          {
+            "label": "Original third-monitor recording",
+            "url": "https://github.com/microsoft/PowerToys/assets/16603906/fa915d57-a620-495d-a5b0-2505d3426e4a"
+          },
+          {
+            "label": "Maintainer capture-form workaround",
+            "url": "https://github.com/microsoft/PowerToys/issues/30040#issuecomment-1853959376"
+          }
+        ]
+      }
+    },
+    {
+      "id": "30725-overlay-plan",
+      "type": "approve_design",
+      "label": "Approve capture-overlay filtering investigation",
+      "note": "Candidate plan grounded in the documented workaround; prove the same branch for this recording before changing window eligibility."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The recording and capture-on-third-screen steps are sufficient for a maintainer experiment, and related reports supply a precise FancyZones option/exclusion comparison.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original 0.76.2 report says capture output is correct but the selection overlay shows the wrong display, with a recording attached.",
+      "#35371 ties a related Greenshot symptom to 'Move newly created windows to the current active monitor' and points to #30040.",
+      "A maintainer in #30040 recommends excluding 'Greenshot capture form', with user confirmations: https://github.com/microsoft/PowerToys/issues/30040#issuecomment-1853959376"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the third-monitor setting/exclusion matrix and, if confirmed, narrow capture-overlay eligibility in the new-window movement path.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-26T19:53:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Related public work provides a workaround and likely mechanism, not a reviewed fixing PR for this issue. A narrowly scoped overlay filter is a candidate, pending direct reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Exclude capture overlays from automatic new-window monitor movement",
+      "root_cause": "Hypothesis: FancyZones treats Greenshot's capture form as an ordinary new application window and moves the overlay to the active monitor, misaligning the visible selection while capture coordinates remain tied to the original display.",
+      "plan": [
+        "Run the third-monitor baseline, option-off and documented 'Greenshot capture form' exclusion controls to prove the same mechanism for this report.",
+        "Trace FancyZones new-window automatic movement and its window-eligibility/exclusion checks; identify the capture form by the observed stable class/style behavior rather than excluding every Greenshot-owned window.",
+        "Reject the proven overlay type before automatic movement without changing its rectangle, preserving normal Greenshot editor windows and ordinary app movement.",
+        "Add window-eligibility coverage and a multi-monitor capture regression, including different scaling and negative/offset monitor coordinates."
+      ],
+      "verification": [
+        "The capture selection and output stay on the intended third monitor with automatic movement enabled.",
+        "The documented exclusion remains effective, ordinary application movement still works, and unrelated screenshot applications are not broadly excluded."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "Public workaround confirmations strongly support window movement as the cause, but this exact third-monitor recording has not been reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With FancyZones enabled, Greenshot region selection on a third display visually shows another display even though the saved screenshot is correct.",
+    "known_information": [
+      "The original report supplies 0.76.2, Greenshot, a third-monitor sequence and a recording.",
+      "There are no comments on this issue and no current assignee.",
+      "Related #35371 describes the active-monitor new-window option; #30040 supplies a maintainer workaround with confirmations."
+    ],
+    "inferences": [
+      "Overlay repositioning fits correct saved coordinates but incorrect visible selection.",
+      "The related workaround is not proof that every Greenshot/FancyZones symptom or this exact report has the same cause."
+    ],
+    "analysis": "The remaining discriminator is a local option/exclusion experiment, not reporter-only evidence. Preserve the supplied recording and avoid claiming an existing code fix or closing the report as a duplicate without confirmation.",
+    "initial_investigation": [
+      "Read the full report and confirmed an empty comment history.",
+      "Enumerated related #35371/#38155; read #35371 and #30040, including the named capture-form workaround and confirmations.",
+      "Checked FancyZones window eligibility/movement ownership and the direct issue-number PR search; no concrete fixing PR was identified.",
+      "No multi-monitor Greenshot experiment was executed during this pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the original third-monitor symptom changes only with new-window movement and capture-form exclusion.",
+        "why_needed": "Confirms the exact movement branch before adding a narrow eligibility rule.",
+        "how_to_collect": "Maintainer runs the three-case setting/exclusion reproduction using the supplied recording as the reference."
+      }
+    ]
   }
 }

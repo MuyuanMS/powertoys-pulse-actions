@@ -2,90 +2,111 @@
   "schemaVersion": 5,
   "number": 21258,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
+  "track": "fix",
+  "stage": "design_queued",
+  "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-12T08:53:17.873046Z",
-  "evaluated_at": "2026-09-12T08:53:17.873046Z",
-  "source_updated_at": "2026-08-23T09:50:12Z",
+  "evaluated_at": "2026-10-20T16:44:00Z",
+  "source_updated_at": "2026-10-11T16:50:19Z",
   "url": "https://github.com/microsoft/PowerToys/issues/21258",
   "title": "Keyboard Manager doesn't work properly through remote desktop",
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager"
+    "Product-Keyboard Manager"
   ],
-  "assignees": null,
   "comments": 6,
   "status": {
-    "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
+    "label": "Reproduce remapping across RDP",
+    "detail": "Exact Esc/Caps Lock steps already exist; local suppression, remote toggle state and double remapping need separation."
   },
   "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Ask only for the current evidence needed to confirm the failing path."
+    "label": "Run host/remote remapping matrix",
+    "reason": "Do not request the supplied steps again or assume every remote symptom has one cause."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The selected fast pass reviewed open bug report #21258 for Keyboard Shortcut Manager but found insufficient diagnostic logs or deterministic reproduction steps to design a code fix without speculation.",
+    "status": "reproducible",
+    "rationale": "The body gives a deterministic Esc/Caps Lock swap and mstsc sequence. Later reports add Ctrl/Caps Lock and a separate double-remapping case; disabling host-side remapping resolved that case, not necessarily the original.",
     "evidence": [
-      "The issue is open and labeled as an Issue-Bug report for Keyboard Shortcut Manager.",
-      "Title: Keyboard Manager doesn't work properly through remote desktop",
-      "Area label: Keyboard Shortcut Manager",
-      "Issue body excerpt: ### Microsoft PowerToys version \"0.63.0\" ### Running as admin - [ ] Yes ### Area(s) with issue? Keyboard Manager ### Steps to reproduce 1. Swap the keys \"ESC\" and \"Caps Lock\" 2. Connect to a remote desktop through \"Remot...",
-      "Latest public comment excerpt: Could it have an excluded apps list, so you could add remote desktop?",
-      "Fast revalidation read live issue body, labels, and 6 comment(s) on 2026-09-12T08:53:17.873046Z."
+      "PowerToys 0.63.0 reports the remote session receiving both Caps Lock behavior and remapped Esc.",
+      "All six comments were read, including the host-plus-remote remapping workaround and excluded-app request.",
+      "KeyboardEventHandlers.cpp constructs remapped INPUT events, handles Caps Lock/modifier edge cases and suppresses handled originals; Input.h wraps SendInput.",
+      "Duplicate cross-references and open related CloudPC issue 32879 supply context but no targeted merged fix."
     ],
-    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
-    "evaluated_at": "2026-09-12T08:53:17.873046Z",
-    "source_updated_at": "2026-08-23T09:50:12Z"
+    "recommended_action": "Reproduce with Keyboard Manager enabled host-only, remote-only and both; trace original/injected transitions before choosing a transport-compatible correction.",
+    "evaluated_at": "2026-10-20T16:44:00Z",
+    "source_updated_at": "2026-10-11T16:50:19Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path in Keyboard Shortcut Manager."
+    "status": "proposed",
+    "rationale": "A bounded input-path investigation is applicable; the current discussion does not establish a specific implementation or a universal workaround."
   },
+  "proposed_fixes": [
+    {
+      "title": "Preserve remapped key and toggle semantics across Remote Desktop",
+      "root_cause": "Unconfirmed: local virtual-key injection and Caps Lock toggle synchronization may be represented differently through RDP. Running the same remap at both endpoints is a separate possible double-remapping cause.",
+      "plan": [
+        "Establish the original Esc/Caps Lock failure on a current build and a clean mstsc session with remapping on only one endpoint.",
+        "Trace local low-level-hook input, injected keydown/up and remote received key/toggle state; compare host-only, remote-only and both-endpoint configurations.",
+        "If the injected representation or Caps Lock synchronization is confirmed responsible, correct that narrow translation while retaining original-event suppression and balanced modifier releases.",
+        "Keep application exclusion as a separate product decision; do not bypass all remaps or inject an extra original key as a speculative fix.",
+        "Add regressions for Caps Lock/Esc, Caps Lock/Ctrl, ordinary non-toggle remaps, disconnected/reconnected sessions and local apps."
+      ],
+      "verification": [
+        "Remote Esc presses produce one Escape action and no unintended Caps Lock transition.",
+        "Remote Caps Lock follows the configured mapping without stuck Ctrl/Shift/Alt states.",
+        "Local remaps and failed-injection passthrough remain functional."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The public reproduction is concrete and source confirms injection/suppression boundaries, but no input trace establishes whether transport translation, toggle synchronization or double remapping explains the original."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Open PowerToys bug report for Keyboard Shortcut Manager: Keyboard Manager doesn't work properly through remote desktop",
+    "summary": "Keyboard Manager remapping can leak Caps Lock behavior through Remote Desktop; later comments include both matching symptoms and a distinct double-remapping configuration.",
     "known_information": [
-      "Issue #21258 is open and classified as an Issue-Bug report.",
-      "Title: Keyboard Manager doesn't work properly through remote desktop",
-      "Module: Keyboard Shortcut Manager",
-      "Body excerpt: ### Microsoft PowerToys version \"0.63.0\" ### Running as admin - [ ] Yes ### Area(s) with issue? Keyboard Manager ### Steps to reproduce 1. Swap the keys \"ESC\" and \"Caps Lock\" 2. Connect to a remote desktop through \"Remot...",
-      "Fast revalidation covered live upstream activity through 2026-08-23T09:50:12Z."
+      "The original report supplies a numbered Esc/Caps Lock reproduction.",
+      "A commenter resolved their host-plus-remote configuration by disabling host Keyboard Manager.",
+      "The source already has Caps Lock handling, original-event suppression and failed-injection passthrough."
     ],
     "inferences": [
-      "The reported symptom may be specific to certain environment configurations, input hardware, or permission levels."
+      "RDP/toggle synchronization is a plausible boundary to investigate, not a proven missing-suppression defect."
     ],
-    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report for Keyboard Shortcut Manager but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "analysis": "A generic request for steps and a diagnostic ZIP would ignore the existing deterministic scenario. Maintainer instrumentation is more useful for separating the endpoint configurations.",
     "initial_investigation": [
-      "Read issue metadata, labels, assignees, body, and 6 public comment(s).",
-      "Revalidated selected issue metadata during the scheduled bounded run."
+      "Read the full report, all six comments and linked-work timeline.",
+      "Inspected KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp and the common SendVirtualInput wrapper.",
+      "Distinguished the existing double-remapping workaround from the original host-only behavior."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
-        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-repro-diagnostics-21258",
-      "type": "request_info",
-      "label": "Request repro steps and diagnostics for #21258",
-      "primary": true,
-      "comment": {
-        "body": "Thanks for the report. The issue describes a problem in Keyboard Shortcut Manager (\"Keyboard Manager doesn't work properly through remote desktop\") and the triage revalidation reviewed the reported details, but additional diagnostic evidence is needed to confirm the exact failing code path and rule out environment-specific conflicts.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact Windows build and PowerToys version.\r\n2. A fresh diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThese details will help maintainers investigate the behavior in Keyboard Shortcut Manager and prepare an appropriate fix plan."
+      "id": "design-21258",
+      "type": "approve_design",
+      "label": "Review remote-input investigation plan",
+      "description": "Approve the bounded hypothesis-testing plan before any input translation change."
+    },
+    {
+      "id": "reproduce-21258",
+      "type": "reproduce",
+      "label": "Reproduce RDP remapping matrix",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Use two Windows endpoints with mstsc access and record Windows/PowerToys versions.",
+          "Prepare an instrumented Keyboard Manager build and a remote key-event/toggle-state observer; record existing mappings before changing them."
+        ],
+        "steps": [
+          "Swap Esc and Caps Lock on the host only; connect with mstsc and press/release each key.",
+          "Repeat windowed and full-screen while recording local injected events and remote keydown/up/toggle state.",
+          "Disable host remaps and enable the mapping only remotely; repeat.",
+          "Enable the mapping on both endpoints as a separate double-remap control; repeat with Caps Lock/Ctrl and an ordinary key."
+        ],
+        "expected_result": "Exactly the configured remote key action occurs with balanced transitions and no unexpected Caps Lock toggle.",
+        "setup_prompt": "Prepare a two-endpoint RDP test with event capture on both sides. Keep host-only, remote-only and both-endpoint Keyboard Manager cases separate, and avoid recording unrelated typed content."
       }
     }
   ]

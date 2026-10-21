@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 32323,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:44:00Z",
+  "evaluated_at": "2026-10-20T16:44:00Z",
   "source_updated_at": "2024-04-09T14:52:47Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32323",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproduce stale MWB file clipboard",
+    "detail": "Keyboard copying a second file can paste the first; timing/debounce is plausible but not demonstrated."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare rapid and delayed file-copy events",
+    "reason": "Separate clipboard notification loss from file-path deduplication or transfer caching."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The public sequence copies file A successfully, keyboard-copies file B and receives A again; context-menu copying reportedly recovers. No timing is specified, so a one-second guard is not yet a proven cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The PowerToys 0.80 report supplies file A/B and keyboard-versus-context-menu behavior; there are no public comments.",
+      "FormHelper.cs handles clipboard notifications with a one-second recent-event guard.",
+      "Clipboard.cs CheckClipboardEx contains another one-second check and file-path/string deduplication and LastDragDropFile state.",
+      "The broad MWB tracker is not a targeted fix or active implementation for this scenario."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with distinct harmless files using controlled intervals and trace notification, clipboard sequence and transfer identity.",
+    "evaluated_at": "2026-10-20T16:44:00Z",
     "source_updated_at": "2024-04-09T14:52:47Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The clipboard pipeline has concrete timing/cache boundaries to inspect; no linked fix covers the supplied A/B sequence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure the latest MWB file clipboard reaches the peer",
+      "root_cause": "Hypothesis: a clipboard change is discarded by timing guards or stale path/transfer deduplication. The report does not state its copy interval, so attributing the issue specifically to the one-second guard would be premature.",
+      "plan": [
+        "Reproduce file A followed by distinct file B at intervals below one second and above two seconds, comparing keyboard and context-menu copy.",
+        "Trace native clipboard sequence/change identity, both guard decisions, CheckClipboardEx deduplication and the advertised/transferred file identity.",
+        "If a latest change is lost, replace the confirmed drop-only boundary with processing of the latest pending clipboard state; if caching is responsible, invalidate the confirmed stale transfer/path state.",
+        "Preserve clipboard-loop suppression and avoid clearing legitimate clipboard ownership or repeating large transfers.",
+        "Add regressions for rapid A/B/C changes, delayed changes, repeated same-file copy and peer reconnect."
+      ],
+      "verification": [
+        "After copying B, the peer pastes B's distinct name and content rather than A.",
+        "Rapid updates converge on the latest file without loops or duplicate transfers.",
+        "Text/image clipboard and ordinary same-file behavior do not regress."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The supplied sequence and inspected event/cache guards support a narrow investigation, but no trace connects the reported keyboard-only behavior to a particular guard."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders can paste the previously copied file after keyboard-copying a new file; context-menu recopying reportedly refreshes it.",
+    "known_information": [
+      "The report identifies PowerToys 0.80 and a two-file copy/paste sequence.",
+      "No interval between copies or diagnostic conclusion is supplied.",
+      "The owning source has both timing suppression and file-path/transfer-state deduplication."
+    ],
+    "inferences": [
+      "A lost change and stale transfer identity can produce the same symptom and require separate traces."
+    ],
+    "analysis": "The reporter's sequence is sufficient for a maintainer two-PC experiment with generated safe files. Generic logs or personal sample files are not required.",
+    "initial_investigation": [
+      "Read the full issue and empty discussion and checked obvious linked work.",
+      "Inspected WM_DRAWCLIPBOARD/WM_CLIPBOARDUPDATE handling in FormHelper.cs.",
+      "Inspected CheckClipboardEx and file clipboard state in Clipboard.cs."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32323",
+      "type": "approve_design",
+      "label": "Review latest-file clipboard plan",
+      "description": "Approve the bounded notification/cache investigation before changing debounce behavior."
+    },
+    {
+      "id": "reproduce-32323",
+      "type": "reproduce",
+      "label": "Reproduce stale A/B file clipboard",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "prerequisites": [
+          "Use two physical PCs with matching current versions and working file clipboard sharing.",
+          "Prepare a development build with clipboard-change/transfer-identity instrumentation and harmless small files with distinct names and content."
+        ],
+        "steps": [
+          "Keyboard-copy A on the source and paste on the peer; verify name and content.",
+          "Keyboard-copy B more than two seconds later and paste on the peer.",
+          "Repeat A then B less than one second apart and compare with context-menu copy.",
+          "Repeat rapid A/B/C updates while tracing whether B/C is observed, suppressed, advertised and transferred."
+        ],
+        "expected_result": "The peer pastes the latest successfully copied file, independent of keyboard/context-menu activation.",
+        "setup_prompt": "Create three small test text files named MWB-A, MWB-B and MWB-C with visibly distinct non-sensitive contents. Prepare timestamped copy actions at controlled intervals on two physical PCs; do not use personal files."
+      }
+    }
+  ]
 }

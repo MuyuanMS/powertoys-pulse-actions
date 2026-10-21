@@ -1,0 +1,127 @@
+{
+  "track": "triage",
+  "stage": "awaiting_author",
+  "source_updated_at": "2026-10-07T20:09:47Z",
+  "title": "PowerToys Preview 0.101.2781.0 reset all PowerToys settings after installation",
+  "url": "https://github.com/microsoft/PowerToys/issues/51095",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "pending_author": false,
+  "status": {
+    "glyph": "❓",
+    "label": "Need update-path and scope confirmation",
+    "detail": "The report establishes a settings reset after a WinGet Preview update, but the previous build and install scope are unknown."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The reporter supplies the affected build, update source, affected modules, and a diagnostic archive, but automated triage rejected the archive for an oversized entry. The prior version and whether install source/scope changed are unknown. PRs #50897 and #51115 later fixed separate settings persistence/startup problems; there is no evidence either covers this update-triggered reset. Confirming the before/after path and current Preview behavior is the discriminating next step.",
+    "evidence": [
+      "The reporter says installing/updating to Preview 0.101.2781.0 via WinGet reset Advanced Paste, Text Extractor, and FancyZones settings.",
+      "The reporter restored settings from backup.",
+      "A diagnostic ZIP is attached; automated triage could not inspect it due to an oversized entry.",
+      "Only comment is automated triage; no author response, assignee, duplicate, or linked fix.",
+      "PR #50897 and #51115 merged later and address other settings persistence/startup paths, but coverage of this report is unconfirmed."
+    ],
+    "recommended_action": "Ask for the prior version and install scope/source, and whether the reset reproduces on current Preview v0.102.2911.0.",
+    "evaluated_at": "2026-10-20T20:10:33.649Z",
+    "source_updated_at": "2026-10-07T20:09:47Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys settings/update fix may apply, but the report does not identify whether settings were migrated, loaded from another profile, or overwritten during first launch; hypothesis remains red pending details."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve existing settings across a WinGet Preview update",
+      "root_cause": "Hypothesis: the update or first launch for 0.101.2781.0 loaded a different profile or replaced existing settings with defaults. The reset is reported, but the previous build, scope, and settings-file transition are unknown.",
+      "plan": [
+        "Confirm exact before/after versions, source, and install scope; determine whether the reset persists on current Preview.",
+        "If it persists, inspect update and Runner startup to distinguish profile selection, default initialization, and failed settings read.",
+        "Add regression coverage for in-place WinGet upgrade preserving existing module configuration on the identified path."
+      ],
+      "verification": [
+        "On an isolated test profile, perform the exact in-place WinGet upgrade and compare Advanced Paste, Text Extractor, and FancyZones settings before and after first launch.",
+        "Repeat with current Preview v0.102.2911.0 and record whether the failure remains.",
+        "Run focused settings/update tests after the failing path is identified."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "Timing suggests update/profile migration or settings initialization, but prior version, install scope, and inspectable diagnostics do not distinguish causes."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A WinGet update to Preview 0.101.2781.0 reportedly replaced existing module settings with defaults, requiring restoration from backup.",
+    "known_information": [
+      "Reported version: PowerToys Preview 0.101.2781.0; installation via WinGet.",
+      "Affected modules include Advanced Paste, Text Extractor, and FancyZones.",
+      "The reporter says settings reset immediately after installation and were restored from backup.",
+      "Diagnostic ZIP is linked, but automated triage could not inspect it due to an oversized entry.",
+      "Current latest Preview is v0.102.2911.0; PR #50897 and #51115 later merged separate settings persistence/startup fixes."
+    ],
+    "inferences": [
+      "The reset may involve update migration, profile selection, or first-launch initialization; evidence does not distinguish them.",
+      "Later PRs may be relevant to revalidation, but no evidence establishes they fixed this report."
+    ],
+    "analysis": "The fastest decision point is whether this happened during an in-place update within one scope and whether it persists on current Preview. The existing archive should not be requested again; version/scope details determine the next code investigation.",
+    "initial_investigation": [
+      "Read the complete live body and only comment, including attachment metadata and environment.",
+      "Checked #50616, which concerns settings.json corruption at shutdown/restart; it is not demonstrably the same update-triggered symptom.",
+      "Verified #50897 fixes shutdown-save and missing-module state issues, while #51115 fixes startup/read-only overwrites; neither is confirmed as this cause.",
+      "Checked current release list: latest Preview is v0.102.2911.0."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The PowerToys version immediately before 0.101.2781.0, and whether the reset still occurs when upgrading in place to current Preview v0.102.2911.0.",
+        "why_needed": "Distinguishes a one-version regression already covered by later settings changes from a persistent upgrade/migration failure.",
+        "how_to_collect": "Read the prior version from backup or WinGet history; if possible install current Preview in place and report the resulting version and whether settings remain."
+      },
+      {
+        "evidence_type": "install_scope",
+        "information": "Whether the prior and updated installs used the same source and scope (for example, WinGet per-user versus per-machine/system).",
+        "why_needed": "A source or scope switch can change which settings profile is read, distinguishing profile selection from settings corruption.",
+        "how_to_collect": "State the install source and per-user/per-machine scope before and after; do not include private paths or configuration values."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-update-scope-51095",
+      "type": "request_info",
+      "label": "Confirm update versions and scope",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 51095,
+        "body": "Thanks for identifying that the 0.101.2781.0 WinGet Preview update reset Advanced Paste, Text Extractor, and FancyZones, and for attaching the report. The automated review could not read that archive because one entry was oversized, so I cannot tell whether this was an in-place migration or a profile change. Please provide:\n\n**Needed**\n1. The PowerToys version immediately before the update, and whether the reset still occurs after an in-place update to current Preview v0.102.2911.0, if you can test it.\n2. Whether the install source and scope stayed the same before and after (for example, WinGet per-user versus per-machine).\n\nThese details distinguish a version-specific regression from a profile/scope change; there is no need to attach the same archive again."
+      }
+    },
+    {
+      "id": "approve-settings-update-investigation-51095",
+      "type": "approve_design",
+      "label": "Investigate settings preservation on update",
+      "primary": false,
+      "confirm": false,
+      "note": "Fork-side investigation only; keep the candidate cause red until the update path is confirmed."
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51095,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:33.649Z",
+  "evaluated_at": "2026-10-20T20:10:33.649Z",
+  "revalidation_history": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No upstream or fork issue/PR writes were made."
+  }
+}

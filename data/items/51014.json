@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51014",
+  "number": 51014,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-05T14:10:03Z",
+  "title": "CmdPal: Dock overlays a maximized Dev Box window",
+  "url": "https://github.com/microsoft/PowerToys/issues/51014",
+  "author": "niels9001",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "CmdPal - Venice"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a concise, repeatable Dev Box scenario and identifies that the Dock runs on the local desktop while the maximized window contains the remote desktop. The Dock code uses the Windows AppBar API to reserve work area, but it is not known whether Dev Box ignores that work area or the reservation is incorrect.",
+    "evidence": [
+      "The reporter enables the local Command Palette Dock, opens a Windows Dev Box session, and maximizes the Dev Box window.",
+      "The Dock then covers part of the remote desktop content.",
+      "The issue has no comments, attachments, or fix links."
+    ],
+    "recommended_action": "Reproduce with Dev Box and compare its maximized bounds against the AppBar-reserved work area before choosing an app-side change.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-05T14:10:03Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys-owned Dock/AppBar work-area interaction is possible, but Dev Box may also be maximizing to monitor bounds instead of the reserved work area; maintainers must distinguish these cases."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent the Command Palette Dock from covering maximized Dev Box content",
+      "root_cause": "The maximized Dev Box window may not honor the work area reserved by the Dock's AppBar, or the Dock's AppBar reservation may not be established for the relevant display/window transition; the report does not identify which path occurs.",
+      "plan": [
+        "Reproduce on the local desktop with the Dock enabled and compare maximized Dev Box bounds with a standard maximized application on the same monitor.",
+        "Inspect the Dock AppBar's reserved work area and Dev Box's observed maximized bounds to determine whether Windows reports the reservation and whether Dev Box honors it.",
+        "If the Dock reservation is missing or incorrect, correct the Dock's AppBar registration/positioning; if Dev Box ignores the valid reservation, avoid a global Dock workaround until a safe app-specific behavior is demonstrated."
+      ],
+      "verification": [
+        "With Command Palette Dock enabled, maximize Dev Box and confirm the remote desktop content is not covered by the Dock.",
+        "Compare a standard maximized local application and verify the Dock remains correctly positioned and its work-area reservation is unchanged."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The overlap is clear and current Dock source confirms AppBar work-area management, but there is no evidence whether the reservation or Dev Box maximization behavior is responsible."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The local Command Palette Dock covers content in a maximized Windows Dev Box window, even though the Dock is intended to reserve display work area.",
+    "known_information": [
+      "The report describes the current Command Palette development build, with the Dock enabled on the physical desktop and a maximized Dev Box session window.",
+      "The Dock overlaps the remote desktop content; the issue has no comments or attachments.",
+      "Current DockWindow source documents use of the Windows AppBar API to reserve screen work area and position the Dock at a display edge."
+    ],
+    "inferences": [
+      "Dev Box may maximize to the full monitor bounds instead of the work area, or the Dock may not have established the correct AppBar reservation.",
+      "The issue's local-Dock/remote-desktop distinction means the overlap should be checked against Windows work-area data before proposing a global z-order or positioning change."
+    ],
+    "analysis": "The reproduction is specific enough for a maintainer test without requesting logs. Current source locates the AppBar/work-area owner, but does not establish whether the Dock or Dev Box violates the expected work-area contract. Compare both paths before designing a fix.",
+    "initial_investigation": [
+      "Inspected current Command Palette Dock code: DockWindow.xaml.cs identifies the Windows AppBar API as the work-area and edge-positioning mechanism.",
+      "DockWindowManager.cs manages one DockWindow per enabled monitor and synchronizes those windows with monitor settings; no evidence from the issue establishes a failed monitor synchronization.",
+      "The issue has no comments, attachments, duplicate links, or existing fix reference."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 51016,
+        "url": "https://github.com/microsoft/PowerToys/issues/51016",
+        "relationship": "Separate Command Palette Dock visibility issue around opening Action Center; shared Dock owner but different reported trigger and symptom."
+      }
+    ],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-cmdpal-devbox-dock-investigation-51014",
+      "type": "approve_design",
+      "label": "Approve Dev Box Dock investigation"
+    },
+    {
+      "id": "reproduce-cmdpal-dock-over-devbox-51014",
+      "type": "reproduce",
+      "label": "Reproduce Dock overlap with Dev Box",
+      "note": "Compare Dev Box's maximized bounds with the work area reserved by the Dock before changing z-order behavior.",
+      "reproduce": {
+        "title": "Check Command Palette Dock work area with Dev Box",
+        "module": "Command Palette Dock",
+        "version_requirement": "Current Command Palette development build, as reported",
+        "prerequisites": [
+          "Run the Dock on the local physical desktop with at least one display.",
+          "Open a Windows Dev Box session in a window that can be maximized."
+        ],
+        "steps": [
+          "Enable the Command Palette Dock on the local desktop.",
+          "Open the Windows Dev Box session and maximize its window.",
+          "Observe whether the Dock covers remote desktop content and record the Dev Box window bounds and monitor work area.",
+          "Maximize a standard local application on the same display and compare its bounds and overlap."
+        ],
+        "expected_result": "The maximized Dev Box content respects the Dock-reserved work area and remains unobscured.",
+        "actual_to_confirm": "Whether the AppBar work-area reservation is missing/incorrect or Dev Box ignores a valid reservation."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce Dev Box Dock overlap",
+    "detail": "The AppBar/work-area path is identifiable, but the report does not show whether the Dock or Dev Box breaks the work-area expectation."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce Dock overlap with Dev Box",
+    "reason": "Compare Dev Box maximization with the Dock's reported AppBar reservation before choosing a change."
+  }
+}

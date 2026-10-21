@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51415,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:39:41.086Z",
+  "evaluated_at": "2026-10-20T16:39:41.086Z",
+  "source_updated_at": "2026-10-20T12:57:55Z",
+  "updated_at": "2026-10-20T12:57:55Z",
+  "state": "open",
+  "title": "CmdPal: Provider initialization runs outside the startup timeout (EXT26.S2)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51415",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:39:41.086Z",
+    "evidence": [
+      "The issue reports an isolated shortened-budget test in which InitializeWithHost exceeded the activation deadline.",
+      "The report explicitly says no native COM call was hung.",
+      "Current TryStartExtensionAsync awaits StartExtensionAsync with WaitAsync before synchronously constructing CommandProviderWrapper."
+    ],
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "rationale": "A shortened-budget test reproduced initialization exceeding the activation deadline while another provider was healthy. The current source wraps activation in WaitAsync before constructing the provider synchronously; a hung native COM call was not reproduced.",
+    "source_updated_at": "2026-10-20T12:57:55Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was found by focused issue-number search; treat the reported mechanism as a hypothesis and validate before implementation.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Block InitializeWithHost past the deadline while a healthy provider starts; verify healthy startup completes within budget.",
+        "Release the blocked call after timeout and verify its obsolete result is not published.",
+        "Run focused service tests for ownership and repeated initialization."
+      ],
+      "root_cause": "The timeout covers activation but not provider construction and InitializeWithHost; a blocking initialization can hold startup beyond the deadline, and timeout does not cancel the COM call.",
+      "plan": [
+        "Define the deadline over activation and provider initialization, keeping potentially blocking COM work off the UI thread.",
+        "Track in-flight initialization after timeout; do not treat WaitAsync timeout as cancellation.",
+        "Retire late results when their load lifetime is obsolete and keep healthy providers progressing.",
+        "Add timeout, late-result and healthy-peer tests."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The shortened-budget test verifies the gap, but safe ownership and cleanup of still-running COM initialization are not tested."
+      },
+      "title": "Correct the reported Command Palette extension lifecycle failure"
+    }
+  ],
+  "issue_context": {
+    "analysis": "A shortened-budget test reproduced initialization exceeding the activation deadline while another provider was healthy. The current source wraps activation in WaitAsync before constructing the provider synchronously; a hung native COM call was not reproduced.",
+    "summary": "Synchronous provider initialization can outlive the startup timeout even though extension activation itself is bounded.",
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "known_information": [
+      "The issue reports an isolated shortened-budget test in which InitializeWithHost exceeded the activation deadline.",
+      "The report explicitly says no native COM call was hung.",
+      "Current TryStartExtensionAsync awaits StartExtensionAsync with WaitAsync before synchronously constructing CommandProviderWrapper."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed current state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and relevant related-issue status; no upstream code or public issue action was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "id": "issue-51415-approve-design",
+      "label": "Approve CmdPal lifecycle fix investigation",
+      "confirm": true,
+      "design": {
+        "title": "Correct the reported Command Palette extension lifecycle failure"
+      },
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "A controllable extension test double that pauses InitializeWithHost and a healthy peer."
+        ],
+        "module": "Command Palette extensions",
+        "expected_result": "The deadline is reported, healthy providers load, and late initialization results are retired.",
+        "steps": [
+          "1. Let activation finish, then block InitializeWithHost beyond the startup deadline.",
+          "2. Start a healthy provider in the same batch and observe timeout reporting and completion.",
+          "3. Release the blocked call after timeout and verify it cannot publish into a later load."
+        ]
+      },
+      "id": "issue-51415-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal lifecycle failure"
+    }
+  ]
+}

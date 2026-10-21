@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 22797,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Quick Accent Remove Toolbar",
+  "url": "https://github.com/microsoft/PowerToys/issues/22797",
+  "labels": [
+    "Issue-Bug",
+    "Area-Quality",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 12,
+  "confidence": "Red",
+  "generated_at": "2026-10-20T23:32:11.845Z",
+  "evaluated_at": "2026-10-20T23:32:11.845Z",
   "source_updated_at": "2024-10-03T14:43:09Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs current reproduction details",
+    "detail": "Multiple reports describe a Quick Accent toolbar that remains visible, but its trigger and current-version behavior are unclear."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "✉️",
+    "label": "Confirm current Quick Accent repro",
+    "reason": "Current version and exact interaction will distinguish a missed dismissal from expected active-toolbar behavior."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Several users report a persistent toolbar across older releases and workarounds differ, but the thread lacks a reliable trigger or current-version confirmation. Targeted reproduction details are needed before choosing a lifecycle fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue describes the Quick Accent toolbar remaining open after it is no longer needed.",
+      "Comments report the last character stuck on versions 0.77.0, 0.79.0, and 0.80.1.",
+      "Workarounds include typing another character or toggling Quick Accent off and on.",
+      "Older diagnostic ZIP attachments exist; latest comment only says it remains on 0.80.1.",
+      "No linked fix PR found in issue timeline or PR search."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask whether the issue persists on latest stable and request the exact input/selection sequence that leaves the toolbar visible.",
+    "evaluated_at": "2026-10-20T23:32:11.845Z",
     "source_updated_at": "2024-10-03T14:43:09Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A missing dismissal transition in the Quick Accent toolbar lifecycle is a plausible code fix, but reports do not identify which terminal condition fails."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Dismiss Quick Accent toolbar after its input session ends",
+      "root_cause": "Red hypothesis: a Quick Accent input session can reach a terminal state without running toolbar hide/cleanup, leaving the last candidate visible until another input or module toggle resets it.",
+      "plan": [
+        "Inspect show, selection, timeout, focus-loss, and cancellation transitions to identify which terminal event fails to hide the toolbar.",
+        "Route the confirmed terminal transition through the existing hide/cleanup path without dismissing during active selection.",
+        "Add focused coverage for the reproduced stuck-toolbar transition and normal selection."
+      ],
+      "verification": [
+        "Follow the reporter-confirmed sequence on current build and verify the toolbar disappears when the session ends.",
+        "Verify candidate selection, typing another character, cancelling, and toggling Quick Accent still behave normally."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "Multiple reports support the symptom, but no common trigger or current-version reproduction identifies the missing transition."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Several Quick Accent users say its candidate toolbar can remain visible after input is finished; they report different workarounds, but the triggering transition is unknown.",
+    "known_information": [
+      "The issue asks to remove the toolbar when it is no longer needed.",
+      "A version 0.77.0 report says the toolbar stuck on the last character and typing another character cleared it.",
+      "Other comments report versions 0.79.0 and 0.80.1; one says toggling Quick Accent clears it.",
+      "Thread includes older diagnostic ZIPs from 2022 and January 2024."
+    ],
+    "inferences": [
+      "Different workarounds are consistent with stale toolbar/session state but do not identify the terminal event that fails to dismiss it.",
+      "Current release behavior is unknown."
+    ],
+    "analysis": "The repeated symptom suggests a lifecycle/dismissal defect, but the thread lacks a common trigger and current-version confirmation. Ask only for those discriminators rather than generic logs.",
+    "initial_investigation": [
+      "Read the full issue and all 12 comments, including reporter answers and prior diagnostic attachments.",
+      "Compared reports on 0.77.0, 0.79.0, and 0.80.1 and noted distinct typing and module-toggle workarounds.",
+      "Searched related PowerToys PRs by issue number; no linked fix found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether the behavior still reproduces on latest stable.",
+        "why_needed": "The latest report is on 0.80.1; later releases may have changed it.",
+        "how_to_collect": "Check About and include the installed version in the reply."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "Shortest exact sequence from Quick Accent activation until the toolbar remains visible, including candidate selection, cancellation, focus change, or stopping input.",
+        "why_needed": "Existing workarounds do not identify the missing dismissal transition.",
+        "how_to_collect": "On current stable, provide numbered steps and state what action should have dismissed the toolbar."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-quick-accent-repro-22797",
+      "type": "request_info",
+      "label": "Confirm current Quick Accent repro",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the reports that the toolbar can remain on the last character, prior support attachments, and workarounds of typing another character or toggling Quick Accent. The latest report only confirms version 0.80.1; the thread does not show which input-ending event leaves the toolbar visible.\nPlease provide:\n1. Whether this still happens on the latest stable version.\n2. If so, the shortest numbered sequence from activating Quick Accent until the toolbar remains visible, including whether you selected a candidate, cancelled, changed focus, or stopped typing.\nThis identifies the lifecycle transition a fix must cover."
+      }
+    },
+    {
+      "id": "design-22797",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused, evidence-gated fork-side investigation of toolbar dismissal; confirm the current trigger before designing a change. This does not write upstream."
+    }
+  ]
 }

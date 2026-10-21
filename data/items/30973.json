@@ -9,8 +9,8 @@
   "summary": "Always On Top warns about an elevated foreground application but discards the foreground window identity, so the toast never says which application triggered it.",
   "status": {
     "glyph": "🎯",
-    "label": "Medium-confidence Always On Top fix design",
-    "detail": "Add filename-safe identity lookup from the foreground HWND and format it into the existing elevation warning, with bounded title and generic fallbacks."
+    "label": "Current Always On Top warning design with suppression behavior to revalidate",
+    "detail": "Existing application-identity design is preserved; latest comment adds a separate claim that suppression does not persist."
   },
   "next_action": {
     "glyph": "✅",
@@ -19,23 +19,20 @@
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue's screenshots and discussion show a static elevation warning without an application name. Current Always On Top code receives the foreground HWND, checks only a boolean elevation result, and sends an unformatted resource string. A focused identity lookup and message-template change is implementation-ready, with fallbacks for protected or short-lived windows.",
-    "recommended_action": "Approve the mirror design, then hand off to the design-to-PR workflow; do not post upstream changes from this artifact.",
-    "evaluated_at": "2026-09-12T00:53:18Z",
-    "source_updated_at": "2026-09-01T19:40:49Z",
+    "rationale": "The existing detailed design for naming the elevated foreground application remains relevant. The latest 2026-10-19 comment adds that the warning recurs at startup despite selecting the suppression option; this may be a separate suppression defect and must not be folded into the identity fix without reproduction. Linked duplicate 30913 is closed and does not resolve the unnamed-app request.",
+    "recommended_action": "Validate warning identity and notification suppression separately; the existing design applies only to safe application-name display.",
+    "evaluated_at": "2026-10-20T16:42:40.724Z",
+    "source_updated_at": "2026-10-19T16:46:26Z",
     "evidence": [
-      "Issue report expects the particular application to be identified and says the notification appears at logon, sometimes twice.",
-      "Two attached screenshots show the static AlwaysOnTop toast with no application name.",
-      "AlwaysOnTop::HandleWinHookEvent handles EVENT_SYSTEM_FOREGROUND and passes IDS_SYSTEM_FOREGROUND_ELEVATED unchanged.",
-      "IsProcessOfWindowElevated resolves the foreground HWND to a PID only to return TokenIsElevated.",
-      "NotificationUtil::WarnIfElevationIsRequired displays the supplied message and suppresses later warnings per module instance.",
-      "No active linked fix, assignee, or fork mirror existed before this run; the historical duplicate target is closed.",
-      "On 2026-09-12, the complete live body, all 23 public comment(s), labels, assignees, and link timeline were re-read through 2026-09-01T19:40:49Z."
+      "The original report and screenshots show an unnamed Always On Top/elevated-application warning.",
+      "The 2026-10-19 comment says the warning appears at startup and suppression selection has no effect.",
+      "Linked issue 30913 is closed and concerns a truncated notification; its closure does not establish this application-identity request is handled.",
+      "The existing artifact contains a detailed identity design and fork mirror issue 629; no new fork work was performed."
     ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete upstream or fork-side implementation covers the missing application identity. The repository-local call path supports a focused fix without changing shared notification suppression or activation behavior."
+    "rationale": "No confirmed upstream implementation covers application identity in this warning; preserve the existing specific design without claiming the new suppression report is addressed."
   },
   "proposed_fixes": [
     {
@@ -60,36 +57,34 @@
     }
   ],
   "issue_context": {
-    "summary": "Users receive an Always On Top elevation warning but cannot tell which application triggered it; reports include logon, Task Scheduler, and post-Outlook pinning scenarios.",
+    "summary": "Users receive an Always On Top elevation warning without the triggering application name. A new 2026 follow-up also says the notification recurs at startup despite selecting the suppression option, which may be a separate suppression issue.",
     "known_information": [
       "The report is for PowerToys 0.77.0 on Windows 11 Pro and says PowerToys is running as administrator.",
       "The warning body is static and contains no process or window identity.",
       "The foreground event handler has the triggering HWND and calls IsProcessOfWindowElevated.",
       "The shared notification utility accepts a caller-supplied message and suppresses repeated warnings per instance.",
       "The discussion requests application identity, an ignore option, and a specific disable control.",
-      "Two screenshots were retrieved and both show the same unnamed AlwaysOnTop toast."
+      "Two screenshots were retrieved and both show the same unnamed AlwaysOnTop toast.",
+      "A 2026-10-19 commenter reports the same startup warning and says selecting the suppression option does not prevent it from appearing.",
+      "The linked issue 30913 is closed and its report concerns truncation; it does not establish this issue is handled."
     ],
     "inferences": [
       "The primary defect is loss of identity at the Always On Top call site, not toast rendering.",
       "The first qualifying foreground event may be a shell or protected window, so identity lookup must have safe fallbacks.",
-      "Duplicate appearances can involve multiple qualifying foreground notifications or module instances; naming the triggering window is the directly supported scope, while suppression semantics should remain unchanged."
+      "Duplicate appearances can involve multiple qualifying foreground notifications or module instances; naming the triggering window is the directly supported scope, while suppression semantics should remain unchanged.",
+      "The suppression behavior may be independent from loss of foreground application identity; do not broaden the existing design unless a maintainer reproduction shows a shared cause."
     ],
-    "analysis": "The code path is sufficiently concrete for a design: the foreground HWND is available exactly where the warning is raised, and Windows permits a limited-information image-name query in more cases than a full process query. The design avoids exposing full paths and keeps common notification policy stable.",
+    "analysis": "The previous identity design and mirror are preserved, while the newest report is treated as a separate behavior to reproduce. The proposed fix must not claim to resolve suppression.",
     "initial_investigation": [
       "Read the complete issue body, all 23 comments, issue events, and the two attached screenshots.",
       "Inspected AlwaysOnTop::HandleWinHookEvent, NotificationUtil::WarnIfElevationIsRequired, IsProcessOfWindowElevated, process-path helpers, and the existing elevation unit tests.",
       "Reviewed the history that introduced the Always On Top warning (commit cd57659ef) and found no later fix for application identity.",
       "Checked MuyuanMS/PowerToys for an existing mirror and found none before creating fork issue 629.",
-      "Revalidated the live body, all 23 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-01T19:40:49Z."
+      "Revalidated the live body, all 23 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-01T19:40:49Z.",
+      "Re-read the full live discussion and confirmed the latest report adds startup recurrence despite suppression selection.",
+      "Checked linked issue 30913: it is closed and discusses truncation, not a verified fix for naming the foreground app."
     ],
-    "information_gaps": [
-      {
-        "information": "Whether the first logon foreground event is always a real application window or sometimes a shell/protected window.",
-        "why_needed": "Determines whether implementation should filter non-application HWNDs or rely on the generic fallback without suppressing a legitimate warning.",
-        "how_to_collect": "During manual verification, record the foreground executable/title at logon and when opening Task Scheduler; do not include full local paths in public artifacts.",
-        "evidence_type": "behavior_confirmation"
-      }
-    ]
+    "information_gaps": []
   },
   "design": {
     "root_cause": "AlwaysOnTop::HandleWinHookEvent receives the foreground HWND but only uses it for a boolean elevation test; the process identity is discarded before NotificationUtil creates a static unnamed toast.",
@@ -277,26 +272,30 @@
       "note": "Draft only; no upstream code, PR, comment, or issue write is authorized by this artifact."
     },
     {
-      "id": "request-info-30973-foreground-window",
-      "type": "request_info",
-      "label": "Request the foreground window at the warning",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 30973,
-        "body": "The foreground-window warning path can safely include the triggering application name, with a generic fallback for protected or short-lived windows. To verify the fallback behavior, please note which executable or window title is foreground when the warning first appears at logon and when opening Task Scheduler. Please avoid sharing full local paths."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "type": "reproduce",
+      "id": "issue-30973-reproduce-current-warning",
+      "label": "Reproduce warning identity and suppression",
+      "reproduce": {
+        "steps": [
+          "1. Trigger the elevation warning with an elevated foreground application and record whether the application is named without exposing a full path.",
+          "2. Select the notification suppression option, restart PowerToys, and reproduce the same foreground transition.",
+          "3. Check whether the warning recurs and whether identity is available; keep a suppression defect separate from the proposed identity change unless a shared behavior is demonstrated."
+        ],
+        "prerequisites": [
+          "Run PowerToys unelevated.",
+          "Have an elevated foreground application such as Task Scheduler or Task Manager."
+        ],
+        "version_requirement": "Current supported PowerToys build; compare the reported behavior if available.",
+        "module": "Always On Top elevation warning",
+        "expected_result": "The warning identifies the foreground application safely; the suppression choice persists, or any recurrence is recorded as a distinct behavior."
+      }
     }
   ],
   "schemaVersion": 5,
   "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-12T00:53:18Z",
-  "evaluated_at": "2026-09-12T00:53:18Z",
-  "source_updated_at": "2026-09-01T19:40:49Z",
+  "generated_at": "2026-10-20T16:42:40.724Z",
+  "evaluated_at": "2026-10-20T16:42:40.724Z",
+  "source_updated_at": "2026-10-19T16:46:26Z",
   "title": "PowerToys has detected an app... Always On Top message",
   "url": "https://github.com/microsoft/PowerToys/issues/30973",
   "labels": [
@@ -306,5 +305,7 @@
     "Needs-Team-Response"
   ],
   "assignees": [],
-  "comments": 23
+  "comments": 24,
+  "updated_at": "2026-10-19T16:46:26Z",
+  "state": "open"
 }

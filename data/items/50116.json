@@ -7,93 +7,94 @@
   "track": "fix",
   "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-10-19T07:35:47Z",
-  "evaluated_at": "2026-10-19T07:35:47Z",
-  "source_updated_at": "2026-10-17T20:06:07Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
+  "source_updated_at": "2026-10-20T21:48:55Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "comments": 4,
+  "comments": 5,
   "proposed_fixes": [],
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The new October report adds persistence and magic-number evidence, while #27945 now links concrete key-edit persistence PR #51377. Existing implementation work covers the strongest supported mechanism; do not repeat the stale broad duplicate closure or create a competing design.",
+    "rationale": "A new code-grounded comment identifies the legacy matrix/setup persistence path and points to merged PR #51305. The PR diff confirms both paths now assign the stored key before the runtime key. Existing work should be verified, not replaced by another design or treated as an already shipped resolution.",
     "evidence": [
-      "The original reporter tried generated and simple manual keys, multiple entry methods, IP mapping and reinstalling.",
-      "The original workaround is to write matching settings with MWB closed.",
-      "The October 17 commenter reports persistence on 0.102.2862.0 in both installation scopes and a working stopped-PowerToys file-edit workaround.",
-      "The same commenter reports a 22-character entry truncated to 16 characters with different magic numbers; truncation and persistence must not be assumed to be the same defect.",
-      "#27945 now links open PR #51377, whose diff updates stored Settings.MyKey together with Encryption.MyKey in frmMatrix.UpdateKey."
+      "The original reporter tried generated and simple manual keys, multiple entry methods, IP mapping and reinstalling; matching stopped-process settings edits work.",
+      "The October 17 update reports failure on 0.102.2862.0 with both install scopes, differing magic numbers and apparent 22-to-16-character reversion.",
+      "The October 20 comment traces UpdateKey and the setup wizard changing only the runtime key, followed by layout save and settings reload restoring the old stored key.",
+      "PR #51305 merged on 2026-10-20T03:14:25Z; its frmMatrix.cs and SetupPage2a.cs diffs add Setting.Values.MyKey assignments before Encryption.MyKey.",
+      "PR #51377 remains open and overlaps matrix-key persistence; #51080 remains open for settings I/O resilience. Neither proves that every key mismatch has the same cause."
     ],
-    "recommended_action": "Verify the reported UI-edit/reload sequence against existing PR #51377 on matched-version test peers; preserve any residual truncation or version-mismatch issue separately.",
-    "evaluated_at": "2026-10-19T07:35:47Z",
-    "source_updated_at": "2026-10-17T20:06:07Z"
+    "recommended_action": "Verify matrix and wizard key edits on matched-version peers using a build containing #51305; separate any remaining PowerToys Settings or I/O failure before claiming resolution.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
+    "source_updated_at": "2026-10-20T21:48:55Z"
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "Open PR #51377 implements and adds tests for the key-edit persistence path described in #27945. Current main's frmMatrix.UpdateKey changes only Encryption.MyKey, while the reload path can adopt the persisted key. This concrete attempt strongly matches the manual-file workaround, but does not establish that all invalid-key symptoms or long-key truncation are resolved.",
+    "rationale": "Merged PR #51305 concretely changes both legacy UI key-entry paths to persist the key before changing the runtime value. This matches the reported stopped-process workaround and new code trace. The broader PR also changes service-mode storage, so two-machine and mode-specific validation are still required. Open #51377 is overlapping work, not a reason to invent a competing fix. Merge is not proof of release availability or complete symptom coverage.",
     "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51305",
       "https://github.com/microsoft/PowerToys/pull/51377"
     ]
   },
   "issue_context": {
-    "summary": "MWB rejects keys entered through its UI while stopped-process file edits work. A new 0.102.2862.0 report adds differing magic numbers and truncation observations. An existing PR addresses typed-key persistence, so it should be tested rather than replaced by another fix plan.",
+    "summary": "MWB rejects keys entered through the legacy UI while stopped-process settings edits connect successfully. New discussion traces stored/runtime key divergence and links a now-merged correction in #51305 covering both the matrix and setup wizard.",
     "known_information": [
-      "The original version is 0.101.2362.0 installed with WinGet; attempts included simple 16-character manual keys, so special-character escaping alone does not explain all attempts.",
-      "The October 17 commenter reports the same failure on 0.102.2862.0 with both per-user and machine-wide installs.",
-      "Both reports say stopped-process manual settings edits restore connection.",
-      "A maintainer requested /bugreport and /reportbug in August; no ZIP has since been attached, but a new commenter supplied substantive behavior evidence.",
-      "The issue remains open and unassigned, with four comments and no Needs-Author-Feedback label.",
-      "PR #51377 is open and non-draft; #27945's latest comment explicitly explains the stored/live-key divergence it addresses."
+      "Original build 0.101.2362.0 was installed with WinGet; simple 16-character keys failed too, so special-character escaping alone is insufficient.",
+      "The October 17 commenter reports the same failure on 0.102.2862.0 in both per-user and machine-wide installations.",
+      "Both behavior reports say editing settings only while PowerToys/MWB is stopped restores connection.",
+      "The latest commenter explicitly limits the code explanation to the original MWB window and wizard and says no two-machine test was performed.",
+      "The issue remains open and unassigned, with five comments and no Needs-Author-Feedback label.",
+      "A maintainer requested diagnostics in August; no ZIP is attached, but later substantive reports and a concrete code trace now support direct maintainer verification.",
+      "#51305 is merged; #51377 and settings-resilience PR #51080 are still open."
     ],
     "inferences": [
-      "Typed-key persistence is a substantially better-grounded explanation than attributing every failure to arbitrary concurrent-file access.",
-      "The new report predates any merge of #51377; it is not evidence that the PR has failed.",
-      "The overview in #51077 also flags protocol-version mismatch as an alternative. Both peers' exact versions are not established, so that alternative is not disproved.",
-      "The 22-to-16-character truncation observation may be a separate UI behavior; no independent correction is proposed from that observation alone."
+      "A layout save followed by reload of the old key is a well-supported explanation for legacy typed-key failure, but end-to-end resolution remains untested here.",
+      "The apparent truncation to 16 characters may be the previous generated key being restored, rather than an independent input-length defect; compare actual state before proposing a truncation fix.",
+      "If the failing edit originated from PowerToys Settings rather than the legacy UI, this exact cause may not apply; logged save failures or unmatched peer versions remain separate discriminators.",
+      "The October reports from released builds do not demonstrate failure of a later merged change."
     ],
-    "analysis": "The canonical artifact stopped at an August duplicate recommendation and misses both the October behavior evidence and the linked concrete fix. Reclassify fix coverage as existing_fix, drop the stale close proposal, and provide a maintainer-side regression comparison using the existing PR. Do not ask for secret keys or infer a generic write race from related file-lock reports.",
+    "analysis": "Preserve the original careful separation of persistence, protocol compatibility and I/O failures, but replace the stale recommendation to validate only #51377 with the merged #51305 matrix-and-wizard change. Do not close the issue merely because a PR merged, ask for pairing secrets, or repeat a broad file-lock duplicate recommendation.",
     "initial_investigation": [
-      "Read the entire live body and all four comments, including the October 17 update; exhausted timeline pagination.",
-      "The non-digest timeline reference is #51077, whose overview flags version incompatibility as a possible competing cause.",
-      "Inspected #27945 and its latest linked #51377 explanation, plus #26717, #26537 and #48708 as background rather than proven duplicates.",
-      "https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseWithoutBorders/App/Form/frmMatrix.cs#L506-L521",
-      "https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseWithoutBorders/App/Class/Setting.cs#L93-L181",
-      "Read PR #51377 body and frmMatrix.cs diff: typed valid keys are applied to both settings and runtime key, with reload/invalid-input regression tests.",
-      "Searched all-state MuyuanMS/PowerToys issues/PRs and matching branch refs for #50116; no matching issue-specific trace was found. Reuse the upstream PR rather than invent another fork plan.",
-      "No two-machine connection test or build of #51377 was executed."
+      "Read the complete body and all five live comments, including the October 20 code trace; exhausted timeline pagination.",
+      "Verified live states and bodies of PRs #51305, #51377 and #51080 and inspected the #51305 frmMatrix.cs and SetupPage2a.cs patches.",
+      "The latest public trace links v0.102.2862.0 frmMatrix.UpdateKey, layout save, Setting.cs reload and SetupPage2a.LinkButtonClick; its mechanism matches the reviewed patch.",
+      "Earlier investigation had reviewed #27945 and the #51077 overview, with #26717, #26537 and #48708 treated as alternatives rather than proven duplicates; retain that distinction.",
+      "The retained prior source references are frmMatrix.cs and Setting.cs at commit 1b33221dfa19f30d71409eb550807883fb27283a; those describe the pre-merge path and are not asserted to be current main.",
+      "No build, settings archive analysis or two-machine connection test was executed in this correction pass."
     ],
     "information_gaps": []
   },
   "actions": [
     {
       "type": "reproduce",
-      "label": "Verify typed-key persistence with PR #51377",
+      "label": "Verify matrix and wizard persistence after #51305",
       "reproduce": {
-        "title": "Compare MWB typed-key persistence before and after the existing fix",
+        "title": "Compare legacy key-entry paths after the merged persistence correction",
         "module": "Mouse Without Borders",
-        "version_requirement": "Use identical PowerToys versions on both peers. Start with reported 0.102.2862.0 or 0.101.2362.0, then compare an isolated development build of PR #51377.",
+        "version_requirement": "Identical exact builds on both peers. Compare reported 0.102.2862.0 with an isolated build containing merged #51305; do not assume the merged change is already in a release.",
         "prerequisites": [
-          "Two Windows test machines with MWB enabled and a working permitted network connection.",
-          "Use disposable test settings and preserve the original configuration.",
-          "Use a non-sensitive synthetic key; never publish actual pairing keys or complete settings files."
+          "Two Windows test machines with MWB enabled and a permitted network connection.",
+          "Disposable test configuration with backups; use synthetic pairing keys and never publish actual keys or full settings files.",
+          "Identify the legacy matrix form, its setup wizard and the PowerToys Settings page as separate entry surfaces."
         ],
         "setup": [
-          "Ensure both peers use the same exact build and record installation scope.",
-          "Prepare two distinct valid synthetic 16-character keys and identify the legacy MWB matrix form separately from PowerToys Settings."
+          "Prepare two valid synthetic keys and record the build and installation scope on each peer.",
+          "Test normal mode first, then service mode with the permissions required by #51305; do not silently change production pairing."
         ],
         "steps": [
-          "1. Establish a baseline connection using a known test key.",
-          "2. In the MWB matrix form, enter the same different valid test key on both peers and apply the change.",
-          "3. Check whether connection and displayed magic-number agreement reflect the edited key; reopen the form and restart MWB to force persistence/reload.",
-          "4. If the key reverts, compare with the reported workaround: fully exit PowerToys on both machines, apply the same test key to the relevant settings, then restart. Do not edit live settings.",
-          "5. Repeat the UI-edit/reload test in an isolated build of existing PR #51377 and run its key-persistence/invalid-input tests.",
-          "6. Separately record whether a 22-character entry is truncated and whether the two settings surfaces behave differently. Do not treat this as proof of the persistence defect."
+          "1. Establish a connection with a known synthetic key on matched-version peers.",
+          "2. Enter the same different valid key in the legacy matrix form on both machines; apply and observe the runtime state before and after layout save/reload.",
+          "3. Reopen the form and restart MWB to check persistence, then repeat through the original setup wizard.",
+          "4. Repeat in the matched build containing #51305 and confirm the stored key is updated before runtime use in both paths.",
+          "5. Compare accepted long-key input with the previously saved 16-character key to distinguish true truncation from old-key restoration; invalid input must not replace the working key.",
+          "6. Exercise the PowerToys Settings connection path separately and repeat normal/service-mode tests, checking any key replacement guidance required by the merged change.",
+          "7. If failures remain, classify protocol-version mismatch, settings-save failure and legacy reversion separately before selecting further work."
         ],
-        "expected_result": "An accepted UI key edit survives reload and restart and produces matching peer state. Rejected input leaves both stored and runtime keys unchanged. Any remaining failure is separated from mismatched versions or long-key truncation."
+        "expected_result": "Accepted matrix and wizard key edits survive reload and restart and connect matched peers; invalid input preserves the working key. Remaining failures have an identified surface and mechanism rather than being assumed fixed or duplicate."
       }
     }
   ]

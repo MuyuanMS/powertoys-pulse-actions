@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 34240,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Mouse Without Borders keyboard destination after using the other device's trackpad",
+  "url": "https://github.com/microsoft/PowerToys/issues/34240",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-08-18T14:06:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Test mixed-device input routing",
+    "detail": "Unassigned report with explicit two-device steps; a later tracking overview is not an implementation or ownership claim."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare local focus and remote destination",
+    "reason": "A local trackpad click may change window focus without switching where the other computer sends keyboard input."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The supplied sequence can distinguish stale destination state from intentional independent-input behavior without asking the reporter to gather maintainer traces.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reported on 0.83.0 with a desktop keyboard and laptop trackpad: typing works after selecting the laptop textbox using the desktop pointer, but not after using the laptop pointer.",
+      "No issue comments or assignees are present.",
+      "The timeline links https://github.com/microsoft/PowerToys/issues/51077, a grouped tracking overview rather than a fix.",
+      "Common.DesMachineID delegates to MachineStuff.desMachineID; input routing has explicit machine destination state."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the two-physical-PC input-source matrix and establish intended routing semantics before accepting the proposed synchronization change.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-08-18T14:06:51Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A destination-state correction may be applicable, but current evidence does not establish whether the requested any-keyboard behavior is supported."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Synchronize keyboard routing with accepted local input ownership",
+      "root_cause": "Hypothesis: clicking with the laptop's local trackpad changes foreground focus there but leaves the desktop's shared-input destination unchanged; this may instead reflect intentional input ownership semantics.",
+      "plan": [
+        "Trace Common.DesMachineID and MachineStuff switching alongside InputHook callbacks for both physical input sources, using src/modules/MouseWithoutBorders/App/Core/Common.cs and Core/MachineStuff.cs.",
+        "Agree whether accepted local physical input should transfer shared keyboard ownership; do not implement cross-device last-focus behavior without this contract decision.",
+        "If transfer is intended, update destination through the existing machine-switch protocol on local ownership acquisition, excluding injected events and guarding against loops or broadcast-mode regressions.",
+        "Add two-machine routing tests for local/remote clicks, disconnected peers and simultaneous input."
+      ],
+      "verification": [
+        "On two physical computers, execute the original four steps with a harmless textbox on each and record where desktop keystrokes arrive.",
+        "Compare with desktop-pointer selection, explicit machine switching and simultaneous local typing; ensure no keystrokes are duplicated or routed to an unintended machine."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "Explicit destination state supports the hypothesis, but no runtime trace or supported-semantics decision identifies a confirmed defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A laptop trackpad can focus a textbox on the laptop, but the desktop keyboard cannot type there until the desktop pointer selects that textbox.",
+    "known_information": [
+      "The report supplies two machines, distinct keyboard/pointer sources, and a working desktop-pointer workaround.",
+      "Reported on 0.83.0; live issue remains open and unassigned.",
+      "Tracking overview #51077 includes this report; no matching fix PR was found."
+    ],
+    "inferences": [
+      "Window focus on one computer and the other computer's remote-input destination may be independent."
+    ],
+    "analysis": "Do not equate a focused textbox with confirmed remote keyboard ownership. The discriminating work is a maintainer-side input-source experiment, not a generic log request.",
+    "initial_investigation": [
+      "Reviewed the full report, empty discussion, cross-reference timeline and related PR search.",
+      "Inspected Common.DesMachineID, MachineStuff destination fields and InputHook keyboard/mouse entry points in the upstream MouseWithoutBorders source."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-34240",
+      "type": "reproduce",
+      "label": "Test desktop keyboard after laptop trackpad focus",
+      "primary": true,
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version": "Current stable build; baseline report 0.83.0",
+        "prerequisites": [
+          "Two physical PCs: desktop keyboard/mouse and laptop with trackpad; paired and connected.",
+          "Open a harmless text editor on each; record input-sharing settings."
+        ],
+        "steps": [
+          "Using the laptop trackpad, select a textbox on the desktop.",
+          "Using that trackpad, select a textbox on the laptop.",
+          "Type a distinctive harmless string using the desktop keyboard and record its actual destination.",
+          "Select the laptop textbox using the desktop mouse, type again, and compare destination state on both computers.",
+          "Repeat using explicit machine switching and trace physical versus injected input."
+        ],
+        "expected_result": "Characterize whether the shared destination follows the last local click; if that is the supported contract, desktop typing must reach the laptop exactly once."
+      }
+    },
+    {
+      "id": "approve-design-34240",
+      "type": "approve_design",
+      "label": "Approve input-ownership investigation plan",
+      "confirm": true,
+      "note": "Low-confidence conditional fix; settle input-ownership semantics and reproduce before changing routing."
+    }
+  ]
 }

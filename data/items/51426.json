@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 5,
+  "number": 51426,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T20:06:42.985Z",
+  "evaluated_at": "2026-10-20T20:06:42.985Z",
+  "source_updated_at": "2026-10-20T14:46:49Z",
+  "updated_at": "2026-10-20T14:46:49Z",
+  "state": "open",
+  "url": "https://github.com/microsoft/PowerToys/issues/51426",
+  "title": "Keyboard Manager shortcut that uses WIN key breaks when enabling Grab And Move with modifier set to WIN key",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a reproducible Win+Q to Alt+F4 failure when Grab And Move also uses Win. A second user reports that changing Grab And Move to Alt restores Win remappings, and the reporter now clarifies that the failure appears after reboot. This supports an interaction investigation, not a confirmed hook-ordering cause.",
+    "evidence": [
+      "The reporter identifies PowerToys 0.101.2362 Stable from Microsoft Store and provides the Win+Q/Alt+F4 plus Grab And Move Win-modifier sequence.",
+      "The report says Windows Search opens and the remap only occasionally works after restarting the system.",
+      "A commenter reports that changing Grab And Move to Alt restores Win+foo remappings.",
+      "The latest reply says the failure occurs after reboot; no fix PR was found."
+    ],
+    "recommended_action": "Reproduce the post-reboot Win+Q sequence, compare Grab And Move set to Win versus Alt, and trace modifier event delivery before selecting a code correction.",
+    "evaluated_at": "2026-10-20T20:06:42.985Z",
+    "source_updated_at": "2026-10-20T14:46:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A coordinated keyboard-event correction may be applicable, but the exact loss or ordering of Win events is unverified. The possible duplicates are related symptoms rather than confirmed coverage of this module-interaction scenario."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Win modifier delivery across Grab And Move and Keyboard Manager",
+      "root_cause": "Grab And Move may consume or replay Win modifier events while Keyboard Manager is tracking the same Win+Q chord, leaving the shortcut matcher with an incomplete or mistimed modifier state.",
+      "plan": [
+        "Instrument the reported sequence to record Win keydown/keyup, Grab And Move hook disposition, replay decisions, and Keyboard Manager's observed modifier state.",
+        "Confirm hook ordering and whether the non-drag Win hold is passed through or replayed before the Win+Q action key is evaluated.",
+        "If event loss or reordering is confirmed, adjust the non-drag modifier path so the complete Win+Q sequence reaches Keyboard Manager exactly once without activating a drag.",
+        "Add regression coverage for Win+Q mapped to Alt+F4 with Grab And Move set to Win, including the no-mouse-action path and an actual drag path."
+      ],
+      "verification": [
+        "Repeat the reporter's post-restart sequence and verify Win+Q consistently sends Alt+F4 without opening Windows Search.",
+        "Verify ordinary Win shortcuts still work when Grab And Move is configured with Win and that holding Win with a mouse action still activates Grab And Move.",
+        "Run the focused Grab And Move and Keyboard Manager hook/remapping tests."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The two modules have independent low-level keyboard handling paths and the observed Win event is unexpected, but no trace confirms event consumption or ordering as the failure mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Win+Q mapped to Alt+F4 becomes unreliable after reboot when Grab And Move uses Win; Windows Search may open. Switching Grab And Move to Alt reportedly restores Win remappings, but the event-level cause is unconfirmed.",
+    "known_information": [
+      "The issue is open, labeled Issue-Bug and Product-Keyboard Manager, and has no assignee.",
+      "The reporter identifies PowerToys 0.101.2362 Stable and Microsoft Store installation.",
+      "The reported sequence is to map Win+Q to Alt+F4, set Grab And Move's modifier to Win, restart, then press Win+Q; Windows Search may open and repeated presses may eventually work.",
+      "Automated triage marked the reproduction steps sufficient and suggested #50906, #21319, #40012, and #47038 as possible related issues.",
+      "Current upstream code contains a Keyboard Manager shortcut-event path and a separate Grab And Move low-level keyboard hook.",
+      "A commenter confirms the Win+foo remapping problem and reports that switching Grab And Move's modifier to Alt fixes it.",
+      "The reporter latest reply clarifies that the failure appears after reboot."
+    ],
+    "inferences": [
+      "The behavior may depend on how the two modules process Win events across reboot, but no trace confirms interception, replay, or ordering.",
+      "The Alt-modifier workaround supports a configuration interaction but does not identify the failing mechanism."
+    ],
+    "analysis": "The latest reply narrows the reproduction to the post-reboot state, but the mechanism remains unresolved. The report and workaround justify a targeted maintainer trace instead of another request for general logs.",
+    "initial_investigation": [
+      "Read the complete issue body and all three comments, including the post-reboot clarification.",
+      "Compared the issue-suggested reports #50906, #21319, #40012, and #47038; their triggers differ and none establishes the same configuration.",
+      "Prior focused source review identified separate Keyboard Manager shortcut processing and Grab And Move low-level keyboard handling; no current issue-linked fix PR was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Win-key interaction investigation",
+      "id": "issue-51426-approve_design"
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Win shortcut with Grab And Move",
+      "id": "issue-51426-reproduce",
+      "reproduce": {
+        "module": "Keyboard Manager and Grab And Move",
+        "prerequisites": [
+          "PowerToys 0.101.2362 Stable or a current build with both Keyboard Manager and Grab And Move available.",
+          "A test application in which Alt+F4 can close a window."
+        ],
+        "steps": [
+          "In Keyboard Manager, map Win+Q to Alt+F4.",
+          "In Grab And Move, set the modifier key to Win and enable the module.",
+          "Restart PowerToys or Windows as in the report.",
+          "In a test application, press Win+Q several times without holding a mouse button; record whether Windows Search opens and whether the target window closes.",
+          "Change Grab And Move's modifier to Alt and repeat the same Win+Q sequence to compare with the reported workaround.",
+          "Repeat while tracing Win keydown/keyup and whether Grab And Move passes, swallows, or replays each event."
+        ],
+        "expected_result": "Win+Q consistently invokes the mapped Alt+F4 action without opening Windows Search, while Grab And Move remains available for its intended mouse interaction."
+      }
+    }
+  ]
+}

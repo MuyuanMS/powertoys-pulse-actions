@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 22699,
   "kind": "issue",
+  "title": "Characters such as \"ɑ̄\" cannot be displayed correctly.",
+  "url": "https://github.com/microsoft/PowerToys/issues/22699",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-06-01T10:21:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Area-User Interface",
+    "Needs-Repro",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 4,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author already answered the font and subset questions, and a later commenter supplies a Chinese-locale combining-mark hypothesis plus duplicate reproduction. A locale/font comparison is the next step.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reported on 0.65.0 in Simplified Chinese Windows 11 with Microsoft YaHei UI and the Pinyin subset.",
+      "The author explicitly supplied that font and subset after being asked.",
+      "A commenter attributes missing combining-diacritic glyphs to YaHei/JhengHei versus Segoe UI; this remains an unverified font-coverage claim.",
+      "#33189 was closed as a duplicate and gives Chinese-language Pinyin/All plus m as a concrete test."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Verify current Quick Accent rendering under Chinese font fallback, then approve a scoped glyph-font correction if still needed.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-06-01T10:21:32Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A UI font/fallback change may address combining-character rendering. No matching public fix was found; current UI changes make a current-build baseline necessary."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Render Quick Accent combining sequences with verified font coverage",
+      "root_cause": "Hypothesis: the locale-inherited UI font/fallback does not render the combined Pinyin sequence as intended. The current selector's candidate TextBlock has no explicit FontFamily, but current runtime fallback has not been measured.",
+      "plan": [
+        "Compare candidate glyph rendering under Simplified/Traditional Chinese and English using the exact combining sequences from the report and #33189.",
+        "If inherited font selection is responsible, apply an explicit verified glyph-capable font/fallback only to candidate display text, retaining localized labels and preserving inserted Unicode sequences.",
+        "Add coverage for combining marks, multi-codepoint characters, theme/scale variants and locale changes; do not replace characters or normalize inserted text solely to hide a display defect."
+      ],
+      "verification": [
+        "Pinyin ɑ plus U+0304 and the m combining-mark candidates render without missing-glyph boxes in Chinese locales.",
+        "Copy or insert each sequence and verify its code points are unchanged.",
+        "Check English, Chinese labels, selected-candidate contrast and high-DPI sizing."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The explicit locale/font reply and duplicate are strong, but actual font coverage and current UI fallback need a runtime comparison."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent shows malformed or missing combining-character glyphs in a Chinese Windows environment; the font, subset and a more recent duplicate test are already available.",
+    "known_information": [
+      "The original screenshot shows the failure for ɑ with a combining macron.",
+      "The author identified Microsoft YaHei UI and Pinyin on Simplified Chinese Windows 11 Home China.",
+      "The 2024 discussion identifies combining-diacritic coverage as a possible cause and compares Segoe UI.",
+      "The issue is open with Needs-Repro, but the earlier font/subset question was answered; it is not waiting on that reply."
+    ],
+    "inferences": [
+      "Font selection/fallback is more plausible than an unsupported character mapping, but missing codepoint claims require actual font inspection.",
+      "The current WinUI-based selector may behave differently from the historical build, so resolution cannot be inferred from old evidence alone."
+    ],
+    "analysis": "A maintainer can reproduce with Chinese locale and the supplied sequences. Do not ask the reporter again for the font or subset or misrepresent the already answered request as author waiting.",
+    "initial_investigation": [
+      "Read the body and all four comments and exhausted the timeline; inspected duplicate #33189, which adds Chinese Pinyin/All and m test instructions.",
+      "Located and inspected src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb: candidate TextBlock uses bound text and FontSize 18 without an explicit FontFamily.",
+      "The current MainWindow.xaml hosts SelectorControl, so the candidate template, not the outer window, is the relevant display surface.",
+      "No font binary inspection or Chinese-locale rendering test was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve combining-glyph font investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare Chinese Pinyin font fallback",
+      "reproduce": {
+        "title": "Verify combining-mark rendering without changing inserted text",
+        "module": "Quick Accent",
+        "version_requirement": "Current supported build; compare historical 0.65.0/0.81.1 only if needed in isolated testing.",
+        "prerequisites": [
+          "A Chinese Windows test account or VM with Microsoft YaHei UI; add Traditional Chinese/JhengHei and English controls when available.",
+          "Enable Pinyin or All in Quick Accent."
+        ],
+        "setup_prompt": "Prepare a text sample containing U+0251 followed by U+0304 (ɑ̄), plus the m combining-diacritic candidates from Quick Accent's Pinyin set. Provide a code-point listing so display comparisons never silently normalize or replace the sequence.",
+        "steps": [
+          "1. Select Chinese for PowerToys and enable the Pinyin subset; open candidates for the reported sequence and m.",
+          "2. Compare the same sequence in the Quick Accent candidate template under the inherited font and a verified Segoe UI test font.",
+          "3. Repeat under English and, if available, Traditional Chinese to separate locale and font effects.",
+          "4. Insert the selected character into a Unicode-aware text editor and compare exact code points.",
+          "5. Check selected/unselected candidate rendering under light, dark, high contrast and increased display scaling."
+        ],
+        "expected_result": "Candidate combining sequences render legibly without missing-glyph boxes, localized labels remain correct, and inserted code points are unchanged."
+      }
+    }
+  ]
 }

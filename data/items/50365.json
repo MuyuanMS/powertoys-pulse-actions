@@ -1,80 +1,279 @@
 {
-  "number": 50365,
-  "kind": "issue",
   "track": "fix",
+  "stage": "awaiting_design_approval",
+  "source_updated_at": "2026-10-07T03:49:39Z",
+  "title": "Peek doesnt work when idle for a while",
+  "url": "https://github.com/microsoft/PowerToys/issues/50365",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "pending_author": false,
+  "status": {
+    "glyph": "🎯",
+    "label": "Peek recovery candidate needs lock-state reproduction",
+    "detail": "The author says failure follows Windows lock for hours; current launch code can retain process state after ShellExecuteExW failure."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report provides a clear activation failure and recovery: Space fails for multiple file types after idle, then works after opening PowerToys. The Peek module has a directly relevant handle-lifecycle flaw: after ShellExecuteExW fails, launch_process still stores sei.hProcess and derives a process ID from it, so later hotkeys can trust invalid viewer state.",
-    "recommended_action": "Approve the fork-side Peek process-lifecycle hardening design and request a post-failure diagnostic to distinguish a failed launch from a hung or exited viewer.",
-    "evaluated_at": "2026-09-12T00:59:02Z",
-    "source_updated_at": "2026-09-03T21:55:24Z",
+    "rationale": "The reporter says Space activation fails for CSV, text, and Markdown after idle and recovers after opening PowerToys; the latest comment narrows timing to after Windows is locked for several hours. Current Peek::launch_process logs failed ShellExecuteExW but still stores sei.hProcess/GetProcessId, while on_hotkey signals the viewer event without checking launch success. This is a concrete lifecycle defect and plausible recovery failure, but the lock report does not prove that branch is causal.",
     "evidence": [
-      "The reporter says Space fails for CSV, text, and Markdown after idle, but works after opening PowerToys from the taskbar.",
-      "Peek::on_hotkey checks is_viewer_running, relaunches if false, then signals the shared invoke event.",
-      "Peek::launch_process logs a ShellExecuteExW failure but unconditionally assigns m_hProcess and m_processPid afterward.",
-      "No upstream linked PR, duplicate, assignee, or additional fork implementation was found; fork issue 621 is the existing design trace.",
-      "Scheduled Prompt #2 revalidation read the full live issue body, all 0 public comment(s), current labels, assignees, and timeline through 2026-09-03T21:55:24Z."
-    ]
+      "PowerToys 0.101.2362 Stable from Microsoft Store; Peek.",
+      "Space fails for CSV, text, Markdown after idle and works again after opening PowerToys.",
+      "User comment says it happens after locking Windows for a few hours.",
+      "Current upstream Peek::launch_process stores handle/PID after ShellExecuteExW regardless of success.",
+      "Current on_hotkey signals m_hInvokeEvent after attempted launch without checking launch success.",
+      "No diagnostic archive or linked upstream fix."
+    ],
+    "recommended_action": "Reproduce after Windows lock/unlock and trace viewer process state; prevent failed launch from creating valid-looking state and signal only a running viewer.",
+    "evaluated_at": "2026-10-20T20:10:01.27Z",
+    "source_updated_at": "2026-10-07T03:49:39Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The handle assignment after a failed launch is a concrete defect on the reported activation path. It warrants a contained lifecycle fix, while runtime diagnostics are still needed to confirm the idle trigger.",
-    "existing_fix_urls": []
+    "rationale": "A process-lifecycle fix applies because current Peek code records launch state without checking ShellExecuteExW success; lock/unlock causality remains unconfirmed and is paired with maintainer reproduction."
   },
   "proposed_fixes": [
     {
-      "title": "Make Peek viewer launch and recovery state reliable",
-      "root_cause": "Peek can retain a handle and PID after ShellExecuteExW fails, then its hotkey path relies on that stale or invalid state when deciding whether to relaunch and signal the viewer. This can leave Space activation ineffective until a later PowerToys lifecycle action recovers the process.",
+      "title": "Make Peek viewer recovery state reflect launch success",
+      "root_cause": "Current ShellExecuteExW launch handling records sei.hProcess/GetProcessId even after a failed launch, and on_hotkey signals the invoke event without confirming the viewer is running. This can leave recovery state untrustworthy; it is a plausible but unconfirmed explanation for post-lock failure.",
       "plan": [
-        "Make launch_process return success and assign the viewer handle/PID only after a successful launch with a valid process handle.",
-        "Make is_viewer_running clear stale process state rather than only reporting it false.",
-        "In on_hotkey, relaunch only after stale-state cleanup and signal the invoke event only after a valid viewer launch or an already-running viewer is confirmed.",
-        "Add lifecycle logging and targeted coverage for failed launch, exited viewer, repeated activation, and recovery."
+        "Reproduce after lock/unlock and trace viewer liveness, launch result, stored handle/PID, and invoke-event signaling.",
+        "Return success from launch_process; update process state only on successful launch with a valid handle and clear stale state after exit.",
+        "Signal the invoke event only after confirming a running viewer or successful relaunch; cover failed launch and stale-process recovery."
       ],
       "verification": [
-        "Enable single-Space Peek and verify CSV, text, and Markdown activation after a measured idle period without opening PowerToys Settings or the tray UI.",
-        "Verify recovery when the Peek viewer exits and when launch fails once, without creating duplicate viewers.",
-        "Retest sleep/resume, disable/enable, and normal repeated Space activation."
+        "Enable single-Space Peek, open CSV/text/Markdown, lock Windows for several hours, unlock, and test before opening Settings or tray UI.",
+        "Record whether Peek.UI is absent, exited, hung, or running and whether activation event is signaled.",
+        "Verify failed launch leaves no stale handle/PID, next activation retries, and repeated activation does not create duplicate viewers."
       ],
       "confidence": {
-        "score": 67,
+        "score": 58,
         "level": "yellow",
-        "rationale": "The process-handle flaw is directly present in the hotkey lifecycle path, but the report has no logs identifying whether the idle failure is a launch failure, an exited viewer, or a lost event signal."
+        "rationale": "The code contains a concrete invalid launch-state path, but post-lock timing does not show whether launch fails or whether viewer/event delivery is causal."
       }
     }
   ],
   "issue_context": {
-    "summary": "Peek stops responding to Space for multiple text-like file types after an unspecified idle interval, then recovers once the PowerToys taskbar UI is opened.",
+    "summary": "Peek Space activation fails after idle or Windows lock for hours across several text-like file types, then works after opening the PowerToys taskbar UI.",
     "known_information": [
-      "The reporter uses the Microsoft Store PowerToys 0.101.2362 build.",
-      "CSV, text, and Markdown files all show the same failed Space activation.",
-      "Opening PowerToys from the taskbar makes Peek work again.",
-      "The issue has no comments, diagnostic archive, assignee, duplicate link, or linked fix.",
-      "Live upstream issue activity was reviewed through 2026-09-03T21:55:24Z."
+      "PowerToys 0.101.2362 Stable, Microsoft Store, Peek.",
+      "Space fails for CSV, text, Markdown; opening PowerToys restores activation.",
+      "User comment says failure follows Windows lock for a few hours.",
+      "No diagnostic ZIP, assignee, upstream duplicate, or linked fix.",
+      "Current upstream code records ShellExecuteExW process fields without checking return and signals the invoke event after attempted relaunch.",
+      "Existing dashboard history includes a fork-side design trace; no fork write in this pass."
     ],
     "inferences": [
-      "The common failure across file types is more likely in Peek activation/lifecycle handling than in a format-specific previewer.",
-      "The recovery after opening PowerToys may indicate stale module or viewer-process state, but it does not prove which state transition fails."
+      "Failure may involve stale viewer lifecycle state or event delivery after lock/unlock; timing does not distinguish exited viewer from missed signal.",
+      "Unchecked launch result can make recovery state unreliable, but no runtime evidence shows this branch is reached."
     ],
-    "analysis": "The module's hotkey path explicitly checks and launches a viewer process, then signals it. Its launch method preserves process fields even after ShellExecuteExW reports failure, which is a correctable reliability defect on that path. The design focuses on making that state truthful rather than asserting it is the sole idle trigger.",
+    "analysis": "The lock detail makes controlled maintainer reproduction more useful than asking for general logs. Current code supports a narrow lifecycle guard as candidate fix, while trace must establish whether the process is absent, stale, or active but not receiving the event.",
     "initial_investigation": [
-      "Reviewed src/modules/peek/peek/dllmain.cpp: Peek::on_hotkey conditionally calls launch_process and then signals m_hInvokeEvent.",
-      "Reviewed Peek::launch_process: the non-elevated path only stores state on success, but the ShellExecuteExW path assigns sei.hProcess and GetProcessId even after an error.",
-      "Checked current upstream references and fork traces; no linked fix was found, and the existing fork mirror is https://github.com/MuyuanMS/PowerToys/issues/621.",
-      "Re-read the full live issue body, all 0 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
-      "Re-read the full live issue body, all 0 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
-      "Re-read the full live issue body, all 0 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
-      "Re-read the full live issue body, all 0 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
-      "Re-read the full live issue body, all 0 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:59:02Z."
+      "Read full live body and user comment, including lock-after-hours detail.",
+      "Inspected current upstream src/modules/peek/peek/dllmain.cpp: ShellExecuteExW result is not used to guard m_hProcess/m_processPid assignment; on_hotkey signals m_hInvokeEvent after launch attempt.",
+      "Latest source change to dllmain.cpp is PR #49724 (2026-10-14) for CLI preview support; the launch branch remains in current main.",
+      "Preserved prior focused lifecycle design, adversarial notes, and fork trace; no upstream/fork writes."
     ],
-    "information_gaps": [
-      {
-        "information": "The approximate idle duration and a fresh PowerToys diagnostic ZIP captured immediately after Space fails, before opening the taskbar PowerToys UI.",
-        "why_needed": "It will identify whether PowerToys.Peek.UI is absent, exited, hung, or receiving no invoke event, and will confirm whether the lifecycle fix covers the observed idle transition.",
-        "how_to_collect": "After Peek fails, do not open PowerToys or retry it; add a comment containing /bugreport immediately, then include the approximate idle duration and the file type used.",
-        "evidence_type": "bugreport_zip"
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-peek-recovery-50365",
+      "type": "approve_design",
+      "label": "Design Peek recovery hardening",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Fork-side design approval only; reproduce the post-lock failure and verify the recovery branch first."
+    },
+    {
+      "id": "reproduce-peek-after-lock-50365",
+      "type": "reproduce",
+      "label": "Reproduce Peek failure after lock",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Peek",
+        "version_requirement": "PowerToys 0.101.2362 Stable or current build with the same viewer lifecycle",
+        "prerequisites": [
+          "Enable Peek Space activation.",
+          "Use CSV, text, and Markdown files in File Explorer.",
+          "Keep PowerToys running and record Peek viewer process state before lock."
+        ],
+        "steps": [
+          "Open each file with Space and verify Peek works before idle/lock.",
+          "Lock Windows for several hours, unlock, and press Space before opening Settings or tray UI.",
+          "If activation fails, record whether PowerToys.Peek.UI is running, exited, or absent and whether a new launch succeeds.",
+          "Open PowerToys from taskbar and repeat Space to compare process/event state.",
+          "Trace launch result, stored handle/PID, and m_hInvokeEvent signaling."
+        ],
+        "expected_result": "Space opens Peek after lock/unlock whenever the foreground file is eligible; failed launch must not leave stale state or suppress retry.",
+        "setup_requirements": [
+          "Record exact build, approximate lock duration, and file type.",
+          "Capture process state and relevant Peek diagnostics only; no file contents needed."
+        ]
       }
-    ]
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 50365,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:01.27Z",
+  "evaluated_at": "2026-10-20T20:10:01.27Z",
+  "revalidation_history": [
+    {
+      "evaluated_at": "2026-09-12T00:59:02Z",
+      "source_updated_at": "2026-09-03T21:55:24Z",
+      "stage": "awaiting_design_approval",
+      "judgment": {
+        "status": "actionable_design",
+        "rationale": "The report provides a clear activation failure and recovery: Space fails for multiple file types after idle, then works after opening PowerToys. The Peek module has a directly relevant handle-lifecycle flaw: after ShellExecuteExW fails, launch_process still stores sei.hProcess and derives a process ID from it, so later hotkeys can trust invalid viewer state.",
+        "recommended_action": "Approve the fork-side Peek process-lifecycle hardening design and request a post-failure diagnostic to distinguish a failed launch from a hung or exited viewer.",
+        "evaluated_at": "2026-09-12T00:59:02Z",
+        "source_updated_at": "2026-09-03T21:55:24Z",
+        "evidence": [
+          "The reporter says Space fails for CSV, text, and Markdown after idle, but works after opening PowerToys from the taskbar.",
+          "Peek::on_hotkey checks is_viewer_running, relaunches if false, then signals the shared invoke event.",
+          "Peek::launch_process logs a ShellExecuteExW failure but unconditionally assigns m_hProcess and m_processPid afterward.",
+          "No upstream linked PR, duplicate, assignee, or additional fork implementation was found; fork issue 621 is the existing design trace.",
+          "Scheduled Prompt #2 revalidation read the full live issue body, all 0 public comment(s), current labels, assignees, and timeline through 2026-09-03T21:55:24Z."
+        ]
+      },
+      "fix_assessment": {
+        "status": "proposed",
+        "rationale": "The handle assignment after a failed launch is a concrete defect on the reported activation path. It warrants a contained lifecycle fix, while runtime diagnostics are still needed to confirm the idle trigger.",
+        "existing_fix_urls": []
+      },
+      "proposed_fixes": [
+        {
+          "title": "Make Peek viewer launch and recovery state reliable",
+          "root_cause": "Peek can retain a handle and PID after ShellExecuteExW fails, then its hotkey path relies on that stale or invalid state when deciding whether to relaunch and signal the viewer. This can leave Space activation ineffective until a later PowerToys lifecycle action recovers the process.",
+          "plan": [
+            "Make launch_process return success and assign the viewer handle/PID only after a successful launch with a valid process handle.",
+            "Make is_viewer_running clear stale process state rather than only reporting it false.",
+            "In on_hotkey, relaunch only after stale-state cleanup and signal the invoke event only after a valid viewer launch or an already-running viewer is confirmed.",
+            "Add lifecycle logging and targeted coverage for failed launch, exited viewer, repeated activation, and recovery."
+          ],
+          "verification": [
+            "Enable single-Space Peek and verify CSV, text, and Markdown activation after a measured idle period without opening PowerToys Settings or the tray UI.",
+            "Verify recovery when the Peek viewer exits and when launch fails once, without creating duplicate viewers.",
+            "Retest sleep/resume, disable/enable, and normal repeated Space activation."
+          ],
+          "confidence": {
+            "score": 67,
+            "level": "yellow",
+            "rationale": "The process-handle flaw is directly present in the hotkey lifecycle path, but the report has no logs identifying whether the idle failure is a launch failure, an exited viewer, or a lost event signal."
+          }
+        }
+      ]
+    },
+    {
+      "note": "Preserved the prior detailed Peek design and fork-trace history; current pass only revalidated evidence and did not restart the design workflow.",
+      "design": {
+        "root_cause": "Peek's ShellExecuteExW launch branch records m_hProcess and m_processPid even when the launch fails. The subsequent hotkey path can consequently make a recovery decision and signal its shared event using untrustworthy viewer lifecycle state.",
+        "evidence": [
+          "Observed: the reporter describes an activation failure across several file types that is later recovered by opening PowerToys.",
+          "Observed: Peek::on_hotkey launches a missing viewer and immediately sets m_hInvokeEvent.",
+          "Observed: Peek::launch_process logs ShellExecuteExW failure but unconditionally writes sei.hProcess and GetProcessId(sei.hProcess).",
+          "Inferred: idle can expose that invalid state or another viewer-process transition."
+        ],
+        "affected_files": [
+          {
+            "path": "src/modules/peek/peek/dllmain.cpp",
+            "purpose": "Owns Peek module enablement, viewer process lifecycle, and global hotkey activation.",
+            "symbols": [
+              "Peek::is_viewer_running",
+              "Peek::launch_process",
+              "Peek::enable",
+              "Peek::disable",
+              "Peek::on_hotkey"
+            ]
+          }
+        ],
+        "implementation_steps": [
+          {
+            "order": 1,
+            "file": "src/modules/peek/peek/dllmain.cpp",
+            "symbols": [
+              "Peek::launch_process",
+              "Peek::is_viewer_running"
+            ],
+            "current_behavior": "launch_process returns void. In its ShellExecuteExW branch, it logs launch failure but still assigns the returned handle and process ID; is_viewer_running only tests the stored handle.",
+            "change": "Return a bool or result from launch_process, leave process fields clear on failure, and centralize stale-handle cleanup when a stored process has exited or is invalid.",
+            "code_block": "bool launch_process()\\n{\\n    SHELLEXECUTEINFOW sei{ sizeof(sei) };\\n    if (!ShellExecuteExW(&sei) || !sei.hProcess)\\n        return false;\\n    m_hProcess = sei.hProcess;\\n    m_processPid = GetProcessId(m_hProcess);\\n    return m_processPid != 0;\\n}",
+            "edge_cases": [
+              "ShellExecuteExW returns false.",
+              "A successful launch has no usable handle.",
+              "The viewer exits between liveness check and event signal.",
+              "Old handles must be closed exactly once."
+            ],
+            "tests": [
+              "Exercise success and failure results for the launch-state helper.",
+              "Verify an exited process clears lifecycle state before a relaunch.",
+              "Verify no handle/PID remains after a failed launch."
+            ]
+          },
+          {
+            "order": 2,
+            "file": "src/modules/peek/peek/dllmain.cpp",
+            "symbols": [
+              "Peek::on_hotkey",
+              "Peek::enable",
+              "Peek::disable"
+            ],
+            "current_behavior": "on_hotkey signals m_hInvokeEvent after calling launch_process without knowing whether a viewer was actually launched.",
+            "change": "Require either a confirmed running viewer or a successful relaunch before signaling the invoke event; log the failed recovery and preserve the existing eligible-window and single-Space return behavior.",
+            "code_block": "if (!is_viewer_running() && !launch_process())\\n{\\n    Logger::error(\"Peek viewer recovery failed\");\\n    return false;\\n}\\nSetEvent(m_hInvokeEvent);",
+            "edge_cases": [
+              "Do not start duplicate viewer instances on repeated Space presses.",
+              "Preserve non-elevated launch behavior.",
+              "Do not change behavior for ineligible foreground windows.",
+              "Keep disable safe if launch never established a process."
+            ],
+            "tests": [
+              "Test repeated hotkey activation with one running viewer.",
+              "Test viewer exit followed by hotkey recovery.",
+              "Manual test after idle and sleep/resume with Space activation enabled."
+            ]
+          }
+        ],
+        "verify": [
+          "Build the existing Peek module and its existing UI-test project through the repository build workflow.",
+          "Enable single-Space activation, wait through the reporter's measured idle period, and verify CSV, text, and Markdown previews open without opening PowerToys.",
+          "Repeat after viewer termination, sleep/resume, and disable/enable; confirm only one viewer process is created."
+        ],
+        "risks": [
+          "A recovery path can create duplicate viewers if process liveness is not checked atomically enough.",
+          "Closing an owned handle in more than one lifecycle branch can invalidate later cleanup.",
+          "The actual idle failure could be event or hotkey registration rather than process launch, requiring follow-up beyond this focused fix."
+        ],
+        "alternatives": [
+          "Always start a new viewer on every hotkey: rejected because it risks duplicate processes and loses current viewer state.",
+          "Only refresh hotkey registration: rejected because the concrete invalid handle assignment is already on the activation path.",
+          "Treat the issue as format-specific: rejected because the report spans CSV, text, and Markdown."
+        ]
+      },
+      "adversarial_review": {
+        "rounds": 1,
+        "conclusion": "No blocking objection after reducing the claimed root cause to the observed invalid launch-state handling; diagnostics remain necessary to confirm that it explains the idle trigger.",
+        "non_blocking_notes": [
+          "Keep viewer recovery separate from foreground eligibility and hotkey registration."
+        ]
+      },
+      "fork_trace": {
+        "fork_number": 621,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/621",
+        "status": "OPEN",
+        "note": "Existing fork-only design mirror; no upstream action implied."
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No upstream or fork issue/PR writes were made."
   },
   "design": {
     "root_cause": "Peek's ShellExecuteExW launch branch records m_hProcess and m_processPid even when the launch fails. The subsequent hotkey path can consequently make a recovery decision and signal its shared event using untrustworthy viewer lifecycle state.",
@@ -160,12 +359,6 @@
       "Treat the issue as format-specific: rejected because the report spans CSV, text, and Markdown."
     ]
   },
-  "fork_trace": {
-    "fork_number": 621,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/621",
-    "status": "OPEN",
-    "note": "Existing fork-only design mirror; no upstream action implied."
-  },
   "adversarial_review": {
     "rounds": 1,
     "conclusion": "No blocking objection after reducing the claimed root cause to the observed invalid launch-state handling; diagnostics remain necessary to confirm that it explains the idle trigger.",
@@ -173,44 +366,10 @@
       "Keep viewer recovery separate from foreground eligibility and hotkey registration."
     ]
   },
-  "actions": [
-    {
-      "id": "approve-design-50365",
-      "type": "approve_design",
-      "label": "Approve Peek lifecycle design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Fork-side design approval only."
-    },
-    {
-      "id": "request-info-50365",
-      "type": "request_info",
-      "label": "Request idle-failure diagnostic",
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50365,
-        "body": "Thanks for confirming that Peek fails for several file types and works again after opening PowerToys. When it next fails, please do not open PowerToys or retry Peek first; instead, add a comment containing `/bugreport` immediately afterward. Please also include the approximate idle duration and the file type used. This will tell us whether the Peek viewer exited, hung, or missed its activation signal."
-      },
-      "note": "Draft only; no upstream comment posted."
-    }
-  ],
-  "schemaVersion": 5,
-  "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-12T00:59:02Z",
-  "evaluated_at": "2026-09-12T00:59:02Z",
-  "source_updated_at": "2026-09-03T21:55:24Z",
-  "title": "Peek doesnt work when idle for a while",
-  "url": "https://github.com/microsoft/PowerToys/issues/50365",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "comments": 0,
-  "author": "gabrielmulle",
-  "authorAssociation": "NONE",
-  "pending_author": false
+  "fork_trace": {
+    "fork_number": 621,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/621",
+    "status": "OPEN",
+    "note": "Existing fork-only design mirror; no upstream action implied."
+  }
 }

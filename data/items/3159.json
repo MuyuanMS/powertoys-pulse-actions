@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 3159,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:32.1338055Z",
+  "evaluated_at": "2026-10-20T23:31:32.1338055Z",
   "source_updated_at": "2024-08-14T11:04:56Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Verify working-directory launch branches",
+    "detail": "Shell-backed launches now explicitly use the user profile in several branches, while raw execution can still use the helper's empty-directory default. The old report cannot be applied indiscriminately to all launch paths."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Measure actual child working directories",
+    "reason": "Separate inherited CWD, shortcut Start in and Windows Terminal profile behavior before setting a consistent fallback."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original report provides a concrete Windows Terminal setup with startingDirectory omitted. Later comments add portable-app and explicit WSL-profile cases, which must remain separate rather than being treated as one proven mechanism.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/3159 reports PowerToys 0.18 and '> wt' inheriting an unexpected PowerToys installation directory when the Terminal profile omits startingDirectory.",
+      "https://github.com/microsoft/PowerToys/issues/3159#issuecomment-797414416 already provides the requested WSL profile value; the commenter had uninstalled PowerToys.",
+      "https://github.com/microsoft/PowerToys/issues/3159#issuecomment-1414098407 describes portable applications depending on their working directory.",
+      "Current Microsoft.Plugin.Shell.Main.PrepareProcessStartInfo sets UserProfile for shell-backed paths; ShellCommand.SetProcessStartInfo defaults workingDirectory to an empty string."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run a child-CWD probe through each relevant launch path, preserving explicit shortcut and Terminal configuration; then correct only confirmed fallback inconsistency.",
+    "evaluated_at": "2026-10-20T23:31:32.1338055Z",
     "source_updated_at": "2024-08-14T11:04:56Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A consistent explicit fallback in affected raw launch paths is plausible from current source. Several shell-backed paths already choose UserProfile, so this is not a blanket claim that all current launches inherit the installation directory. No linked implementation specifically covering this report was identified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use a deliberate fallback working directory without overriding explicit launch configuration",
+      "root_cause": "Hypothesis: raw execution branches omit workingDirectory when calling ShellCommand.SetProcessStartInfo, leaving the launched process dependent on caller/shell working-directory semantics, unlike branches that explicitly select UserProfile. Terminal startingDirectory and shortcut Start in are separate configuration layers.",
+      "plan": [
+        "Measure child working directories for the Shell plugin's raw and shell-backed execution, Program results and shortcuts; test Terminal profiles with startingDirectory omitted and explicitly set.",
+        "Trace src/modules/launcher/Plugins/Microsoft.Plugin.Shell/Main.cs PrepareProcessStartInfo and src/modules/launcher/Wox.Plugin/Common/ShellCommand.cs to confirm which empty-directory branch reproduces the unwanted fallback.",
+        "For confirmed affected branches, apply an explicit documented fallback consistent with current shell-backed UserProfile policy, while preserving shortcut Start in, application arguments and Terminal's own profile selection.",
+        "Add launch-info tests for raw/shell-backed, elevated and shortcut paths; handle invalid/inaccessible explicit directories without silently overriding application configuration."
+      ],
+      "verification": [
+        "Launch a helper that prints its CWD through each path and confirm the selected fallback rather than the PowerToys installation directory.",
+        "Verify Terminal with no startingDirectory, an explicit ordinary directory and an explicit WSL profile; do not interpret one profile case as proof about all programs.",
+        "Confirm shortcuts retain Start in and portable-app expectations are handled according to the chosen documented policy, not an unapproved universal executable-directory rule."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "Current source exposes explicit versus omitted-directory branches, but actual ShellExecute/Terminal behavior and desired fallback compatibility need local verification."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Programs launched by Run can observe an unexpected working directory. The original Terminal case has no startingDirectory, while later comments discuss explicit WSL configuration, portable applications and proposed Explorer-based behavior.",
+    "known_information": [
+      "The original reproduction is '> wt' with startingDirectory omitted.",
+      "The requested WSL profile was already supplied in 2021; the affected commenter no longer had PowerToys installed.",
+      "Comments propose mutually different defaults: system directory, executable directory, user choice or foreground Explorer path. None is an agreed universal contract.",
+      "Current shell-backed paths explicitly use UserProfile; some raw execution calls omit the optional workingDirectory argument.",
+      "The issue remains open with Help Wanted and no assignee or linked fix PR."
+    ],
+    "inferences": [
+      "The old installation-directory symptom may persist only in specific launch branches.",
+      "An explicit Terminal profile being ignored may have a different cause from missing process CWD."
+    ],
+    "analysis": "The useful next step is a maintainer-owned CWD matrix, not another request for the already-provided profile or treating suggested Explorer integration as an accepted bug fix.",
+    "initial_investigation": [
+      "Read the entire report and all fourteen comments, including the answered profile requests and subsequent feature suggestions.",
+      "Read the full public cross-reference timeline; its linked items are reports/discussion, not fix PRs.",
+      "Read current Shell Main.PrepareProcessStartInfo and ShellCommand.SetProcessStartInfo; confirmed explicit UserProfile in shell branches and the helper's empty-string default.",
+      "Direct-number and working-directory PR searches did not identify a concrete fix covering this Run issue; unrelated CmdPal/Peek fixes are not counted."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The actual current CWD for each Run launch path and the precedence of explicit Terminal/shortcut configuration.",
+        "why_needed": "Selects an affected branch and prevents a fallback change from breaking an explicit application configuration.",
+        "how_to_collect": "Maintainer: use a CWD-printing helper and isolated Terminal profiles to run the local matrix below."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-run-cwd",
+      "type": "reproduce",
+      "label": "Compare raw, shell, shortcut and Terminal CWD",
+      "reproduce": {
+        "title": "PowerToys Run child working-directory policy",
+        "module": "PowerToys Run",
+        "version_requirement": "Current build; original report was 0.18, so do not assume every branch remains affected.",
+        "prerequisites": [
+          "A harmless helper that prints its current directory and arguments.",
+          "Windows Terminal with isolated test profiles, one without startingDirectory and one with an explicit test path.",
+          "A shortcut to the helper with an explicit Start in directory."
+        ],
+        "steps": [
+          "Launch the helper through Run's raw Shell path, shell-backed path and Program result; record actual CWD.",
+          "Launch the shortcut and confirm Start in remains effective.",
+          "Run '> wt' with startingDirectory omitted, then repeat with an explicit test path and a valid WSL profile if available.",
+          "Compare current PrepareProcessStartInfo values with the observed child directory, including normal and elevated launches.",
+          "Select a documented fallback only for a confirmed affected path and repeat the matrix after any patch."
+        ],
+        "expected_result": "Child CWD follows deliberate launch policy and preserves explicit shortcut/application configuration; it must not accidentally depend on the PowerToys installation directory.",
+        "setup_prompt": "Prepare a harmless local CWD-printing helper, two disposable working directories and a shortcut with Start in set to one directory. Create isolated Windows Terminal test profiles with omitted versus explicit startingDirectory without changing the user's normal profile. Print the exact Run commands and cleanup steps; do not modify PowerToys or require elevated writes."
+      }
+    },
+    {
+      "id": "approve-run-cwd-plan",
+      "type": "approve_design",
+      "label": "Approve scoped Run CWD consistency plan",
+      "note": "Verify branch behavior and explicit-configuration precedence before implementing; no global Explorer or executable-directory policy is assumed."
+    }
+  ]
 }

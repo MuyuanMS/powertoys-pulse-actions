@@ -1,33 +1,118 @@
 {
+  "schemaVersion": 5,
   "number": 33261,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:32:53.3072416Z",
+  "evaluated_at": "2026-10-20T23:32:53.3072416Z",
   "source_updated_at": "2024-06-28T19:48:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce Word markup leakage",
+    "detail": "The report gives exact Word-to-Markdown steps and unwanted conditional markup; a broader formatting feature is not a confirmed fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Capture Word clipboard fixture and normalize markup",
+    "reason": "The remaining discriminator is the HTML clipboard structure and conversion behavior, which a maintainer can inspect."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The Word Title-style reproduction and literal conditional-markup output are actionable. Current MarkdownConverter strips styles and a limited list of elements but has no explicit Word conditional-markup normalization. The separate formatting roadmap does not prove this bug has been fixed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.81.1, copying Word Title-style TEXT and choosing Paste as Markdown emits <![if !supportLineBreakNewLine]> and <![endif]> instead of the requested heading.",
+      "https://github.com/microsoft/PowerToys/issues/33261#issuecomment-2197525850 explicitly keeps this report open as a bug.",
+      "https://github.com/microsoft/PowerToys/issues/33109 discusses broader formatting/custom-action ideas and references this report as a possible beneficiary, not a delivered fix.",
+      "https://github.com/microsoft/PowerToys/blob/main/src/modules/AdvancedPaste/AdvancedPaste.Core/MarkdownConverter.cs removes inline styles and script/sup/o:p elements before ReverseMarkdown conversion."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the provided Word example, preserve its clipboard HTML as a test fixture and normalize unsupported Word markup without losing content.",
+    "evaluated_at": "2026-10-20T23:32:53.3072416Z",
     "source_updated_at": "2024-06-28T19:48:51Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The observed cleanup gap supports a focused conversion fix. The broader custom-formatting work and headless-converter refactor do not establish coverage of this exact Word fixture."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Normalize Word clipboard HTML before Markdown conversion",
+      "root_cause": "Hypothesis: Word-specific conditional declarations survive cleanup and are serialized into Markdown, while stripping inline styling before interpreting semantic paragraph styles can lose title/heading intent. The exact Word HTML fixture is needed to confirm both branches.",
+      "plan": [
+        "Reproduce the public Word Title-style TEXT example and capture its CF_HTML fragment locally as a sanitized fixture; compare Title and Heading 1 so their semantics are not assumed equivalent.",
+        "In src/modules/AdvancedPaste/AdvancedPaste.Core/MarkdownConverter.cs, add targeted handling for Word conditional artifacts before conversion, retaining visible fallback text rather than removing whole conditional regions blindly.",
+        "Preserve recognized semantic heading information before removing styles, but map Word Title to a heading only after defining that supported behavior; accept equivalent valid Markdown syntax rather than requiring Setext formatting exclusively.",
+        "Add fixture tests for Word conditional line-break markers, Title/heading paragraphs, ordinary text, lists, tables and intentional text that resembles markup."
+      ],
+      "verification": [
+        "The exact Word TEXT reproduction no longer emits <![if ...]> or <![endif]> tokens.",
+        "Heading semantics match the agreed mapping, using valid ATX or Setext output without losing TEXT.",
+        "Ordinary HTML/Word lists, tables and line breaks retain content and existing supported formatting."
+      ],
+      "confidence": {
+        "score": 75,
+        "level": "yellow",
+        "rationale": "The literal output and upstream cleanup code align, but actual CF_HTML and Title-versus-heading semantics must be checked before implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Pasting a Word Title-style paragraph as Markdown leaks Word conditional line-break markup and does not produce the heading representation the reporter expected.",
+    "known_information": [
+      "The report supplies a three-step reproduction and exact expected/actual text.",
+      "The maintainer left the bug open and linked broader formatting work.",
+      "The live issue is open, unassigned and labeled Priority-3/Advanced Paste."
+    ],
+    "inferences": [
+      "Word-specific markup cleanup is a likely conversion boundary.",
+      "The Title style may be represented differently from a semantic HTML heading; its Markdown mapping is not established by the report alone."
+    ],
+    "analysis": "The report already gives a local reproduction. Maintainers should capture their own clipboard fixture rather than asking the reporter for another generic ZIP or treating a roadmap link as existing-fix coverage.",
+    "initial_investigation": [
+      "Read the report, its sole comment and the related #33109 discussion.",
+      "Verified current upstream MarkdownHelper extracts the HTML fragment and delegates to AdvancedPaste.Core.MarkdownConverter.",
+      "Read MarkdownConverter.CleanNodes: it removes style attributes and selected elements, with no explicit supportLineBreakNewLine handling.",
+      "The converter's recent #50834 headless refactor moves the conversion into Core but does not itself establish a Word-markup fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-word-markdown",
+      "type": "reproduce",
+      "label": "Capture Word-to-Markdown fixture",
+      "reproduce": {
+        "title": "Word Title conditional-markup leakage",
+        "module": "Advanced Paste",
+        "version_requirement": "Compare reported 0.81.1 with a current supported build; record Word version.",
+        "prerequisites": [
+          "Microsoft Word",
+          "Advanced Paste enabled",
+          "A plain-text destination such as VS Code"
+        ],
+        "setup_prompt": "Create a new local test Word document containing the single word TEXT with the built-in Title style. Add separate control paragraphs using Heading 1 and Normal. Use no user documents or confidential content. Prepare a text editor destination and capture only these test paragraphs' clipboard HTML for regression fixtures.",
+        "steps": [
+          "1. Copy the Word paragraph containing TEXT with Title style.",
+          "2. Use Advanced Paste's built-in Paste as Markdown action into the text editor.",
+          "3. Compare output with the issue's literal conditional markers and capture the sanitized clipboard HTML fragment.",
+          "4. Repeat for Heading 1 and Normal to separate markup cleanup from the desired Title-style mapping."
+        ],
+        "expected_result": "No Word conditional declarations leak into Markdown; content remains intact and heading output follows the supported semantics.",
+        "attachments": [
+          {
+            "label": "Exact reproduction and output",
+            "url": "https://github.com/microsoft/PowerToys/issues/33261"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-word-markdown-plan",
+      "type": "approve_design",
+      "label": "Review Word HTML normalization plan",
+      "note": "Validate the CF_HTML fixture and Title semantics before changing cleanup."
+    }
+  ]
 }

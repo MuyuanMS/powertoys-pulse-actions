@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 5,
+  "number": 51400,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:41:33.951Z",
+  "evaluated_at": "2026-10-20T16:41:33.951Z",
+  "source_updated_at": "2026-10-19T15:18:54Z",
+  "updated_at": "2026-10-19T15:18:54Z",
+  "state": "open",
+  "title": "CmdPal: Dedicated flyout - exception when showing details pane",
+  "url": "https://github.com/microsoft/PowerToys/issues/51400",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "evaluated_at": "2026-10-20T16:41:33.951Z",
+    "recommended_action": "Request only the build and selection/navigation discriminator; keep the proposed root cause as an unconfirmed red hypothesis.",
+    "source_updated_at": "2026-10-19T15:18:54Z",
+    "status": "needs_information",
+    "evidence": [
+      "The report includes a stack from ListViewModel.SetSelectedItem through PageViewModel.SetDetails to DockPageControl.ShowDetails and UIElement.get_Visibility.",
+      "HRESULT -2147417842 is 0x8001010E (RPC_E_WRONG_THREAD); the report gives no reproduction frequency, selected entry or navigation state.",
+      "An automated triage comment requests steps and a ZIP; the existing stack is retained and no new archive is requested."
+    ],
+    "rationale": "The reporter supplied a useful stack trace identifying UIElement.get_Visibility from DockPageControl.ShowDetails, but it does not distinguish thread-affinity failure from a stale/disposed UI element. Exact trigger and current build are material; do not request generic diagnostics."
+  },
+  "fix_assessment": {
+    "rationale": "A PowerToys UI correction may be applicable, but the current report does not establish whether the failing boundary is thread affinity or control lifetime.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Repeat selection of app results in Search apps on the current build; determine whether all or one entry fails.",
+        "Repeat immediately after navigation and while the details pane opens/closes, retaining the existing stack if it recurs.",
+        "Use the resulting steps to test the dispatcher/lifecycle boundary; do not request a generic ZIP before the discriminator is known."
+      ],
+      "plan": [
+        "Obtain the minimal trigger and current build, including whether all app results or one specific entry fail.",
+        "If reproducible, trace the details-pane visibility access and dispatcher/lifecycle boundary before selecting a code change.",
+        "Add a regression test for the confirmed selection/navigation path and verify the details pane remains responsive."
+      ],
+      "title": "Resolve the Search apps details-pane selection failure",
+      "root_cause": "An UIElement access fails during details-pane selection, but public evidence does not establish whether this is wrong-thread access or a stale control/lifecycle race.",
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The stack and HRESULT narrow the failure boundary, but the trigger is not reproducible from the report and no code mechanism is confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "known_information": [
+      "The report provides a stack from ListViewModel.SetSelectedItem through PageViewModel.SetDetails and DockPageControl.ShowDetails to UIElement.get_Visibility.",
+      "The HRESULT is 0x8001010E (RPC_E_WRONG_THREAD).",
+      "The issue does not identify a specific app result, current build/commit, or whether navigation/details-pane timing is involved."
+    ],
+    "summary": "Selecting an app in CmdPal Search apps produced COMException 0x8001010E at UIElement.get_Visibility in DockPageControl.ShowDetails; selection and navigation conditions are unspecified.",
+    "analysis": "The supplied stack is already useful, so the next action asks only for the exact current build and discriminating trigger. Do not request generic logs or a second ZIP before this clarification.",
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "why_needed": "Distinguishes a repeatable dispatcher/thread-affinity defect from an entry-specific or stale-control timing issue.",
+        "how_to_collect": "Check Settings > General > About or the dev-build commit, then repeat selection with and without immediate navigation; the existing stack is sufficient for now.",
+        "information": "Exact PowerToys build/commit and whether the exception occurs for every Search apps result or only one entry; whether it coincides with navigation or details-pane open/close."
+      }
+    ],
+    "inferences": [
+      "The failure could involve thread affinity or a stale control/lifecycle race; the stack alone does not distinguish them."
+    ],
+    "initial_investigation": [
+      "Read the full live issue body and comments; confirmed no reporter comment or attachment adds a reproduction beyond the stack.",
+      "Reviewed the linked CmdPal details-pane source location named by the stack; no root cause is asserted beyond the reported HRESULT and call path."
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-51400-approve-design",
+      "design": {
+        "title": "Resolve the Search apps details-pane selection failure"
+      },
+      "requiresApproval": true,
+      "label": "Approve Search apps failure investigation",
+      "confirm": true,
+      "type": "approve_design"
+    },
+    {
+      "id": "issue-51400-request-info",
+      "requiresApproval": true,
+      "label": "Clarify Search apps selection trigger",
+      "confirm": true,
+      "type": "request_info",
+      "comment": {
+        "repository": "microsoft/PowerToys",
+        "target": "issue",
+        "body": "Thanks for the stack trace: it already pinpoints UIElement.get_Visibility while DockPageControl.ShowDetails is called from SetSelectedItem. The HRESULT is 0x8001010E, but the trace alone does not show whether this happens for every app result or only during a particular navigation/details-pane transition. Please provide: 1) the exact PowerToys build or commit; 2) whether selecting any Search apps result reproduces it or only a specific entry; and 3) whether it coincides with navigation or the details pane opening/closing. The existing trace is useful, so no generic log or ZIP request is needed.",
+        "number": 51400
+      }
+    }
+  ]
+}

@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 32310,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-10-20T16:48:00Z",
   "source_updated_at": "2024-04-11T16:10:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32310",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Needs affected-shortcut identity",
+    "detail": "The icon-cache workaround helped, but the reporter explicitly says the next update caused the failure again."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Request cropped icon/resource and upgrade scope details",
+    "reason": "Determine whether the broken icon references PowerToys resources or unrelated applications before choosing installer/cache behavior."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The April 10 confirmation that icon-cache reset worked is superseded by April 11 recurrence after the next update. The screenshot/ZIP establish the symptom, not which shortcut resource and upgrade transition becomes stale.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report identifies PowerToys 0.80, generic desktop icons, a screenshot and an archive.",
+      "A maintainer recommended icon-cache reset; the reporter first confirmed recovery and then reported the next-update recurrence.",
+      "PowerToysSetupCustomActionsVNext/CustomAction.cpp UnApplyModulesRegistryChangeSetsCA already calls SHChangeNotify(SHCNE_ASSOCCHANGED) after registry removal.",
+      "That removal-side notification does not establish that post-install resource availability and Explorer cache invalidation are correctly sequenced."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Draft a narrow request for one affected shortcut's non-sensitive resource identity, current recurrence and installation scope, then reproduce the actual upgrade transition.",
+    "evaluated_at": "2026-10-20T16:48:00Z",
     "source_updated_at": "2024-04-11T16:10:21Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A conditional installer/resource-refresh correction is applicable, but affected resource identity and upgrade sequencing are not yet established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Explorer icon resources through the confirmed upgrade transition",
+      "root_cause": "Unconfirmed: Explorer may retain stale icon-resource state while an upgrade removes and reinstalls resources, or a shortcut may reference a resource that changes/disappears. Cache-reset recovery is evidence of refresh sensitivity, not proof of a missing notification.",
+      "plan": [
+        "Identify one affected shortcut's target/icon resource basename, installation scope and exact before/after release pair without collecting personal paths.",
+        "Reproduce that upgrade in a disposable test profile and compare resource existence, shortcut icon location and Explorer state before removal, after removal and after final registration.",
+        "Trace existing SHChangeNotify timing; if a stale-cache transition is confirmed, notify at the correct completed-install boundary or preserve stable resource identity as appropriate.",
+        "Do not implement blanket cache deletion or terminate Explorer as a default fix; protect unrelated application icons and rollback/uninstall behavior.",
+        "Add regression coverage for the confirmed upgrade path and per-user/per-machine controls."
+      ],
+      "verification": [
+        "Affected icons remain correct after upgrade, Explorer reopen and sign-in.",
+        "Unrelated application shortcuts, uninstall/rollback and installation scopes are unaffected.",
+        "The fix works without manual icon-cache deletion."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "Recovery plus update recurrence implicates resource/cache sequencing, and source confirms an existing removal-side notification. The resource and failing upgrade phase are unknown, so a specific code fix would be speculative."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A PowerToys update makes desktop icons generic; manually resetting the cache temporarily recovers them, but a later update triggers recurrence.",
+    "known_information": [
+      "The original screenshot and ZIP are already supplied.",
+      "The reporter's latest comment explicitly says the failure returned after the next update.",
+      "The installer already sends an association-change notification during module registry removal."
+    ],
+    "inferences": [
+      "Resource/cache invalidation is plausible, but it is not yet clear whether PowerToys-only or unrelated shortcut resources are affected."
+    ],
+    "analysis": "This is not resolved by the first workaround confirmation. Targeted shortcut identity and install scope materially constrain a safe upgrade reproduction; another generic archive and broad cache-deletion advice are not justified.",
+    "initial_investigation": [
+      "Read the entire report and all four comments, preserving the latest recurrence as the disposition-driving evidence.",
+      "Checked obvious linked work and found no concrete existing fix.",
+      "Inspected the installer registry-removal notification and distinguished it from completed-install invalidation."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the issue recurs currently, the before/after PowerToys release pair and whether affected icons are PowerToys-only or also unrelated shortcuts.",
+        "why_needed": "The historical recurrence does not identify a current supported upgrade or the scope of affected resources.",
+        "how_to_collect": "If still reproducible, list the two release numbers and describe one affected application without personal paths; otherwise state the working release."
+      },
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A cropped comparison of one affected icon and the non-sensitive target/icon resource basename and resource index, if shown in shortcut properties.",
+        "why_needed": "Missing resources and stale cached resources look similar but require different fixes.",
+        "how_to_collect": "Capture only the affected icon and relevant icon-resource details; redact usernames, full personal/company paths and other desktop content. Do not upload the shortcut itself."
+      },
+      {
+        "evidence_type": "install_scope",
+        "information": "Per-user versus all-users installation and update method for the failing upgrade.",
+        "why_needed": "The resource locations and installer notification/registration sequence depend on the installation path.",
+        "how_to_collect": "State per-user or all-users and whether auto-update or a manually launched installer performed the upgrade."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "design-32310",
+      "type": "approve_design",
+      "label": "Review upgrade icon-resource investigation",
+      "description": "Approve the gated investigation; do not authorize destructive cache repair as a speculative product fix."
+    },
+    {
+      "id": "request-icon-resource-32310",
+      "type": "request_info",
+      "label": "Request affected icon/resource and upgrade scope",
+      "comment": {
+        "body": "Thanks for the screenshot and ZIP, and for testing the icon-cache reset. Your later comment says the next update made the icons generic again, so the earlier recovery does not establish a lasting fix.\n\nCould you please share these specific details if it still occurs?\n1. The PowerToys release before and after the failing update, and whether only PowerToys shortcuts or also unrelated application shortcuts lose icons. If it no longer occurs, please state the working release instead.\n2. A cropped view of one affected icon and, if shortcut properties show it, only the target/icon resource file basename and icon index. Please redact usernames and personal/company paths and do not upload the shortcut itself. This distinguishes a disappeared resource from a stale cached icon.\n3. Whether this is a per-user or all-users installation and whether auto-update or a manually launched installer performed the upgrade. This lets maintainers reproduce the correct resource/notification sequence without another generic capture or repeated cache-reset advice."
+      }
+    }
+  ]
 }

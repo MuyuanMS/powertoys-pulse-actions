@@ -1,33 +1,115 @@
 {
+  "schemaVersion": 5,
   "number": 13402,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:29:29.61041Z",
+  "evaluated_at": "2026-10-20T23:29:29.61041Z",
   "source_updated_at": "2024-06-12T01:15:14Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Inspect linked crash report",
+    "detail": "The last reply points to diagnostics in #33343; that report must be inspected before repeating the old evidence request."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare crash signatures and reproduce zone drag",
+    "reason": "A linked report supplies the requested archive and a concrete Chrome drag sequence, but shared root cause is unproven."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original report is broad, but the last commenter links an accessible diagnostic archive and steps in #33343. That is actionable maintainer evidence, not proof of author nonresponse or a confirmed duplicate.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original 0.45 report describes snapping crashes and lost layouts after restart despite reinstall attempts.",
+      "https://github.com/microsoft/PowerToys/issues/13402#issuecomment-2161877974 explicitly supplies diagnostics by reference to #33343.",
+      "https://github.com/microsoft/PowerToys/issues/33343 describes 0.81.1, dragging Chrome to the top zone while pressing the right mouse button, and includes a diagnostic ZIP."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Inspect the linked archive, compare crash signatures and run the supplied drag reproduction before drafting a confirmed fix.",
+    "evaluated_at": "2026-10-20T23:29:29.61041Z",
     "source_updated_at": "2024-06-12T01:15:14Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A zone-drag lifecycle fix remains a candidate, not an established solution. The linked report is evidence to investigate, not an implementation or ownership claim."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate drag-state lifetime against the supplied FancyZones crash",
+      "root_cause": "Hypothesis: a monitor/work-area or dragged-window transition invalidates state during zone highlighting or snap completion. The public description does not establish a stack, and layout loss may be a separate symptom.",
+      "plan": [
+        "Inspect the #33343 archive and extract the crash signature; establish whether it matches the older #13402 failure before combining them.",
+        "Trace the confirmed crash through src/modules/fancyzones/FancyZonesLib/FancyZones.cpp and its drag/snap state owners using the documented right-button Chrome sequence.",
+        "Check existing AbortMoveSize and destroyed-window guards on current main before proposing any equivalent guard. If the failure remains, correct only the newly demonstrated lifetime boundary and keep persisted layouts unchanged on failed snaps.",
+        "Add a regression for the actual failing transition; investigate restart/layout persistence separately if no common stack or state path connects it."
+      ],
+      "verification": [
+        "Drag Chrome to the top zone and activate zone targeting with the right button; repeat after restart without a crash.",
+        "Verify existing layouts remain intact after restart and that aborted drags do not save corrupt zone assignments.",
+        "Repeat monitor/work-area changes during a drag only as a maintainer diagnostic discriminator, not as a claimed reporter step."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The crash path and existing safeguards need direct comparison; public symptoms alone cannot identify an omitted lifetime check."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A long-running FancyZones snapping crash report gained a linked 0.81.1 diagnostic report with a specific Chrome/right-button drag sequence.",
+    "known_information": [
+      "The original report mentions 0.45 and lost layouts after restart.",
+      "The 2024 reply points to a public diagnostic ZIP in #33343.",
+      "The linked report concerns dragging Chrome to a top zone after a laptop restart.",
+      "Both issue reports remain open; #13402 is unassigned."
+    ],
+    "inferences": [
+      "The linked report may help isolate the same crash family, but shared symptoms do not prove a common exception or that the original layout loss has the same cause."
+    ],
+    "analysis": "The last author-side reply was evidence, not silence. Review the linked artifact before asking for a new report or proposing a guard that current code already contains.",
+    "initial_investigation": [
+      "Read both comments and the original report, then read #33343 and its available discussion.",
+      "Checked both issue timelines: the inspected cross-reference links the reports, not a concrete PR.",
+      "Current upstream FancyZones.cpp already aborts active drag state before clearing work areas and handles destroyed dragged windows; these existing guards must not be re-proposed as absent."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-linked-zone-crash",
+      "type": "reproduce",
+      "label": "Inspect linked ZIP and reproduce Chrome drag",
+      "reproduce": {
+        "title": "FancyZones top-zone crash comparison",
+        "module": "FancyZones",
+        "version_requirement": "Use 0.81.1 as the linked baseline and compare a current supported build.",
+        "prerequisites": [
+          "Chrome installed",
+          "A FancyZones layout with a top zone",
+          "Preserve a copy of existing layout configuration before testing."
+        ],
+        "steps": [
+          "1. Inspect the public ZIP in #33343 for the exception/module and zone configuration; do not assume it matches #13402.",
+          "2. Restart the test machine, open Chrome and grab its title bar.",
+          "3. Drag toward the top zone and press the right mouse button while dragging, then drop.",
+          "4. Repeat on a current build, record any crash signature and confirm saved layouts survive restart."
+        ],
+        "expected_result": "Zone highlighting and snapping succeed without crashing or losing layouts; any failure is tied to an observed stack before selecting a fix.",
+        "attachments": [
+          {
+            "label": "Linked reproduction and diagnostic ZIP",
+            "url": "https://github.com/microsoft/PowerToys/issues/33343"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-zone-crash-plan",
+      "type": "approve_design",
+      "label": "Review provisional drag-lifetime investigation",
+      "note": "Inspect the existing archive and current safeguards before implementing a new guard."
+    }
+  ]
 }

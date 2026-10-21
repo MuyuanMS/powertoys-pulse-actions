@@ -1,33 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 24452,
   "kind": "issue",
+  "title": "FancyZones not working with multiple displays in combination with portable apps",
+  "url": "https://github.com/microsoft/PowerToys/issues/24452",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-22T10:36:58Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 7,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Later evidence overturns the portable-only framing: installed Notepad++ also fails, while 100% scaling or removing the FHD display restores behavior. A mixed-DPI coordinate test is warranted.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue includes a video, diagnostic ZIP, affected app versions and seven follow-up comments.",
+      "Secondary-display windows resize but shift left; main-display behavior works.",
+      "Disabling drag transparency helps Notepad++ and KeePass but not PuTTY/KiTTY.",
+      "A four-display UHD/FHD setup works when the FHD screen is disabled; 100% scaling also restores arrangement."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the mixed-DPI coordinate and transparency matrix locally before changing conversion logic.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-22T10:36:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A coordinate-conversion defect is plausible and repository-side, but no issue-linked implementation was found."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep zone placement and non-per-monitor-aware window coordinates consistent",
+      "root_cause": "Hypothesis: placement or frame-offset calculations mix logical and physical coordinates for DPI-unaware/system-aware windows on mixed-scale secondary monitors; transparency may expose an additional branch.",
+      "plan": [
+        "Trace the target RECT, monitor origin, DPI awareness and frame offsets in FancyZones WindowUtils.cpp for an affected secondary-monitor snap.",
+        "Identify the first coordinate mismatch and convert once at that boundary, preserving negative monitor origins and existing mixed-DPI bounds handling.",
+        "Add geometry coverage for unequal scaling, left/right secondary screens and non-per-monitor-aware windows; keep transparency-specific behavior separate if it has another cause."
+      ],
+      "verification": [
+        "Snap KeePass, installed Notepad++ and PuTTY/KiTTY on each monitor with mixed scaling, then 100% scaling as a control.",
+        "Repeat drag transparency on/off and compare final window/frame rectangles with the zone.",
+        "Verify no regression for per-monitor-aware apps or monitors left of the primary."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "Scaling and topology controls strongly implicate coordinate handling; the exact failing transform has not been instrumented."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Some windows snap with a horizontal offset on non-primary displays. Follow-up testing narrows this to mixed-display scaling rather than portable packaging alone.",
+    "known_information": [
+      "Reported builds include 0.67.1, 0.68.0 and 0.72.0; current-build persistence is not established.",
+      "The supplied archive and video already support investigation.",
+      "Installed Notepad++ is affected too; elevation was already tried.",
+      "100% scaling and removing the FHD display are positive controls reported by the author."
+    ],
+    "inferences": [
+      "Mixed-DPI awareness/conversion is better supported than a portable-app exclusion explanation.",
+      "PuTTY/KiTTY may retain an independent sizing constraint after the transparency workaround."
+    ],
+    "analysis": "Reproduce the reported control matrix before asking for more reporter evidence. The previous empty-assignee ownership claim has no basis.",
+    "initial_investigation": [
+      "Read the full report and all seven comments; the paginated timeline contains no linked fix.",
+      "Inspected src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb, including DPI awareness checks, allMonitorsHaveSameDpiScaling, monitor bounds and inverse conversions.",
+      "Existing DPI guards mean a missing-conversion claim is not proven; trace values before editing.",
+      "No mixed-DPI UI test was executed and the diagnostic ZIP contents were not analyzed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve mixed-DPI placement investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare mixed-DPI secondary-display snapping",
+      "reproduce": {
+        "title": "Isolate scaling and transparency offsets",
+        "module": "FancyZones",
+        "version_requirement": "Current supported build; historical comparison with reported 0.72.0 only in an isolated environment.",
+        "prerequisites": [
+          "At least two monitors with different DPI scaling; KeePass, Notepad++ and PuTTY or KiTTY test windows.",
+          "Record and restore display settings and layouts after testing."
+        ],
+        "steps": [
+          "1. Configure unequal monitor scaling and zones on primary and secondary displays, including a display left of the primary.",
+          "2. Snap each test app to the same relative zone and record final window/frame and zone rectangles.",
+          "3. Repeat with drag transparency disabled and enabled.",
+          "4. Set all displays to 100% and repeat; then disable the differently scaled display and repeat.",
+          "5. Trace monitor origin, window DPI awareness and each coordinate conversion for the failing/control cases."
+        ],
+        "expected_result": "Final bounds match the selected zone regardless of monitor origin or scaling; app-imposed size limits are distinguished from coordinate offsets."
+      }
+    }
+  ]
 }

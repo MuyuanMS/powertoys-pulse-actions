@@ -2,32 +2,105 @@
   "number": 31883,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-04T08:09:22Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Editor sizing needs reproduction",
+    "detail": "Unassigned open regression; restart recovery and a later ultrawide duplicate suggest a display-dependent sizing problem, not established ownership."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🖥️",
+    "label": "Request editor display transition",
+    "reason": "Identify the monitor/scaling transition before approving a sizing correction."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "31883-display-transition",
+      "type": "request_info",
+      "label": "Request editor display transition",
+      "comment": {
+        "body": "Thanks for the before/after screenshots and for confirming that you did not resize the editor. The 0.80.1 follow-up says restarting PowerToys restores the size, and #35262 adds an ultrawide case. These establish the symptom but not which display transition changes the size.\n\nPlease provide:\n1. On the latest stable PowerToys, whether repeated open/pick/close cycles still enlarge the editor; include the tested version and whether this starts after moving between displays, sleep, docking, or a scaling change.\n2. For the displays involved, the resolution and scaling shown in Windows Settings > System > Display, which is primary, and which display contains the editor before and after it grows.\n\nThis will distinguish stale per-monitor sizing from a fixed editor-layout regression. Please omit personal content from any display screenshot."
+      }
+    },
+    {
+      "id": "31883-sizing-plan",
+      "type": "approve_design",
+      "label": "Approve editor sizing investigation",
+      "note": "Lightweight candidate plan; reproduce the display transition before implementation. No fork mirror or completed design is claimed."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The editor grows without user resizing and restart can recover it. The relevant display/scaling transition is missing; no assignee or linked fixing PR was found.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report supplies 0.79.0 screenshots and the author explicitly denies resizing: https://github.com/microsoft/PowerToys/issues/31883#issuecomment-1996056558",
+      "A 0.80.1 commenter reports restart recovery: https://github.com/microsoft/PowerToys/issues/31883#issuecomment-2208367735",
+      "The ultrawide report #35262 was closed as a duplicate of this issue, not as a fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for the specific display transition and validate the candidate sizing plan against it.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-04T08:09:22Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A module sizing correction is plausible, but the failure mechanism is unconfirmed. The reviewed timeline and issue-number PR search did not identify an existing fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep editor dimensions stable across activation and monitor changes",
+      "root_cause": "Hypothesis: editor reuse retains a stale display scale or work-area-derived size, so a later activation enlarges the fixed-size editor. Restart recovery supports retained state, but does not prove DPI is responsible.",
+      "plan": [
+        "Reproduce the reported activation/display transition on the current editor and compare window pixel bounds with its logical dimensions; also reproduce on the historical 0.79/0.80 UI if necessary.",
+        "Trace editor creation, reuse and monitor sizing under src/modules/colorPicker/ColorPickerUI; change only the boundary that converts logical editor dimensions to the target display size, avoiding repeated scaling or full-work-area sizing.",
+        "Add repeated-activation and monitor-scale-change regression coverage, including ultrawide work areas and close/reopen without restarting PowerToys."
+      ],
+      "verification": [
+        "On two displays with differing scaling, invoke, pick, close and reopen repeatedly before and after moving displays; the content fits and dimensions do not compound.",
+        "Repeat on an ultrawide display and after restarting PowerToys; compare against the supplied screenshots."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "Retained sizing state is plausible, but no display transition or current-build reproduction establishes the mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Color Picker's non-resizable editor becomes roughly three times larger after initial use, leaving unused space. Another user reports that a restart restores it.",
+    "known_information": [
+      "Reported on 0.79.0, with confirmation on 0.80.1; the author opens the editor by hotkey and does not manually resize it.",
+      "Before/after screenshots are already supplied.",
+      "Live issue is open, labeled Issue-Bug and Severity-Regression, with no assignee."
+    ],
+    "inferences": [
+      "Restart recovery suggests state retained across activations; a DPI/work-area interaction is a candidate, not a confirmed cause.",
+      "The ultrawide duplicate broadens the affected topology but does not establish that every case has the same cause."
+    ],
+    "analysis": "The existing artifact's empty-assignee ownership claim was unsupported. Preserve this issue as the canonical open report, gather the missing display discriminator, and avoid claiming a fixed or implementation-ready design.",
+    "initial_investigation": [
+      "Read the complete issue body and all three comments, and enumerated the public timeline.",
+      "Read #35262, including the explicit /dup #31883 decision; no fixing PR appeared in the reviewed timeline or direct issue-number PR search.",
+      "Checked public Color Picker source ownership under src/modules/colorPicker/ColorPickerUI; the report predates substantial UI evolution, so current reproduction must precede a historical sizing patch."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the enlargement still occurs on the latest stable version and which activation/display transition precedes it.",
+        "why_needed": "Separates an obsolete UI regression from retained activation state in the current editor.",
+        "how_to_collect": "Report the tested version and repeat open/pick/close cycles, noting sleep, docking, display movement or scaling changes."
+      },
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Resolution, scaling, primary display and before/after editor display.",
+        "why_needed": "Tests the stale-monitor-scale/work-area hypothesis.",
+        "how_to_collect": "Read Windows Settings > System > Display for only the involved monitors; redact personal content from screenshots."
+      }
+    ]
   }
 }

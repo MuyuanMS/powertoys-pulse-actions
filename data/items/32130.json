@@ -1,33 +1,104 @@
 {
+  "schemaVersion": 5,
   "number": 32130,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:40:00Z",
+  "evaluated_at": "2026-10-20T16:40:00Z",
   "source_updated_at": "2024-03-30T09:37:23Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32130",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproducible selection/ranking mismatch",
+    "detail": "Frequency sorting starts at index zero while arrow-key selection can start in the middle."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Verify center-start frequency behavior",
+    "reason": "The report supplies the exact two-setting combination; no reporter logs are needed."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "This report concerns ranked items being far from the initial central selection, not frequency persistence or complete failure to sort. Available source contains both sides of that mismatch.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body sets frequency sorting ON and start-from-left OFF, then trains several characters.",
+      "PowerAccent.Core/PowerAccent.cs GetCharacters sorts by descending usage into the left-to-right array.",
+      "The initial arrow selection uses the middle indices when StartSelectionFromTheLeft is false; Space instead starts at an edge.",
+      "Related issue 25217 describes incomplete sorting, while other cross-references concern restarting frequency counts; none establishes this center-selection report is handled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce arrow versus Space activation and agree the centered ranking policy before implementing the bounded selection/ranking correction.",
+    "evaluated_at": "2026-10-20T16:40:00Z",
     "source_updated_at": "2024-03-30T09:37:23Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted Quick Accent ordering/selection change is applicable; no concrete owner or implementation covers this specific interaction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Align frequency-ranked characters with center-start navigation",
+      "root_cause": "The inspected frequency sort places the most-used character at index zero while center-start arrow navigation selects a middle index. The appropriate symmetric ordering and ties still need UX validation.",
+      "plan": [
+        "Add a regression for frequency sorting enabled and start-from-left disabled, covering Left, Right and Space activation separately.",
+        "Define and implement a stable center-out permutation for frequency-ranked candidates when center-start arrow navigation is used, or an agreed selection rule that makes the top-ranked candidate immediately reachable.",
+        "Keep left-start and Space activation semantics unchanged unless explicitly approved; preserve usage counts, case conversion and character descriptions.",
+        "Test odd/even candidate counts, ties and empty/single-entry lists."
+      ],
+      "verification": [
+        "Train a character and reopen with each activation key; verify the most-used item is nearest the intended initial selection.",
+        "Verify existing start-from-left and reverse/Shift navigation tests still pass."
+      ],
+      "confidence": {
+        "score": 80,
+        "level": "yellow",
+        "rationale": "The reported setting combination maps directly to the inspected array sort and middle-index selection; the final interaction policy and runtime behavior have not been independently validated."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent's frequency-sorted candidates stay at the left edge even when arrow-key navigation begins centrally, making common accents farther away.",
+    "known_information": [
+      "PowerToys 0.79.0 and the exact setting combination are supplied.",
+      "The only comment is a similarity bot; there is no assignee or targeted linked implementation.",
+      "The source separates frequency sorting from initial navigation index selection."
+    ],
+    "inferences": [
+      "This is an interaction between ordering and initial selection rather than proof that usage counting is broken."
+    ],
+    "analysis": "The old ownership claim was unsupported. The report is sufficient to reproduce locally and review a focused plan without asking for generic diagnostics.",
+    "initial_investigation": [
+      "Read the entire report, bot comment and cross-reference timeline.",
+      "Read GetCharacters and the initial-selection branches in PowerAccent.cs.",
+      "Compared the linked frequency-sorting report's different symptom."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32130",
+      "type": "approve_design",
+      "label": "Review centered frequency plan",
+      "description": "Approve a bounded UX/regression investigation, not an already-converged design."
+    },
+    {
+      "id": "reproduce-32130",
+      "type": "reproduce",
+      "label": "Reproduce center-start frequency sorting",
+      "reproduce": {
+        "module": "Quick Accent",
+        "prerequisites": [
+          "Use a current build and a language/key with multiple accent candidates.",
+          "Enable Sort characters by usage frequency and disable Start selection from the left."
+        ],
+        "steps": [
+          "Select one accent repeatedly to establish a leading usage rank.",
+          "Reopen the toolbar using Left and then Right activation; record the initial selection and leading accent location.",
+          "Repeat with Space activation.",
+          "Enable start-from-left and repeat as a control."
+        ],
+        "expected_result": "Frequently used candidates are immediately reachable under the agreed selection policy without regressing edge-start controls."
+      }
+    }
+  ]
 }

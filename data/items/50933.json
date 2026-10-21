@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50933",
+  "number": 50933,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-01T15:26:43Z",
+  "title": "Keyboard Manager incorrectly flags global and app specific shortcut remaps as duplicates",
+  "url": "https://github.com/microsoft/PowerToys/issues/50933",
+  "author": "Alb11747",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report supplies the active global and app-specific mappings, a screenshot, and a source-level explanation that is still present on current main. The duplicate predicate treats an empty target-app name as matching every app-specific scope, so editing a global row is blocked by valid overrides.",
+    "evidence": [
+      "The reporter's configuration has one global mapping and two app-specific overrides for the same Ctrl+Shift+N trigger.",
+      "Editing the global mapping produces a duplicate error although the expected runtime precedence is app-specific before global.",
+      "Current main's ValidationHelper.IsDuplicateMapping still matches when either TargetApp or appName is empty.",
+      "The related merged fix for #49710 addresses row identity/inactive-entry handling but the current scope predicate remains unchanged."
+    ],
+    "recommended_action": "Approve a scoped duplicate-check correction with coverage for global mappings and app-specific overrides.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-01T15:26:43Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current upstream fix covers the global-versus-app-specific scope comparison. The merged #50265 work is related but current main retains the false-positive predicate."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Compare Keyboard Manager duplicate mappings within the same app scope",
+      "root_cause": "ValidationHelper.IsDuplicateMapping treats an empty TargetApp or empty appName as a wildcard. When the edited mapping is global, app-specific rows with the same trigger are counted as duplicates even though they are distinct scopes.",
+      "plan": [
+        "Normalize each mapping's scope so a global mapping is distinct from every named app-specific scope.",
+        "Change duplicate detection to compare shortcut triggers only within equivalent scopes while retaining the existing editingId exclusion.",
+        "Add editor validation tests showing that global mappings coexist with same-trigger app-specific overrides, while same-scope duplicates remain rejected."
+      ],
+      "verification": [
+        "Run focused Keyboard Manager editor validation tests for global/app-specific scopes, same-scope duplicates, and edit-mode identity exclusion.",
+        "In the new editor, edit a global mapping with one or more app-specific overrides using the same trigger; confirm no false duplicate error and confirm a true same-scope duplicate is still rejected."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The current predicate directly explains the reported false positive and the report provides a concrete configuration and screenshot; the intended distinct-scope behavior is documented in the engine guidance."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The new Keyboard Manager editor rejects an existing global shortcut when app-specific mappings use the same trigger, even though those mappings are meant to take precedence only in their matching applications.",
+    "known_information": [
+      "The issue reports PowerToys 0.101.2362 with the new WinUI 3 editor enabled.",
+      "The supplied configuration contains a global Chrome action and app-specific overrides for code.exe and parsecd.exe, all using Ctrl+Shift+N.",
+      "The reporter included a screenshot of the validation error and linked the Keyboard Manager engine documentation describing app-specific precedence.",
+      "The current main branch duplicate predicate in src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/ValidationHelper.cs includes empty-app wildcard comparisons."
+    ],
+    "inferences": [
+      "The false positive is caused by scope comparison rather than duplicate trigger data because the rows have distinct target-app scopes.",
+      "The related #49710/#50265 edit-mode fix does not cover this particular scope mismatch; current source still contains the broad predicate."
+    ],
+    "analysis": "The reported scope combination is valid according to the engine's precedence behavior, while the editor's current predicate treats the global mapping as overlapping every app-specific mapping. The fix should preserve real duplicate checks within one scope and change only the scope-equivalence test.",
+    "initial_investigation": [
+      "Inspected current main's ValidationHelper.IsDuplicateMapping: active entries are filtered and the edited row can be excluded by identity, but the remaining predicate still treats either empty app name as a match.",
+      "Checked the linked #49710 and merged PR #50265 as related history; current main still has the empty-app wildcard comparison.",
+      "The issue body distinguishes #48749's duplicate-on-save symptom from this editor validation false positive."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 48749,
+        "url": "https://github.com/microsoft/PowerToys/issues/48749",
+        "relationship": "Reporter distinguishes its duplicate-on-save symptom from this false-positive validation report."
+      },
+      {
+        "number": 49710,
+        "url": "https://github.com/microsoft/PowerToys/issues/49710",
+        "relationship": "Related edit-mode duplicate validation issue; the current scope comparison still has the reported wildcard behavior."
+      }
+    ],
+    "related_prs": [
+      {
+        "number": 50265,
+        "url": "https://github.com/microsoft/PowerToys/pull/50265",
+        "relationship": "Merged fix for related edit-mode identity and inactive-entry handling; it does not remove the current global/app scope wildcard."
+      }
+    ],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-keyboard-manager-scope-fix-50933",
+      "type": "approve_design",
+      "label": "Approve scoped duplicate validation fix"
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Design fix",
+    "detail": "Current main still counts app-specific mappings as duplicates while editing a global shortcut."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Approve scoped duplicate validation fix",
+    "reason": "The source predicate and reported configuration align; preserve same-scope duplicate protection while separating global and app-specific scopes."
+  }
+}

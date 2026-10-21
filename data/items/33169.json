@@ -1,33 +1,104 @@
 {
+  "schemaVersion": 5,
   "number": 33169,
   "kind": "issue",
+  "title": "[PowerToys Run] - Crashes upon input",
+  "url": "https://github.com/microsoft/PowerToys/issues/33169",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-31T20:33:35Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Severity-Medium"
+  ],
+  "assignees": [],
+  "comments": 2,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The native heap-corruption event and diagnostic ZIP are already supplied, but the author reports that reinstalling and rebooting restored operation. Current recurrence and the first-query trigger are not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.81.1 crashes on the first character after boot; the event records ntdll.dll and exception 0xc0000374.",
+      "The author attached PowerToysReport_2024-05-30-23-14-19.zip.",
+      "The May 31 reply says a full reinstall and reboot worked, while noting earlier recurrence.",
+      "Related crash reports have differing findings; none confirms the corrupting allocation or plugin in this report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask whether the failure still occurs and request one fresh first-query sequence only if it does; use existing evidence rather than asking for the same ZIP again.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-31T20:33:35Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A native resource/interop lifetime defect during first-query work is a candidate PowerToys fix, but no matching concrete implementation or exact corrupting path has been established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate and correct a reproducible first-query native-resource failure",
+      "root_cause": "Low-confidence hypothesis: first-query plugin/result or icon initialization uses a native resource with invalid lifetime and heap corruption is later detected in ntdll. The faulting module and status alone cannot identify the corrupting code, and external components remain possible.",
+      "plan": [
+        "If recurrence is confirmed, inspect the already attached diagnostics and isolate the first-query plugin/interop path on a maintainer test profile.",
+        "Capture an appropriate native failure trace in a controlled reproduction and identify the first invalid access; do not treat ntdll as the cause or add a catch-all managed exception handler.",
+        "Only after ownership is established, correct the specific lifetime/ownership defect and add repeated cold-start/query regression coverage; redirect to the external owner if the first fault is outside PowerToys."
+      ],
+      "verification": [
+        "Repeated cold starts and first-character queries on the reproduced configuration complete without a crash.",
+        "Exercise plugin initialization, result icon load/disposal and clean shutdown; verify the reinstall workaround is not the only passing case."
+      ],
+      "confidence": {
+        "score": 25,
+        "level": "red",
+        "rationale": "A heap-corruption code identifies a failure class, not the corruptor; the author currently reports a successful workaround."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run crashed on first input after boot with native heap-corruption status, but the author later restored it by reinstalling and rebooting and has not supplied a subsequent recurrence.",
+    "known_information": [
+      "The report includes the exact PowerToys version, Windows module version, exception code and a diagnostic archive.",
+      "A bot similarity list and the author's recovery update are the entire two-comment discussion.",
+      "No Needs-Author-Feedback label or prior human evidence request is present."
+    ],
+    "inferences": [
+      "The existing event does not establish a managed query exception or a specific plugin defect.",
+      "A 2025 .NET 9/icon-related crash in #37254 is not automatically the same as this 0.81.1 failure."
+    ],
+    "analysis": "A current recurrence check determines whether maintainer reproduction is still warranted. Do not represent this draft ask as an already posted author wait or promise that an unrelated icon workaround fixes it.",
+    "initial_investigation": [
+      "Read the complete body and both comments; exhausted timeline references and inspected #34109, #37254 and #39222.",
+      "Related reports lead to different duplicate/fix paths, including a .NET 9 compatibility case; none demonstrates coverage for this heap-corruption event.",
+      "Inspected current PowerLauncher/App.xaml.cs exception registration; managed handler registration is not evidence it can recover native heap corruption.",
+      "No native dump was analyzed and the supplied diagnostic ZIP contents were not inspected in this lightweight pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the first-input crash recurs after the reported successful reinstall, and the exact build if it does.",
+        "why_needed": "Determines whether there is an active reproducer rather than a historical recovered installation.",
+        "how_to_collect": "Confirm the result on a currently supported build and quote the version from PowerToys General settings; do not reinstall again solely for this check."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "If still affected, one cold-start-to-first-character sequence and whether restart of PowerToys alone restores operation.",
+        "why_needed": "Distinguishes first-start initialization from general query processing and selects the maintainer reproduction.",
+        "how_to_collect": "List boot/sign-in, PowerToys startup, shortcut invocation, first character and observed recovery behavior; omit personal search text."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve first-query crash isolation plan"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm crash recurrence after reinstall",
+      "comment": {
+        "body": "Thanks for the Event Viewer entry showing 0xc0000374, the archive you already attached, and the update that a full reinstall and reboot restored Run. The ntdll entry identifies heap-corruption detection but does not identify which component caused it, so we should not assume a particular plugin fix. Could you confirm:\n1. Has the first-input crash recurred since that recovery? If yes, please include the exact currently affected PowerToys version from General settings; there is no need to reinstall again for this check.\n2. If it still occurs, please list one sequence from sign-in/PowerToys startup through the shortcut and first typed character, and whether restarting PowerToys alone restores operation. Use non-personal test text.\nYour existing ZIP and event details are acknowledged; we are not asking you to resend that same evidence."
+      }
+    }
+  ]
 }

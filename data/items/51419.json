@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51419,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:39:41.086Z",
+  "evaluated_at": "2026-10-20T16:39:41.086Z",
+  "source_updated_at": "2026-10-20T12:57:55Z",
+  "updated_at": "2026-10-20T12:57:55Z",
+  "state": "open",
+  "title": "CmdPal: Reload stops extensions before removing their commands (EXT26.T1)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51419",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:39:41.086Z",
+    "evidence": [
+      "The isolated test reproduced registry mutation after first disposal and left commands/bands published.",
+      "The issue says fixing enumeration alone does not fix stop-before-clear ordering.",
+      "Current ReloadAllCommandsAsyncCore awaits service stop before local retirement."
+    ],
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "rationale": "The report distinguishes remote-stop ordering from registry enumeration and includes an isolated mutation case leaving commands/bands published. The local-retirement-before-remote-stop correction is independently testable.",
+    "source_updated_at": "2026-10-20T12:57:55Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was found by focused issue-number search; treat the reported mechanism as a hypothesis and validate before implementation.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "With commands/bands from two providers, block or fail the first stop and verify local retirement precedes its completion.",
+        "Mutate the registry during stop and verify later providers are still attempted.",
+        "Perform a later healthy reload and confirm new commands/bands load."
+      ],
+      "root_cause": "Reload awaits potentially failing remote stop before retiring callbacks and published items; if stop blocks or aborts, local cleanup is delayed or skipped.",
+      "plan": [
+        "Close admission to old-load updates and snapshot provider lifetimes being retired.",
+        "Retire callbacks and remove old commands/bands locally before remote stop calls.",
+        "Attempt remote cleanup independently so one failure does not block reload recovery.",
+        "Test stop failure/hang, registry mutation and later healthy reload."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "An isolated mutation case and source ordering support the defect; blocked stop and recovery need focused tests."
+      },
+      "title": "Correct the reported Command Palette extension lifecycle failure"
+    }
+  ],
+  "issue_context": {
+    "analysis": "The report distinguishes remote-stop ordering from registry enumeration and includes an isolated mutation case leaving commands/bands published. The local-retirement-before-remote-stop correction is independently testable.",
+    "summary": "CmdPal reload stops remote extensions before retiring their published commands and bands, so failed or blocked stop can leave stale items active.",
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "known_information": [
+      "The isolated test reproduced registry mutation after first disposal and left commands/bands published.",
+      "The issue says fixing enumeration alone does not fix stop-before-clear ordering.",
+      "Current ReloadAllCommandsAsyncCore awaits service stop before local retirement."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed current state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and relevant related-issue status; no upstream code or public issue action was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "id": "issue-51419-approve-design",
+      "label": "Approve CmdPal lifecycle fix investigation",
+      "confirm": true,
+      "design": {
+        "title": "Correct the reported Command Palette extension lifecycle failure"
+      },
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "Two controllable providers with published commands/bands and a stop failure/block seam."
+        ],
+        "module": "Command Palette extension reload",
+        "expected_result": "Local items/callbacks are retired regardless of remote stop failure and later reload succeeds.",
+        "steps": [
+          "1. Load two providers and confirm commands/bands are published.",
+          "2. Begin reload while the first provider's stop blocks or throws; inspect local retirement.",
+          "3. Mutate the registry during stop, verify remaining attempts, then run a healthy reload."
+        ]
+      },
+      "id": "issue-51419-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal lifecycle failure"
+    }
+  ]
+}

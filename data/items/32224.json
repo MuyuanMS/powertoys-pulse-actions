@@ -1,33 +1,86 @@
 {
+  "schemaVersion": 5,
   "number": 32224,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:40:00Z",
+  "evaluated_at": "2026-10-20T16:40:00Z",
   "source_updated_at": "2024-04-04T17:44:50Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32224",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Loopback classification fix candidate",
+    "detail": "The inspected duplicate-service exemption lists 127.0.0.1 but not the rest of the IPv4 loopback range."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Review loopback-range classification",
+    "reason": "The report and exact-string source guard identify a narrow correction and regression matrix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Multiple 127.0.0.2 entries are marked duplicate with loopback duplicates disabled. The inspected source uses an exact address list containing 127.0.0.1, directly explaining why 127.0.0.2 is not exempt.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body supplies the affected address, toggle state, screenshot and diagnostic archive.",
+      "HostsUILib/Helpers/DuplicateService.cs _loopbackAddresses contains 127.0.0.1, IPv6 loopback spellings and unspecified-address exceptions, but not the 127/8 range.",
+      "Initialize and SetDuplicate both use _loopbackAddresses.Contains, so correcting only one check would be incomplete.",
+      "Related closed issue 31483 concerns 0.0.0.0, already in the inspected list; it does not establish this range case is fixed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Review the narrow parsed-loopback predicate plan and validate both initialization and incremental duplicate updates.",
+    "evaluated_at": "2026-10-20T16:40:00Z",
     "source_updated_at": "2024-04-04T17:44:50Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The exact-string loopback exemption is narrower than the reported IPv4 loopback range; no linked implementation covers this report."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recognize the IPv4 loopback range in duplicate exemptions",
+      "root_cause": "DuplicateService's exact-string exemption recognizes 127.0.0.1 but not 127.0.0.2 or other 127/8 addresses, even when loopback-duplicate warnings are disabled.",
+      "plan": [
+        "Introduce one shared address-exemption predicate using IPAddress.TryParse and IPAddress.IsLoopback for actual loopbacks, retaining the existing explicit unspecified-address compatibility exemptions.",
+        "Use that predicate in both Initialize and SetDuplicate when LoopbackDuplicates is false; do not disable ordinary non-loopback duplicate detection.",
+        "Add focused tests for 127.0.0.1, 127.0.0.2, another 127/8 address, IPv6 loopback forms, unspecified addresses, invalid input and non-loopback controls.",
+        "Cover both initial file loading and incremental entry edits, with LoopbackDuplicates enabled and disabled."
+      ],
+      "verification": [
+        "Load two distinct hostnames mapped to 127.0.0.2 with loopback duplicate warnings off; neither receives the address-duplicate warning.",
+        "Turn the setting on and verify warnings return; repeat through add/edit/reload.",
+        "Verify same-type non-loopback duplicate-host and duplicate-address rules remain unchanged."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The exact reported address and setting map directly to two inspected exact-string guards that exclude it. No environment-specific state is required for this mechanism; runtime tests remain implementation work."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Hosts File Editor exempts 127.0.0.1 from optional duplicate warnings but still warns on other IPv4 loopback addresses such as 127.0.0.2.",
+    "known_information": [
+      "PowerToys 0.79.0, the exact address, toggle state, screenshot and ZIP are supplied.",
+      "The issue is open and unassigned.",
+      "The source's duplicate service uses a finite string list at both initial-load and duplicate-update boundaries."
+    ],
+    "inferences": [
+      "A shared parsed-loopback predicate should cover the reported range mismatch without broadening exemptions to unrelated addresses."
+    ],
+    "analysis": "This has a focused code-grounded correction, not an unowned handled issue or a need for more reporter logs. Existing unspecified-address behavior must be preserved intentionally.",
+    "initial_investigation": [
+      "Read the full issue, bot comment and cross-reference timeline.",
+      "Read DuplicateService.cs completely, including initial queue construction and duplicate flag assignment.",
+      "Compared the linked 0.0.0.0 and IPv4/IPv6 duplicate reports."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32224",
+      "type": "approve_design",
+      "label": "Review loopback-range fix plan",
+      "description": "Approve the focused lightweight correction plan; no fork implementation or full design convergence is claimed."
+    }
+  ]
 }

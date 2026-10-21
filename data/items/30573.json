@@ -1,33 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 30573,
   "kind": "issue",
+  "title": "Powertoys run not on focused on top",
+  "url": "https://github.com/microsoft/PowerToys/issues/30573",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-17T19:38:55Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The intermittent focus failure is credible but the report does not identify the foreground application or whether the window is obscured versus visible without keyboard focus. Current activation code already attempts foreground acquisition.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.76.2 was running elevated; clicking Run restores typing after some shortcut activations.",
+      "There are no comments, outstanding author requests or assignees.",
+      "Related #36074 was closed into open focus tracker #35860, not into this report; #32847 requires hover-to-activate, which is not established here."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request one failing activation sequence and current affected build, then isolate the focus handoff rather than assuming a missing Focus call.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-17T19:38:55Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys activation-path correction may be applicable, but no public fix is established for this intermittent sequence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Correct the failing Run foreground and keyboard-focus handoff",
+      "root_cause": "Hypothesis: activation loses the foreground handoff to the previously active application or a subsequent focus event, leaving the query box visible but inactive. A hidden/obscured window and hover-activation are competing explanations.",
+      "plan": [
+        "Reproduce the supplied foreground-application and shortcut sequence in MainWindow.xaml.cs, observing foreground HWND and query-box focus before and after activation.",
+        "Correct the confirmed ordering or re-entrant focus-loss path while preserving Windows foreground restrictions; do not add an unconditional topmost or repeated-focus loop.",
+        "Add a regression scenario for the identified app/activation sequence plus ordinary invocation, dismissal, elevated apps and hover-activation settings."
+      ],
+      "verification": [
+        "The reproduced shortcut invocation accepts the first typed character without a mouse click and without taking focus again after dismissal.",
+        "Normal Alt+Tab, Escape and repeated activation remain unchanged."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The symptom fits a focus handoff race, but the triggering sequence is absent and current code already calls Activate and focuses the query control."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run intermittently opens without accepting typing until clicked, despite PowerToys running as administrator.",
+    "known_information": [
+      "Reported build is 0.76.2 installed from GitHub.",
+      "The report says both not on top and needing a click to focus; those are not necessarily the same failure.",
+      "No foreground application, shortcut, recurrence steps or current-build confirmation is supplied."
+    ],
+    "inferences": [
+      "A foreground/focus transition is plausible, but there is no evidence of a universal missing focus operation.",
+      "Running elevated did not eliminate the original symptom; elevation alone is not a justified fix."
+    ],
+    "analysis": "A short failing sequence can distinguish obscured-window, inactive-textbox and hover-activation cases. The request is a draft, not an outstanding posted author obligation; pending_author remains false.",
+    "initial_investigation": [
+      "Read the entire report and confirmed there are no comments; exhausted timeline references and inspected #32847, #36074 and #35860.",
+      "Inspected src/modules/launcher/PowerLauncher/MainWindow.xaml.cs at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb: activation sends input then calls Activate, and several visibility/query paths already focus the query control.",
+      "Issue-number PR search found no matching fix; related issue titles do not prove duplicate identity.",
+      "No intermittent activation was reproduced."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "One failing invocation on a currently supported build, including the exact build, foreground application, shortcut and visible-window versus keyboard-focus behavior.",
+        "why_needed": "Distinguishes failed foreground activation from a hidden window or later focus theft, selecting the correct activation path.",
+        "how_to_collect": "Record the PowerToys version from General settings, then give numbered steps from the foreground application through shortcut invocation and the first attempted character; note whether the Run box is visible and whether clicking it restores typing."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused Run activation investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request failing Run activation sequence",
+      "comment": {
+        "body": "Thanks for explaining that Run sometimes needs a click before you can type, even with PowerToys 0.76.2 running as administrator. That establishes a focus symptom, but not whether the window is behind another app or visible with an inactive search box. Could you reproduce on a currently supported build and provide the exact PowerToys version plus numbered steps naming the foreground application and activation shortcut? After pressing the shortcut, please note whether the Run box is visible, where the first typed character goes, and whether clicking the box immediately restores typing. This will distinguish a foreground-activation failure from focus being taken back by another window; there is no need to repeat an administrator-mode test."
+      }
+    }
+  ]
 }

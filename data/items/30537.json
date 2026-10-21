@@ -2,32 +2,106 @@
   "number": 30537,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-09T08:14:50Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎨",
+    "label": "Run theme contrast needs isolation",
+    "detail": "The reporter supplies screenshots and diagnostics; the failure persists in a VM but not the main machine. No active assignee is present."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🎨",
+    "label": "Request VM theme comparison",
+    "reason": "Distinguish an application brush/theme mismatch from VM rendering behavior without requesting the existing ZIP again."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "30537-theme-comparison",
+      "type": "request_info",
+      "label": "Request VM theme comparison",
+      "comment": {
+        "body": "Thanks for the screenshots, the original attached archive, and the follow-up that 0.82.0 is still affected in the VM while the main machine works. The supplied evidence shows lost contrast, but does not tell us whether an explicit Run theme restores the brushes.\n\nPlease provide:\n1. In the affected VM on the latest stable PowerToys, test PowerToys Run's App theme as Light, Dark and Windows default, reopening Run after each change. Report which remain white-on-white, the tested PowerToys version, and the VM's Windows edition/build from winver.\n2. Name the VM platform and whether the failure happens at the VM console, through Remote Desktop, or both. Please compare only the access modes already available to you.\n\nThis separates a theme/resource pairing problem from a VM/session rendering problem. There is no need to resend the 2023 ZIP for this comparison."
+      }
+    },
+    {
+      "id": "30537-theme-plan",
+      "type": "approve_design",
+      "label": "Approve Run contrast investigation",
+      "note": "Candidate plan only; resolve the theme/session discriminator before changing brushes."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "VM-only persistence and the existing screenshots support a rendering/theme investigation, but the current explicit-theme comparison is missing.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original 0.76.2 report includes a diagnostic ZIP and expected/actual screenshots.",
+      "The author confirms 0.82.0 on a VM but never on the main machine: https://github.com/microsoft/PowerToys/issues/30537#issuecomment-2216757337",
+      "Related #36414 includes an explicit Dark-theme workaround, but concerns black-on-black on later Windows/WPF builds and is not proof of identical causation."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Collect the VM's explicit-theme/session comparison, then test matching foreground/background resource updates.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-09T08:14:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A theme application correction is plausible; no directly covering fixing PR was identified. The WPF migration is relevant history, not proof that this VM symptom is fixed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply a consistent Run foreground/background theme pair",
+      "root_cause": "Hypothesis: the VM's theme/session path applies a foreground resource set without a matching usable window background, leaving white text on a white surface. A graphics/composition failure remains an alternative.",
+      "plan": [
+        "Use the requested Light/Dark/Windows-default matrix to reproduce on the affected Windows/VM configuration; compare console and remote sessions where available.",
+        "Inspect PowerLauncher/Helper/ThemeManager.cs SetSystemTheme and the corresponding Run text resources; if the mismatch is confirmed, update background and foreground together for that OS/theme path rather than forcing a universal color.",
+        "Add coverage for explicit theme changes, Windows default, high contrast and session reconnect, retaining accessibility colors and avoiding a global software-rendering workaround without evidence."
+      ],
+      "verification": [
+        "Verify input text, query results and selected-result contrast in all three theme settings on the affected VM and a physical-machine control.",
+        "Test Windows 10/11 theme handling and high contrast; compare the original screenshots and ensure reopening Run does not reset the repair."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The visible contrast failure is established, but theme resources and VM composition have not yet been distinguished."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run opens normally but white-on-white rendering makes its input unusable. It persisted from 0.76.2 to 0.82.0 on the reporter's VM while a main machine was unaffected.",
+    "known_information": [
+      "The original report already includes screenshots and PowerToysReport_2023-12-20-07-39-23.zip.",
+      "The only issue comment is the reporter's VM/main-machine comparison.",
+      "Live issue remains an unassigned open Issue-Bug."
+    ],
+    "inferences": [
+      "A VM-specific rendering path or a mismatched theme resource pair could explain the machine dependence.",
+      "The Dark-theme workaround in #36414 is a useful discriminator, not evidence that the older white-on-white report is a duplicate."
+    ],
+    "analysis": "Ask for a narrowly scoped theme matrix rather than another generic log package. Current Run has changed WPF theming since the report, so a current-build contrast comparison must guide any patch.",
+    "initial_investigation": [
+      "Read the complete report/comment and enumerated all cross-referenced reports.",
+      "Read #36414's theme comparisons and workaround; reviewed merged migration PR #36215, which does not claim to fix #30537.",
+      "Read public main PowerLauncher/Helper/ThemeManager.cs: SetSystemTheme chooses ThemeMode and OS-specific backgrounds. No current failing branch was proven.",
+      "A direct issue-number PR search did not return a covering fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Light/Dark/Windows-default results on the latest stable build, including its version and VM Windows edition/build.",
+        "why_needed": "Determines whether a specific resource path fails and whether the historical UI regression persists.",
+        "how_to_collect": "Change PowerToys Run App theme, reopen Run after each change, and report the version plus winver output."
+      },
+      {
+        "evidence_type": "other_software",
+        "information": "VM platform and whether console versus Remote Desktop access changes the rendering.",
+        "why_needed": "Separates a VM/session graphics issue from a theme-resource problem.",
+        "how_to_collect": "Name the VM platform and compare existing console/remote access modes without installing additional software."
+      }
+    ]
   }
 }

@@ -3,47 +3,107 @@
   "number": 47806,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-17T17:11:58Z",
+  "generated_at": "2026-10-20T16:45:13Z",
+  "evaluated_at": "2026-10-20T16:45:13Z",
+  "source_updated_at": "2026-10-16T11:30:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
+    "label": "Design candidate",
+    "detail": "The original report says Keyboard Manager shortcut enablement reverts after closing Settings. A later user describes remaps that appear enabled but stop working, with toggling restoring them. These symptoms may share state persistence/application but the responsible path is unconfirmed.",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked work",
-    "reason": "Existing linked or owner-backed follow-up should move first."
-  },
-  "actions": [],
+  "next_action": "Reproduce setting persistence and runtime remap-state behavior separately on a current build.",
+  "actions": [
+    {
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "label": "Review Keep Keyboard Manager enablement consistent across UI and runtime",
+      "primary": true,
+      "type": "approve_design",
+      "confirm": true
+    },
+    {
+      "label": "Reproduce Keyboard Manager enablement state",
+      "reproduce": {
+        "steps": [
+          "Enable the reported setting, close/reopen Settings, and record whether it remains enabled.",
+          "Restart the runner and repeat.",
+          "Separately test the Chrome-limited remaps; if one stops working while shown enabled, toggle it once and compare."
+        ],
+        "prerequisites": [
+          "Use a non-critical test remap and preserve settings.",
+          "For second scenario use the reported Chrome-limited Ctrl+W and Ctrl+Shift+P mappings if available."
+        ],
+        "expected_result": "Persisted toggle state and actual runtime remap behavior match.",
+        "version_requirements": "Current supported build; include v0.100.2 scenario only if available",
+        "module": "Keyboard Manager"
+      },
+      "type": "reproduce"
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
+    "recommended_action": "Reproduce setting persistence and runtime remap-state behavior separately on a current build.",
+    "source_updated_at": "2026-10-16T11:30:51Z",
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:45:13Z",
     "evidence": [
-      "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
+      "Original steps: toggle shortcuts to programs on, close Settings, reopen; setting is off.",
+      "A 2026-10-16 v0.100.2 report says disabled remaps sometimes stop working while shown enabled; toggling restores them.",
+      "The later report involves two Chrome-limited remaps and does not confirm the same cause."
     ],
-    "recommended_action": "Existing linked or owner-backed follow-up should move first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-17T17:11:58Z"
+    "rationale": "The original report says Keyboard Manager shortcut enablement reverts after closing Settings. A later user describes remaps that appear enabled but stop working, with toggling restoring them. These symptoms may share state persistence/application but the responsible path is unconfirmed."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Issue is tracked, duplicate, external, or owned elsewhere."
+    "rationale": "A PowerToys code change is plausible; uncertainty and confidence are stated in the proposed plan.",
+    "status": "proposed"
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Verify global enablement persists through Settings reopen and runner restart.",
+        "Verify remaps function and the UI accurately reflects runtime state."
+      ],
+      "confidence": {
+        "level": "red",
+        "rationale": "The symptoms are concrete, but reports cover different toggles without a shared confirmed cause.",
+        "score": 42
+      },
+      "plan": [
+        "Reproduce global shortcut toggle and compare its value before and after reopening Settings and restarting the runner.",
+        "Separately reproduce Chrome-limited remap failure and compare persisted configuration with runtime state.",
+        "Trace the confirmed divergence; unify causes only if evidence supports it.",
+        "Fix the confirmed state boundary and add regression tests."
+      ],
+      "title": "Keep Keyboard Manager enablement consistent across UI and runtime",
+      "root_cause": "Red hypothesis: configuration may not persist or apply consistently to the runtime engine; toggle reversion and intermittently inactive mappings may be separate faults."
+    }
+  ],
   "issue_context": {
-    "summary": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
-    "known_information": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
-    "inferences": [
-      "Behavior consistent with reported symptoms in the affected component."
+    "analysis": "Two actionable observations exist but no source-grounded cause. Reproduce independently before implementation; do not assume the per-remap report is the same defect.",
+    "initial_investigation": [
+      "Reviewed original steps, attached UI screenshots, and latest comment describing intermittent per-remap behavior.",
+      "No linked fix PR or duplicate was established."
     ],
-    "analysis": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
-    "initial_investigation": "Reviewed issue description, labels, and module ownership.",
-    "information_gaps": []
-  }
+    "inferences": [
+      "The UI setting and runtime enablement could diverge, but a shared persistence cause is unconfirmed."
+    ],
+    "information_gaps": [],
+    "known_information": [
+      "The issue says the enable/disable toggle is Off again after reopening Settings.",
+      "A separate recent commenter reports disabled remaps stop working while the UI shows enabled.",
+      "The latest report specifies two Chrome-limited mappings and PowerToys 0.100.2."
+    ],
+    "summary": "Keyboard Manager shortcut enablement may not persist or may desynchronize from runtime state; current reports do not establish whether these are one defect."
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/47806",
+  "title": "Keyboard Manager isn’t saving the shortcut enable/disable toggle.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 7
 }

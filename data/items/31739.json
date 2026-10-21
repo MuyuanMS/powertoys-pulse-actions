@@ -2,32 +2,116 @@
   "number": 31739,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-19T18:30:19Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce launch-context difference",
+    "detail": "WinGet-linked executables fail only in Terminal launched by PowerToys; direct launch and a resolved executable target work. No active owner or linked fix is present."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare Terminal activation contexts",
+    "reason": "The public report already provides a discriminating symlink/direct-target and launch-route comparison."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "31739-launch-context-repro",
+      "type": "reproduce",
+      "label": "Reproduce WinGet link traversal failure",
+      "reproduce": {
+        "title": "Compare WinGet executable links under PowerToys and direct Terminal activation",
+        "module": "PowerToys Run / Keyboard Manager app launch",
+        "version_requirement": "Latest stable first; historical PowerToys 0.79.0/0.82.1, WinGet 1.7.10582, Terminal 1.19 and PowerShell 7.4 references",
+        "prerequisites": [
+          "Disposable Windows test account with Windows Terminal, PowerShell and a benign WinGet-installed package that exposes an executable link, such as fnm.",
+          "Close every Terminal process between routes so existing-window/process reuse does not hide the activation context.",
+          "Keep user identity and elevation constant and do not disable reparse-point trust protections."
+        ],
+        "steps": [
+          "Install a test package through WinGet; record the generated link target and verify invoking the link works in a Terminal opened directly from Start.",
+          "Close Terminal fully; open it through PowerToys Run and invoke the same link with the same arguments, recording whether 'untrusted mount point' appears.",
+          "In that same PowerToys-launched shell, invoke the resolved target directly; compare success without modifying or replacing the link.",
+          "Repeat with a Keyboard Manager shortcut launching wt.exe as reported by the commenter; compare launch route, token/elevation, inherited environment and relevant process mitigation state using maintainer tools.",
+          "Repeat on the current stable build before applying any historical launch-path correction."
+        ],
+        "expected_result": "The same supported WinGet executable link works across activation routes. The trace must distinguish inherited launch context from PATH or executable-association errors before a patch is selected."
+      }
+    },
+    {
+      "id": "31739-launch-plan",
+      "type": "approve_design",
+      "label": "Approve launch-context investigation",
+      "note": "Conditional plan; preserve Windows trust and elevation checks. No weakening of reparse-point security is proposed."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report already supplies package/link, Terminal activation route, error text and direct-launch control. Maintainer-side process-context comparison is more useful than another log request.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report contrasts PowerToys Run activation with direct Terminal and Win+X activation.",
+      "The follow-up reproduces on 0.82.1, including Keyboard Manager launching wt.exe, and says the resolved target works: https://github.com/microsoft/PowerToys/issues/31739#issuecomment-2238146740",
+      "Live issue is open and unassigned; no timeline-linked fix or direct issue-number PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the controlled activation/link matrix and identify the inherited context difference before implementing the candidate.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-19T18:30:19Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys app-activation compatibility change may be applicable; no existing concrete fix attempt was identified in the reviewed public evidence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve supported shell launch semantics for WinGet executable links",
+      "root_cause": "Hypothesis: PowerToys-launched Terminal inherits a launch context or process policy that rejects traversal of the WinGet executable link, while direct shell activation does not. The specific token/mitigation difference is unconfirmed; direct-target success argues against a missing binary.",
+      "plan": [
+        "Reproduce with all Terminal processes closed between runs and compare direct, Run and Keyboard Manager activation while holding user/elevation constant.",
+        "Trace the matching program result activation and shared process-start helpers; inspect the actual token/mitigation/environment difference rather than assuming UseShellExecute alone causes it.",
+        "If the difference originates in PowerToys, use the supported Windows activation path that preserves intended user/elevation semantics and normal link traversal; do not disable trust checks or resolve every user command link as a workaround.",
+        "Add regression coverage for executable link versus target, direct versus packaged Terminal activation, spaces in paths and existing Terminal process reuse."
+      ],
+      "verification": [
+        "The same fnm link executes from all three activation routes without an untrusted-mount-point error.",
+        "Negative permission/trust cases still fail correctly, and no route unexpectedly elevates or changes user identity."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The route/link distinction is strong evidence, but no current process-context trace identifies the responsible PowerToys or OS boundary."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "WinGet-created executable links fail inside Terminal launched through PowerToys Run or Keyboard Manager, while direct Terminal launch and executing the resolved target work.",
+    "known_information": [
+      "Reported errors include 'untrusted mount point' and 'No application is associated'; the report gives exact package and tool versions.",
+      "The follow-up spans Windows PowerShell 5.1 and PowerShell 7.4.2 on PowerToys 0.82.1.",
+      "Live labels identify PowerToys Run and app compatibility; there is no assignee."
+    ],
+    "inferences": [
+      "A shared launch-context difference is more plausible than a Run search-index defect because Keyboard Manager also reproduces it.",
+      "The precise inherited token, policy or OS activation mechanism is not established."
+    ],
+    "analysis": "The report is already sufficiently discriminating for a local investigation. Ask maintainers to compare real process context, not reporters to perform security debugging or resend generic diagnostics.",
+    "initial_investigation": [
+      "Read the complete report and full follow-up, including the direct-target workaround.",
+      "Enumerated the public timeline and direct issue-number PR search; no linked fix was identified.",
+      "Located program activation and process-start helper ownership under src/modules/launcher; these are investigation entry points, not proof of the failing branch.",
+      "No executable-link or process-context experiment was run during this pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Current-build reproduction and the process-context difference between clean direct and PowerToys Terminal launches.",
+        "why_needed": "Selects the actual activation boundary without guessing at or weakening OS trust handling.",
+        "how_to_collect": "Maintainer executes the controlled launch matrix above with identical account/elevation and no pre-existing Terminal process."
+      }
+    ]
   }
 }

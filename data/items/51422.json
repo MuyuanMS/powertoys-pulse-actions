@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51422,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:39:41.086Z",
+  "evaluated_at": "2026-10-20T16:39:41.086Z",
+  "source_updated_at": "2026-10-20T12:57:55Z",
+  "updated_at": "2026-10-20T12:57:55Z",
+  "state": "open",
+  "title": "CmdPal: Stop failures leave the extension reference attached (EXT26.T4)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51422",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:39:41.086Z",
+    "evidence": [
+      "The report's isolated test reproduced a retained root when Dispose threw.",
+      "The issue says the liveness failure path was checked in ExtensionWrapper.",
+      "Current source contains ExtensionWrapper.SignalDispose and the cited wrapper file."
+    ],
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "rationale": "An isolated test reproduced a retained root after Dispose threw, and the report source-checks the liveness failure path. Local retirement should be separated from best-effort remote disposal.",
+    "source_updated_at": "2026-10-20T12:57:55Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was found by focused issue-number search; treat the reported mechanism as a hypothesis and validate before implementation.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Make IsRunning and Dispose throw independently; verify the old local reference is released.",
+        "Race teardown of an old instance with replacement and verify the replacement remains attached.",
+        "Run focused extension lifecycle tests."
+      ],
+      "root_cause": "SignalDispose performs liveness and remote Dispose before clearing the local reference; an exception bypasses the clear and may keep an obsolete root attached.",
+      "plan": [
+        "Detach the specific old extension reference atomically before best-effort remote liveness/disposal.",
+        "Ensure delayed teardown of an old object cannot clear a newer replacement.",
+        "Handle throwing liveness and Dispose independently while preserving idempotency and error reporting.",
+        "Test both exception paths and start/replacement races."
+      ],
+      "confidence": {
+        "score": 75,
+        "level": "yellow",
+        "rationale": "The retained-root case is reproduced and ordering is visible; replacement and error-path idempotency need explicit tests."
+      },
+      "title": "Correct the reported Command Palette extension lifecycle failure"
+    }
+  ],
+  "issue_context": {
+    "analysis": "An isolated test reproduced a retained root after Dispose threw, and the report source-checks the liveness failure path. Local retirement should be separated from best-effort remote disposal.",
+    "summary": "ExtensionWrapper may retain an old extension root when liveness probing or remote Dispose throws, interfering with cleanup and replacement.",
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "known_information": [
+      "The report's isolated test reproduced a retained root when Dispose threw.",
+      "The issue says the liveness failure path was checked in ExtensionWrapper.",
+      "Current source contains ExtensionWrapper.SignalDispose and the cited wrapper file."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed current state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and relevant related-issue status; no upstream code or public issue action was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "id": "issue-51422-approve-design",
+      "label": "Approve CmdPal lifecycle fix investigation",
+      "confirm": true,
+      "design": {
+        "title": "Correct the reported Command Palette extension lifecycle failure"
+      },
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "IExtensionWrapper test double with throwing liveness and Dispose calls."
+        ],
+        "module": "Command Palette extension lifecycle",
+        "expected_result": "Remote errors do not retain the old extension or detach a newer replacement.",
+        "steps": [
+          "1. Attach an extension and call SignalDispose with Dispose configured to throw.",
+          "2. Repeat with IsRunning throwing.",
+          "3. Delay old-instance teardown while installing a replacement and inspect the retained reference."
+        ]
+      },
+      "id": "issue-51422-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal lifecycle failure"
+    }
+  ]
+}

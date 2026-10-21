@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50966",
+  "number": 50966,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-03T03:29:32Z",
+  "title": "Mouse Without Boarders won't move to other machine while Full Screen Windowed Application is running",
+  "url": "https://github.com/microsoft/PowerToys/issues/50966",
+  "author": "wrmarinelli",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue identifies the fullscreen-windowed mode, the affected games, and the failed transition between two Mouse Without Borders machines. A diagnostic ZIP is attached. The report is sufficient for a maintainer to reproduce, but does not identify whether the game captures the cursor or MWB misses the boundary transition.",
+    "evidence": [
+      "The reporter says MWB previously allowed cursor and keyboard transfer while a fullscreen-windowed game was focused.",
+      "The current failure is that the pointer cannot move to the secondary PC while Final Fantasy XIV or Star Trek Online is focused.",
+      "The issue includes a PowerToys diagnostic ZIP and identifies PowerToys 0.111.2 on Windows 11 Pro."
+    ],
+    "recommended_action": "Reproduce with a paired MWB setup and compare the fullscreen-windowed game path with a normal window before selecting a cursor-boundary fix.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-03T03:29:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No fix attempt is linked. A low-confidence hypothesis is that the fullscreen-windowed game's cursor/focus behavior prevents Mouse Without Borders from completing its screen-edge handoff."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Mouse Without Borders screen-edge handoff with fullscreen-windowed apps",
+      "root_cause": "A fullscreen-windowed application may capture or confine the primary PC's cursor, or otherwise alter focus so Mouse Without Borders does not process the boundary crossing; the report does not establish which behavior occurs.",
+      "plan": [
+        "Reproduce the failure with the named game in fullscreen-windowed mode and compare it with the same game windowed and with a normal foreground application.",
+        "Trace the Mouse Without Borders cursor-boundary and focus/input-sharing path while the game is active to determine whether the cursor is confined or the handoff event is missed.",
+        "If MWB suppresses a valid boundary transition, adjust that path without disrupting intentional game cursor confinement and add regression coverage for fullscreen-windowed and ordinary windows."
+      ],
+      "verification": [
+        "On a paired Mouse Without Borders setup, move the cursor from the primary PC to the secondary PC with Final Fantasy XIV or Star Trek Online focused in fullscreen-windowed mode.",
+        "Verify the same handoff in ordinary windowed mode and confirm that keyboard/mouse control returns correctly after moving back."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The failure mode is concrete, but no cursor trace or controlled comparison distinguishes game cursor capture from an MWB boundary/focus regression."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders stops transferring the pointer to a paired PC while a fullscreen-windowed game is focused, although the reporter says the same workflow previously worked.",
+    "known_information": [
+      "The reporter identifies PowerToys 0.111.2, Windows 11 Pro, and Final Fantasy XIV and Star Trek Online as affected applications.",
+      "The stated mode is fullscreen-windowed, not fullscreen-exclusive.",
+      "A PowerToys diagnostic ZIP is attached; there are no issue comments."
+    ],
+    "inferences": [
+      "The game may be capturing or confining the pointer, or MWB may miss a screen-edge transition while the game owns focus.",
+      "The report does not yet distinguish an application-specific cursor behavior from a regression in Mouse Without Borders."
+    ],
+    "analysis": "The report supplies a concrete, maintainer-reproducible scenario and a diagnostic archive, so another generic request for logs is unnecessary. Reproduce the cursor handoff and compare game/window modes before choosing a code change.",
+    "initial_investigation": [
+      "Reviewed the complete issue report and its diagnostic ZIP link; no comments or linked duplicate/fix are present.",
+      "The owning implementation is Mouse Without Borders under src/modules/MouseWithoutBorders/App, particularly its Core and Service areas; no current evidence pinpoints the failing cursor or focus branch."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-mwb-fullscreen-handoff-50966",
+      "type": "approve_design",
+      "label": "Approve fullscreen handoff investigation"
+    },
+    {
+      "id": "reproduce-mwb-fullscreen-windowed-handoff-50966",
+      "type": "reproduce",
+      "label": "Reproduce fullscreen-windowed MWB handoff",
+      "note": "Use the affected game's reported window mode and compare it with a normal foreground window.",
+      "reproduce": {
+        "title": "Test Mouse Without Borders cursor handoff during a game",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.111.2 on Windows 11 Pro, as reported",
+        "prerequisites": [
+          "Two Windows PCs connected and configured in Mouse Without Borders.",
+          "Final Fantasy XIV or Star Trek Online running on the primary PC in fullscreen-windowed mode; do not use fullscreen-exclusive mode."
+        ],
+        "steps": [
+          "With the game focused, move the pointer toward the configured screen edge leading to the secondary PC.",
+          "Observe whether the pointer and keyboard control transfer to the secondary PC.",
+          "Repeat with the game in ordinary windowed mode and with a normal application focused.",
+          "If available, compare the attached PowerToys report with the time of each attempted handoff."
+        ],
+        "expected_result": "The pointer crosses to the secondary PC and MWB transfers keyboard/mouse control as it does with a normal foreground application.",
+        "actual_to_confirm": "Whether the game confines the pointer or the MWB edge/focus path fails to initiate the handoff."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce fullscreen MWB handoff",
+    "detail": "The game and window mode are identified; a controlled comparison will distinguish cursor capture from an MWB handoff failure."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce fullscreen-windowed MWB handoff",
+    "reason": "Compare the named game modes and ordinary-window handoff before selecting a fix."
+  }
+}

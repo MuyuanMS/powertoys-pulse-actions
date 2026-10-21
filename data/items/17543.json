@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 17543,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:44:00Z",
+  "evaluated_at": "2026-10-20T16:44:00Z",
   "source_updated_at": "2024-03-29T19:59:37Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/17543",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproduce layout spacing reset",
+    "detail": "Assigned investigation and supplied archives do not establish a fix; later reports include sleep and editor/runtime disagreement."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Trace persisted versus active spacing",
+    "reason": "Distinguish layout identity migration from stale runtime state before changing persistence."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report and follow-ups supply spacing settings, an edit/apply sequence and archives. The original assignment is not evidence of active implementation, and the later no-virtual-desktop case prevents treating desktop-ID migration as proven.",
     "evidence": [
-      "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+      "Priority Grid spacing disabled or set to zero later returns on PowerToys 0.57/0.58 across Windows 10/11.",
+      "The requested diagnostic archive was supplied; thirteen comments include a maintainer desktop-ID hypothesis, overlay/editor disagreement and sleep-related behavior.",
+      "AppliedLayouts.cpp loads/saves layouts and SyncVirtualDesktops can replace saved work-area desktop identifiers and copy layouts.",
+      "FancyZones recreates work areas on display/desktop changes; the shared symptom with 10379 is not sufficient to merge their different trigger sequences."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Use the supplied edit sequence and a desktop/sleep matrix to capture active layout ID and spacing alongside persisted settings; coordinate with the assigned maintainer.",
+    "evaluated_at": "2026-10-20T16:44:00Z",
     "source_updated_at": "2024-03-29T19:59:37Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete linked fix was found. A conditional layout-state correction can be investigated without asking for another generic archive."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve applied spacing through layout-state transitions",
+      "root_cause": "Unconfirmed: virtual-desktop/work-area identity reconciliation may select different saved layout settings, or a recreated work area may retain stale spacing despite correct saved settings. Later no-desktop reports prevent assuming only the first mechanism.",
+      "plan": [
+        "Reproduce disabled/zero spacing and collect active work-area/layout IDs, runtime spacing and corresponding persisted applied/custom layout records before and after the trigger.",
+        "Compare virtual-desktop create/switch/delete, ordinary sleep/resume and editor save without desktop changes.",
+        "If identity reconciliation chooses a default or unrelated record, preserve the matched layout's explicit spacing through migration; if persisted settings remain correct, repair runtime reload instead.",
+        "Add focused tests for the confirmed transition and preserve existing per-desktop/per-monitor layout independence."
+      ],
+      "verification": [
+        "Zero/disabled spacing survives desktop transitions and sleep/resume.",
+        "Editor display, persisted settings and actual zone overlay agree after apply.",
+        "Nonzero custom spacing and different layouts on separate desktops remain unchanged."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "Specific source transitions and supplied reports narrow the investigation, but differing later triggers and runtime/editor disagreement leave persistence versus reload unresolved."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones Priority Grid can restore spacing after it is disabled; the discussion broadens from desktop identity changes to sleep and stale active layout state.",
+    "known_information": [
+      "The issue is assigned and includes thirteen comments and already-supplied diagnostics.",
+      "A maintainer suggested virtual-desktop identity handling, but no linked implementation proves coverage.",
+      "Later reports say the editor can still show spacing off and that the symptom can occur without virtual desktops."
+    ],
+    "inferences": [
+      "The same visible reset can come from selecting a different saved layout or failing to refresh the active work area; they require different fixes."
+    ],
+    "analysis": "An assignee alone does not make this handled. Repeating the historical archive request is less useful than tracing persisted and runtime state through the supplied sequence.",
+    "initial_investigation": [
+      "Read the complete report, all thirteen comments and obvious cross-references.",
+      "Read AppliedLayouts LoadData/SaveData and virtual-desktop reconciliation.",
+      "Checked FancyZones display-change and work-area initialization paths."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-17543",
+      "type": "approve_design",
+      "label": "Review spacing-state investigation",
+      "description": "Coordinate with the assigned maintainer before approving the conditional correction plan."
+    },
+    {
+      "id": "reproduce-17543",
+      "type": "reproduce",
+      "label": "Reproduce spacing across layout transitions",
+      "reproduce": {
+        "module": "FancyZones",
+        "prerequisites": [
+          "Use a current stable build and an instrumented development build; back up FancyZones settings.",
+          "Prepare Priority Grid with spacing disabled/zero, another layout with visible nonzero spacing, and two virtual desktops."
+        ],
+        "steps": [
+          "Apply zero-spacing Priority Grid using the public edit sequence and compare editor, overlay and persisted records.",
+          "Switch/create/delete virtual desktops and repeat overlay checks without editing settings.",
+          "Repeat sleep/resume with a single desktop, then with multiple desktops.",
+          "Record active layout/work-area identity and saved spacing at the first divergence; restart FancyZones to distinguish stale runtime state."
+        ],
+        "expected_result": "The explicit spacing choice stays consistent between the editor, saved layout and actual overlay through each transition."
+      }
+    }
+  ]
 }

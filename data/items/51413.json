@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51413,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:41:12.492Z",
+  "evaluated_at": "2026-10-20T16:41:12.492Z",
+  "source_updated_at": "2026-10-20T01:50:11Z",
+  "updated_at": "2026-10-20T01:50:11Z",
+  "state": "open",
+  "title": "CmdPal: Late startup can publish an uninstalled extension (EXT26.E4)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51413",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "rationale": "The issue reports isolated late-notification and completed-task/canceled-token tests. The service event path is tested, but UI/manager non-resurrection still needs verification.",
+    "source_updated_at": "2026-10-20T01:50:11Z",
+    "evidence": [
+      "Isolated tests reproduced late notification after removal and a completed activation task with a canceled token.",
+      "The report says the manager's event-time token does not identify the activation lifetime.",
+      "StartExtensionWhenReadyAsync creates and publishes a wrapper after awaiting activation; the final registration-lifetime synchronization is the key gap."
+    ],
+    "evaluated_at": "2026-10-20T16:41:12.492Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "status": "actionable_design"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "Late notification and cancellation edge are reproduced in isolated tests; synchronization with actual UI publication remains untested.",
+        "level": "yellow",
+        "score": 75
+      },
+      "verification": [
+        "Hold activation beyond initial timeout, remove provider, release activation and verify no stale event or commands appear.",
+        "Repeat with same-ID replacement and ensure old results cannot overwrite or remove it.",
+        "Pass completed activation with canceled token and verify cancellation."
+      ],
+      "plan": [
+        "Carry the activation's provider-registration lifetime through initialization and publication.",
+        "Recheck cancellation/current registration after initialization and synchronize with removal/replacement.",
+        "Clean rejected results and handle completed-task/canceled-token cases consistently.",
+        "Test uninstall during activation, same-ID replacement and manager/UI non-resurrection."
+      ],
+      "root_cause": "The delayed-start path initializes and publishes after activation without rechecking original cancellation/registration lifetime; removal or replacement can be followed by obsolete OnProviderAdded.",
+      "title": "Investigate the reported PowerToys behavior"
+    }
+  ],
+  "issue_context": {
+    "summary": "Delayed activation can publish a provider after uninstall/removal because cancellation and registration lifetime are not rechecked before publication.",
+    "known_information": [
+      "Isolated tests reproduced late notification after removal and a completed activation task with a canceled token.",
+      "The report says the manager's event-time token does not identify the activation lifetime.",
+      "StartExtensionWhenReadyAsync creates and publishes a wrapper after awaiting activation; the final registration-lifetime synchronization is the key gap."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "information_gaps": [],
+    "analysis": "The issue reports isolated late-notification and completed-task/canceled-token tests. The service event path is tested, but UI/manager non-resurrection still needs verification.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked relevant source paths/linked work and ran a focused issue-number PR search; no result does not prove no broader work exists."
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve bounded issue investigation",
+      "id": "issue-51413-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Investigate the reported PowerToys behavior"
+      }
+    },
+    {
+      "label": "Reproduce CmdPal provider lifecycle failure",
+      "id": "issue-51413-reproduce",
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Removed/superseded results are discarded and no stale commands are published.",
+        "steps": [
+          "1. Begin activation and let it exceed the start timeout.",
+          "2. Remove/uninstall provider, release activation, and inspect provider-added events and commands.",
+          "3. Repeat with same-ID replacement and completed task plus canceled token."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "Controllable activation task, provider registry and manager-event observer."
+        ],
+        "module": "Command Palette extension activation"
+      }
+    }
+  ]
+}

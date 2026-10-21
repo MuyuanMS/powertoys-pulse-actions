@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 35191,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "No launch on a shortcut to a file extension even the default program is set (*.lnk)",
+  "url": "https://github.com/microsoft/PowerToys/issues/35191",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "confidence": "Red",
+  "generated_at": "2026-10-20T23:32:11.876Z",
+  "evaluated_at": "2026-10-20T23:32:11.876Z",
   "source_updated_at": "2024-10-10T17:38:32Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs exact launch sequence",
+    "detail": "Screenshots and a diagnostic ZIP are supplied, but wording alternates between .lnk shortcuts and custom .des/.dis files."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "✉️",
+    "label": "Clarify shortcut target and Run query",
+    "reason": "The file/shortcut distinction and exact result selected determine which launch path is failing."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Screenshots show custom .des/.dis associations and the reporter supplied a diagnostic ZIP, but it is unclear whether PowerToys Run launches a .lnk, the .des/.dis target, or another search result. That distinction changes the path to investigate.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Report identifies PowerToys Run 0.85 and custom .des/.dis files associated with an application.",
+      "Reporter says those associations work outside PowerToys Run but nothing happens when launching through PowerToys Run.",
+      "Screenshots and an October 2024 diagnostic ZIP are attached; the maintainer request for a report was answered.",
+      "No linked fix PR found in the issue timeline or PR search."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for the exact PowerToys Run query/result and whether it launches a .lnk shortcut or the .des/.dis target, plus current-version confirmation.",
+    "evaluated_at": "2026-10-20T23:32:11.876Z",
     "source_updated_at": "2024-10-10T17:38:32Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys Run shell-launch or file-association defect is plausible for custom file types, but the report does not identify whether the failing item is the shortcut or its target."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve shell association resolution for custom shortcut targets",
+      "root_cause": "Red hypothesis: the PowerToys Run launch path may resolve a shortcut or custom file target using a path-specific route that bypasses the registered Windows association for .des/.dis files.",
+      "plan": [
+        "Confirm the exact query, selected result, and whether the selected item is a .lnk or the .des/.dis target.",
+        "Trace the confirmed item through PowerToys Run result resolution and shell association dispatch to identify where the target association is lost.",
+        "Preserve the resolved shell association on the affected path and add a regression test for a custom extension reached through a shortcut."
+      ],
+      "verification": [
+        "On a current build, compare launching the target through Explorer with the exact Run query and selected result.",
+        "Verify the configured program launches and ordinary .lnk and extension launches still work."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "Useful screenshots and diagnostics exist, but ambiguity between shortcut and target extension prevents identifying the launch branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A PowerToys Run user says launching an item associated with custom .des/.dis types does nothing, despite a Windows application association; screenshots and a diagnostic ZIP are attached.",
+    "known_information": [
+      "Report lists PowerToys 0.85, WinGet installation, and PowerToys Run.",
+      "Named files are custom .des/.dis files under Start Menu folders; screenshots show their associations.",
+      "Reporter says the files work outside PowerToys Run and no action occurs when using PowerToys Run.",
+      "The reporter supplied a PowerToysReport ZIP after a maintainer asked for one."
+    ],
+    "inferences": [
+      "The failure may involve custom extension association resolution or how PowerToys Run interprets a shortcut to a custom-extension target.",
+      "The text says both shortcut (*.lnk) and .des/.dis paths, so the exact selected item is ambiguous."
+    ],
+    "analysis": "Do not request existing screenshots or ZIP again. The missing discriminator is the precise query/result and whether the object is a .lnk or custom-extension target, which selects the shell-launch path to inspect.",
+    "initial_investigation": [
+      "Read full issue, both comments, screenshot and diagnostic references, live labels, assignees, and updatedAt.",
+      "Confirmed reporter supplied the requested diagnostic ZIP.",
+      "Searched related PowerToys PRs by issue number; no linked fix found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Exact PowerToys Run query and selected result, and whether the result is a .lnk shortcut or a .des/.dis target.",
+        "why_needed": "Shortcut resolution and direct custom-extension dispatch are different paths; the report describes both.",
+        "how_to_collect": "Enter the exact query in PowerToys Run, identify the result selected, and say whether it opens the .lnk or .des/.dis target; give short numbered steps."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether this still reproduces on latest stable.",
+        "why_needed": "The report is from version 0.85 and current behavior may have changed.",
+        "how_to_collect": "Check PowerToys About and include the installed version with the steps."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-launch-sequence-35191",
+      "type": "request_info",
+      "label": "Clarify shortcut target and Run query",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the screenshots showing custom .des/.dis associations and for the PowerToysReport attachment supplied after the maintainer asked. The report says shortcut (*.lnk) but also names .des/.dis files; it is unclear whether PowerToys Run launches the shortcut or the custom-extension target, which use different shell paths.\nPlease provide:\n1. Whether this still occurs on the latest stable version.\n2. If so, the exact PowerToys Run query, the result selected, and whether it is the .lnk or .des/.dis file; short numbered steps are sufficient.\nThis identifies the launch path without repeating evidence collection."
+      }
+    },
+    {
+      "id": "design-35191",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve an evidence-gated fork-side investigation after confirming whether the shortcut or custom-extension target fails. This does not write upstream."
+    }
+  ]
 }

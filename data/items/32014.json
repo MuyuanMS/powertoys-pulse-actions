@@ -1,33 +1,57 @@
 {
+  "schemaVersion": 5,
   "number": 32014,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "not_actionable",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:50:07Z",
+  "evaluated_at": "2026-10-20T16:38:00Z",
   "source_updated_at": "2024-04-09T12:16:25Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32014",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Known numeric precision limitation",
+    "detail": "Exact arbitrary-size integer arithmetic is not guaranteed by the current calculator engine/conversion path."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Decide numeric-precision scope",
+    "reason": "A broader numeric model decision is needed rather than an unsupported one-line overflow fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "not_actionable",
+    "rationale": "The maintainer discussion identifies the Mages numeric representation as a known precision limitation. Inspected code evaluates with Mages and then converts to decimal; changing final display rounding cannot recover precision already lost.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body gives exact expected and actual values for 2^64; a follow-up supplies 2^63-1.",
+      "https://github.com/microsoft/PowerToys/issues/32014#issuecomment-2016160267 identifies the known Mages data-type limitation.",
+      "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs evaluates _magesEngine.Interpret, calls Convert.ToDecimal, and only then applies decimal-place rounding.",
+      "The linked issue timeline contains related precision reports but no targeted implementation."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Keep as a numeric-capability/product decision or external-engine limitation; do not advertise an exact-integer bug fix without an agreed numeric model.",
+    "evaluated_at": "2026-10-20T16:38:00Z",
     "source_updated_at": "2024-04-09T12:16:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The requested exact-integer result exceeds the currently discussed engine capability. Replacing numeric semantics is a capability/dependency decision, not an established local rounding correction."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "PowerToys Run Calculator loses low-order digits for large powers of two and near-Int64 values; the discussion identifies an existing numeric-engine precision limitation.",
+    "known_information": [
+      "PowerToys 0.79.0, expression 2^64, and exact expected/actual output are supplied.",
+      "The follow-up shows an analogous error for 2^63-1.",
+      "A maintainer names Mages data types; available code has a Mages-to-decimal conversion before presentation."
+    ],
+    "inferences": [
+      "The observed rounded-looking integer can involve engine/conversion precision; it must not simply be called arithmetic overflow from the screenshot."
+    ],
+    "analysis": "No additional reporter logs would establish arbitrary-precision engine support. Choosing exact-integer semantics is a maintainer product decision; the earlier handled-by-blank-assignee statement was false.",
+    "initial_investigation": [
+      "Read the full body and all three comments, plus the linked precision-report timeline.",
+      "Inspected CalculateEngine evaluation/conversion/rounding and ResultHelper output formatting."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

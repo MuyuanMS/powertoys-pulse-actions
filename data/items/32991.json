@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 32991,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:44.2387841Z",
+  "evaluated_at": "2026-10-20T23:27:44.2387841Z",
   "source_updated_at": "2024-06-03T20:30:11Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Inspect supplied Run rendering evidence",
+    "detail": "The reporter answered the screenshot and diagnostic request; maintainer investigation is next."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Reproduce invisible Run UI",
+    "reason": "Use the supplied screenshots and diagnostic configuration before asking the reporter for the same evidence again."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives the activation sequence and the author supplied both requested screenshots and a diagnostic ZIP. The presentation failure is established, but its rendering or placement cause has not been determined.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.81.0, non-administrator, after auto-update: shortcut activation produces a larger cursor but no visible box/results.",
+      "https://github.com/microsoft/PowerToys/issues/32991#issuecomment-2146066747 supplies two screenshots, a typed-abc comparison and PowerToysReport_2024-06-03-13-28-49.zip."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Inspect the supplied archive and compare window geometry and rendering during shortcut activation.",
+    "evaluated_at": "2026-10-20T23:27:44.2387841Z",
     "source_updated_at": "2024-06-03T20:30:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete fix or active owner is linked. A guarded activation/presentation correction is provisional pending inspection of the supplied evidence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore a visible Run surface on activation",
+      "root_cause": "Hypothesis: activation reaches the input surface but restores invalid window geometry or fails to present the WPF surface. Cursor feedback alone does not distinguish geometry from rendering.",
+      "plan": [
+        "Inspect the existing diagnostic archive for Run configuration, display geometry and rendering/startup failures; compare the two screenshots.",
+        "Instrument the Run activation/window-presentation boundary in src/modules/launcher/PowerLauncher to compare actual bounds, visibility, focus and render completion against a fresh configuration.",
+        "If invalid saved placement is confirmed, clamp/recompute placement against the active work area before showing; if bounds are valid, correct only the traced presentation failure instead. Add a regression test for the confirmed branch."
+      ],
+      "verification": [
+        "Activate Run as a standard user, type abc and verify the input box and results are visible.",
+        "Repeat after auto-update, restart and display-layout changes; retain valid user placement and keyboard focus."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The public sequence is testable, but no reviewed stack or geometry measurement identifies the failing branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run appears to activate after an update, but its input box and results are not visible, including while the reporter types abc.",
+    "known_information": [
+      "The report names PowerToys 0.81.0 and non-administrator operation.",
+      "The maintainer requested screenshots and a bug report; the author supplied both on June 3, 2024.",
+      "The live issue is open, labeled Issue-Bug and unassigned."
+    ],
+    "inferences": [
+      "The cursor change may indicate an activated input surface, but does not prove an offscreen window or graphics-driver defect."
+    ],
+    "analysis": "The prior empty-assignee ownership conclusion was unsupported. Fulfilled evidence requests put the next step on the maintainer, not the author.",
+    "initial_investigation": [
+      "Read all three comments and the report.",
+      "Checked timeline cross-references and a targeted PR-body search; no concrete fix was found within that inspected scope.",
+      "Bot suggestions are similar symptoms, not verified duplicates."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-run-surface",
+      "type": "reproduce",
+      "label": "Inspect and reproduce invisible Run surface",
+      "reproduce": {
+        "title": "Run activation without visible input/results",
+        "module": "PowerToys Run",
+        "version_requirement": "Compare reported 0.81.0 with a current supported build; record both versions.",
+        "prerequisites": [
+          "Run enabled; standard-user session",
+          "Use the report's diagnostic configuration as a reference, without importing personal data."
+        ],
+        "steps": [
+          "1. Inspect the supplied diagnostic ZIP and both screenshots for the affected display and Run configuration.",
+          "2. Activate Run with its configured shortcut and type abc.",
+          "3. Record window bounds, focus and presentation state; compare a fresh configuration without overwriting the original.",
+          "4. Repeat on the current build to determine whether the failure remains."
+        ],
+        "expected_result": "The Run input box and query results are visible and usable; distinguish offscreen geometry from failed drawing.",
+        "attachments": [
+          {
+            "label": "Supplied diagnostics and screenshots",
+            "url": "https://github.com/microsoft/PowerToys/issues/32991#issuecomment-2146066747"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-run-surface-plan",
+      "type": "approve_design",
+      "label": "Review provisional Run presentation plan",
+      "note": "Determine the failing presentation branch before authorizing a code change."
+    }
+  ]
 }

@@ -1,198 +1,60 @@
 {
+  "schemaVersion": 5,
   "number": 47359,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "owned_elsewhere",
   "owes": "maintainer",
   "pending_author": false,
+  "url": "https://github.com/microsoft/PowerToys/issues/47359",
+  "title": "Awake's tray icon doesn't respect 24h time format",
   "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-10-20T16:35:00Z",
+  "source_updated_at": "2026-10-12T20:15:14Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+    "label": "Existing upstream fix",
+    "detail": "Open PR 50905 directly targets the regional-time formatting defect."
   },
   "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
+    "label": "Review PR 50905",
+    "reason": "Do not start a second formatting design while the targeted upstream fix is open."
   },
-  "actions": [
-    {
-      "description": "Approve fix design for issue #47359 and start fork implementation workflow.",
-      "type": "approve_design",
-      "label": "Approve design"
-    },
-    {
-      "comment": {
-        "body": "Thank you for reporting this issue with PowerToys. To help us investigate and reproduce the problem accurately, could you please reproduce the issue and then run /bugreport in a comment to attach a fresh diagnostic ZIP? This will provide the exact module logs and system environment details needed to confirm the root cause."
-      },
-      "description": "Ask reporter for fresh /bugreport diagnostic ZIP to confirm root cause.",
-      "type": "request_info",
-      "label": "Request diagnostic ZIP"
-    }
-  ],
-  "confidence": "High",
-  "design": {
-    "root_cause": "Awake hard-codes the expirable tray tooltip to `MMM d, h:mm tt` in `Manager.SetModeShellIcon`, so users with 24-hour regional settings still see a 12-hour time string.",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The issue remains an open bug, but PR 50905 explicitly closes it and changes the precise hard-coded tooltip formatting path. The prior independent design and generic diagnostic request are superseded.",
     "evidence": [
-      "Issue #47359 gives a one-step repro: set an expirable time such as 13:30 and observe that the tray text shows 1:30 instead of respecting the user's 24-hour format.",
-      "The reporter attached the requested screenshot after a maintainer asked for the tray/settings view.",
-      "In `src/modules/awake/Awake/Core/Manager.cs`, `SetModeShellIcon` formats expirable mode with `ExpireAt:MMM d, h:mm tt`, which forces a 12-hour clock regardless of `CultureInfo.CurrentCulture`."
+      "The reporter supplied the requested screenshot; a September 30 comment independently shows 17:30 displayed as 5:30 without a designator.",
+      "The inspected source at src/modules/awake/Awake/Core/Manager.cs, Manager.SetModeShellIcon, uses the fixed MMM d, h:mm tt pattern.",
+      "https://github.com/microsoft/PowerToys/pull/50905 is OPEN, explicitly closes 47359, and changes Manager.cs to culture-specific month/day and short-time formats."
     ],
-    "affected_files": [
-      {
-        "path": "src/modules/awake/Awake/Core/Manager.cs",
-        "purpose": "Builds the tray tooltip text for each Awake mode.",
-        "symbols": [
-          "Manager.SetModeShellIcon"
-        ]
-      },
-      {
-        "path": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
-        "purpose": "New pure helper that formats expiration text with the active culture so it can be unit-tested.",
-        "symbols": [
-          "AwakeTrayTextFormatter.FormatExpirationTooltip"
-        ]
-      },
-      {
-        "path": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
-        "purpose": "Regression tests for 12-hour and 24-hour cultures.",
-        "symbols": [
-          "AwakeTrayTextFormatterTests.FormatsExpirationWithCurrentCulture",
-          "AwakeTrayTextFormatterTests.PreservesAmPmFor12HourCultures"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
-        "symbols": [
-          "AwakeTrayTextFormatter.FormatExpirationTooltip"
-        ],
-        "current_behavior": "Formatting logic is embedded inline inside `Manager.SetModeShellIcon`, so the tray path always emits a fixed `h:mm tt` pattern and cannot be unit-tested.",
-        "change": "Extract a small formatter that composes the localized short-time pattern from `CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern`.",
-        "code_block": "internal static string FormatExpirationTooltip(DateTimeOffset expiration, CultureInfo culture)\r\n{\r\n    var timePattern = culture.DateTimeFormat.ShortTimePattern;\r\n    return $\"{Resources.AWAKE_TRAY_UNTIL} {expiration.ToString($\"MMM d, {timePattern}\", culture)}\";\r\n}",
-        "edge_cases": [
-          "24-hour cultures must stay 24-hour.",
-          "12-hour cultures must continue to show AM/PM markers.",
-          "The helper must not mutate thread culture."
-        ],
-        "tests": [
-          "Unit-test 24-hour cultures such as `sv-SE`.",
-          "Unit-test `en-US` and assert AM/PM output is preserved."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/awake/Awake/Core/Manager.cs",
-        "symbols": [
-          "Manager.SetModeShellIcon"
-        ],
-        "current_behavior": "Expirable mode concatenates `Resources.AWAKE_TRAY_UNTIL` with `ExpireAt:MMM d, h:mm tt`.",
-        "change": "Replace the inline format string with the shared formatter.",
-        "code_block": "case AwakeMode.EXPIRABLE:\r\n    iconText = $\"{Constants.FullAppName}\\n{AwakeTrayTextFormatter.FormatExpirationTooltip(ExpireAt, CultureInfo.CurrentCulture)}\\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}\";\r\n    icon = TrayHelper.ExpirableIcon;\r\n    break;",
-        "edge_cases": [
-          "Passive, timed, and indefinite modes must remain unchanged.",
-          "Tooltip length must stay within Shell_NotifyIcon limits."
-        ],
-        "tests": [
-          "Manual: set Windows to a 24-hour locale and verify the tray tooltip shows `13:30`.",
-          "Manual: switch back to a 12-hour locale and verify AM/PM output still appears."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
-        "symbols": [
-          "AwakeTrayTextFormatterTests"
-        ],
-        "current_behavior": "There is no automated regression coverage for tray expiration formatting.",
-        "change": "Add focused tests that call the extracted formatter directly under both 12-hour and 24-hour cultures.",
-        "code_block": "[TestMethod]\r\npublic void FormatsExpirationWithCurrentCulture()\r\n{\r\n    var expiration = new DateTimeOffset(2030, 1, 2, 13, 30, 0, TimeSpan.Zero);\r\n    var text = AwakeTrayTextFormatter.FormatExpirationTooltip(expiration, new CultureInfo(\"sv-SE\"));\r\n    StringAssert.Contains(text, \"13:30\");\r\n}",
-        "edge_cases": [
-          "Tests must restore any culture override they apply.",
-          "Use a fixed DateTimeOffset so daylight-savings changes cannot make the test flaky."
-        ],
-        "tests": [
-          "Run the Awake module services unit tests and confirm both culture-specific cases pass."
-        ]
-      }
-    ],
-    "verify": [
-      "pwsh -NoProfile -File tools\\build\\build.ps1 -Platform x64 -Configuration Debug",
-      "Build and run the Awake unit tests that include `AwakeTrayTextFormatterTests`.",
-      "Manual: set Windows to a 24-hour locale, enable Awake until 13:30, hover the tray icon, and confirm the tooltip shows `13:30` rather than `1:30`.",
-      "Manual: repeat with a 12-hour locale and confirm AM/PM formatting is still correct."
-    ],
-    "risks": [
-      "Changing the format string can unintentionally alter the compact tooltip shape for some locales.",
-      "The helper must stay tray-thread-safe and avoid UI-thread-only state."
-    ],
-    "alternatives": [
-      "Keep the hard-coded format and document the limitation. Rejected because the issue is caused by the hard-coded string itself.",
-      "Use a fully localized long date/time pattern. Rejected because the bug is specifically about respecting the short time format."
+    "recommended_action": "Review and validate the existing upstream PR; no competing design or additional reporter diagnostics.",
+    "evaluated_at": "2026-10-20T16:35:00Z",
+    "source_updated_at": "2026-10-12T20:15:14Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR 50905 covers the reported 24-hour and missing-AM/PM tooltip path. It is open, not shipped or proven resolved.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50905"
     ]
   },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T15:44:31Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-    "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Issue #47359 gives a one-step repro: set an expirable time such as 13:30 and observe that the tray text shows 1:30 instead of respecting the user's 24-hour format.",
-      "The reporter attached the requested screenshot after a maintainer asked for the tray/settings view.",
-      "In `src/modules/awake/Awake/Core/Manager.cs`, `SetModeShellIcon` formats expirable mode with `ExpireAt:MMM d, h:mm tt`, which forces a 12-hour clock regardless of `CultureInfo.CurrentCulture`.",
-      "Local-only dashboard signal; no upstream action is posted."
-    ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T15:44:31Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Proposed fix plan derived from issue report and initial investigation."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Investigate root cause and apply targeted fix for issue #47359",
-      "confidence": {
-        "rationale": "Initial hypothesis requires reproduction or diagnostic trace.",
-        "score": 70,
-        "level": "yellow"
-      },
-      "root_cause": "Failing mechanism reported in issue #47359 requires code revalidation.",
-      "plan": [
-        "Verify reproduction steps",
-        "Trace failing code path",
-        "Apply fix and verify"
-      ],
-      "verification": [
-        "Run targeted module tests and verify expected behavior."
-      ]
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Awake's tray icon doesn't respect 24h time format",
-    "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+    "summary": "Awake expiration tooltips use a fixed 12-hour pattern despite Windows regional time preferences; an upstream PR now addresses that exact formatting path.",
+    "known_information": [
+      "The original report is on PowerToys 0.99 and includes the requested settings/tray screenshot.",
+      "A later screenshot-backed report shows a configured 17:30 rendered as 5:30.",
+      "PR 50905 is open and explicitly references this issue."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
+      "The fixed h:mm tt pattern explains why cultures with empty AM/PM designators lose both the 24-hour value and its disambiguator."
     ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+    "analysis": "Concrete upstream implementation coverage replaces the earlier standalone design. Open PR coverage does not mean the installed product is fixed.",
+    "initial_investigation": [
+      "Read the complete body, four comments, labels, assignees, and cross-reference timeline.",
+      "Checked the owning tooltip method and read PR 50905's description, state, and changed-file list."
     ],
-    "information_gaps": [
-      {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
-        "evidence_type": "bugreport_zip"
-      }
-    ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
-  }
+    "information_gaps": []
+  },
+  "actions": []
 }

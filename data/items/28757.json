@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 28757,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Mouse Without Borders vertical layout fails without mouse wrapping",
+  "url": "https://github.com/microsoft/PowerToys/issues/28757",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-09-07T04:53:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Compare vertical matrix persistence",
+    "detail": "Reporter supplied steps, a recording and a legacy-UI workaround; related tracking work is not a fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare modern and legacy layout values",
+    "reason": "A working legacy editor helps distinguish settings serialization from runtime neighbor traversal."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The same vertical arrangement works through the original UI, making a modern-editor matrix mismatch more plausible than a blanket unsupported-topology explanation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "0.73.0/0.74 reports disable single-row layout and wrapping, then observe one-way vertical failure or layout reset.",
+      "https://github.com/microsoft/PowerToys/issues/28757#issuecomment-1766502716 reports the original UI workaround; a later commenter confirms it works.",
+      "MouseWithoutBordersPage.Device_Drop swaps indexed devices; the view model maintains a four-slot matrix and MatrixOneRow.",
+      "MachineStuff.MoveUp/MoveDown gate vertical traversal on MatrixOneRow and use LiveMachineMatrix.",
+      "Related open reports #41449 and tracker #51077 do not provide a concrete implementation."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with two physical PCs, compare the persisted four-slot matrices from each editor, and fix the first demonstrated divergence.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-07T04:53:38Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A layout mapping or synchronization fix is plausible; the reviewed related reports and tracker do not cover it with an existing fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve vertical device slots consistently between editor and runtime",
+      "root_cause": "Hypothesis: the modern editor's indexed four-slot matrix or synchronization normalizes vertical layouts differently from the legacy editor, so the runtime receives incorrect neighbor slots or a one-row flag.",
+      "plan": [
+        "Compare the exact four-slot matrix, MatrixOneRow and wrapping flags produced by both editors for both top/bottom orientations.",
+        "Trace Device_Drop and LoadMachineMatrixString in the Settings view/view model and LiveMachineMatrix/MoveUp/MoveDown in MachineStuff.cs; distinguish elevation-disabled drag behavior from a saved-layout mismatch.",
+        "Correct the demonstrated slot-mapping or synchronization divergence without compacting intentional empty slots; if saved matrices match, investigate runtime neighbor traversal instead.",
+        "Add round-trip tests for empty matrix slots, reversed vertical order, disconnected/reconnected peers and wrap enabled/disabled."
+      ],
+      "verification": [
+        "Two physical PCs can cross the shared vertical edge in both directions without wrapping; nonadjacent outer edges do not wrap.",
+        "Modern and legacy editors produce equivalent runtime topology, which survives Settings reopen and PowerToys restart."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The working legacy-editor comparison is strong discrimination, but no actual settings diff or physical two-PC test was performed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A two-PC vertical layout either resets in the modern editor or cannot be traversed without wrapping; configuring it in the original UI is a reported workaround.",
+    "known_information": [
+      "The report gives exact single-row/wrapping settings and both vertical orientations.",
+      "The author retested 0.74 and supplied a recording.",
+      "Two commenters report success using the original UI; the latest also asks about a more complex multi-monitor topology.",
+      "Issue is open and unassigned."
+    ],
+    "inferences": [
+      "The original-UI workaround suggests editor/matrix consistency should be tested first, but does not prove a serialization bug.",
+      "The later request to choose an individual monitor is a separate scope from the two-device vertical regression."
+    ],
+    "analysis": "The available workaround enables a targeted maintainer experiment. Do not ask the reporter to repeat supplied settings or claim tracker #51077 implements a fix.",
+    "initial_investigation": [
+      "Read the complete report and three comments; checked #41449, #51077, timeline and related PR search.",
+      "Inspected Device_Drop, LoadMachineMatrixString, MatrixOneRow and the runtime vertical-neighbor gates in upstream source."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-28757",
+      "type": "reproduce",
+      "label": "Compare vertical layouts from both editors",
+      "primary": true,
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version": "Current stable build; report confirmed on 0.73.0 and 0.74",
+        "prerequisites": [
+          "Two connected physical PCs; record elevation because modern UI drag is disabled when elevated.",
+          "Turn off devices-in-a-single-row and wrap-mouse."
+        ],
+        "steps": [
+          "Arrange PC A above PC B in the modern editor, then test upward and downward crossing.",
+          "Reverse top/bottom order and repeat, noting any reset to horizontal.",
+          "Configure the same topology in the original UI when available and repeat.",
+          "Compare the four machine slots, single-row and wrapping values on both peers before and after reopening Settings.",
+          "Trace the first differing editor/runtime value, then repeat with wrapping enabled as a control."
+        ],
+        "expected_result": "Both vertical arrangements persist, and crossing occurs only at the shared edge with wrapping disabled."
+      }
+    },
+    {
+      "id": "approve-design-28757",
+      "type": "approve_design",
+      "label": "Approve vertical-matrix consistency plan",
+      "confirm": true,
+      "note": "Use the modern/legacy comparison to select the actual failing layer before implementation."
+    }
+  ]
 }

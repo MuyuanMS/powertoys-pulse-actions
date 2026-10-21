@@ -6,26 +6,28 @@
   "track": "fix",
   "title": "[Auto Hide Cursor] Pointer stays hidden while an elevated (admin) window is in the foreground",
   "url": "https://github.com/microsoft/PowerToys/issues/51337",
-  "state": "OPEN",
+  "state": "open",
   "stage": "triage",
   "pending_author": false,
-  "evaluated_at": "2026-10-19T07:35:05.083767Z",
-  "generated_at": "2026-10-19T07:35:05.083767Z",
-  "source_updated_at": "2026-10-15T15:34:16Z",
+  "evaluated_at": "2026-10-20T16:42:40.685Z",
+  "generated_at": "2026-10-20T16:42:40.685Z",
+  "source_updated_at": "2026-10-19T14:20:38Z",
   "summary": "Auto Hide Cursor reportedly remains globally hidden when a medium-integrity worker misses mouse input over an elevated foreground window. The existing timer receives cursor coordinates but never restores a hidden cursor.",
   "next_action": "Consider for the coordinator's bounded design batch; first reproduce using physical pointer movement and verify timer recovery requirements.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The reporter provides two concrete elevation-sensitive reproductions and a controlled normal/elevated comparison. Current state code has no timer-based recovery once hidden. A bounded movement-recovery design is justified, but the integrity-level mechanism and real pointer behavior still need maintainer verification; no full design or implementation has been completed.",
+    "rationale": "The existing yellow-confidence recovery candidate remains current. A later comment reports Task Manager as another affected foreground window. Current source still has no timer-based recovery when hidden, but the integrity-boundary explanation and physical-input behavior remain unverified.",
     "evidence": [
       "The report supplies typing and idle reproductions on 0.102.2862.0 Insider, a normal-window control, measured hook/position differences, and confirmed workarounds of elevated PowerToys or disabling Auto Hide Cursor.",
       "State.OnTimer returns None when m_hidden is true; State.OnMouseInput is the normal input restoration path.",
       "The worker polls cursor position on its existing 100 ms timer, providing an independent observation point.",
-      "Merged PR 50803 removes injected-event filtering for touchpad recovery; it does not add restoration when the hook receives no movement callbacks."
+      "Merged PR 50803 removes injected-event filtering for touchpad recovery; it does not add restoration when the hook receives no movement callbacks.",
+      "A later commenter reports the same hidden-pointer behavior with Task Manager in the foreground.",
+      "Current AutoHideCursorState.OnTimer still returns when the cursor is hidden; OnMouseInput remains the normal Show path."
     ],
-    "recommended_action": "Consider for the coordinator's bounded design batch; first reproduce using physical pointer movement and verify timer recovery requirements.",
-    "evaluated_at": "2026-10-19T07:35:05.083767Z",
-    "source_updated_at": "2026-10-15T15:34:16Z"
+    "recommended_action": "Use the existing maintainer reproduction action with physical pointer movement and both normal and elevated foreground controls; do not request another generic diagnostic.",
+    "evaluated_at": "2026-10-20T16:42:40.685Z",
+    "source_updated_at": "2026-10-19T14:20:38Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -63,18 +65,21 @@
       "The reporter says the pointer restores over a normal foreground app but remains hidden over an elevated app, and elevation of PowerToys or disabling the utility works around it.",
       "The reported measurements use injected moves from an elevated helper; they are reporter evidence, not maintainer-run proof of physical-input behavior.",
       "Current OnTimer receives a position but returns without restoring whenever hidden; the worker invokes it on its existing 100 ms loop.",
-      "No assignee, linked fix or matching fork trace was found; Issue-Bug, Needs-Triage and Product-Mouse Utilities are present."
+      "No assignee, linked fix or matching fork trace was found; Issue-Bug, Needs-Triage and Product-Mouse Utilities are present.",
+      "A 2026-10-19 commenter reports the same behavior with Task Manager in the foreground."
     ],
     "inferences": [
       "Missing hook callbacks across the integrity boundary plausibly strand the hidden state, but the exact OS/hook cause is not independently confirmed.",
       "A guarded position-sampling recovery path is likely to mitigate this failure without demanding administrator execution; input semantics and idle timing must be verified."
     ],
-    "analysis": "The reporter provides two concrete elevation-sensitive reproductions and a controlled normal/elevated comparison. Current state code has no timer-based recovery once hidden. A bounded movement-recovery design is justified, but the integrity-level mechanism and real pointer behavior still need maintainer verification; no full design or implementation has been completed.",
+    "analysis": "The additional Task Manager report supports the foreground-window scope but does not independently validate physical-input or hook suppression. Retain the proposed timer-sampling recovery as a yellow hypothesis until maintainer reproduction.",
     "initial_investigation": [
       "Pinned State.OnMouseInput restores after intentional movement, whereas OnTimer ignores an already-hidden state: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h#L95-L123",
       "Worker.Run already samples positions for OnTimer, and its helper does not check GetCursorPos success: https://github.com/microsoft/PowerToys/blob/1b33221dfa19f30d71409eb550807883fb27283a/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp#L129-L166",
       "Current MouseHookProc accepts injected movement; merged https://github.com/microsoft/PowerToys/pull/50803 fixes an earlier delivered-input filtering problem, not missing callback delivery.",
-      "Upstream issue timeline, issue-number PR searches, topical cursor/elevation searches, fork issue/PR searches and fork branch inventory found no existing implementation for this report."
+      "Upstream issue timeline, issue-number PR searches, topical cursor/elevation searches, fork issue/PR searches and fork branch inventory found no existing implementation for this report.",
+      "Re-read the current body and all comments; the added Task Manager report does not supply a separate physical-input or hook experiment.",
+      "Focused source check confirms OnTimer exits while hidden and OnMouseInput is the existing Show path."
     ],
     "information_gaps": [
       {
@@ -123,5 +128,13 @@
         "attachments": []
       }
     }
-  ]
+  ],
+  "updated_at": "2026-10-19T14:20:38Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 2
 }

@@ -2,32 +2,109 @@
   "number": 22738,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:15:08Z",
+  "generated_at": "2026-10-20T16:51:13Z",
+  "evaluated_at": "2026-10-20T16:51:13Z",
+  "source_updated_at": "2026-10-17T06:45:23Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "detail": "Red hypothesis: changing Run at startup may update the Settings UI without successfully persisting the startup registration, or the registration write may fail under the install/elevation context. The report does not identify which boundary fails.",
+    "label": "Design candidate",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Reproduce the setting reversion and compare the stored value with the OS startup registration.",
+  "actions": [
+    {
+      "primary": true,
+      "confirm": true,
+      "type": "approve_design",
+      "label": "Review Persist PowerToys Run at startup state",
+      "note": "Queues a design for maintainer approval; no upstream write occurs."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Run at startup persistence",
+      "reproduce": {
+        "prerequisites": [
+          "Use a test account and record current startup registration before changing settings."
+        ],
+        "expected_result": "The toggle persists and corresponds to an effective startup registration.",
+        "steps": [
+          "Enable Run at startup in Settings.",
+          "Close and reopen Settings; note the toggle state.",
+          "Compare the setting with the OS startup entry.",
+          "Restart runner or sign in to verify actual startup."
+        ],
+        "version_requirements": "Current supported build; Windows 11",
+        "module": "PowerToys Runner / Settings"
+      }
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "source_updated_at": "2026-10-17T06:45:23Z",
+    "rationale": "Red hypothesis: changing Run at startup may update the Settings UI without successfully persisting the startup registration, or the registration write may fail under the install/elevation context. The report does not identify which boundary fails.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original report says PowerToys autostart remains disabled at login.",
+      "A 2026-10-17 commenter says toggling Run at startup has no effect and Settings reopens with it Off.",
+      "Open #23193 covers broader PowerToys startup failures; no shared cause is confirmed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:15:08Z"
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:51:13Z",
+    "recommended_action": "Reproduce the setting reversion and compare the stored value with the OS startup registration."
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/22738",
+  "title": "Autostart PowerToys",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Area-Runner",
+    "Priority-1"
+  ],
+  "assignees": [],
+  "comments": 9,
+  "fix_assessment": {
+    "rationale": "A PowerToys code change may apply, but the root cause is red and requires the specific uncertainty-reducing action.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "root_cause": "Red hypothesis: changing Run at startup may update the Settings UI without successfully persisting the startup registration, or the registration write may fail under the install/elevation context. The report does not identify which boundary fails.",
+      "title": "Persist PowerToys Run at startup state",
+      "verification": [
+        "After enabling startup, reopen Settings and verify it remains enabled and a startup registration exists.",
+        "Restart the runner or sign in again in a test environment and verify startup behavior."
+      ],
+      "confidence": {
+        "level": "red",
+        "rationale": "The user provides a repeatable toggle-reversion symptom, but no source path or install/elevation context identifies the failure boundary.",
+        "score": 37
+      },
+      "plan": [
+        "Reproduce the 2026-10-17 toggle-off-after-reopen sequence on a current build and record the Settings value before/after closing Settings.",
+        "Compare persisted startup configuration with the registered startup entry before and after the toggle.",
+        "Trace the confirmed divergence and repair the setting/registration write boundary.",
+        "Add coverage for setting persistence and effective startup registration."
+      ]
+    }
+  ],
+  "issue_context": {
+    "initial_investigation": [
+      "Reviewed complete issue body and latest public activity.",
+      "No linked fix PR or confirmed source-level cause identified."
+    ],
+    "summary": "The Run at startup toggle may revert to Off after Settings closes; the recent report provides a simple current repro but the registration boundary is unknown.",
+    "inferences": [
+      "Red hypothesis: changing Run at startup may update the Settings UI without successfully persisting the startup registration, or the registration write may fail under the install/elevation context. The report does not identify which boundary fails."
+    ],
+    "information_gaps": [],
+    "analysis": "The user describes a reproducible toggle-state mismatch. Compare persisted settings and OS registration before selecting a code fix.",
+    "known_information": [
+      "Original report says PowerToys autostart remains disabled at login.",
+      "A 2026-10-17 commenter says toggling Run at startup has no effect and Settings reopens with it Off.",
+      "Open #23193 covers broader PowerToys startup failures; no shared cause is confirmed."
+    ]
   }
 }

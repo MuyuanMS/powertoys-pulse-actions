@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 33107,
   "kind": "issue",
+  "title": "[AlwaysOnTop] Not working on Parsec window",
+  "url": "https://github.com/microsoft/PowerToys/issues/33107",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-27T22:03:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage",
+    "Area-App Compat"
+  ],
+  "assignees": [],
+  "comments": 1,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The Parsec version, activation steps and window-style report are available. Missing sound, border and pinning calls for tracing command delivery and early exits, not declaring a nonstandard-window exclusion.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.81.0 running elevated does nothing when the Always on Top shortcut is pressed with Parsec 150-94a focused.",
+      "The supplied MTY_Window style report shows a visible, non-cloaked root-style window on the current virtual desktop; WS_EX_TOPMOST is false.",
+      "Current ProcessCommand can return for game-mode blocking or app exclusions before pinning.",
+      "The sole comment contains automated similarity suggestions, not a verified duplicate or fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Trace shortcut delivery versus game-mode/exclusion guards using the supplied Parsec scenario.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-27T22:03:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A command-delivery or early-return compatibility correction may be needed. No matching public implementation was found."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle the confirmed Parsec activation boundary without weakening exclusions",
+      "root_cause": "Hypothesis: Parsec input capture prevents the local activation command, or a game-mode/exclusion guard returns before pinning. The public styles do not support treating the window as an unsupported child or invisible window.",
+      "plan": [
+        "Trace hotkey receipt, foreground HWND and AlwaysOnTop::ProcessCommand with Parsec idle and connected, comparing a normal app.",
+        "Distinguish intended game-mode/exclusion behavior from a delivery defect; change only the confirmed local activation/target-selection path if PowerToys owns it.",
+        "Add regression coverage for the identified branch, preserving user exclusions and game-mode blocking; if Parsec consumes the key entirely, document a supported local shortcut instead of promising a PowerToys interception fix."
+      ],
+      "verification": [
+        "With no exclusion or game-mode block, the local shortcut targets the intended Parsec window and toggles topmost plus enabled sound/border feedback.",
+        "Intended blocked cases still do nothing; another application and remote input routing remain correct."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The supplied styles narrow the problem, but no command trace distinguishes input capture from an intentional early return."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always on Top produces no visible or audible activation on Parsec even with PowerToys elevated; the reporter already supplied the target window's style report.",
+    "known_information": [
+      "Reported versions are PowerToys 0.81.0 and Parsec 150-94a.",
+      "The MTY_Window attachment has WS_VISIBLE, WS_CAPTION and WS_THICKFRAME; it is not WS_CHILD, WS_EX_TOOLWINDOW or cloaked.",
+      "The window is on the current virtual desktop and is not already topmost.",
+      "The issue is open and unassigned."
+    ],
+    "inferences": [
+      "No activation feedback is consistent with the command never arriving or returning before pinning; it does not prove either.",
+      "Generic app-compatibility labels and bot matches do not establish an external-only defect."
+    ],
+    "analysis": "The existing evidence supports a maintainer reproduction. Do not request another style dump or propose arbitrary style whitelisting.",
+    "initial_investigation": [
+      "Read the report, full sole comment and timeline; downloaded the public window_styles_parsec.txt into memory and inspected its contents.",
+      "Inspected src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb: ProcessCommand checks game mode and exclusions, and pinning uses SetWindowPos(HWND_TOPMOST).",
+      "An issue-number PR search found no matching fix.",
+      "No Parsec session or command-delivery trace was run."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Parsec activation-path investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace local shortcut while Parsec is focused",
+      "reproduce": {
+        "title": "Separate input capture from Always on Top guard exits",
+        "module": "Always on Top",
+        "version_requirement": "Current PowerToys and Parsec; compare Parsec 150-94a and PowerToys 0.81.0 if available in an isolated test.",
+        "prerequisites": [
+          "A Parsec test client and optional remote test session; enable sound/border for the test.",
+          "Inspect user exclusions and game-mode blocking without overriding them silently."
+        ],
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/files/15458979/window_styles_parsec.txt"
+        ],
+        "steps": [
+          "1. Verify the configured shortcut pins a normal local application.",
+          "2. Focus the Parsec client while idle and press the shortcut; repeat during a remote session.",
+          "3. Trace whether PowerToys receives the hotkey and which HWND reaches ProcessCommand.",
+          "4. Record the game-mode and exclusion decisions, then the SetWindowPos result if reached.",
+          "5. Test an alternative configured local shortcut to distinguish remote key capture; restore settings afterward."
+        ],
+        "expected_result": "An unblocked local command pins the intended window. If no local command arrives, record the input-routing limitation rather than weakening window filtering."
+      }
+    }
+  ]
 }

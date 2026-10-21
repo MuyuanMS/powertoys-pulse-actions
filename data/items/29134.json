@@ -2,32 +2,106 @@
   "number": 29134,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-26T19:36:15Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🖥️",
+    "label": "Layout identity mapping needs comparison",
+    "detail": "The issue is currently open. Reboot swaps/repeats layouts; a dual-input Odyssey report suggests monitor identity as one possible discriminator."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🖥️",
+    "label": "Request before/after layout mapping",
+    "reason": "Distinguish display identity/order changes from virtual-desktop mapping or actual settings loss."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "29134-layout-mapping",
+      "type": "request_info",
+      "label": "Request before/after layout mapping",
+      "comment": {
+        "body": "Thanks for describing layouts being swapped or repeated after reboot, and for the follow-up that the two halves of an Odyssey 49 exchange layouts while the laptop display is unaffected. That is more specific than all settings simply disappearing, but it still leaves display identity versus virtual-desktop mapping unresolved.\n\nPlease provide, on the latest stable PowerToys:\n1. The tested version and a labeled monitor/desktop map before and after one reboot: physical displays A/B/etc., any picture-by-picture halves or dock connections, which is primary, resolution/scaling, and whether 'desktops' means Windows virtual desktops or physical screens.\n2. Copies of only FancyZones applied-layouts.json (or the equivalent device/layout mapping file in the tested version) before reboot and immediately after the wrong layout appears, before correcting it. Find it under the FancyZones folder in `%LOCALAPPDATA%\\Microsoft\\PowerToys`. If it is absent, say so rather than resetting settings. Replace serials and personal identifiers with consistent A/B labels in both copies so comparisons remain possible.\n\nThis determines whether stored layouts are lost or intact layouts are being assigned to a different monitor/desktop identity. Please do not send unrelated module settings."
+      }
+    },
+    {
+      "id": "29134-identity-plan",
+      "type": "approve_design",
+      "label": "Approve layout-identity investigation",
+      "note": "Candidate only; preserve separate monitor and virtual-desktop identities until the before/after map identifies the collision."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The symptom suggests identity-to-layout reassignment rather than proven loss, but the report does not disambiguate physical monitors and virtual desktops or supply a before/after mapping.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The 0.74.1 report says saved layouts are repeated or assigned to the wrong screens after restart.",
+      "A commenter reports swapping between two Odyssey 49 display halves, with the laptop screen unaffected: https://github.com/microsoft/PowerToys/issues/29134#issuecomment-1785719922",
+      "The timeline contains a historical close event, but the current live state is OPEN; related #35128/#37022 are not fixing PRs."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a redacted before/after monitor/desktop and applied-layout mapping to select the identity or persistence branch.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-26T19:36:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A FancyZones work-area identity correction may be applicable. No concrete fixing PR was identified, and related open reports do not establish existing implementation ownership."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore layouts by stable monitor and virtual-desktop identity",
+      "root_cause": "Hypothesis: after reboot, display identity/enumeration or virtual-desktop synchronization maps a saved layout to the wrong work area, especially for two similar display inputs. Actual file loss/default replacement remains an alternative.",
+      "plan": [
+        "Compare before/after applied-layout records with the labeled physical/virtual-desktop map; determine whether layout records disappear or only their monitor/desktop keys change.",
+        "Trace FancyZonesData/AppliedLayouts.cpp identity loading, monitor-ID synchronization and SyncVirtualDesktops for the demonstrated transition; inspect legacy-ID migration only if the tested data uses it.",
+        "If identity matching is responsible, preserve unambiguous per-input identity and virtual-desktop associations instead of matching transient enumeration order or copying a fallback layout across distinct work areas.",
+        "Add restart/reenumeration regression coverage for two similar display inputs and separate virtual desktops, retaining compatibility with existing persisted layout formats."
+      ],
+      "verification": [
+        "Assign visibly different layouts to each display/desktop, reboot and verify every mapping is unchanged.",
+        "Repeat with picture-by-picture inputs, primary-display change and ordinary single-display virtual desktops; existing layouts are neither overwritten nor copied to unrelated identities."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The reported swaps fit an identity mapping problem, but no persisted mapping or current-build transition proves it."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones restores the wrong saved layouts to some screens/desktops after reboot. A second user sees the two halves of one ultrawide display swap configurations while the laptop screen remains correct.",
+    "known_information": [
+      "Original version is 0.74.1 and the report says different layouts were configured before restart.",
+      "The follow-up identifies an Odyssey 49 used as two displays.",
+      "Current state is OPEN with Product-FancyZones/Issue-Bug labels and no assignee, despite a past close event."
+    ],
+    "inferences": [
+      "Selective swapping could be a monitor/work-area identity collision, not disappearance of every configuration.",
+      "The original use of 'desktops' may mean virtual desktops or physical displays and cannot safely be assumed."
+    ],
+    "analysis": "The useful discriminator is whether persisted layouts are lost or remapped. Ask for only the relevant redacted layout map and topology, rather than resetting settings or claiming a duplicate/fix from a similar title.",
+    "initial_investigation": [
+      "Read the report and complete comment history; checked live state against the historical timeline.",
+      "Enumerated related #35128 and #37022 and checked a direct issue-number PR search; no concrete fixing PR was identified.",
+      "Read public main FancyZonesData/AppliedLayouts.cpp identity fields and monitor/virtual-desktop synchronization ownership; a failing branch has not been reproduced."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Current tested version and labeled physical-display/virtual-desktop topology before and after reboot.",
+        "why_needed": "Distinguishes monitor input/order changes from virtual-desktop identity changes.",
+        "how_to_collect": "Describe A/B display connections, picture-by-picture/dock use, primary display, resolution/scaling and what 'desktop' means, without serial numbers."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "Only the before/after FancyZones device-to-layout mapping file, captured before manual repair.",
+        "why_needed": "Shows whether records were lost, defaulted or assigned to different identities.",
+        "how_to_collect": "Copy applied-layouts.json or its version-equivalent from the FancyZones settings folder before reboot and after failure; redact personal identifiers consistently across both copies."
+      }
+    ]
   }
 }

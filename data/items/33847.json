@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 33847,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-07-27T12:31:43Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Narrow the first-launch hang",
+    "detail": "Open and unassigned; the original diagnostic attachment is useful evidence, not proof of ownership or a confirmed fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Confirm which surfaces still hang",
+    "reason": "Separate a recurring Settings/OOBE startup hang from an old first-run incident before choosing a code change."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report documents a first-launch freeze with a screenshot and diagnostic ZIP, but no discussion establishes recurrence or the failing process. Live assignees are empty.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/33847 reports PowerToys 0.82.0, WinGet installation, elevation, blank tray flyout and lagging OOBE; signing out recovered the session.",
+      "The report supplies PowerToysReport_2024-07-15-21-34-15.zip and an occurrence time of 16:55 IST.",
+      "The complete live comment history and cross-reference timeline are empty; an exact-number public PR search returned no match."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask whether the same sequence still hangs, distinguishing the tray flyout, Settings and Welcome, and obtain current post-reproduction diagnostics only if it recurs.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-07-27T12:31:43Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A first-run UI initialization stall is a plausible PowerToys-owned failure; no linked fix was identified. This is a low-confidence investigation plan, not an established deadlock diagnosis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep first-run UI initialization from blocking window presentation",
+      "root_cause": "Hypothesis: synchronous initialization or a startup dependency blocks the UI dispatcher before OOBE or the tray flyout can finish presenting. The report does not identify the blocking call, and a rendering or platform failure remains possible.",
+      "plan": [
+        "Reproduce first launch and a subsequent launch separately; use the existing attachment and a current recurrence to identify whether Settings/OOBE or Quick Access is blocked.",
+        "Trace the affected startup path in src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs or src/settings-ui/QuickAccess.UI/QuickAccessXAML/App.xaml.cs and isolate the actual blocking dependency before editing.",
+        "If a synchronous startup dependency is confirmed, move only that work off the presentation path or make its completion asynchronous, retain dispatcher-affine UI creation, and handle cancellation and failures without leaving an empty window.",
+        "Add a focused startup regression for the identified slow/failing dependency and preserve normal first-run and later-launch behavior."
+      ],
+      "verification": [
+        "On a clean user profile, install and launch an affected version or a current build; open Welcome, Settings and the tray flyout and record responsiveness independently.",
+        "Repeat with the identified dependency delayed or failed; windows must render and remain dismissible without signing out.",
+        "Confirm that elevated and non-elevated subsequent launches still load settings and modules normally."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The shared first-launch symptom supports examining initialization, but no hang stack or current reproduction confirms a dispatcher blockage."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After installing 0.82.0, the reporter saw a blank, unresponsive module flyout and a lagging Welcome experience, ultimately recovering by signing out.",
+    "known_information": [
+      "The report already includes installation method, version, elevated execution, screenshot, diagnostic attachment and occurrence time.",
+      "There are no live comments, assignees or linked fix events. The previous claim of assigned ownership was unsupported."
+    ],
+    "inferences": [
+      "A startup or UI-thread problem could affect presentation, but the two surfaces need not share the same failing process.",
+      "The 2024 incident alone cannot establish that the current build still fails."
+    ],
+    "analysis": "Preserve the existing evidence and ask only for recurrence and affected-surface discrimination. Do not repeat the old ownership claim or present a speculative startup fix as confirmed.",
+    "initial_investigation": [
+      "Read the complete report, empty comment history and empty public cross-reference timeline; exact issue-number PR search found no match.",
+      "Current Settings App.xaml.cs contains OOBE window lifecycle state; current Quick Access has its own App.xaml.cs. These are ownership leads, not proof of a shared deadlock.",
+      "The linked ZIP and screenshot are recorded as supplied evidence; their contents were not analyzed during this lightweight pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same launch sequence still freezes, and whether the tray flyout, Settings and Welcome fail together or independently.",
+        "why_needed": "Distinguishes a recurring startup defect and its owning surface from a historical one-off incident.",
+        "how_to_collect": "On the current installed version, record the version and open the tray flyout, Settings and Welcome separately; state whether this is first launch after installation or also happens on later launches."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A current diagnostic ZIP only if the freeze recurs, associated with the reproduction time.",
+        "why_needed": "The existing 0.82.0 archive cannot establish which current startup component fails.",
+        "how_to_collect": "After reproducing, comment /bugreport and capture the generated ZIP promptly. If the tray or Settings is inaccessible, run BugReportTool.exe from the PowerToys installation directory; include the occurrence time and time zone."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "confirm-startup-surface",
+      "type": "request_info",
+      "label": "Confirm startup surfaces and recurrence",
+      "comment": {
+        "body": "Thanks for the 0.82.0 report, screenshot, diagnostic ZIP and 16:55 IST occurrence time. Those establish a real first-launch problem, but do not yet distinguish the failing UI surface or whether it still recurs.\n\n1. Could you confirm whether this still happens on your current PowerToys version, name that version, and say whether it happens only on first launch after installation or also on later launches? Please open the tray flyout, Settings and Welcome separately and tell us which are unresponsive.\n2. If it recurs, please add a comment containing `/bugreport` and capture the generated ZIP immediately after reproducing, noting the occurrence time and time zone. If the tray or Settings cannot open, run `BugReportTool.exe` from the PowerToys installation directory instead. There is no need to re-upload the original archive."
+      }
+    },
+    {
+      "id": "approve-startup-investigation",
+      "type": "approve_design",
+      "label": "Approve scoped startup investigation",
+      "note": "Low-confidence fix hypothesis; identify the blocking component before implementing. No implementation-grade design or fork work is claimed."
+    }
+  ]
 }

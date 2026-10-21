@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51015",
+  "number": 51015,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T20:09:30.006Z",
+  "evaluated_at": "2026-10-20T20:09:30.006Z",
+  "source_updated_at": "2026-10-05T14:12:43Z",
+  "title": "Command Palette Dock briefly has incorrect layout after changing position",
+  "url": "https://github.com/microsoft/PowerToys/issues/51015",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette",
+    "Product-Venice"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce dock orientation transition",
+    "detail": "The report is reproducible; current Dock code updates settings and then AppBar position, but cause is unconfirmed."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce left-to-bottom transition",
+    "reason": "Check whether a stale measurement persists until a later refresh."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report and automated triage comment establish a repeatable transient layout after changing Dock from Left to Bottom. Current Dock code updates settings and AppBar position on the UI thread, but that alone does not prove the cause. Maintainer reproduction on current build is warranted.",
+    "evidence": [
+      "Issue describes brief incorrect layout after changing Left to Bottom; automated triage says reproduction is sufficient.",
+      "Current DockWindow.UpdateSettingsOnUiThread applies Dock settings and AppBar positioning on the UI thread.",
+      "No reporter comments, linked fix PR, or captured layout state."
+    ],
+    "recommended_action": "Approve focused maintainer reproduction and inspect layout measurements before proposing a code change.",
+    "evaluated_at": "2026-10-20T20:09:30.006Z",
+    "source_updated_at": "2026-10-05T14:12:43Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A stale size/orientation measurement during the transition is plausible, but no trace confirms which state is wrong or how long it persists. Keep the proposal yellow and reproduce first."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recalculate Dock layout after a position change",
+      "root_cause": "Hypothesis: changing Dock orientation leaves a previously measured size or item layout active for an initial UI pass. Current source order does not establish that root cause.",
+      "plan": [
+        "Reproduce on current development build and record control bounds, position, item orientation, and AppBar bounds before and after the transient frame.",
+        "Identify whether stale state is in DockControl measurement, item orientation, or AppBar placement; avoid a generic delay.",
+        "If confirmed, trigger a targeted final layout update after applying position and AppBar state.",
+        "Add verification for Left-to-Bottom and Bottom-to-Left transitions."
+      ],
+      "verification": [
+        "Verify correct bottom layout immediately after selection without a second settings action.",
+        "Repeat the reverse change and verify no stale frame or persistent sizing error.",
+        "Run focused Dock tests and build if implemented."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "The symptom is described as transient and the update path is known, but no captured geometry identifies the stale state."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette Dock briefly displays an incorrect layout after changing position from Left to Bottom.",
+    "known_information": [
+      "Issue describes Left-to-Bottom transition and brief incorrect layout.",
+      "Automated triage says behavior is sufficient to reproduce.",
+      "Current DockWindow applies settings and AppBar positioning on the UI thread.",
+      "One comment; no linked fix PR or assignee."
+    ],
+    "inferences": [
+      "A stale measurement or orientation during transition may explain the transient frame, but the component and geometry are unknown."
+    ],
+    "analysis": "The report is reproducible enough for maintainer investigation. Capture control and AppBar bounds before selecting a fix; update order alone does not establish a defect.",
+    "initial_investigation": [
+      "Read live body, comment, labels, assignees, links, and updatedAt.",
+      "Inspected DockWindow.UpdateSettingsOnUiThread and DockControl settings/layout update path.",
+      "No existing fix was found covering this transition."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-dock-layout-investigation-51015",
+      "type": "approve_design",
+      "label": "Approve Dock transition investigation",
+      "primary": true,
+      "confirm": true,
+      "note": "Yellow hypothesis for focused reproduction, not detailed design."
+    },
+    {
+      "id": "reproduce-dock-transition-51015",
+      "type": "reproduce",
+      "label": "Reproduce Left-to-Bottom Dock transition",
+      "primary": false,
+      "confirm": false,
+      "note": "Capture geometry during transient frame before choosing a fix.",
+      "reproduce": {
+        "title": "Inspect Dock geometry during position changes",
+        "module": "Command Palette Dock",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Enable Command Palette Dock with stable display configuration.",
+          "Start with Dock position set to Left."
+        ],
+        "steps": [
+          "Change Dock position from Left to Bottom.",
+          "Observe first and settled frames; record DockControl and AppBar bounds, item orientation, and selected position.",
+          "Repeat from Bottom to Left and compare measurements.",
+          "Determine whether a second settings action or UI refresh is required."
+        ],
+        "expected_result": "Identify stale geometry, if any, and determine whether current code still reproduces the transient layout."
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Assessment only; no upstream issue, label, assignment, or comment action was taken."
+  }
+}

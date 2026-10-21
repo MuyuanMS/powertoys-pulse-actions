@@ -1,33 +1,104 @@
 {
+  "schemaVersion": 5,
   "number": 25217,
   "kind": "issue",
+  "title": "Quick accent sort by frequency not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/25217",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-13T16:00:19Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 1,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The uppercase Ω example supports a targeted case-identity sorting test. Related restart persistence already has a merged fix, but that does not establish that this per-character failure is handled.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter describes Ω staying at its base position with frequency sorting enabled in 0.68.0; resetting sorting only temporarily helped.",
+      "A commenter reports short-lived ordering in 0.77.0 and links #32850.",
+      "Current PowerAccent.GetCharacters sorts before ToUpper, while SendInputAndHideToolbar increments usage for the selected displayed character.",
+      "PR #37577 merged persistence for #26034; #32130 separately concerns center selection."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce uppercase/lowercase usage identity separately from persisted-order loss before approving a narrowly scoped correction.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-13T16:00:19Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current lookup-before-case-conversion path suggests a distinct per-character issue not established as covered by the merged restart-persistence fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use consistent character identity for frequency lookup and increment",
+      "root_cause": "Hypothesis: an uppercase selection such as Ω increments the displayed uppercase string, but the next frequency sort looks up the lowercase mapping before ToUpper, so the saved count is not applied to that candidate.",
+      "plan": [
+        "In PowerAccent.GetCharacters and SendInputAndHideToolbar, trace the candidate string used for lookup and increment for ω/Ω with Shift and Caps Lock.",
+        "Choose a consistent usage identity or perform case transformation before sorting, preserving the intended independent/shared-case behavior and existing usage data.",
+        "Add regression coverage for uppercase Greek, ordinary lowercase accents, multi-codepoint mappings and stable tie-breaking; do not mix in center-selection UX changes."
+      ],
+      "verification": [
+        "Repeated Ω selections move the intended candidate according to the selected frequency policy on the next activation.",
+        "Check lowercase, Shift and Caps Lock, then restart; distinguish case-key mismatch from persistence and reset-setting behavior."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The current ordering and increment sequence directly matches the named uppercase symptom, but historical settings and runtime behavior were not reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent sometimes fails to promote frequently selected characters, specifically Ω; a later commenter also reports ordering reverting after a short time.",
+    "known_information": [
+      "Frequency sorting is enabled and resetting it helped only temporarily.",
+      "The original report is 0.68.0; the later report is 0.77.0.",
+      "The issue is open and unassigned, not owned by an empty assignee.",
+      "Related #32850 and #33221 were closed into #26034; #37577 later merged restart-persistence support."
+    ],
+    "inferences": [
+      "The Ω-specific symptom may be a case-sensitive usage-key mismatch rather than only missing disk persistence.",
+      "The later generic reset symptom could be separate; the merged persistence PR is not proof of complete resolution."
+    ],
+    "analysis": "There is enough evidence for a maintainer-side discriminator. Asking for generic logs would not resolve the ordering identity visible in the code.",
+    "initial_investigation": [
+      "Read the report, full comment and paginated timeline, then inspected #32850, #33221, #32130 and #26034 and verified merged PR #37577.",
+      "Inspected GetCharacters, SendInputAndHideToolbar and SaveUsageInfo in src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb.",
+      "Inspected src/modules/poweraccent/PowerAccent.Core/Tools/CharactersUsageInfo.cs: usage uses string-keyed dictionaries and persists UsageInfo.json.",
+      "No interactive frequency or restart test was executed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve character-identity sorting plan"
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare Ω and ω frequency tracking",
+      "reproduce": {
+        "title": "Separate case-key sorting from persistence",
+        "module": "Quick Accent",
+        "version_requirement": "Current build containing #37577; compare historical 0.68.0 only if the current test passes.",
+        "prerequisites": [
+          "A test account with Greek characters enabled and frequency sorting on; preserve existing usage data."
+        ],
+        "steps": [
+          "1. Set selection to start from the left to isolate center-selection behavior.",
+          "2. Select ω repeatedly, reopen the toolbar and record its position.",
+          "3. Repeat with Ω using Shift and then Caps Lock; compare dictionary lookup and increment keys under a debugger.",
+          "4. Test the next activation without restarting, then exit normally and restart to separately verify persisted ordering.",
+          "5. Repeat with a lowercase accented character and a multi-codepoint uppercase mapping."
+        ],
+        "expected_result": "Usage lookup and increment refer to the same intended candidate identity; frequent selections remain correctly ranked both immediately and after restart."
+      }
+    }
+  ]
 }

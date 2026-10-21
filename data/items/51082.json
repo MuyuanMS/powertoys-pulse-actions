@@ -1,0 +1,128 @@
+{
+  "track": "triage",
+  "stage": "awaiting_design_approval",
+  "source_updated_at": "2026-10-07T15:42:46Z",
+  "title": "Command Palette is too slow to open commands and sometimes fails",
+  "url": "https://github.com/microsoft/PowerToys/issues/51082",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "pending_author": false,
+  "status": {
+    "glyph": "🎯",
+    "label": "Command Palette activation handoff fix candidate",
+    "detail": "A fast-typing repro with a linked third-party Process Killer extension and diagnostic archive may expose an activation/input handoff race."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter supplies a specific activation phrase and two observable failures: the extension sometimes does not open until the suffix is erased, or it opens but loses the first argument characters. The linked Process Killer is a third-party extension; the missing suffix suggests a possible Command Palette input-handoff issue, but no trace proves it. Reproduce before implementation.",
+    "evidence": [
+      "PowerToys 0.101.2362, WinGet, Windows 11 build 26200, non-elevated per-user install.",
+      "Reporter configures “kill ” and types “kill excel” quickly.",
+      "Sometimes all text stays in the root prompt until suffix is erased; sometimes the page opens but first 1–2 argument characters are missing.",
+      "A diagnostic ZIP is attached; automated triage says it was analyzed from a sanitized subset.",
+      "Linked public repository 8LWXpg/CmdPal-ProcessKiller describes a Process Killer extension for Command Palette."
+    ],
+    "recommended_action": "Reproduce fast prefix-plus-argument typing with the linked extension and trace the page transition and suffix delivery.",
+    "evaluated_at": "2026-10-20T20:10:01.27Z",
+    "source_updated_at": "2026-10-07T15:42:46Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Command Palette input-routing fix may apply if the lost suffix is reproduced with the linked extension; current evidence does not establish whether delay is in extension activation, page navigation, or extension handling."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve fast-typed arguments during extension activation",
+      "root_cause": "Hypothesis: text after the activation prefix is processed before the extension page is ready, so the query stays in the root prompt or the first characters are lost during transition. The extension may expose the timing window, but no trace confirms the boundary.",
+      "plan": [
+        "Reproduce using the linked Process Killer extension and compare slow versus rapid typing; trace prefix match, page transition, and remaining query.",
+        "If the root prompt consumes/drops the suffix, buffer characters after the prefix and deliver them when extension input is ready, without replaying the prefix.",
+        "Add UI coverage for fast typing and delayed activation, checking page selection and exact argument text."
+      ],
+      "verification": [
+        "Install the linked extension, configure “kill ”, and type “kill excel” at normal and rapid speeds.",
+        "Verify the extension opens and receives the entire suffix exactly once; check slow typing and ordinary root searches.",
+        "Run focused Command Palette UI validation after confirming the failure is in PowerToys handoff rather than extension-side handling."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "Both symptoms fit a transition/input handoff race, but there is one report and no current-build reproduction or source trace."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Fast typing of a Process Killer activation phrase plus arguments sometimes fails to open its page or drops initial argument characters.",
+    "known_information": [
+      "PowerToys 0.101.2362 Stable, WinGet, per-user, non-elevated; Windows 11 build 26200; .NET 10.0.11 reported.",
+      "Example activation phrase “kill ” and query “kill excel.”",
+      "Observed failures: query remains in root prompt until suffix is erased, or extension opens with first 1–2 suffix characters missing.",
+      "Diagnostic ZIP attached; automated triage says it analyzed a sanitized subset.",
+      "Linked public extension repository is 8LWXpg/CmdPal-ProcessKiller."
+    ],
+    "inferences": [
+      "Missing suffix may indicate a race between prefix recognition and extension-page readiness, but extension behavior may also affect timing.",
+      "A shared input handoff is plausible, not confirmed."
+    ],
+    "analysis": "The sequence is specific enough for maintainer reproduction; no further reporter evidence is needed. The candidate fix targets suffix preservation only if reproduced in PowerToys route; do not assume the extension is at fault.",
+    "initial_investigation": [
+      "Read full issue body and only triage comment, including diagnostic summary and extension URL.",
+      "Verified linked extension repository and README describe a public Command Palette Process Killer extension with Store/WinGet instructions.",
+      "Checked current SearchBar source history; recent input/navigation changes exist, but no issue-specific fix is linked."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-cmdpal-input-handoff-51082",
+      "type": "approve_design",
+      "label": "Design Command Palette input handoff",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fix design only after reproducing the timing failure with the linked extension."
+    },
+    {
+      "id": "reproduce-cmdpal-fast-activation-51082",
+      "type": "reproduce",
+      "label": "Reproduce fast extension activation",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "PowerToys 0.101.2362 or current build; record exact build and extension version",
+        "prerequisites": [
+          "Install public extension 8LWXpg.ProcessKillerforCommandPalette from Store or WinGet.",
+          "Configure activation phrase “kill ” if supported by current extension.",
+          "Keep Command Palette running with normal activation configuration."
+        ],
+        "steps": [
+          "Type “kill excel” slowly; record whether Process Killer opens and receives “excel”.",
+          "Repeat at the rapid speed described in the issue.",
+          "If the extension does not open, erase characters until only “kill ” remains and observe whether that triggers the page.",
+          "If it opens, compare exact suffix received (for example “excel”, “xcel”, or “cel”).",
+          "Trace whether suffix remains in root query, is buffered during activation, or is dropped after extension focus."
+        ],
+        "expected_result": "The extension activates when its prefix is complete and receives every subsequent argument character exactly once.",
+        "setup_requirements": [
+          "Record extension version, exact activation phrase, and input sequence.",
+          "Compare slow and fast inputs without changing settings between runs."
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51082,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:01.27Z",
+  "evaluated_at": "2026-10-20T20:10:01.27Z",
+  "revalidation_history": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No upstream or fork issue/PR writes were made."
+  }
+}

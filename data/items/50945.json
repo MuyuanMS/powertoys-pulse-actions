@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50945",
+  "number": 50945,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-01T21:37:17Z",
+  "title": "[Keyboard Manager] Backup/restore omits editorSettings.json, leaving new editor settings stale",
+  "url": "https://github.com/microsoft/PowerToys/issues/50945",
+  "author": "Alb11747",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue includes a before/after configuration comparison, a restore log showing default.json was restored, and a deterministic test showing editorSettings.json matches none of the installed include patterns. Current main still uses case-sensitive Regex.IsMatch and omits an explicit editorSettings rule. One untested save-after-restore path merits a maintainer reproduction before implementation.",
+    "evidence": [
+      "The runtime default.json was restored from the backup while the existing editorSettings.json retained older launch arguments and options.",
+      "The extracted backup manifest lists default.json but not editorSettings.json.",
+      "The reporter tested the installed include patterns and found that the capital S in editorSettings.json does not match the lowercase *settings.json rule under the current case-sensitive regex.",
+      "The issue's only comment is an automated triage summary; it does not add evidence that the stale editor state was reconciled."
+    ],
+    "recommended_action": "Reproduce the split-state restore and validate a coordinated backup/restore plan before approval.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-01T21:37:17Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current backup rules still exclude editorSettings.json, and the reporter's deterministic filter test identifies a PowerToys-owned gap. Restore semantics must keep the editor and runtime representations consistent."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Keyboard Manager editor and runtime settings aligned during restore",
+      "root_cause": "The backup include patterns contain Keyboard Manager/default.json and lowercase *settings.json. The case-sensitive matching used by IsIncludeFile does not include the camel-cased editorSettings.json, so restore replaces runtime mappings while leaving an existing editor configuration stale.",
+      "plan": [
+        "Reproduce restore onto a destination with an existing new-editor configuration and verify whether a subsequent editor save can overwrite the restored runtime mapping.",
+        "Define a coordinated restore rule for Keyboard Manager/default.json and editorSettings.json so both representations are restored or reconciled together; avoid merely adding the file without deciding how older backups and existing destinations are handled.",
+        "Add backup/restore tests for the camel-cased filename, existing-destination restore, and post-restore editor/runtime consistency."
+      ],
+      "verification": [
+        "Run focused Settings.UI.Library backup/restore tests proving editorSettings.json is selected by the intended rule and that a destination restore does not leave conflicting Keyboard Manager values.",
+        "Repeat the reporter's restore scenario, reopen the new editor, save the affected mapping, and confirm runtime arguments and launch options remain the restored values."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "Current source and the reporter's filter experiment support the omission cause, but a clean reproduction is needed to establish the safest treatment of existing editor state and the subsequent-save risk."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Restoring a PowerToys backup updates Keyboard Manager's runtime mapping file but leaves the new editor's separately persisted settings at their pre-restore values.",
+    "known_information": [
+      "The reporter tested PowerToys 0.101.2362 with the new editor enabled and included a sanitized evidence ZIP.",
+      "The restore log records Keyboard Manager/default.json being updated, and the runtime subsequently launches Chrome with the restored arguments.",
+      "The existing editorSettings.json retained older values and timestamp; the extracted backup manifest did not contain that file.",
+      "Current main's SettingsBackupAndRestoreUtils.IsIncludeFile uses Regex.IsMatch without IgnoreCase, and backup_restore_settings.json has no explicit editorSettings.json include rule."
+    ],
+    "inferences": [
+      "The case-sensitive include-pattern mismatch plausibly explains why editorSettings.json is omitted.",
+      "A later editor save could restore stale values into the runtime configuration, but the reporter has not tested that overwrite path."
+    ],
+    "analysis": "The report establishes a split between a successfully restored runtime file and stale editor state. The source-level filter explains the omission; before selecting a safe fix, a maintainer should verify the post-restore save path and ensure older backups do not replace valid editor data with an absent or incompatible file.",
+    "initial_investigation": [
+      "Inspected current main's SettingsBackupAndRestoreUtils.IsIncludeFile/GetSettingsFiles and backup_restore_settings.json: matching is case-sensitive and the include list contains default.json but no editorSettings.json.",
+      "Reviewed the reporter's deterministic wildcard test, restore log, and table of old editor values versus restored runtime values.",
+      "The one issue comment is an automated triage summary; it adds no further repro or fix evidence."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-keyboard-manager-backup-alignment-50945",
+      "type": "approve_design",
+      "label": "Approve coordinated settings restore fix"
+    },
+    {
+      "id": "reproduce-keyboard-manager-backup-split-50945",
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager restore split",
+      "note": "The include-rule mismatch is demonstrated; confirm existing-destination and subsequent-save behavior before implementation.",
+      "reproduce": {
+        "title": "Verify Keyboard Manager editor/runtime state after restore",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.101.2362 with the new editor enabled, as reported",
+        "prerequisites": [
+          "Use a test profile with a global Open app shortcut whose Chrome arguments and launch options differ between default.json and editorSettings.json.",
+          "Create a backup containing the runtime default.json and restore it over a destination that already has editorSettings.json."
+        ],
+        "steps": [
+          "Record the shortcut arguments and launch options in both files before restore.",
+          "Restore the backup and confirm which files are written and which values remain in the new editor.",
+          "Open Keyboard Manager, inspect the affected shortcut, save it without unrelated edits, and restart or invoke the shortcut to compare the resulting runtime values.",
+          "Repeat with a destination that has no editorSettings.json to check the legacy-backup and first-run behavior."
+        ],
+        "expected_result": "After restore, the editor and runtime representations agree, and saving the editor does not replace restored values with stale destination settings.",
+        "actual_to_confirm": "Whether the stale editor values survive restore and overwrite the restored runtime mapping on a later editor save."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce restore consistency",
+    "detail": "The filename filter mismatch is supported by current source; verify restore behavior with an existing editor file before choosing reconciliation semantics."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce Keyboard Manager restore split",
+    "reason": "Confirm the existing-destination and subsequent-save path before implementing coordinated restore coverage."
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50946",
+  "number": 50946,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-01T23:29:36Z",
+  "title": "Keyboard manager doesn't work for Copilot Key",
+  "url": "https://github.com/microsoft/PowerToys/issues/50946",
+  "author": "panda667",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a direct mapping scenario for the physical Copilot key and includes a diagnostic archive; its expected outcomes are clear. The diagnostic triage comment reports editor-shortcut initialization failures, but does not establish that they cause the key remapping failure, so a maintainer reproduction should precede a fix choice.",
+    "evidence": [
+      "The reporter uses Windows 11 25H2 and PowerToys 0.101.2712.0 and describes a Win+Shift+F23 Copilot-key mapping.",
+      "Both an Open URL mapping and a disabled mapping still trigger the Copilot chat window.",
+      "A PowerToys diagnostic ZIP is attached; the automated triage summary reports repeated editor-shortcut initialization errors but does not prove the remapping failure path."
+    ],
+    "recommended_action": "Reproduce the Copilot-key remapping and disable cases, then trace whether Keyboard Manager receives and consumes the F23 chord.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-01T23:29:36Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No fix attempt is linked. A low-confidence Keyboard Manager event-interception hypothesis is testable, but the attached diagnostic summary does not yet identify the cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure Keyboard Manager handles the physical Copilot-key chord",
+      "root_cause": "The physical Copilot key may launch its OS action before the configured Win+Shift+F23 remapping or disable rule is applied; it is not yet known whether the keyboard hook receives the chord or whether initialization prevents the rule from becoming active.",
+      "plan": [
+        "Reproduce with the reported physical Copilot key and confirm the global mapping is active in Keyboard Manager before each test.",
+        "Trace the F23 key event through Keyboard Manager initialization and the remapping/disable handling path to determine whether the chord is received, filtered, or passed to the OS.",
+        "If the event is bypassing an applicable Keyboard Manager path, correct that interception point and add regression coverage for both a remapped and disabled Copilot-key chord."
+      ],
+      "verification": [
+        "On Windows 11 25H2 with a physical Copilot key, map Win+Shift+F23 to open the reported URL and confirm the Copilot chat no longer opens.",
+        "Replace the mapping with a disabled action and confirm the key opens neither the URL nor Copilot chat; verify unrelated F23 shortcuts still work."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The symptom and test outcomes are clear, but the diagnostic summary's editor-shortcut errors may be unrelated and no key-event trace identifies where the Copilot action bypasses the mapping."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A physical Copilot key continues to open Copilot chat even when Keyboard Manager maps or disables its Win+Shift+F23 chord.",
+    "known_information": [
+      "The reporter states PowerToys 0.101.2712.0 on Windows 11 25H2 and attaches a PowerToys diagnostic ZIP.",
+      "The issue body says both an Open URL mapping and a disabled mapping leave the Copilot chat action unchanged.",
+      "The automated triage comment reports repeated 'Failed to initialize Keyboard Manager editor shortcut' messages in the archive; that message is not proof of a remapping-hook failure.",
+      "Related issue #49227 is closed and concerns Copilot-key remapping in some applications; #44650 concerns a Citrix session and remains open."
+    ],
+    "inferences": [
+      "The physical key may trigger an OS-level action before the expected Keyboard Manager mapping is applied.",
+      "The available evidence does not show whether the F23 event reaches the remapping hook or whether the editor initialization messages are causally related."
+    ],
+    "analysis": "The reporter's two outcomes make this directly testable without requesting another generic log package. The red hypothesis is only a possible event-interception failure; reproduce the exact physical key behavior and trace the event before approving implementation.",
+    "initial_investigation": [
+      "Reviewed the complete issue body and its sole automated-triage comment, including the attached diagnostic ZIP link and listed related issues.",
+      "Checked related issue titles and states: #49227 is closed and #44650 remains open for a Citrix-specific symptom; neither establishes a duplicate of this direct global mapping/disable report.",
+      "The owning component is Keyboard Manager under src/modules/keyboardmanager; no current report evidence identifies the failing event-processing symbol."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 49227,
+        "url": "https://github.com/microsoft/PowerToys/issues/49227",
+        "relationship": "Closed report of Copilot-key remapping failure in some applications; the current issue reports a global remap and disable action."
+      },
+      {
+        "number": 44650,
+        "url": "https://github.com/microsoft/PowerToys/issues/44650",
+        "relationship": "Open report limited to a remapped F23 key in a Citrix Workspace session."
+      },
+      {
+        "number": 48356,
+        "url": "https://github.com/microsoft/PowerToys/issues/48356",
+        "relationship": "Older broad keyboard-shortcuts report; no duplicate relationship established."
+      }
+    ],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-copilot-key-remap-investigation-50946",
+      "type": "approve_design",
+      "label": "Approve Copilot-key interception investigation"
+    },
+    {
+      "id": "reproduce-copilot-key-remapping-50946",
+      "type": "reproduce",
+      "label": "Reproduce Copilot-key remapping",
+      "note": "The reporter supplied both a remap and disable outcome; verify event handling before choosing a code change.",
+      "reproduce": {
+        "title": "Test Keyboard Manager with the physical Copilot key",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.101.2712.0 on Windows 11 25H2, as reported",
+        "prerequisites": [
+          "A test PC with the physical Copilot key that emits Win+Shift+F23.",
+          "Confirm Keyboard Manager is running and the test mapping is active."
+        ],
+        "steps": [
+          "Map Win+Shift+F23 to open a known URL and save the mapping.",
+          "Press the physical Copilot key from the desktop and from a normal application; record whether the URL opens or Copilot chat appears.",
+          "Replace the mapping with a disabled action, save it, and repeat the same key presses.",
+          "Inspect the Keyboard Manager diagnostic output for initialization or event-processing failures during each test."
+        ],
+        "expected_result": "The URL mapping runs in the first test, and the disabled mapping suppresses both the URL and Copilot chat in the second.",
+        "actual_to_confirm": "Whether the configured mapping is active and whether the physical F23 chord reaches Keyboard Manager before the OS launches Copilot."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce Copilot-key mapping",
+    "detail": "The remap and disable outcomes are reported clearly, but the root cause is not established by the editor initialization messages."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce Copilot-key remapping",
+    "reason": "Confirm whether Keyboard Manager receives the F23 chord before designing a fix."
+  }
+}

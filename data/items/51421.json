@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51421,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:39:41.086Z",
+  "evaluated_at": "2026-10-20T16:39:41.086Z",
+  "source_updated_at": "2026-10-20T12:53:10Z",
+  "updated_at": "2026-10-20T12:53:10Z",
+  "state": "open",
+  "title": "CmdPal: Registry changes can interrupt extension shutdown (EXT26.T3)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51421",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:39:41.086Z",
+    "evidence": [
+      "The isolated test reproduced registry mutation during shutdown and skipped the second extension.",
+      "The issue specifies a snapshot under the same mutation lock, with remote calls after releasing it.",
+      "Current SignalStopAsync iterates the installed-extension collection and catches individual call exceptions."
+    ],
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "rationale": "An isolated test reproduced mutation after the first disposal and skipped the second extension. The report correctly notes that copying only after the async getter returns would not close the mutation race.",
+    "source_updated_at": "2026-10-20T12:53:10Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was found by focused issue-number search; treat the reported mechanism as a hypothesis and validate before implementation.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Mutate/refresh the registry after the first stop begins; verify every extension in the original snapshot is attempted.",
+        "Verify refresh proceeds while a remote stop is delayed, proving the lock is not held across COM.",
+        "Run focused service tests with throwing/mutating doubles."
+      ],
+      "root_cause": "The stop path enumerates a mutable registry without holding the lock used for mutation; concurrent refresh/package changes can invalidate iteration outside per-extension handling.",
+      "plan": [
+        "Identify the registry mutation lock and take an immutable snapshot while holding it.",
+        "Release that lock before all remote COM calls.",
+        "Attempt each snapshot member independently and retain per-extension error handling.",
+        "Add deterministic mutation-during-stop coverage."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The skipped-stop scenario is reproduced; the exact snapshot/lock boundary needs tests."
+      },
+      "title": "Correct the reported Command Palette extension lifecycle failure"
+    }
+  ],
+  "issue_context": {
+    "analysis": "An isolated test reproduced mutation after the first disposal and skipped the second extension. The report correctly notes that copying only after the async getter returns would not close the mutation race.",
+    "summary": "SignalStopAsync enumerates a shared installed-extension list after its lock is released, allowing concurrent mutation to skip later stop attempts.",
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "known_information": [
+      "The isolated test reproduced registry mutation during shutdown and skipped the second extension.",
+      "The issue specifies a snapshot under the same mutation lock, with remote calls after releasing it.",
+      "Current SignalStopAsync iterates the installed-extension collection and catches individual call exceptions."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed current state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and relevant related-issue status; no upstream code or public issue action was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "id": "issue-51421-approve-design",
+      "label": "Approve CmdPal lifecycle fix investigation",
+      "confirm": true,
+      "design": {
+        "title": "Correct the reported Command Palette extension lifecycle failure"
+      },
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "A controllable extension registry and two observable extension stop calls."
+        ],
+        "module": "Command Palette extension service",
+        "expected_result": "All members in a consistent snapshot are attempted without holding the registry lock during COM calls.",
+        "steps": [
+          "1. Begin stopping two extensions and mutate the registry after the first stop begins.",
+          "2. Observe whether the second extension from the initial set is attempted.",
+          "3. Verify refresh does not wait for a remote stop call."
+        ]
+      },
+      "id": "issue-51421-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal lifecycle failure"
+    }
+  ]
+}

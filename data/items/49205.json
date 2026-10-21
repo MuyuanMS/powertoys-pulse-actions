@@ -1,92 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 49205,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "Current thread mixes hidden-dock routing with extension-defined pinning limitations."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a fresh repro that isolates either the hidden-dock monitor-selection case or the extension-command pinning case, and split them if both still exist."
-  },
-  "actions": [
-    {
-      "description": "Approve fix design for issue #49205 and start fork implementation workflow.",
-      "type": "approve_design",
-      "label": "Approve design"
-    },
-    {
-      "comment": {
-        "body": "Thank you for reporting this issue with PowerToys. To help us investigate and reproduce the problem accurately, could you please reproduce the issue and then run /bugreport in a comment to attach a fresh diagnostic ZIP? This will provide the exact module logs and system environment details needed to confirm the root cause."
-      },
-      "description": "Ask reporter for fresh /bugreport diagnostic ZIP to confirm root cause.",
-      "type": "request_info",
-      "label": "Request diagnostic ZIP"
-    }
+  "generated_at": "2026-10-20T16:40:35Z",
+  "evaluated_at": "2026-10-20T16:40:35Z",
+  "source_updated_at": "2026-10-17T15:14:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49205",
+  "title": "Pin to Dock Pins to a Hidden Dock",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T14:54:25Z",
+  "assignees": [],
+  "comments": 5,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "Current thread mixes hidden-dock routing with extension-defined pinning limitations.",
+    "status": "actionable_design",
+    "rationale": "Merged PR #48723 filters hidden Dock instances, addressing the original target-selection scenario. A 2026-10-17 report adds a specific Add/Remove membership mismatch for a Cmd item, which may be distinct and remains unverified.",
     "evidence": [
-      "Current thread mixes hidden-dock routing with extension-defined pinning limitations."
+      "Original report says an item is not added to a visible dock when the Dock is hidden on the primary display.",
+      "PR #48723 merged 2026-06-19 and only lists available Dock instances in the pin dialog.",
+      "A 2026-10-17 commenter on dual monitors reports a Cmd item whose Add/Remove menu state does not match actual Dock contents and supplies a video.",
+      "A maintainer says nested command pinning depends on extension-provided command IDs."
     ],
-    "recommended_action": "Ask for a fresh repro that isolates either the hidden-dock monitor-selection case or the extension-command pinning case, and split them if both still exist.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T14:54:25Z"
+    "recommended_action": "Reproduce the 2026-10-17 Dock membership/status sequence on a current build and compare it with merged PR #48723.",
+    "evaluated_at": "2026-10-20T16:40:35Z",
+    "source_updated_at": "2026-10-17T15:14:21Z"
   },
-  "schemaVersion": 5,
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Proposed fix plan derived from issue report and initial investigation."
+    "rationale": "A repository-side change is plausible, but the causal hypothesis remains unverified."
   },
   "proposed_fixes": [
     {
-      "title": "Investigate root cause and apply targeted fix for issue #49205",
-      "confidence": {
-        "rationale": "Initial hypothesis requires reproduction or diagnostic trace.",
-        "score": 70,
-        "level": "yellow"
-      },
-      "root_cause": "Failing mechanism reported in issue #49205 requires code revalidation.",
-      "plan": [
-        "Verify reproduction steps",
-        "Trace failing code path",
-        "Apply fix and verify"
-      ],
+      "title": "Keep Dock membership and command status in sync",
+      "root_cause": "Red hypothesis: the Add/Remove action shown for a command can diverge from persisted Dock membership after a failed or partial pin attempt; the current report may also involve an unsupported extension command.",
       "verification": [
-        "Run targeted module tests and verify expected behavior."
+        "Follow the latest reporter’s sequence and verify the action label matches Dock contents after each step.",
+        "Repeat with a command known to expose a pinnable ID and an unsupported nested command."
+      ],
+      "confidence": {
+        "rationale": "The new report provides a concrete mismatch, but the merged fix and extension pinning contract introduce distinct paths not yet traced.",
+        "score": 40,
+        "level": "red"
+      },
+      "plan": [
+        "Reproduce the latest Cmd-item sequence on a current build and confirm the item is eligible for pinning.",
+        "At each Add/Remove transition compare visible Dock entries with the stored command membership.",
+        "If a mismatch is confirmed, fix the state update at the pin/unpin boundary and add a regression test for failed pin attempts.",
+        "Retain the merged hidden-Dock filtering from #48723."
       ]
     }
   ],
   "issue_context": {
-    "summary": "Pin to Dock Pins to a Hidden Dock",
-    "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+    "summary": "A merged change addressed pinning to hidden Dock instances, but a newer report describes inconsistent Dock membership state for a command item and needs focused reproduction.",
+    "known_information": [
+      "Original report says an item is not added to a visible dock when the Dock is hidden on the primary display.",
+      "PR #48723 merged 2026-06-19 and only lists available Dock instances in the pin dialog.",
+      "A 2026-10-17 commenter on dual monitors reports a Cmd item whose Add/Remove menu state does not match actual Dock contents and supplies a video.",
+      "A maintainer says nested command pinning depends on extension-provided command IDs."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
+      "The newer state mismatch may be separate from the hidden-dock selection fixed by #48723.",
+      "The extension pinning contract may affect the item, but no common cause is established."
     ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+    "analysis": "The latest reporter supplies a concrete sequence and video; a generic log request is not needed. Compare actual Dock membership with the action label after the merged filter change.",
+    "initial_investigation": [
+      "Verified PR #48723 is merged; its description covers available Dock selection only.",
+      "Reviewed all five comments, including the current report and maintainer explanation of command IDs."
     ],
-    "information_gaps": [
-      {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
-        "evidence_type": "bugreport_zip"
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Dock membership investigation",
+      "description": "Reproduce the 2026-10-17 Dock membership/status sequence on a current build and compare it with merged PR #48723."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Dock pin status mismatch",
+      "reproduce": {
+        "prerequisites": [
+          "Use the extension item described in the 2026-10-17 report or another command with known pin support.",
+          "Keep the Dock and command palette available during the test."
+        ],
+        "version_requirements": "Current supported build; dual-monitor setup",
+        "steps": [
+          "Attempt to add the item from Command Palette.",
+          "If not visible, repeat and check whether the menu remains Add or changes to Remove.",
+          "Open Dock edit mode and remove the item if present.",
+          "Return to Command Palette and compare the menu label with actual Dock contents."
+        ],
+        "module": "Command Palette Dock",
+        "expected_result": "Add/Remove always reflects whether the item is actually present in the Dock."
       }
-    ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
-  }
+    }
+  ],
+  "status": {
+    "glyph": "🎯",
+    "label": "Design candidate",
+    "detail": "Merged PR #48723 filters hidden Dock instances, addressing the original target-selection scenario. A 2026-10-17 report adds a specific Add/Remove membership mismatch for a Cmd item, which may be distinct and remains unverified."
+  },
+  "next_action": "Reproduce the 2026-10-17 Dock membership/status sequence on a current build and compare it with merged PR #48723."
 }

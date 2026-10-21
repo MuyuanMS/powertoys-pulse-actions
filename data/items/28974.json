@@ -1,33 +1,123 @@
 {
+  "schemaVersion": 5,
   "number": 28974,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:32.1338055Z",
+  "evaluated_at": "2026-10-20T23:31:32.1338055Z",
   "source_updated_at": "2024-08-13T14:54:33Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Trace query versus activation timing",
+    "detail": "The author already supplied a recording in response to the earlier request. Do not leave this waiting on the author or ask for the same video again."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce immediate-Enter search mismatch",
+    "reason": "Compare textbox text, result query and activated target to distinguish dropped keystrokes from activation of stale results."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report identifies fast typing followed by Enter, the author answered the recording request, and related 25971 supplies a precise delayed-result experiment. The missing characters are not yet proven to be input loss.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/28974 reports the final search characters missing after fast typing and Enter in 0.74.0.",
+      "https://github.com/microsoft/PowerToys/issues/28974#issuecomment-1749583942 supplies https://youtu.be/IUzBBXA3upU after the maintainer's recording request.",
+      "https://github.com/microsoft/PowerToys/issues/28974#issuecomment-2286459148 links 25971.",
+      "https://github.com/microsoft/PowerToys/issues/25971 describes stale result activation with input smoothing disabled, immediate delay zero and only Programs enabled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Instrument the current Run query/result/activation boundary and reproduce immediate Enter before requesting any further reporter evidence.",
+    "evaluated_at": "2026-10-20T23:31:32.1338055Z",
     "source_updated_at": "2024-08-13T14:54:33Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A stale asynchronous result can explain the symptom and has a concrete activation ownership path. No linked fix attempt was identified; equivalence with 25971 remains a hypothesis, not a confirmed duplicate."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Do not activate a result belonging to an earlier query",
+      "root_cause": "Hypothesis: Enter executes the selected result before asynchronous results catch up to the final textbox query, making the launched action appear to omit trailing characters. Actual input loss is an alternative that the textbox/query comparison must distinguish.",
+      "plan": [
+        "Reproduce with a delayed plugin response and record the textbox text, current query generation, selected result OriginQuery and activation arguments at Enter.",
+        "Trace src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs OpenResultsEvent and result publication; determine whether the selected result belongs to the latest completed query.",
+        "If stale activation is confirmed, associate results and pending activation with an explicit query generation; defer or reject Enter for obsolete results, and discard pending activation when the query changes, Run hides or the request is cancelled.",
+        "Avoid running plugins synchronously on the UI thread; preserve mouse/context actions and add tests for delayed, cancelled, empty and out-of-order results."
+      ],
+      "verification": [
+        "Type a known query and press Enter immediately with plugin processing deliberately delayed; only the final query's intended target may launch.",
+        "Change or cancel the query while activation is pending; no stale action may run later.",
+        "Compare fast and ordinary typing with input smoothing on/off, and verify no final characters are missing from the textbox or action arguments."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The related reproducible stale-results issue and current selected-result activation fit the report, but the supplied recording has not been decoded and query-generation behavior still needs local tracing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Typing a query quickly and immediately pressing Enter appears to lose the last characters. The author supplied the requested video, and a later comment connects the report to asynchronous stale-result activation.",
+    "known_information": [
+      "Original version is 0.74.0, installed with WinGet and running elevated.",
+      "A maintainer asked what losing characters meant; the author answered with a video link the following day.",
+      "Related 25971 remains open and contains detailed reproduction with delayed result updates even at zero configured delay.",
+      "The issue is unassigned and currently labelled Needs-Team-Response, not Needs-Author-Feedback."
+    ],
+    "inferences": [
+      "The result/action may lag behind the query even if all typed characters reached the textbox.",
+      "Similarity to 25971 does not prove both reports share a root cause or justify closing either one."
+    ],
+    "analysis": "The useful next evidence is maintainer-side correlation of query and selected-result identity, not another request for the already-provided recording. A generation-aware activation plan is plausible but needs the local discriminator.",
+    "initial_investigation": [
+      "Read the entire original report and all three comments, plus the complete 25971 discussion and original reproduction.",
+      "Read current MainViewModel.OpenResultsEvent: it obtains SelectedResults.SelectedItem.Result and invokes result.Action, while history records result.OriginQuery.RawQuery.",
+      "The public cross-reference timeline contains a separate CmdPal typing report, not a fix. Exact-number PR search found no match.",
+      "The external video link is preserved as supplied evidence; its visual contents were not inspected in this pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the final textbox query is complete while the activated result or argument belongs to an older query.",
+        "why_needed": "Distinguishes a stale-result activation defect from lost input events.",
+        "how_to_collect": "Maintainer: run the immediate-Enter sequence with a controlled plugin delay and correlate textbox text, result OriginQuery and action arguments."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-run-query-activation",
+      "type": "reproduce",
+      "label": "Trace immediate-Enter query and result identity",
+      "reproduce": {
+        "title": "PowerToys Run fast typing followed by immediate Enter",
+        "module": "PowerToys Run",
+        "version_requirement": "Current build; original version was 0.74.0.",
+        "prerequisites": [
+          "Enable a provider with an easily recognized target, and use a debug/test delay to make query completion observably asynchronous.",
+          "Record input-smoothing and query-delay settings; begin with smoothing disabled and zero configured delay as in related 25971."
+        ],
+        "steps": [
+          "Launch one known result to seed the prior selection, then reopen Run.",
+          "Type a different full query rapidly and press Enter immediately.",
+          "Record final textbox text, query generation, selected result OriginQuery and launched target/arguments.",
+          "Repeat with a deliberately delayed plugin and out-of-order completion; compare with ordinary typing and a brief pause before Enter.",
+          "Cancel or change the query while Enter is pending and verify no earlier activation is executed afterward."
+        ],
+        "expected_result": "Only a result belonging to the intended current query is activated; delayed processing must not silently drop trailing characters or launch the previous result.",
+        "attachments": [
+          "https://youtu.be/IUzBBXA3upU",
+          "https://github.com/microsoft/PowerToys/issues/25971"
+        ]
+      }
+    },
+    {
+      "id": "approve-query-generation-plan",
+      "type": "approve_design",
+      "label": "Approve query-generation activation plan",
+      "note": "Confirm stale-result activation before implementing; the original video request has already been answered."
+    }
+  ]
 }

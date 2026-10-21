@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 23654,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:44:00Z",
+  "evaluated_at": "2026-10-20T16:44:00Z",
   "source_updated_at": "2024-03-30T13:46:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/23654",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Investigate updater failure/recovery state",
+    "detail": "Supplied archives and contradictory up-to-date/error UI require error classification and state-transition testing, not a generic network diagnosis."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Reproduce update error then successful recovery",
+    "reason": "Separate real transport errors, metadata failures and stale UI state."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The long-running report includes repeated update failures, multiple archives and a screenshot of successful/up-to-date state alongside a red network error. VPN recovery for one user does not establish a universal network cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report spans 0.66 through 0.79 and contains twelve comments and already-supplied diagnostics.",
+      "One commenter reports VPN-dependent success; another recovers hours later.",
+      "A follow-up shows green up-to-date and red network-error indicators simultaneously.",
+      "common/updating/updating.cpp get_github_version_info_async catches request, JSON parsing and asset extraction exceptions together and returns NETWORK_ERROR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce controlled failure/recovery and inspect the updater-to-Settings state contract; preserve actual network failures rather than assuming all reports are cosmetic.",
+    "evaluated_at": "2026-10-20T16:44:00Z",
     "source_updated_at": "2024-03-30T13:46:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A bounded updater result/state correction is applicable; no targeted linked fix proves that all historical transport failures are handled."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Differentiate update failures and clear obsolete error state",
+      "root_cause": "The inspected backend maps several exception classes to NETWORK_ERROR. The simultaneous success/error display suggests an obsolete error can outlive a later successful result, but that UI transition and the original transport failures remain unconfirmed.",
+      "plan": [
+        "Add controlled request-failure, malformed-release metadata, missing-asset and successful-recovery cases around the update-check result boundary.",
+        "Trace how each result reaches Settings and identify whether stale or overlapping attempts leave contradictory flags.",
+        "Separate supported transport and metadata failure categories without exposing secrets; clear obsolete error state only when the same or newer successful attempt is committed.",
+        "Preserve retry behavior, release-channel selection and legitimate failure visibility; do not alter proxy/TLS security or recommend VPN as a product fix.",
+        "Add a regression that renders the failure-to-up-to-date transition without contradictory status indicators."
+      ],
+      "verification": [
+        "Fail then succeed and confirm the visible state represents the latest completed check.",
+        "Malformed metadata and missing installer assets are distinguishable from transport failures.",
+        "Stable/prerelease and available-update/up-to-date paths continue to work."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "The catch-all backend result is directly verified and the contradictory screenshot narrows a state test; neither the frontend transition nor the original failures' common cause has been traced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The updater reports a generic network error across several releases; later evidence also shows success and failure simultaneously.",
+    "known_information": [
+      "Multiple diagnostic ZIPs are already present.",
+      "Network/environment changes helped some users but not all.",
+      "Backend request, parse and asset failures currently share a generic NETWORK_ERROR outcome."
+    ],
+    "inferences": [
+      "The issue may combine genuine transient connectivity failures with misleading/stale presentation; these should not be collapsed into one asserted root cause."
+    ],
+    "analysis": "The public evidence is adequate for maintainer-side failure/recovery tests. Another generic log request would not resolve the confirmed backend classification ambiguity or the UI state contract.",
+    "initial_investigation": [
+      "Read the body, all twelve comments and linked-work timeline.",
+      "Inspected get_github_version_info_async and its request/parse/asset-extraction catch boundary.",
+      "Compared the VPN, delayed-recovery and contradictory-status observations."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-23654",
+      "type": "approve_design",
+      "label": "Review updater failure/recovery plan",
+      "description": "Approve the bounded classification/state investigation rather than an assumed network-access fix."
+    },
+    {
+      "id": "reproduce-23654",
+      "type": "reproduce",
+      "label": "Reproduce updater error-state recovery",
+      "reproduce": {
+        "module": "Settings / updater",
+        "prerequisites": [
+          "Use a development build with real version-check behavior enabled; 0.0 development versions skip checks.",
+          "Provide an isolated test seam for HTTP results and release metadata; do not disable certificate validation on an installed user build."
+        ],
+        "steps": [
+          "Run a successful up-to-date check and record the Settings status.",
+          "Inject a transport failure and verify a single accurate failure state.",
+          "Restore a successful response and verify the old error clears.",
+          "Repeat with malformed JSON, missing installer asset and overlapping checks; compare result order with displayed state."
+        ],
+        "expected_result": "Settings shows a coherent current result, and distinct backend failure categories remain diagnosable.",
+        "setup_prompt": "Prepare deterministic updater response fixtures for transport failure, malformed JSON, valid up-to-date metadata and a newer release missing its expected installer asset. Drive the actual backend-to-Settings result path without changing production network security."
+      }
+    }
+  ]
 }

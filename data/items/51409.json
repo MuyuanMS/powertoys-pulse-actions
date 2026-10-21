@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51409,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:41:12.492Z",
+  "evaluated_at": "2026-10-20T16:41:12.492Z",
+  "source_updated_at": "2026-10-20T01:45:26Z",
+  "updated_at": "2026-10-20T01:45:26Z",
+  "state": "open",
+  "title": "CmdPal: Failed or disabled loads can restore cleaned commands (EXT26.L4)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51409",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "rationale": "An isolated test reproduced republication, and the report identifies disabled and failed-load paths. The correction should associate published results with the current successful load.",
+    "source_updated_at": "2026-10-20T01:45:26Z",
+    "evidence": [
+      "The issue reports isolated republication of cleaned objects.",
+      "Disabled loads and failure before new result assignment are distinct stale-array paths.",
+      "The cited CommandProviderWrapper and TopLevelCommandManager source symbols are present in current source."
+    ],
+    "evaluated_at": "2026-10-20T16:41:12.492Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "status": "actionable_design"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "Stale republication is reproduced and paths are identified; disable and failed-load semantics need separate coverage.",
+        "level": "yellow",
+        "score": 77
+      },
+      "verification": [
+        "Publish a provider, disable it and raise ItemsChanged; verify cleaned objects stay absent.",
+        "Fail a later enabled load before assigning results; verify old arrays are not republished.",
+        "Verify a valid current load publishes only live objects owned by that load."
+      ],
+      "plan": [
+        "Associate published arrays with the load generation that produced them.",
+        "Invalidate stale results when disabled or when a load fails before producing usable results.",
+        "Publish only current successful results and clean rejected candidates without reusing cleaned objects.",
+        "Test disabled, failed and last-known-good ownership paths."
+      ],
+      "root_cause": "Disabled/failed loads may leave previous arrays intact, and the manager can publish those arrays without proving they came from the current successful load.",
+      "title": "Investigate the reported PowerToys behavior"
+    }
+  ],
+  "issue_context": {
+    "summary": "Disabled or failed provider loads can retain old command, fallback and band arrays, allowing cleaned objects to be republished.",
+    "known_information": [
+      "The issue reports isolated republication of cleaned objects.",
+      "Disabled loads and failure before new result assignment are distinct stale-array paths.",
+      "The cited CommandProviderWrapper and TopLevelCommandManager source symbols are present in current source."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "information_gaps": [],
+    "analysis": "An isolated test reproduced republication, and the report identifies disabled and failed-load paths. The correction should associate published results with the current successful load.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked relevant source paths/linked work and ran a focused issue-number PR search; no result does not prove no broader work exists."
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve bounded issue investigation",
+      "id": "issue-51409-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Investigate the reported PowerToys behavior"
+      }
+    },
+    {
+      "label": "Reproduce CmdPal provider lifecycle failure",
+      "id": "issue-51409-reproduce",
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Disabled/failed loads do not republish cleaned prior results; only current successful results are exposed.",
+        "steps": [
+          "1. Load and publish commands, fallbacks and bands.",
+          "2. Disable and raise ItemsChanged, then separately fail a later enabled load before result assignment.",
+          "3. Inspect published collections and cleanup counts."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "Provider test double that can be disabled and fail before producing later results."
+        ],
+        "module": "Command Palette provider publication"
+      }
+    }
+  ]
+}

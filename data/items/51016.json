@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-51016",
+  "number": 51016,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-05T14:10:05Z",
+  "title": "CmdPal: Dock disappears when opening Action Center",
+  "url": "https://github.com/microsoft/PowerToys/issues/51016",
+  "author": "niels9001",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "CmdPal - Venice"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue gives an exact interaction: opening Windows Action Center hides the Dock, which does not return normally until focus moves elsewhere. The Command Palette Dock uses Windows AppBar/window management, but no evidence yet shows whether Action Center changes its visibility, z-order, or focus state.",
+    "evidence": [
+      "The current Command Palette development build is reported on a laptop.",
+      "Opening Windows Action Center makes the Dock disappear; closing it and moving focus outside restores it.",
+      "There are no comments, attachments, or linked fixes."
+    ],
+    "recommended_action": "Reproduce the Action Center interaction and observe Dock visibility, z-order, and AppBar state while opening and closing the panel.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-05T14:10:05Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A transient shell-window activation or z-order change may leave the Dock hidden, but the report does not identify whether the Dock hides itself, loses its AppBar state, or is occluded by the Windows panel."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Command Palette Dock visibility after Action Center closes",
+      "root_cause": "Opening Windows Action Center may change shell activation or z-order in a way that hides or occludes the Dock; the Dock's AppBar/window state may not be restored until another focus transition occurs.",
+      "plan": [
+        "Reproduce the sequence and distinguish an actually hidden Dock window from one that remains visible but is occluded or behind another surface.",
+        "Trace Dock/AppBar activation and visibility transitions while Action Center opens and closes, including the point at which moving focus outside causes the Dock to return.",
+        "If the Dock's own visibility or AppBar state is not restored, update the relevant shell/window transition handling and add a regression test for Action Center open/close."
+      ],
+      "verification": [
+        "Open and close Windows Action Center with the Dock enabled and confirm the Dock remains visible or is restored immediately when Action Center closes.",
+        "Verify ordinary focus changes and Command Palette Dock interactions continue to work without repeatedly forcing the Dock to the foreground."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The interaction is clearly reproducible, but the report does not distinguish hidden, occluded, or focus-delayed states; the AppBar source identifies ownership, not cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Opening Windows Action Center makes the Command Palette Dock disappear, and it does not return normally until focus moves outside Action Center.",
+    "known_information": [
+      "The report concerns the current Command Palette development build on a laptop.",
+      "The stated interaction is enabling the Dock, opening Action Center, then closing it and returning focus to the desktop or another window.",
+      "The issue has no comments or attachments.",
+      "Current DockWindow source documents Windows AppBar work-area/position management; DockWindowManager manages the Dock windows."
+    ],
+    "inferences": [
+      "Action Center may alter the Dock's window visibility, z-order, or focus state, but the report does not distinguish an actual hide from occlusion.",
+      "The delayed return after focus moves suggests the relevant recovery may be tied to a later activation transition, but this is not yet confirmed."
+    ],
+    "analysis": "The interaction is specific enough for a maintainer reproduction. Because the observed disappearance could be a hidden window, z-order occlusion, or focus state, first observe the Dock/AppBar state through Action Center open/close rather than immediately forcing it to the foreground.",
+    "initial_investigation": [
+      "Inspected current Command Palette Dock source ownership: DockWindow.xaml.cs uses Windows AppBar/window APIs, and DockWindowManager.cs manages the Dock windows.",
+      "The separate #51014 Dev Box report shares the Dock owner but describes content overlap rather than a disappearance after a shell-panel transition; it is related, not a duplicate.",
+      "The issue has no comments, attachments, or linked fix reference."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 51014,
+        "url": "https://github.com/microsoft/PowerToys/issues/51014",
+        "relationship": "Separate Command Palette Dock overlap issue with a maximized Dev Box window; shared Dock owner but a different trigger and symptom."
+      }
+    ],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-cmdpal-action-center-dock-investigation-51016",
+      "type": "approve_design",
+      "label": "Approve Dock visibility investigation"
+    },
+    {
+      "id": "reproduce-cmdpal-dock-action-center-51016",
+      "type": "reproduce",
+      "label": "Reproduce Dock visibility after Action Center",
+      "note": "Observe whether the Dock is hidden, occluded, or focus-delayed before changing its window behavior.",
+      "reproduce": {
+        "title": "Test Dock visibility around Action Center",
+        "module": "Command Palette Dock",
+        "version_requirement": "Current Command Palette development build, as reported",
+        "prerequisites": [
+          "Run the Command Palette Dock on a Windows laptop with Action Center available."
+        ],
+        "steps": [
+          "Enable and show the Command Palette Dock.",
+          "Open Windows Action Center and observe whether the Dock disappears or is covered.",
+          "Close Action Center without moving focus to another window and check whether the Dock returns.",
+          "Move focus outside Action Center as described in the issue and observe whether that restores the Dock.",
+          "Compare the Dock window's visibility and z-order across these transitions."
+        ],
+        "expected_result": "The Dock remains visible or returns immediately when Action Center closes, without requiring an unrelated focus change.",
+        "actual_to_confirm": "Whether the Dock window is hidden, merely occluded, or left in a stale AppBar/focus state until another activation event."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce Action Center Dock visibility",
+    "detail": "The exact panel transition is known; distinguish a hidden Dock from occlusion or stale focus/AppBar state."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce Dock visibility after Action Center",
+    "reason": "Observe the Dock window state through Action Center open/close before selecting a fix."
+  }
+}

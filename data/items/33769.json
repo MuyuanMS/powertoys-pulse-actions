@@ -2,32 +2,92 @@
   "number": 33769,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "existing_fix_pending_verification",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-11T20:21:19Z",
   "status": {
     "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Historical failure path replaced",
+    "detail": "Merged #36215 removed WPFUI; the precise SystemThemeWatcher startup call in the 0.82.0 stack is absent from public main. Current-build behavior still needs verification."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Verify registry-denial behavior after WPF migration",
+    "reason": "Validate the replacement path rather than patching a removed WPFUI call or claiming the open report is resolved."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "33769-current-theme-check",
+      "type": "reproduce",
+      "label": "Verify theme registry-denial handling",
+      "reproduce": {
+        "title": "Compare historical and current Run theme initialization under denied registry access",
+        "module": "PowerToys Run",
+        "version_requirement": "Historical 0.82.0/0.85.1 reference and latest stable or current main containing merged #36215",
+        "prerequisites": [
+          "Isolated Windows 10 test account/environment; do not alter registry permissions on a real user's account.",
+          "A debugger or test seam capable of making the theme-preference read return access denied without changing unrelated registry access."
+        ],
+        "steps": [
+          "Use the public 0.82.0 stack to identify the theme-preference read; reproduce its failure only in the isolated fixture, recording the exact key/operation rather than assuming the bot's unrelated registry reports match.",
+          "Confirm v0.82.0 MainWindow invokes SystemThemeWatcher.Watch and compare to the current MainWindow after #36215, where this call is absent.",
+          "Exercise current Run startup and a system theme change with a denied preference read, then test an explicitly selected Light/Dark theme.",
+          "If current Run still fails, capture the new originating stack and locate its current owner before designing any guard; otherwise record the tested build and reproduction conditions for a separate maintainer resolution decision."
+        ],
+        "expected_result": "Current Run remains usable or falls back safely under the restricted-theme fixture; no old WPFUI startup crash. This has not yet been executed."
+      }
+    }
+  ],
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "The exact historical WPFUI initialization path has been replaced by a merged public migration. Treat this as existing relevant work pending behavior verification, not an assigned or proven-fixed issue.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The 0.82.0 stack throws SecurityException while WPFUI reads the system theme during PowerLauncher.MainWindow construction.",
+      "Duplicate #35928 reproduces the same WPFUI read during theme notification on 0.85.1.",
+      "Merged https://github.com/microsoft/PowerToys/pull/36215 replaces WPFUI with .NET WPF.",
+      "Public main MainWindow.xaml.cs no longer contains SystemThemeWatcher.Watch; v0.82.0 does."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Verify denied theme-registry access against the replacement path before proposing a new fix or closing the issue.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-11T20:21:19Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged #36215 replaces the dependency and removes the exact startup call seen in the report. This is concrete coverage of the historical failing path, not an explicit issue-closing claim; access-denial behavior in the replacement path remains untested.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/36215"
+    ]
+  },
+  "issue_context": {
+    "summary": "Run crashed on Windows 10 when WPFUI could not read a theme registry value. A later duplicate shows the same dependency failing during a theme-change notification.",
+    "known_information": [
+      "The report provides the complete SecurityException startup stack, PowerToys 0.82.0 and Windows build 19045.",
+      "#35928 was explicitly closed as a duplicate and supplies a matching WPFUI stack on 0.85.1.",
+      "The issue remains open, labeled Issue-Bug/Product-PowerToys Run, with no assignee.",
+      "#36215 merged on 2024-12-11 and replaces WPFUI with native .NET WPF."
+    ],
+    "inferences": [
+      "Replacing WPFUI removes the exact throwing dependency path, but does not prove that all current registry-denial cases recover safely.",
+      "The other registry-access issues suggested by the bot concern different operations and are not sufficient duplicate evidence."
+    ],
+    "analysis": "The stack already identifies the historical failure boundary, so a generic request for another ZIP adds little. Verify current restricted-theme behavior and only design a new guard if a current failing path exists.",
+    "initial_investigation": [
+      "Read the full report and bot comment, enumerated cross-references, and read #35928's report and duplicate decision.",
+      "Read the public body/state of merged #36215.",
+      "Compared public v0.82.0 and main src/modules/launcher/PowerLauncher/MainWindow.xaml.cs: SystemThemeWatcher.Watch is present only in the historical version.",
+      "No runtime registry-denial test was performed in this lightweight pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether a current build survives the equivalent denied theme-preference read and theme-change notification.",
+        "why_needed": "Determines whether the dependency replacement resolves the report or a new current-path fix is required.",
+        "how_to_collect": "Maintainer runs the isolated registry-denial reproduction above and records build and originating stack; do not ask the reporter to change registry ACLs."
+      }
+    ]
   }
 }

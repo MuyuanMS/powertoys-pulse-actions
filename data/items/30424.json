@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 30424,
   "kind": "issue",
+  "title": "Cannot Snap Child Window on W10 Outlook Reminders",
+  "url": "https://github.com/microsoft/PowerToys/issues/30424",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:57Z",
+  "evaluated_at": "2026-10-20T23:27:57Z",
   "source_updated_at": "2024-05-22T05:26:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Dragging&UI",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report provides Outlook builds, Windows versions, a diagnostic archive and a control comparison. A popup-versus-owned-window eligibility test is more useful than requesting the same evidence again.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Outlook Reminders does not show zones during Shift-drag, while the main Outlook window does.",
+      "Reported on Windows 10 with PowerToys 0.76.2 and Windows 11 with 0.79.0; toggling child-window snapping and elevation did not resolve it.",
+      "Related #32660 was explicitly closed into this issue; manually adding the old popup setting had no effect.",
+      "Current DefineWindowType rejects some WS_POPUP windows before applying allowSnapChildWindows."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the Reminders window classification and consider a narrowly tested dialog-eligibility correction.",
+    "evaluated_at": "2026-10-20T23:27:57Z",
     "source_updated_at": "2024-05-22T05:26:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete implementation is linked. The child-window setting cannot override an earlier popup rejection in current classification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Distinguish snappable Outlook dialogs from transient popup menus",
+      "root_cause": "Hypothesis: Reminders is rejected by the root/style/popup eligibility checks before the owned-window setting is considered. Its actual HWND styles and rejection reason have not been captured in this pass.",
+      "plan": [
+        "Trace FancyZonesWindowProcessing::DefineWindowType for Outlook Reminders and compare with the main window while allowSnapChildWindows is enabled.",
+        "If a legitimate movable dialog is rejected by popup classification, refine that predicate or explicit dialog handling without accepting menus, tooltips, notification windows or controls.",
+        "Add window-style predicate tests and cover both settings states, Outlook main windows and transient popup exclusions."
+      ],
+      "verification": [
+        "Shift-drag the Reminders window with child-window snapping enabled: zones appear and the dialog snaps.",
+        "With the setting disabled, verify the intended owned-window behavior; menus and dropdowns never snap.",
+        "Repeat on current Outlook/Windows and the reported configurations if available."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reports and current ordering fit a classification issue, but the target window's rejected predicate is unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Outlook Reminders stopped activating FancyZones during Shift-drag after older updates; the main Outlook window still works, across both Windows 10 and 11 reports.",
+    "known_information": [
+      "The original report includes a PowerToys diagnostic ZIP and Outlook 2311/Windows 10 build details.",
+      "A later update supplies Windows 11 23H2, PowerToys 0.79.0 and Outlook 2402.",
+      "Child-window setting toggles and running as administrator were already tried.",
+      "The issue is open and unassigned."
+    ],
+    "inferences": [
+      "A window-type eligibility regression is plausible; child-window and popup classifications are not interchangeable.",
+      "The contrary symptom in #33450 concerns some owned windows snapping when disabled and is not proof of the same defect."
+    ],
+    "analysis": "Use the existing reproduction and control to trace classification locally. Do not repeat the ineffective legacy allowPopupWindowSnap configuration advice from related discussion.",
+    "initial_investigation": [
+      "Read the body, all three comments and paginated timeline; inspected #32660 and #33450.",
+      "Inspected src/modules/fancyzones/FancyZonesLib/FancyZonesWindowProcessing.cpp at main commit 3d6827a53a579ba9bedcf8d4bbda21348d78cbdb: non-root and popup filtering precede the visible-owner child-window setting.",
+      "No Outlook session, HWND capture or native build was executed; no resolution is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Outlook dialog eligibility investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Outlook Reminders eligibility",
+      "reproduce": {
+        "title": "Compare Reminders and main-window Shift-drag",
+        "module": "FancyZones",
+        "version_requirement": "Current PowerToys and classic Outlook; reported baselines are 0.76.2/Outlook 2311 and 0.79.0/Outlook 2402.",
+        "prerequisites": [
+          "Classic Outlook with a test reminder and at least one configured FancyZones layout; use a test profile."
+        ],
+        "steps": [
+          "1. Enable child-window snapping and open Outlook Reminders from a test reminder.",
+          "2. Shift-drag the main Outlook window as a positive control, then Shift-drag Reminders.",
+          "3. Record the Reminders HWND styles, owner/root relationship and DefineWindowType return value.",
+          "4. Repeat with child-window snapping disabled and with a normal dropdown to test negative controls.",
+          "5. Test the smallest classification change against both windows and popup-menu exclusions."
+        ],
+        "expected_result": "Eligible owned dialogs snap according to the setting, while transient menus and controls remain excluded."
+      }
+    }
+  ]
 }

@@ -2,32 +2,109 @@
   "number": 29978,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-12-19T10:43:59Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "generated_at": "2026-10-20T20:06:40.725Z",
+  "evaluated_at": "2026-10-20T20:06:40.725Z",
+  "source_updated_at": "2026-10-11T16:49:49Z",
+  "status": "actionable_design",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce German bracket shortcut capture",
+    "reason": "The report and follow-ups identify a persistent editor limitation, but physical-key versus character semantics are not established."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce German bracket shortcut capture",
+      "primary": true,
+      "reproduce": {
+        "title": "Test bracket keys in shortcut editor",
+        "module": "Keyboard Manager",
+        "version_requirement": "Latest stable PowerToys build; record exact version",
+        "prerequisites": [
+          "Windows German QWERTZ layout; AltGr+8 produces [ and AltGr+9 produces ]."
+        ],
+        "setup": [],
+        "steps": [
+          "Open shortcut remapping and attempt Ctrl+#→Ctrl+] using AltGr+9.",
+          "Attempt Ctrl+Shift+#→Ctrl+[ using AltGr+8.",
+          "Save, reopen, and test both mappings; record any validation message."
+        ],
+        "expected_result": "The editor captures and persists the requested shortcuts, or clearly reports unsupported semantics rather than silently losing them."
+      }
+    },
+    {
+      "id": "approve-design-29978",
+      "type": "approve_design",
+      "label": "Approve focused fix investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft action only; no upstream action was taken."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report and follow-ups identify a persistent editor limitation, but physical-key versus character semantics are not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "German QWERTZ layout uses AltGr+8/9 for brackets per report.",
+      "Reporter says the UI cannot select brackets and manual defaults.json VK 221/219 values had no effect.",
+      "A 2024 comment says issue persisted in v0.77.0; latest commenter (2024-12-19) says they need it too.",
+      "Open Issue-Bug/Needs-Triage, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-19T10:43:59Z"
-  }
+    "recommended_action": "Reproduce on a current build, then trace the proposed event path before authorizing a fix.",
+    "evaluated_at": "2026-10-20T20:06:40.725Z",
+    "source_updated_at": "2026-10-11T16:49:49Z"
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "url": "https://github.com/microsoft/PowerToys/issues/29978",
+  "schemaVersion": 5,
+  "issue_context": {
+    "summary": "The German shortcut editor reportedly cannot capture `[` and `]`, typed through AltGr+8/9; manually storing VK 221/219 did not make the requested shortcut work.",
+    "known_information": [
+      "German QWERTZ layout uses AltGr+8/9 for brackets per report.",
+      "Reporter says the UI cannot select brackets and manual defaults.json VK 221/219 values had no effect.",
+      "A 2024 comment says issue persisted in v0.77.0; latest commenter (2024-12-19) says they need it too.",
+      "Open Issue-Bug/Needs-Triage, unassigned."
+    ],
+    "inferences": [
+      "The editor may capture physical key events rather than layout-produced characters or reject AltGr sequences; exact limitation is unknown."
+    ],
+    "analysis": "The issue gives a concrete layout but physical-key versus character semantics are unresolved. Reproduce through the UI and trace capture/serialization rather than relying on hand-edited settings.",
+    "initial_investigation": [
+      "Reviewed full body, live labels/assignees, and all four comments; latest https://github.com/microsoft/PowerToys/issues/29978#issuecomment-2553390379.",
+      "No editor source inspection or German-keyboard reproduction was done."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A shortcut-capture change may apply if valid layout-generated keys are rejected, but required physical-key versus character semantics need verification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate German bracket shortcut capture",
+      "root_cause": "Shortcut capture may accept only direct physical/VK events and fail to translate AltGr-generated bracket keys into supported shortcut tokens.",
+      "plan": [
+        "Reproduce capture and replay of both bracket shortcuts through the UI on German QWERTZ.",
+        "Trace shortcut capture, layout translation, validation, and persistence for AltGr-generated keys.",
+        "If valid layout keys are rejected or lost in serialization, update the narrow capture path and test German brackets plus direct-key shortcuts."
+      ],
+      "verification": [
+        "Confirm both mappings can be entered through UI, survive save/reopen, and invoke on German layout.",
+        "Run focused shortcut-editor tests for layout-dependent and AltGr-generated keys."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "The report and follow-ups identify a persistent editor limitation, but physical-key versus character semantics are not established."
+      }
+    }
+  ]
 }

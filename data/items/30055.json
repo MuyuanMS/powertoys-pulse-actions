@@ -2,32 +2,108 @@
   "number": 30055,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-05-02T14:03:14Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "generated_at": "2026-10-20T20:06:40.725Z",
+  "evaluated_at": "2026-10-20T20:06:40.725Z",
+  "source_updated_at": "2026-10-11T16:49:48Z",
+  "status": "actionable_design",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce modifier-only Hyper shortcut interception",
+    "reason": "The editor rejection is explicit, but the commenter’s registration-order explanation is unverified and may make a PowerToys fix infeasible."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce modifier-only Hyper shortcut interception",
+      "primary": true,
+      "reproduce": {
+        "title": "Check whether Keyboard Manager captures the Hyper chord",
+        "module": "Keyboard Manager",
+        "version_requirement": "Latest stable PowerToys on Windows 11; record exact versions",
+        "prerequisites": [
+          "Win+Ctrl+Alt+Shift opens the reported destination.",
+          "Keyboard Manager enabled; record competing shell or Office shortcut registrations."
+        ],
+        "setup": [],
+        "steps": [
+          "Attempt to capture Win+Ctrl+Alt+Shift in shortcut remapping and set Disabled.",
+          "Record whether the UI accepts or rejects the modifier-only chord.",
+          "Press the chord and observe whether the browser still opens; if feasible compare where competing shell registration is absent."
+        ],
+        "expected_result": "Establish separately whether UI can represent the chord and whether PowerToys can intercept it before Windows launches the browser."
+      }
+    },
+    {
+      "id": "approve-design-30055",
+      "type": "approve_design",
+      "label": "Approve focused fix investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft action only; no upstream action was taken."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The editor rejection is explicit, but the commenter’s registration-order explanation is unverified and may make a PowerToys fix infeasible.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue says Win+Ctrl+Alt+Shift opens a Microsoft 365 page and UI rejects it because a shortcut requires an action key.",
+      "Latest comment (2024-05-02) says Explorer registers the chord and links https://github.com/acook/OfficeKeyFix; this is commenter-supplied, not verified PowerToys fix.",
+      "Live issue open, Issue-Bug/Needs-Triage, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-05-02T14:03:14Z"
-  }
+    "recommended_action": "Reproduce on a current build, then trace the proposed event path before authorizing a fix.",
+    "evaluated_at": "2026-10-20T20:06:40.725Z",
+    "source_updated_at": "2026-10-11T16:49:48Z"
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "url": "https://github.com/microsoft/PowerToys/issues/30055",
+  "schemaVersion": 5,
+  "issue_context": {
+    "summary": "The reporter wants to disable Win+Ctrl+Alt+Shift, but Keyboard Manager rejects modifier-only chords; a commenter says Explorer may register it before PowerToys can intercept it.",
+    "known_information": [
+      "Issue says Win+Ctrl+Alt+Shift opens a Microsoft 365 page and UI rejects it because a shortcut requires an action key.",
+      "Latest comment (2024-05-02) says Explorer registers the chord and links https://github.com/acook/OfficeKeyFix; this is commenter-supplied, not verified PowerToys fix.",
+      "Live issue open, Issue-Bug/Needs-Triage, unassigned."
+    ],
+    "inferences": [
+      "Two constraints may exist: editor rejection of modifier-only chords and Windows/Explorer registration before interception; parser support alone may be insufficient."
+    ],
+    "analysis": "The issue identifies a precise editor rejection and plausible OS registration boundary. Reproduce whether PowerToys receives the chord before proposing code changes; do not promise parser support alone will suppress shell behavior.",
+    "initial_investigation": [
+      "Reviewed full body, live labels/assignees, and latest comment https://github.com/microsoft/PowerToys/issues/30055#issuecomment-2090579760.",
+      "Comment links an external workaround; no source inspection or Windows 11 registration-order reproduction was done."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Modifier-only handling may be possible, but shell-registration ordering could make interception infeasible; reproduce and establish ownership first."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate modifier-only Hyper shortcut interception",
+      "root_cause": "Keyboard Manager may require a non-modifier action key, while Explorer may already register the Hyper chord and consume it before PowerToys can suppress it.",
+      "plan": [
+        "Reproduce UI capture rejection and shell launch on Windows 11; determine whether Keyboard Manager receives the low-level event.",
+        "Trace shortcut validation and hotkey interception to establish whether the modifier-only chord can be represented and preempted.",
+        "Only if capturable and suppressible, add modifier-only support with conflict handling; otherwise document the OS limit."
+      ],
+      "verification": [
+        "Confirm UI acceptance and browser suppression on a controlled current Windows 11 setup.",
+        "If feasible, test modifier-only capture/registration and ensure ordinary modifier-plus-key shortcuts are unchanged."
+      ],
+      "confidence": {
+        "score": 39,
+        "level": "red",
+        "rationale": "The editor rejection is explicit, but the commenter’s registration-order explanation is unverified and may make a PowerToys fix infeasible."
+      }
+    }
+  ]
 }

@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 4933,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:05.469552Z",
+  "evaluated_at": "2026-10-20T23:31:05.469552Z",
   "source_updated_at": "2024-06-27T13:35:36Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Compare non-secure UAC focus",
+    "detail": "Maintainers reproduced the failure; similar taskbar behavior leaves Windows versus Run ownership unresolved."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Trace foreground handoff on elevation",
+    "reason": "Use the existing recordings and explicit UAC setting rather than asking the reporter to supply them again."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "A maintainer reproduced the non-dimming UAC focus problem and a later Windows 11 reproduction exists. Comments also report the same behavior from the taskbar, so a PowerToys-specific root cause is not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report gives Run activation, application selection and Ctrl+Shift+Enter steps with non-dimming UAC.",
+      "https://github.com/microsoft/PowerToys/issues/4933#issuecomment-670638352 supplies the requested expected/actual recording.",
+      "https://github.com/microsoft/PowerToys/issues/4933#issuecomment-676541277 confirms maintainer reproduction.",
+      "https://github.com/microsoft/PowerToys/issues/4933#issuecomment-2194494049 confirms Windows 11 reproduction; other comments report taskbar/OS behavior too."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Compare Run, Start and taskbar elevation under the same UAC policy; measure focus and hide ordering before deciding ownership.",
+    "evaluated_at": "2026-10-20T23:31:05.469552Z",
     "source_updated_at": "2024-06-27T13:35:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Run-specific foreground-handoff correction is a conditional candidate. An equivalent Windows failure would instead require OS escalation; no linked concrete PowerToys fix was found in the inspected timeline."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate and correct Run's elevation focus handoff",
+      "root_cause": "Hypothesis: Run's activation/hide ordering retains or reacquires foreground focus while a non-secure-desktop UAC consent window is being created. Equivalent taskbar failures are counterevidence and may indicate Windows ownership.",
+      "plan": [
+        "On a disposable test machine, record Run visibility/foreground changes around elevation and compare Start/taskbar launch with exactly the same UAC setting and target executable.",
+        "Trace the selected result's elevation delegate and launcher hide/focus-restoration ordering in src/modules/launcher. Determine whether Run performs a late foreground restoration after the consent window appears.",
+        "Only if a Run-specific ordering defect is proven, remove or defer that restoration and complete the normal hide transition before elevation. Do not manipulate consent UI, bypass UAC or weaken policy.",
+        "Add an integration case for cancellation and successful elevation; if all entry points share the failure, attach the focused reproduction to Windows ownership rather than shipping a focus-stealing workaround."
+      ],
+      "verification": [
+        "With non-dimming UAC, keyboard navigation reaches the consent decision without Alt+Tab when the platform allows it.",
+        "Secure-desktop UAC, cancelled elevation, ordinary launches and Run reactivation preserve normal focus and security behavior."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The behavior is reproduced, but comparable OS/taskbar symptoms prevent attributing the cause to Run."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run elevation can show a UAC consent dialog without moving keyboard focus to it when desktop dimming is disabled; this has been reproduced on Windows 10 and 11.",
+    "known_information": [
+      "The author supplied a second recording explaining expected versus actual focus.",
+      "A maintainer reproduced the specific non-dimming setting.",
+      "The author's early text conflates 'Never notify' with 'do not dim'; the later maintainer reproduction identifies the meaningful non-dimming configuration.",
+      "Other contributors describe similar behavior outside PowerToys; the issue remains open and unassigned."
+    ],
+    "inferences": [
+      "Run may have a focus-handoff race, but the OS may own the common failure.",
+      "Non-dimming UAC must not be confused with disabling consent entirely."
+    ],
+    "analysis": "The report is sufficiently detailed for controlled maintainer reproduction. Neither 'by design' nor 'PowerToys defect' is established by opinion in the discussion.",
+    "initial_investigation": [
+      "Read all ten comments and both recordings' accompanying explanations.",
+      "Inspected timeline cross-references: a gsudo issue and a later duplicate-like report describe the same family, not a covering PowerToys PR.",
+      "The next discriminator is comparing launch entry points and foreground-event ordering, not collecting another generic diagnostic archive."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-uac-handoff",
+      "type": "reproduce",
+      "label": "Compare UAC focus across launchers",
+      "reproduce": {
+        "title": "Non-dimming UAC focus ownership",
+        "module": "PowerToys Run",
+        "version_requirement": "Compare a current supported build on Windows 11 with the historical maintainer reproduction.",
+        "prerequisites": [
+          "Disposable test machine or VM; record and restore the original UAC setting",
+          "Use the consent-prompt setting that does not dim the desktop, not Never notify",
+          "Use a harmless known application requiring elevation; Run initially non-elevated."
+        ],
+        "steps": [
+          "1. Record the original UAC configuration and set the non-dimming consent option for this test only.",
+          "2. Activate Run, find the test application and press Ctrl+Shift+Enter; record foreground-window events and whether keyboard navigation reaches consent.",
+          "3. Cancel the prompt, then launch the same application elevated from Start and the taskbar under the same setting.",
+          "4. Compare Run hide/focus ordering and repeat with normal secure-desktop consent; restore the original UAC configuration afterward."
+        ],
+        "expected_result": "Determine whether Run uniquely retains focus or the same Windows limitation occurs across entry points, without bypassing consent.",
+        "attachments": [
+          {
+            "label": "Expected and actual behavior recording",
+            "url": "https://github.com/microsoft/PowerToys/issues/4933#issuecomment-670638352"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-uac-plan",
+      "type": "approve_design",
+      "label": "Review conditional elevation-handoff plan",
+      "note": "No security-policy change or consent-window manipulation is proposed; establish Run-specific ownership first."
+    }
+  ]
 }

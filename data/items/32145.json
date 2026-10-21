@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 32145,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
   "source_updated_at": "2024-04-15T18:12:24Z",
+  "title": "No Preview in Peek for certain file extensions / extensionless files (that DO display via file explorer preview pane)",
+  "url": "https://github.com/microsoft/PowerToys/issues/32145",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "assignees": [],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "A controlled text/DOCX comparison can separate Peek provider support from local handler registration."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Reproduce extensionless/.ahk text and machine-specific DOCX behavior before changing provider selection."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The original report contrasts Peek with Explorer for extensionless and .ahk text; a later user supplies a machine-specific DOCX comparison. Provider selection is testable, but Peek is not necessarily required to mirror every Explorer handler.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original reporter: PowerToys 0.79.0, extensionless and .ahk examples shown in Explorer but not Peek; screenshot and registry question supplied.",
+      "Latest commenter: Win10 22H2, Explorer Office preview fails on one system; Peek fails for the same DOCX there but works on a second similar system; opening in Word works.",
+      "Live OPEN, Issue-Bug / Product-Peek / Needs-Triage, unassigned; no maintainer reply or linked fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Compare Peek provider selection for extensionless/.ahk text and the same DOCX across the reported environments.",
+    "evaluated_at": "2026-10-20T20:09:08Z",
     "source_updated_at": "2024-04-15T18:12:24Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists; Peek's extension/provider resolution may differ from Explorer, while DOCX handler registration may be machine-specific."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve supported text previews for extensionless and .ahk files",
+      "root_cause": "Peek may use an extension/provider allowlist that differs from Explorer's Preview Pane, leaving extensionless and .ahk text without a text provider; the DOCX comparison suggests handler availability is also machine-dependent.",
+      "plan": [
+        "Compare Explorer and Peek for the same extensionless text and .ahk files and record selected providers.",
+        "Compare the DOCX result on the two Win10 machines without assuming all Explorer handlers are supported in Peek.",
+        "If Peek's own text provider selection is the gap, route these recognized text cases through it while excluding binary content; otherwise distinguish missing third-party handler support clearly.",
+        "Add tests for extensionless text, .ahk, non-text extensionless, and handler-dependent DOCX."
+      ],
+      "verification": [
+        "Verify extensionless and .ahk text previews in Peek match supported Explorer cases on the same machine.",
+        "Use the same non-sensitive DOCX on both machines and identify provider/registration differences."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The report provides two useful comparisons, but the selected Peek provider and intended support boundary are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Peek omits extensionless and .ahk text that Explorer shows; a second user reports DOCX preview differences between two Win10 22H2 machines.",
+    "known_information": [
+      "Original PowerToys 0.79.0 WinGet report describes extensionless and .ahk text visible in Explorer but absent in Peek, plus screenshot.",
+      "Latest commenter: one Win10 22H2 system cannot preview DOCX in Explorer or Peek, while another can preview the same DOCX in Peek; Word opens it on the first machine.",
+      "Two comments total, including a bot suggestion; no maintainer response, assignee or fix link. Live OPEN, Issue-Bug / Product-Peek."
+    ],
+    "inferences": [
+      "Peek's provider selection may differ for text extensions; DOCX variance could depend on machine-specific handlers."
+    ],
+    "analysis": "Do not assume Peek must invoke every Explorer Preview Handler. Reproducing the text cases plus the DOCX comparison can distinguish a Peek text-provider gap from environment-dependent handler support.",
+    "initial_investigation": [
+      "Reviewed body and both comments through 2024-04-15T18:12:24Z, including the full DOCX comparison.",
+      "Bot links are not confirmed duplicates or resolutions; no maintainer response or fix is recorded.",
+      "Product-Peek is the apparent owner; no source-code conclusion made in this lightweight pass."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32145",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused Peek provider-selection investigation; no upstream write."
+    },
+    {
+      "id": "reproduce-32145",
+      "type": "reproduce",
+      "label": "Reproduce Peek text and DOCX preview differences",
+      "reproduce": {
+        "title": "Compare Peek and Explorer preview selection",
+        "module": "Peek",
+        "version_requirement": "Current development build; compare 0.79.0 if available",
+        "prerequisites": [
+          "Windows 10 22H2 for the reported DOCX comparison",
+          "Harmless plain-text file without extension and harmless .ahk text file",
+          "Use only non-sensitive DOCX content"
+        ],
+        "setup": [
+          "Enable Explorer Preview Pane and use identical files in both surfaces."
+        ],
+        "steps": [
+          "Select the extensionless text file and compare Explorer Preview Pane with Peek (Ctrl+Space).",
+          "Repeat for the .ahk file.",
+          "If available, compare the same non-sensitive DOCX on the two Win10 systems described and note Explorer/Peek/Word results."
+        ],
+        "expected_result": "Peek's supported text preview works consistently; any machine-specific handler limitation is identified rather than attributed to the text-provider path."
+      }
+    }
+  ],
+  "generated_at": "2026-10-20T20:09:08Z",
+  "evaluated_at": "2026-10-20T20:09:08Z"
 }

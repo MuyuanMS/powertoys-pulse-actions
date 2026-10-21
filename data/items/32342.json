@@ -2,32 +2,102 @@
   "number": 32342,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "existing_fix_pending_verification",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-14T10:46:03Z",
   "status": {
     "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Settings persistence fix already proposed",
+    "detail": "Open PR #51080 explicitly covers a plausible interrupted-write/settings-loss mechanism for this report, without claiming the cause is confirmed."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Verify MWB persistence against #51080",
+    "reason": "Reuse the existing fix attempt and test reboot persistence rather than create a competing design or repeat the answered clarification."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "32342-persistence-repro",
+      "type": "reproduce",
+      "label": "Verify MWB settings retention",
+      "reproduce": {
+        "title": "Compare MWB settings retention with the existing atomic-save candidate",
+        "module": "Mouse Without Borders / Settings",
+        "version_requirement": "Latest stable baseline; compare an independently built/validated #51080 candidate when available. Historical report: 0.80.0.",
+        "prerequisites": [
+          "Two physical Windows PCs with a working MWB pair and a disposable test configuration.",
+          "Record non-secret settings and retain a private backup; never publish MWB keys or machine identifiers.",
+          "Use an isolated settings test fixture for lock/full-disk/interrupted-write fault injection, not the user's live configuration."
+        ],
+        "steps": [
+          "Set a recognizable device layout and non-secret MWB options; verify the saved state before shutdown.",
+          "Restart both PCs after the normal idle interval and compare persisted settings and UI state before any reconfiguration.",
+          "On a separate test fixture, exercise the C# save/read lock and interrupted-write cases described in #51080; verify that valid prior settings survive and unreadable content is retained.",
+          "Repeat the reboot scenario on an approved #51080 candidate if available, including service mode if the baseline uses it; distinguish C# SettingsUtils coverage from C++ writers that the PR explicitly leaves unchanged."
+        ],
+        "expected_result": "Non-secret options and device layout survive restart; failed C# saves do not truncate the previous valid file. A passing fault-injection test alone does not prove the reporter's reboot failure is resolved.",
+        "attachments": [
+          {
+            "label": "Existing settings persistence candidate",
+            "url": "https://github.com/microsoft/PowerToys/pull/51080"
+          },
+          {
+            "label": "Reporter's clarification",
+            "url": "https://github.com/microsoft/PowerToys/issues/32342#issuecomment-2046240659"
+          }
+        ]
+      }
+    }
+  ],
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "A real public fix attempt now exists: #51080 explicitly relates settings loss after restart to atomic saves and resilient reads. The author already answered the earlier clarification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The author clarified that customized settings revert to defaults: https://github.com/microsoft/PowerToys/issues/32342#issuecomment-2046240659",
+      "Several later commenters corroborate MWB settings loss.",
+      "Open https://github.com/microsoft/PowerToys/pull/51080 explicitly links #32342 and states that interrupted writes are consistent with, but not confirmed for, this report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Validate the existing candidate's settings-retention coverage without duplicating its implementation or claiming resolution.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-14T10:46:03Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open #51080 is a concrete atomic-save/retry/corrupt-file preservation attempt explicitly linked to this issue. It does not close the issue outright and leaves C++ writers and end-to-end module reload verification outside its proven coverage.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51080"
+    ]
+  },
+  "issue_context": {
+    "summary": "MWB customized settings reset to defaults after the PC has been idle and restarts, forcing reconfiguration. The author clarified this after the maintainer asked what 'disappearing' meant.",
+    "known_information": [
+      "Original version is 0.80.0, Store installation, running elevated; four raw log attachments already exist.",
+      "The author answered the clarification on 2024-04-10, and subsequent users report similar loss.",
+      "Live labels include Needs-Team-Response rather than Needs-Author-Feedback; there is no assignee.",
+      "Open #51080 directly references this issue and describes limits of its C# persistence coverage."
+    ],
+    "inferences": [
+      "An interrupted or failed settings write could explain defaults after restart, but the PR itself does not establish that mechanism for this reporter.",
+      "Not all later comments necessarily describe the same setting or writer."
+    ],
+    "analysis": "Correct the unsupported empty-assignee ownership claim, but retain genuine existing work discovered in the timeline. The earlier question has been answered, so this is not waiting on the author and needs no repeated generic information request.",
+    "initial_investigation": [
+      "Read the complete report and all six comments, including the reporter's clarification.",
+      "Enumerated public timeline cross-references, including duplicate #32781, tracking overview #51077 and open PR #51080.",
+      "Read #51077's settings-loss section and the complete #51080 body/state. The PR explicitly distinguishes proven code behavior from the report's unconfirmed cause.",
+      "No persistence or reboot test was executed during this correction pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the reporter's reboot reset follows a C# interrupted/locked write and is prevented by #51080.",
+        "why_needed": "Avoids equating mechanism coverage with resolution of every settings-reset report.",
+        "how_to_collect": "Maintainer compares baseline and validated candidate persistence in the isolated reproduction above; first inspect existing attached logs rather than ask the author to repeat the answered description."
+      }
+    ]
   }
 }

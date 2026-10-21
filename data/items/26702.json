@@ -1,33 +1,118 @@
 {
+  "schemaVersion": 5,
   "number": 26702,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-08-02T19:37:11Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Compare local and forwarded picker input",
+    "detail": "Remote keyboard failure is documented, but reports from other input-sharing tools leave Windows input handling as a competing cause."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce emoji-picker input boundary",
+    "reason": "A two-PC comparison can distinguish PowerToys injection from a Windows picker focus/input restriction."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The title and numbered steps clearly identify remote keyboard input failing in the Windows 11 emoji picker. The Expected/Actual template text is reversed, so it is not used to invert the reported problem.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/26702 supplies a two-PC reproduction on 0.70.1, with mouse input still working and even Escape rejected.",
+      "https://github.com/microsoft/PowerToys/issues/26702#issuecomment-1579655328 reports the same symptom with Input Director and links 14328.",
+      "https://github.com/microsoft/PowerToys/issues/26702#issuecomment-1581116059 reports Barrier behavior and suggests picker/process ownership.",
+      "The public timeline links duplicate reports 26747 and 27958 and tracking overview 51077, not a fix PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the supplied two-PC scenario and compare local, forwarded and post-selection input before choosing between a PowerToys key-injection correction and a Windows-owned limitation.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-08-02T19:37:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys-owned key representation or forwarding-state correction is possible but unconfirmed. Cross-tool reports prevent assuming that a module patch can resolve every case; no concrete fix attempt was identified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Align forwarded key events with picker-compatible input semantics",
+      "root_cause": "Hypothesis: the emoji picker treats Mouse Without Borders synthesized key events differently from local hardware input, potentially because of scan-code/extended-key representation or picker focus state. A Windows-wide injected-input limitation is an equally material alternative.",
+      "plan": [
+        "Compare local and forwarded letter, arrow and Escape input before and after selecting an emoji; include NumLock state because related 14328 reports picker-dependent differences.",
+        "Trace src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs, especially key flag mapping and SendInputEx, and compare emitted event metadata with working local events.",
+        "Only if a PowerToys discrepancy is demonstrated, correct that event mapping or forwarding state while preserving extended keys, balanced key-up events and existing integrity/security boundaries.",
+        "Add regression coverage for the identified key representation and retest ordinary application input. If all equivalent injected paths fail, document the Windows boundary instead of adding a security-bypassing workaround."
+      ],
+      "verification": [
+        "From PC A, open Win+. on Windows 11 PC B and test text, arrows and Escape while remote mouse input remains functional.",
+        "Compare the same keys locally on B and repeat after a mouse emoji selection and with NumLock toggled.",
+        "Verify any candidate does not break standard typing, modifiers, extended arrows or elevation boundaries."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The injection boundary is plausible and the relevant code exists, but multiple independent tools share the symptom and no event trace identifies a PowerToys defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On Windows 11, Mouse Without Borders forwards mouse input to the emoji picker but the picker rejects remote keyboard input, including Escape.",
+    "known_information": [
+      "The original report uses two connected PCs, 0.70.1 and elevated PowerToys.",
+      "The description and title establish the failure despite swapped Expected/Actual fields.",
+      "Both comments discuss cross-tool reproduction; the related Keyboard Manager issue 14328 remains open and includes local picker/focus and NumLock observations.",
+      "The live issue is open, unassigned and has no linked fix PR."
+    ],
+    "inferences": [
+      "A Windows picker/input path limitation is credible, but cross-tool similarity alone does not prove exclusive external ownership.",
+      "The related Keyboard Manager focus and NumLock observations are discriminators to test, not confirmed causes of this Mouse Without Borders report."
+    ],
+    "analysis": "The supplied steps support maintainer-side reproduction without asking the reporter to repeat basic configuration. Keep the fix hypothesis red until an event-path comparison identifies an actionable module discrepancy.",
+    "initial_investigation": [
+      "Read the complete report and both comments, the full public cross-reference timeline and the related 14328 report/discussion.",
+      "Current InputSimulation.cs maps key-up/extended flags, obtains scan codes and calls SendInputEx, providing a concrete injection ownership lead.",
+      "Exact-number PR search found no match. Tracking issue 51077 is organizational related work, not a claimed implementation."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether only forwarded input fails and whether picker selection or NumLock changes that boundary on a current build.",
+        "why_needed": "Separates a module-owned event mismatch from a Windows picker limitation.",
+        "how_to_collect": "Maintainer: execute the two-PC local/remote comparison and inspect emitted key metadata only if the current failure reproduces."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-picker-boundary",
+      "type": "reproduce",
+      "label": "Compare local and remote emoji-picker keys",
+      "reproduce": {
+        "title": "Mouse Without Borders Windows 11 emoji picker",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Current PowerToys build on both PCs; original report used 0.70.1.",
+        "prerequisites": [
+          "Two trusted connected PCs, A and B, with Windows 11 on B.",
+          "Mouse Without Borders enabled and paired; a local keyboard on B for the control comparison."
+        ],
+        "steps": [
+          "Move from A onto B and open Notepad to confirm ordinary forwarded typing works.",
+          "Open the emoji picker with Win+. or Win+; and test text search, arrows and Escape from A.",
+          "Without changing the active application, compare B's local keyboard and mouse input.",
+          "Reopen the picker, select an emoji with the mouse, then retry forwarded keys; repeat with NumLock off and on.",
+          "Record Windows build, PowerToys versions and service/elevation configuration; trace InputSimulation only if the failure persists."
+        ],
+        "expected_result": "Forwarded text/navigation/dismissal should behave like local input where Windows permits injection. Do not bypass secure-desktop or integrity restrictions to force parity."
+      }
+    },
+    {
+      "id": "approve-picker-input-plan",
+      "type": "approve_design",
+      "label": "Approve scoped forwarded-input investigation",
+      "note": "Implementation remains conditional on demonstrating a PowerToys-owned discrepancy; no confirmed root cause or implementation-grade design is claimed."
+    }
+  ]
 }

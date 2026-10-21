@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 34183,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-08-06T18:17:29Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Distinguish emulator resize ownership",
+    "detail": "FancyZones initially places the floating Android emulator, then the window leaves the zone. Emulator self-resizing is possible but not established."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request emulator configuration and resize control",
+    "reason": "The emulator version, AVD window mode and ordinary-resize behavior determine whether FancyZones or emulator geometry ownership should be investigated."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "A recording and log are already supplied, and elevation/child-window settings are known. The remaining useful discriminator is whether the emulator independently restores its size and which emulator configuration exhibits that behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/34183 reports 0.83.0, elevated execution and Allow child window snapping enabled.",
+      "The report says a CLI-launched floating vanilla Android Emulator initially snaps, then unsnaps after a few seconds.",
+      "The report includes a video attachment and log_2024-08-06.txt; there are no live comments, assignees or cross-reference events."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Obtain the exact emulator/AVD window mode and compare ordinary resizing with FancyZones disabled before designing a resize-handling change.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-08-06T18:17:29Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A conflict between FancyZones placement and the emulator's subsequent geometry update is plausible. No linked fix or active implementation was identified; the exact HWND/event sequence is unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Respect final emulator window geometry when completing a snap",
+      "root_cause": "Hypothesis: the emulator issues its own size/position update after FancyZones places its floating window, or FancyZones targets a transient child/owner window. The initial successful snap followed by delayed movement does not distinguish these mechanisms.",
+      "plan": [
+        "Reproduce with the supplied emulator version and AVD mode, identify the stable top-level/owner HWND, and compare manual resizing with FancyZones disabled.",
+        "Trace placement and subsequent location/size events in src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp and WindowMouseSnap.cpp to identify who performs the second move.",
+        "If FancyZones selects a transient window, correct target selection; if its own delayed processing causes the move, correct that lifecycle boundary. Do not repeatedly force geometry against an emulator-owned resize loop.",
+        "Add a focused mock-window regression for the confirmed event sequence and retain normal child-window and aspect-ratio behavior."
+      ],
+      "verification": [
+        "Snap the floating emulator repeatedly and confirm its final bounds and zone association remain stable after the original several-second delay.",
+        "Verify manual resizing without FancyZones and compare normal top-level application snapping.",
+        "Check child-window snapping on/off and ensure no placement loop or repeated resize occurs."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The delayed geometry conflict matches the symptom, but emulator configuration and the source of the second move are not known."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A standalone Android emulator briefly snaps into a FancyZones zone, then moves out after a few seconds despite elevated PowerToys and child-window snapping being enabled.",
+    "known_information": [
+      "PowerToys 0.83.0 from GitHub, elevated execution and the relevant child-window setting are explicitly supplied.",
+      "A video and FancyZones log are attached; the emulator is launched as a floating window from the command line.",
+      "No emulator version, exact AVD/window-mode configuration or ordinary-resize comparison is recorded.",
+      "The issue is open and unassigned, not owned elsewhere."
+    ],
+    "inferences": [
+      "A delayed emulator resize or transient-window identity could explain the observed sequence.",
+      "A failed initial permission check is less consistent with an initially successful placement, but is not excluded merely by elevation."
+    ],
+    "analysis": "Do not ask for the same recording/log again. Request the configuration needed to reproduce and one control that distinguishes application-enforced geometry from FancyZones placement.",
+    "initial_investigation": [
+      "Read the full report and empty discussion/cross-reference history; exact-number PR search found no match.",
+      "Current FancyZones WindowUtils.cpp contains window geometry and border handling; WindowMouseSnap.cpp is the corresponding mouse-snap ownership area.",
+      "The public video/log links were identified; their contents were not analyzed in this lightweight pass, so no stack or exact geometry result is claimed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "information": "Android Emulator version and the AVD device/window mode used for the floating emulator.",
+        "why_needed": "Different emulator skins, display sizes and resize policies can change window ownership and aspect-ratio enforcement.",
+        "how_to_collect": "Run emulator -version and provide the AVD device/display configuration, standalone versus embedded mode and launch flags, omitting personal paths."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same window restores its old geometry after an ordinary manual resize with FancyZones disabled.",
+        "why_needed": "Discriminates emulator-enforced geometry from a FancyZones event/target-selection defect.",
+        "how_to_collect": "Temporarily disable FancyZones, resize the floating emulator to approximately the same zone size, wait several seconds, and describe whether it stays or restores its size/position."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-emulator-resize-control",
+      "type": "request_info",
+      "label": "Request emulator version and manual-resize result",
+      "comment": {
+        "body": "Thanks for the video and FancyZones log, and for confirming that PowerToys is elevated and child-window snapping is enabled. The initial snap followed by delayed movement could come from either FancyZones window handling or the emulator restoring its own geometry.\n\n1. Please provide the Android Emulator version (`emulator -version`), the AVD device/display configuration, whether it is standalone or embedded, and the launch flags you use, omitting personal paths.\n2. Could you temporarily disable FancyZones, manually resize that floating emulator to approximately the same size, wait several seconds, and confirm whether it stays there or restores its previous size/position? This comparison will tell us which side owns the second resize. There is no need to resend the existing video or log."
+      }
+    },
+    {
+      "id": "approve-emulator-geometry-plan",
+      "type": "approve_design",
+      "label": "Approve emulator geometry investigation",
+      "note": "Resolve the second-move owner before implementing; this is a low-confidence scoped plan, not a finished design."
+    }
+  ]
 }

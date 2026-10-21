@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 32423,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Always On Top border crosses monitor and taskbar boundaries",
+  "url": "https://github.com/microsoft/PowerToys/issues/32423",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-08-31T06:05:23Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔧",
+    "label": "Border clipping plan",
+    "detail": "The reporter already answered the expected-behavior question: do not cross monitor boundaries or cover the taskbar. No author wait remains."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Validate border work-area clipping",
+    "reason": "Exercise the existing reproduction on two monitors before changing overlay geometry."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The clarified expectation and screenshots identify the boundary defect. Current GetFrameRect expands DWM frame bounds by border thickness without clipping in that function; rendering-region behavior still needs verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "0.80.1 report supplies a two-monitor arrangement and visible border spill.",
+      "A maintainer added a taskbar-overlap screenshot and asked for intended behavior.",
+      "https://github.com/microsoft/PowerToys/issues/32423#issuecomment-2222699727 explicitly answers both boundary questions.",
+      "WindowBorder.cpp GetFrameRect expands all four frame edges by frameThickness.",
+      "Related closed reports #32735, #31941 and #32750 link back to this open report; no fix PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce on mixed-DPI monitors, then approve a rendering clip that preserves borders for genuinely spanning windows.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-08-31T06:05:23Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report is a repository-owned border-rendering issue with answered requirements; related duplicate reports do not constitute a fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clip Always On Top decoration to eligible monitor work areas",
+      "root_cause": "Hypothesis: the separate topmost border overlay uses frame bounds expanded by frameThickness, allowing decoration outside the pinned window's monitor work area.",
+      "plan": [
+        "Reproduce edge/taskbar spill and trace GetFrameRect, WindowBorder::UpdateBorderProperties and FrameDrawer output in src/modules/alwaysontop/AlwaysOnTop.",
+        "Compute an explicit visible border region: clip to the containing monitor work area when the target is wholly on one monitor, and define a union of eligible work areas for spanning windows rather than arbitrarily selecting one monitor.",
+        "Apply clipping to rendering/overlay region without moving or resizing the target window; update it on window moves, DPI, taskbar and display changes.",
+        "Add geometry tests and multi-monitor UI checks for negative coordinates, auto-hide taskbars and thick borders."
+      ],
+      "verification": [
+        "Pin a window flush with every edge of a monitor and verify no decoration appears on an adjacent monitor or over the taskbar.",
+        "Move the pinned window across two mixed-DPI monitors and verify spanning-window decoration, thickness, rounded corners and z-order remain correct."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "Expanded frame geometry directly matches the screenshots, but the final clipping policy and current rendering behavior need an end-to-end test."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top's external border extends onto a neighboring display and over the taskbar when the pinned window is at an edge.",
+    "known_information": [
+      "The original 0.80.1 report includes monitor arrangement and failure screenshots.",
+      "The July author reply supplied the requested expected behavior.",
+      "Status-Reproducible and Needs-Team-Response are present; the issue is unassigned."
+    ],
+    "inferences": [
+      "An inflated overlay rectangle may need work-area-aware clipping; this remains a rendering hypothesis."
+    ],
+    "analysis": "The requested requirements are already supplied. Further progress belongs to maintainers reproducing boundary geometry, not another author-feedback request.",
+    "initial_investigation": [
+      "Read the full report and all three comments, timeline-linked duplicates and related PR search.",
+      "Inspected upstream WindowBorder.cpp GetFrameRect and overlay SetWindowPos calls; the frame bounds are expanded before drawing."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-32423",
+      "type": "reproduce",
+      "label": "Test border at monitor and taskbar edges",
+      "primary": true,
+      "reproduce": {
+        "module": "Always On Top",
+        "version": "Current stable build; baseline report 0.80.1",
+        "prerequisites": [
+          "Two physical monitors in the report's arrangement; also test different DPI scales.",
+          "Enable the Always On Top border and use a resizable test window."
+        ],
+        "steps": [
+          "Pin the test window and place it entirely on one monitor, flush to the edge shared with the other monitor.",
+          "Inspect the adjacent display for border spill; repeat at the taskbar edge.",
+          "Repeat with a thicker border, then move the window so it genuinely spans both monitors.",
+          "Trace the inflated frame bounds and visible drawing region through display/DPI changes."
+        ],
+        "expected_result": "Decoration for a window wholly on one monitor stays on that monitor and outside the taskbar; spanning-window behavior remains coherent."
+      }
+    },
+    {
+      "id": "approve-design-32423",
+      "type": "approve_design",
+      "label": "Approve border clipping fix plan",
+      "confirm": true,
+      "note": "Confirm rendering behavior and spanning-window policy before implementing."
+    }
+  ]
 }

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51420,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:43.539Z",
+  "evaluated_at": "2026-10-20T16:40:43.539Z",
+  "source_updated_at": "2026-10-20T01:52:27Z",
+  "updated_at": "2026-10-20T01:52:27Z",
+  "state": "open",
+  "title": "CmdPal: One hung extension blocks the entire stop loop (EXT26.T2)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51420",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "rationale": "Source inspection identifies a sequential synchronous COM path and no service-level deadline. The report explicitly says a hung extension was not tested, so a controlled maintainer test is the next step.",
+    "evaluated_at": "2026-10-20T16:40:43.539Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "evidence": [
+      "SignalStopAsync checks liveness and disposes extensions sequentially; its per-extension catch handles throws, not hangs.",
+      "The restart path's five-second caller wait does not bound the service loop or ordinary reload.",
+      "The issue states no extension was deliberately hung."
+    ],
+    "status": "actionable_design",
+    "source_updated_at": "2026-10-20T01:52:27Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Reproduce with controllably blocked IsRunning and Dispose calls and measure the service wait.",
+        "Bound the wait without treating timeout as COM cancellation; retain ownership and cap in-flight calls across repeated stops.",
+        "Attempt other providers despite one blocked call and prevent late completion from clearing replacements.",
+        "Add timeout, repeated-stop, late-completion and healthy-peer tests."
+      ],
+      "verification": [
+        "Block the first provider's IsRunning and Dispose calls separately; verify a healthy second provider is still signaled.",
+        "Repeat stop while blocked and confirm ownership stays bounded.",
+        "Release after registering a replacement and verify the late call cannot affect it."
+      ],
+      "title": "Correct the reported Command Palette lifecycle failure",
+      "root_cause": "Synchronous COM liveness/disposal calls run serially without a service-level deadline or bounded ownership; one hang can prevent later extensions from being signaled.",
+      "confidence": {
+        "level": "red",
+        "rationale": "The sequential synchronous path is source-confirmed, but no hang was reproduced; timeouts cannot cancel COM and require explicit ownership tests.",
+        "score": 46
+      }
+    }
+  ],
+  "issue_context": {
+    "information_gaps": [],
+    "known_information": [
+      "SignalStopAsync checks liveness and disposes extensions sequentially; its per-extension catch handles throws, not hangs.",
+      "The restart path's five-second caller wait does not bound the service loop or ordinary reload.",
+      "The issue states no extension was deliberately hung."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "analysis": "Source inspection identifies a sequential synchronous COM path and no service-level deadline. The report explicitly says a hung extension was not tested, so a controlled maintainer test is the next step.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and related issue status; no upstream code or public issue action was performed."
+    ],
+    "summary": "A synchronous IsRunning or Dispose call can stall CmdPal's sequential stop loop, preventing later extensions from receiving stop; no deliberately hung extension was tested."
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "design": {
+        "title": "Correct the reported Command Palette lifecycle failure"
+      },
+      "confirm": true,
+      "id": "issue-51420-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "label": "Approve bounded CmdPal lifecycle investigation"
+    },
+    {
+      "id": "issue-51420-reproduce",
+      "reproduce": {
+        "steps": [
+          "1. Start two extensions and block the first IsRunning or Dispose call.",
+          "2. Request stop/reload and observe whether the second extension is attempted and the caller remains bounded.",
+          "3. Repeat stop while blocked, then release after registering a replacement and inspect ownership."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "expected_result": "One blocked provider does not prevent healthy stop attempts or exceed the caller deadline; in-flight work stays owned and late completion cannot affect a replacement.",
+        "module": "Command Palette extension stop/reload",
+        "prerequisites": [
+          "Extension test double with independently blockable IsRunning and Dispose."
+        ]
+      },
+      "label": "Reproduce CmdPal lifecycle failure",
+      "type": "reproduce"
+    }
+  ]
+}

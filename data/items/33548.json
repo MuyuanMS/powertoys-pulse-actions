@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 33548,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:32:53.3072416Z",
+  "evaluated_at": "2026-10-20T23:32:53.3072416Z",
   "source_updated_at": "2024-06-28T19:50:46Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce resume-time zone geometry",
+    "detail": "Zero-spacing multi-monitor layouts gain gaps after hibernation; several related reports explicitly duplicate into this issue."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare saved spacing and restored window bounds",
+    "reason": "Measure zone geometry versus native window borders instead of treating the reporter's hardcoded-margin theory as proven."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The multi-monitor, zero-spacing, hibernate/resume sequence is actionable and this issue is the canonical target of several explicit duplicates. The exact layout-selection or window-frame mechanism remains unresolved.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report names 0.81.1 and says windows gain margins after hibernation and require resnapping.",
+      "https://github.com/microsoft/PowerToys/issues/24617 was explicitly closed into #33548 and describes settings still showing no border despite the visible gap.",
+      "https://github.com/microsoft/PowerToys/issues/43923 and https://github.com/microsoft/PowerToys/issues/44321 explicitly close into #33548 for resume-time size/position changes.",
+      "Current FancyZones.cpp processes WM_DISPLAYCHANGE through OnDisplayChange and UpdateWorkAreas; this identifies an investigation boundary, not a proven defect."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce resume with zero spacing and compare active layout identity, saved spacing, computed zone rectangles and actual window frame bounds.",
+    "evaluated_at": "2026-10-20T23:32:53.3072416Z",
     "source_updated_at": "2024-06-28T19:50:46Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete fix appears in the inspected issue timeline. Closed related reports are duplicate-routing or no-longer-reproducing outcomes, not proof that this canonical issue is fixed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve layout geometry through monitor resume",
+      "root_cause": "Hypothesis: transient monitor/work-area reconstruction on resume selects stale layout geometry or applies spacing/frame adjustments inconsistently. Zero spacing must remain distinct from an absent/default value. A hardcoded 15-pixel margin is only the reporter's speculation.",
+      "plan": [
+        "On a two-monitor test system, record active layout IDs, spacing/show-spacing values, DPI/work areas, zone rectangles and window extended-frame bounds before and after hibernate.",
+        "Trace src/modules/fancyzones/FancyZonesLib/FancyZones.cpp OnDisplayChange/UpdateWorkAreas and the selected layout/work-area mapping. Determine whether the saved layout changes, zone geometry changes or only the restored outer frame shifts.",
+        "If reconstruction loses the selected layout or explicit zero spacing, preserve that mapping/value across transient display states and recompute only against the final valid work area. If zone rectangles remain correct, fix the demonstrated DPI/frame conversion instead of changing spacing defaults.",
+        "Add targeted resume/topology and explicit-zero-spacing regressions, including mixed DPI, custom layouts and the option to keep windows in zones when display resolution changes."
+      ],
+      "verification": [
+        "Hibernate/resume a zero-spacing multi-monitor layout: saved values and active layout remain unchanged and windows return to the correct bounds.",
+        "Resnapping must not be necessary to remove newly introduced gaps.",
+        "Nonzero spacing, mixed DPI, KVM/display reconnect and spanning layouts retain intentional spacing; compare zone rectangles with extended-frame bounds."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The resume/topology boundary is supported by multiple explicit duplicates, but geometry measurements must distinguish layout reconstruction from native frame/DPI effects."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After hibernation in a multi-monitor setup, windows previously snapped with zero margins gain visible gaps until resnapped.",
+    "known_information": [
+      "The report names PowerToys 0.81.1 and multiple monitors.",
+      "The hardcoded-margin explanation is a commenter hypothesis, not measured evidence.",
+      "Reports #24617, #43923 and #44321 explicitly consolidate into this issue.",
+      "The issue remains open, unassigned and Priority-1."
+    ],
+    "inferences": [
+      "Monitor topology changes and restoration geometry are plausible common boundaries.",
+      "Visible gaps can arise without the saved spacing setting changing, so a settings-only fix may miss the defect."
+    ],
+    "analysis": "This is the canonical open report, not a duplicate to close elsewhere. The remaining work is a maintainer-side geometry comparison with sufficient public steps; no generic diagnostic request is necessary for this pass.",
+    "initial_investigation": [
+      "Read the report and both comments.",
+      "Read #24617, #23588, #18103 and #17152; distinguish explicit duplicates, KVM symptoms and an old reporter's no-longer-reproducing closure.",
+      "Inspected #43923 and #44321 duplicate closure comments.",
+      "Verified current upstream OnDisplayChange/UpdateWorkAreas ownership. Existing drag-lifetime guards are unrelated evidence and do not establish a spacing fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-resume-spacing",
+      "type": "reproduce",
+      "label": "Measure zero-spacing geometry after resume",
+      "reproduce": {
+        "title": "Hibernate/resume changes snapped window bounds",
+        "module": "FancyZones",
+        "version_requirement": "Compare reported 0.81.1 with a current supported build.",
+        "prerequisites": [
+          "Two physical monitors; record resolution, scaling and connection types",
+          "A custom layout with spacing disabled or explicitly zero",
+          "Record the keep-windows-in-zones-on-resolution-change option and preserve original layouts."
+        ],
+        "steps": [
+          "1. Snap test windows into the zero-spacing layout and record active layout ID, saved spacing, zone rectangles and window frame bounds.",
+          "2. Hibernate the machine, resume and wait for both monitors to become available.",
+          "3. Before resnapping, compare saved settings, active layout and measured window/zone geometry.",
+          "4. Resnap once as a control, then repeat with nonzero spacing and mixed DPI to locate the first incorrect conversion or layout choice."
+        ],
+        "expected_result": "Resume preserves the chosen spacing and window-to-zone geometry without manual resnapping; measurements distinguish changed zones from shifted window frames.",
+        "attachments": [
+          {
+            "label": "Canonical hibernate report",
+            "url": "https://github.com/microsoft/PowerToys/issues/33548"
+          },
+          {
+            "label": "Spacing remains disabled despite gaps",
+            "url": "https://github.com/microsoft/PowerToys/issues/24617"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-resume-geometry-plan",
+      "type": "approve_design",
+      "label": "Review resume-time geometry plan",
+      "note": "Select layout-value preservation or frame conversion only after geometry comparison; no arbitrary margin constant is assumed."
+    }
+  ]
 }

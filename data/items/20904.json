@@ -2,32 +2,108 @@
   "number": 20904,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-21T08:39:15Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨️",
+    "label": "Activation failure needs process-state evidence",
+    "detail": "Multiple shortcuts, centralized-hook settings and elevation were already tried. A current failed-activation capture must distinguish a dead launcher from a lost activation signal."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "⌨️",
+    "label": "Request failed-activation capture",
+    "reason": "Do not repeat the answered shortcut/conflict question or assume an unused shortcut is proven."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "20904-activation-capture",
+      "type": "request_info",
+      "label": "Request failed-activation capture",
+      "comment": {
+        "body": "Thanks for confirming Ctrl+Win+Space, testing other combinations, and trying the centralized hook. The later 0.82.1 report also tested elevation and both hook modes with fullscreen suppression off and linked a diagnostic report. Those checks are useful; please do not repeat that whole matrix.\n\nPlease provide:\n1. On the latest stable PowerToys, make one failed activation attempt from an ordinary non-elevated foreground app. Record the tested version, shortcut, failure time including time zone, and whether PowerToys.PowerLauncher.exe is present in Task Manager > Details at that instant. Do not restart PowerToys before checking.\n2. Immediately after that failed attempt, add a comment containing `/bugreport` and attach the generated ZIP, identifying the same failure time. If Settings or the tray cannot open, run BugReportTool.exe from the PowerToys installation directory instead.\n\nThis fresh, time-correlated capture distinguishes launcher startup/exit from lost hotkey delivery; it is not a request to resend the old 2024 report. Please review attachments for personal information before sharing."
+      }
+    },
+    {
+      "id": "20904-activation-plan",
+      "type": "approve_design",
+      "label": "Approve Run activation-path investigation",
+      "note": "Candidate only; process state must select the startup versus hotkey-delivery branch before implementation."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The shortcut and several common controls are already known, but the public evidence does not identify whether the launcher is alive when activation fails.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The author reports Ctrl+Win+Space and failures with other shortcuts: https://github.com/microsoft/PowerToys/issues/20904#issuecomment-1261457905",
+      "The 0.82.1 Windows 10 follow-up already tested elevation, hook modes and fullscreen suppression and linked a report: https://github.com/microsoft/PowerToys/issues/20904#issuecomment-2241525138",
+      "The live issue has Needs-Repro, no assignee and no Needs-Author-Feedback label."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request one time-correlated current failed activation with launcher process state and fresh diagnostics.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-21T08:39:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Run lifecycle/hotkey-delivery correction is plausible, but no current failing branch or linked concrete fix attempt is established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Run activation delivery across launcher lifecycle changes",
+      "root_cause": "Hypothesis: hotkey registration or its delivery to the live launcher becomes stale across restart/update, so a recognized key does not show Run. Launcher startup failure is a competing cause and must be excluded before changing hook behavior.",
+      "plan": [
+        "Correlate the requested failure timestamp with launcher process lifetime and runner/launcher diagnostics to separate no process, no delivered activation, and activation received but not shown.",
+        "If a stale registration/signal is confirmed, trace Run enable/disable, launcher restart and runner hotkey registration; re-establish the registration or delivery endpoint at the actual failed lifecycle boundary without creating duplicate hooks.",
+        "If the signal reaches a live launcher, investigate its show/focus path instead of applying the hook hypothesis; add a targeted regression only for the branch demonstrated.",
+        "Test update/restart, repeated activation and enable/disable under both centralized-hook modes while preserving fullscreen suppression and elevation boundaries."
+      ],
+      "verification": [
+        "Repeated activation consistently displays Run after normal restart and enable/disable transitions.",
+        "Both supported hook modes work, fullscreen suppression remains intentional, and a stopped launcher is not misdiagnosed as a key conflict."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The symptom spans versions and configurations; neither process health nor activation delivery has been isolated."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run activation shortcuts intermittently or completely fail despite trying different keys and centralized-hook settings. A later commenter cannot activate at all even with common suppression/elevation controls checked.",
+    "known_information": [
+      "Original version is 0.62.0; the author names Ctrl+Win+Space and reports only about one success in ten.",
+      "A 0.82.1 Windows 10 build 19045 follow-up supplies a diagnostic-report link and detailed hook/fullscreen/elevation controls.",
+      "A separate Color Picker comment is not evidence that all users share the same Run defect.",
+      "The current issue is open, unassigned and labeled Needs-Repro."
+    ],
+    "inferences": [
+      "Shortcut acceptance in Settings does not prove there is no OS or application interception.",
+      "A live-but-unresponsive activation path and an absent/crashed launcher require different fixes."
+    ],
+    "analysis": "The maintainer's original hotkey question was answered. A draft follow-up is still owed by the maintainer, not already posted author-waiting state. Request only the current process-state/failure-time discriminator and diagnostics captured around it.",
+    "initial_investigation": [
+      "Read the body and all five comments, including the answered question and linked 2024 report.",
+      "Enumerated the public timeline, including closed related #34105; no fixing PR appeared in the timeline or direct issue-number PR search.",
+      "Identified runner registration, launcher lifetime and launcher show/focus as separate ownership boundaries; none was proven responsible.",
+      "No hotkey/process reproduction was performed and the externally linked 2024 archive was not used to claim a current cause."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Current tested version and shortcut, exact failed-activation time and whether the launcher process exists then.",
+        "why_needed": "Distinguishes launcher startup/exit from failed delivery to a live launcher.",
+        "how_to_collect": "Make one failed attempt in an ordinary foreground app and check Task Manager > Details before restarting; record time zone and version."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Current diagnostic capture correlated to that same failed activation, not a copy of the old report.",
+        "why_needed": "Allows maintainer correlation of registration, activation and process lifetime.",
+        "how_to_collect": "Immediately after reproducing, comment /bugreport and attach the generated ZIP; use BugReportTool.exe from the installation directory if Settings/tray is inaccessible."
+      }
+    ]
   }
 }

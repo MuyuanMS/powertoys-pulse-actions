@@ -7,9 +7,9 @@
   "stage": "needs_information",
   "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-23T03:38:00Z",
-  "evaluated_at": "2026-09-23T03:38:00Z",
-  "source_updated_at": "2026-09-22T09:42:43Z",
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-02T08:43:08Z",
   "title": "PowerToys randomly exits",
   "url": "https://github.com/microsoft/PowerToys/issues/50169",
   "author": "Ishaan1313",
@@ -19,19 +19,22 @@
     "Needs-Team-Response",
     "Product-General"
   ],
-  "assignees": [],
-  "comments": 0,
+  "assignees": [
+    "moooyo"
+  ],
+  "comments": 20,
   "judgment": {
     "status": "needs_information",
-    "rationale": "Existing bug reports were already supplied, so repeating a generic /bugreport request would not reduce uncertainty. The next discriminating evidence is a silent-process-exit capture or matching Windows event at the time of termination, plus a precise timestamp.",
+    "rationale": "The original reporter supplied multiple post-exit reports, tried newer builds, and answered the maintainer's question about updates. The maintainer still found no Runner fault and specifically requested Silent Process Exit diagnostics; a second user now reports similar daily exits but provides no trace for their own machine.",
     "evidence": [
-      "The issue reproduces across more than one system and leaves Command Palette running while the main PowerToys components disappear.",
+      "The original reporter says the issue reproduces on multiple systems and leaves Command Palette running while the main PowerToys components disappear.",
       "The reporter updated from 0.100.2 to newer stable/preview builds and uploaded diagnostic ZIPs after recurrences.",
-      "The maintainer reviewed the logs and found no clear Runner fault; the latest comment names Restart Manager or another program update as a possibility."
+      "The maintainer reviewed the logs and found no clear Runner fault; the latest comment names Restart Manager or another program update as a possibility.",
+      "On 2026-10-02, another commenter reported similar exits within each 24-hour period but did not provide a separate diagnostic capture or environment details."
     ],
-    "recommended_action": "Request Silent Process Exit trace",
-    "evaluated_at": "2026-09-23T03:38:00Z",
-    "source_updated_at": "2026-09-22T09:42:43Z"
+    "recommended_action": "Request Silent Process Exit trace and occurrence timing",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-02T08:43:08Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
@@ -39,21 +42,24 @@
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "PowerToys still exits after hours while Command Palette remains alive. The reporter supplied multiple post-restart reports and tested newer preview/stable builds, but the maintainer now suspects Windows Restart Manager or another updater may terminate a resource-holding process and pointed to Silent Process Exit diagnostics.",
+    "summary": "PowerToys exits unexpectedly while Command Palette remains active. The original reporter supplied several post-exit reports and tested newer builds; the maintainer found no clear Runner fault and suggested checking Windows Silent Process Exit data. A second user reports a similar daily recurrence but has not supplied a separate trace.",
     "known_information": [
-      "The issue reproduces across more than one system and leaves Command Palette running while the main PowerToys components disappear.",
+      "The original reporter says the issue reproduces across more than one system and leaves Command Palette running while the main PowerToys components disappear.",
       "The reporter updated from 0.100.2 to newer stable/preview builds and uploaded diagnostic ZIPs after recurrences.",
-      "The maintainer reviewed the logs and found no clear Runner fault; the latest comment names Restart Manager or another program update as a possibility."
+      "The maintainer reviewed the logs and found no clear Runner fault; the latest comment names Restart Manager or another program update as a possibility.",
+      "A second commenter reported similar exits within each 24-hour period on 2026-10-02 but did not include a separate trace or version."
     ],
     "inferences": [
       "The exit may be external process termination rather than a PowerToys crash.",
-      "Silent Process Exit or Event Viewer data could identify the terminating process and distinguish Restart Manager from an internal shutdown."
+      "The second user's recurrence may share the same cause, but the current discussion does not establish that across their machines.",
+      "Silent Process Exit or matching Event Viewer data could identify the terminating process and distinguish Restart Manager from an internal shutdown."
     ],
-    "analysis": "Existing bug reports were already supplied, so repeating a generic /bugreport request would not reduce uncertainty. The next discriminating evidence is a silent-process-exit capture or matching Windows event at the time of termination, plus a precise timestamp.",
+    "analysis": "The original reporter has already supplied multiple PowerToys reports and confirmed the behavior on a newer release, so another generic /bugreport request would not advance triage. The maintainer's specific next diagnostic is Silent Process Exit data; the recent second-user report adds recurrence evidence but not the process-level discriminator. Request the capture and matching occurrence time rather than assuming the two reports share a cause.",
     "initial_investigation": [
-      "Reviewed the full discussion through the maintainer’s 2026-09-22 comment.",
+      "Reviewed the full discussion through the second user's 2026-10-02 report.",
       "Confirmed the reporter already supplied multiple bug-report ZIPs and tried the requested newer builds.",
-      "Recorded the maintainer’s specific Silent Process Exit diagnostic direction as the next evidence gate."
+      "Recorded the maintainer’s specific Silent Process Exit diagnostic direction as the next evidence gate.",
+      "Confirmed the 2026-10-02 commenter reports similar frequency but no version, diagnostic capture, or matching Windows event."
     ],
     "information_gaps": [
       {
@@ -70,9 +76,9 @@
       },
       {
         "evidence_type": "repro_steps",
-        "information": "The approximate exit time and what applications or installers were active immediately before it",
+        "information": "The approximate local time of the next exit and whether an update or installer was active",
         "why_needed": "Correlates the capture with updater/Restart Manager activity.",
-        "how_to_collect": "Reply with the local time of the next exit and whether Windows Update, Office, or another installer/update was running."
+        "how_to_collect": "Reply with the local time of the next exit and whether Windows Update, Office, or another installer/update was running. A second affected user should report the time for their own machine separately."
       }
     ]
   },
@@ -86,7 +92,7 @@
       "comment": {
         "target": "issue",
         "number": 50169,
-        "body": "Thanks for the repeated reproduction reports and the diagnostic ZIPs you already supplied. The latest log review still does not identify a PowerToys faulting module, and the remaining question is whether Windows or another updater terminates the Runner process.\n\nPlease provide the next discriminating evidence:\n\n1. Follow the Microsoft Silent Process Exit registry-entry procedure referenced in the maintainer comment, enable it for the affected PowerToys process, reproduce the exit, and attach the public-safe result. No additional `/bugreport` is needed unless a maintainer asks for a fresh PowerToys package.\n2. Copy the matching Windows Event Viewer Application or Restart Manager details, including the timestamp, terminating/faulting process or module, and code if present.\n3. Include the approximate local time of the next exit and whether Windows Update, Office, or another installer was active.\n\nThis will distinguish external termination from an internal PowerToys crash or controlled shutdown."
+        "body": "Thanks for the repeated reports, the diagnostic ZIPs, and your tests on newer builds. The maintainer's review did not identify a Runner fault and specifically suggested checking whether Windows or another updater terminates the process. A second user has also reported daily exits, but their machine has not yet supplied separate diagnostic evidence.\n\nPlease provide the next discriminating evidence:\n\n1. Follow the Microsoft Silent Process Exit registry-entry procedure linked in the maintainer comment, enable it for the affected PowerToys process, reproduce the exit, and attach the public-safe result. No additional `/bugreport` is needed unless a maintainer asks for a fresh PowerToys package.\n2. Copy the matching Windows Event Viewer Application or Restart Manager details, including the timestamp, terminating/faulting process or module, and code if present.\n3. Include the approximate local time of the next exit and whether Windows Update, Office, or another installer was active. If another affected user can reproduce it, please include their own occurrence time and capture separately.\n\nThis will distinguish external termination from an internal PowerToys crash or controlled shutdown."
       }
     }
   ],

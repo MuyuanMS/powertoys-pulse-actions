@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 5,
+  "number": 51412,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:39:41.086Z",
+  "evaluated_at": "2026-10-20T16:39:41.086Z",
+  "source_updated_at": "2026-10-20T12:57:55Z",
+  "updated_at": "2026-10-20T12:57:55Z",
+  "state": "open",
+  "title": "CmdPal: Uninstall can leave commands from a stopped extension (EXT26.E2)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51412",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:39:41.086Z",
+    "evidence": [
+      "A test reproduced an empty removal notification after the provider had stopped and its registry entry was removed.",
+      "The report links WinRTExtensionService and CommandProviderWrapper construction/removal paths.",
+      "No assignee or matching issue-number PR was found in the focused search."
+    ],
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "rationale": "The issue identifies an uninstall ordering defect and an isolated reproduction in which registry removal succeeds but the provider-removal notification is empty. Installed-host command removal still needs validation.",
+    "source_updated_at": "2026-10-20T12:57:55Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was found by focused issue-number search; treat the reported mechanism as a hypothesis and validate before implementation.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "With a test extension stopped before uninstall notification, verify its commands are removed without new remote calls.",
+        "Register a same-ID replacement before delayed removal and verify it remains intact.",
+        "Run focused CmdPal service/view-model tests and confirm installed-host uninstall removes visible commands."
+      ],
+      "root_cause": "The uninstall path constructs a fresh CommandProviderWrapper after the extension has stopped; liveness/provider calls can fail, omitting removal after deleting the registry entry.",
+      "plan": [
+        "Retain provider identity/lifetime before removing the registry entry; do not make remote provider calls to rediscover it.",
+        "Report removal from retained local state and identify the exact provider instance so delayed removal cannot delete a same-ID replacement.",
+        "Test stopped-extension uninstall and same-ID replacement; validate visible command removal in an installed host."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The empty notification is reproduced and source-linked; installed-host and same-ID lifetime behavior remain to be tested."
+      },
+      "title": "Correct the reported Command Palette extension lifecycle failure"
+    }
+  ],
+  "issue_context": {
+    "analysis": "The issue identifies an uninstall ordering defect and an isolated reproduction in which registry removal succeeds but the provider-removal notification is empty. Installed-host command removal still needs validation.",
+    "summary": "CmdPal extension removal can lose its removal notification when the extension is already stopped, leaving stale commands in the manager.",
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "known_information": [
+      "A test reproduced an empty removal notification after the provider had stopped and its registry entry was removed.",
+      "The report links WinRTExtensionService and CommandProviderWrapper construction/removal paths.",
+      "No assignee or matching issue-number PR was found in the focused search."
+    ],
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed current state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and relevant related-issue status; no upstream code or public issue action was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "id": "issue-51412-approve-design",
+      "label": "Approve CmdPal lifecycle fix investigation",
+      "confirm": true,
+      "design": {
+        "title": "Correct the reported Command Palette extension lifecycle failure"
+      },
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "Controllable extension test double with start/stop state and provider identity."
+        ],
+        "module": "Command Palette extensions",
+        "expected_result": "Removed commands are retired without constructing a remote wrapper; a same-ID replacement remains active.",
+        "steps": [
+          "1. Start a provider and load commands, then stop it before processing package uninstall.",
+          "2. Process uninstall and observe provider-removal event and manager commands.",
+          "3. Repeat with a replacement provider using the same ID before delayed removal runs."
+        ]
+      },
+      "id": "issue-51412-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal lifecycle failure"
+    }
+  ]
+}

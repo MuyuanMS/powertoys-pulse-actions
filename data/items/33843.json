@@ -2,32 +2,92 @@
   "number": 33843,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-15T12:51:28Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "📦",
+    "label": "Reproduce Store/Intune metadata rejection",
+    "detail": "Intune rejects product XP89DCGQ3K6VLD before an installer transaction is identified. Investigate catalog publishing/integration before proposing a PowerToys code change."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare Intune catalog metadata",
+    "reason": "The report already gives the product ID, exact Intune flow, screenshots and last working release."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "33843-intune-catalog",
+      "type": "reproduce",
+      "label": "Reproduce Intune Store-package rejection",
+      "reproduce": {
+        "title": "Validate PowerToys Store catalog ingestion by Intune",
+        "module": "Setup / Enterprise deployment",
+        "version_requirement": "Current Store listing; reported regression from successful 0.81.1 deployment to 0.82.0",
+        "prerequisites": [
+          "An authorized Intune test tenant with permission to add Microsoft Store app (new) applications.",
+          "A test Windows device only if the catalog-add stage succeeds; no production assignments or deployment changes."
+        ],
+        "steps": [
+          "In the test tenant, add a Windows application using Microsoft Store app (new) and select product XP89DCGQ3K6VLD.",
+          "Record whether the catalog-add stage returns 'The selected app does not have a valid latest package version.' Compare the current Store/WinGet catalog version, architecture, scope and installer metadata with the last working 0.81.1 release metadata.",
+          "If the app can be added, assign only the test device and compare Company Portal installation to direct supported installation, separating catalog ingestion from installer execution.",
+          "Route a catalog-only mismatch to the release/Store publishing and Intune integration owners with the exact field/version comparison. Investigate PowerToys installer code only if an installer actually runs and fails."
+        ],
+        "expected_result": "The Store app can be added and installed on a supported test device. If rejected before execution, the evidence identifies a publishing/catalog boundary rather than inventing a PowerToys runtime defect.",
+        "attachments": [
+          {
+            "label": "Original Intune steps and screenshots",
+            "url": "https://github.com/microsoft/PowerToys/issues/33843"
+          }
+        ]
+      }
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The exact product ID and Intune add-app flow are already specified. A maintainer with a test tenant can investigate metadata ingestion without another generic reporter request.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report names XP89DCGQ3K6VLD and Microsoft Store app (new), with screenshots and the exact validation error.",
+      "The reporter identifies 0.81.1 as the last successful Company Portal deployment.",
+      "Live issue has no comments or assignees; no timeline-linked or direct issue-number fixing PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce in an Intune test tenant and compare release catalog metadata before selecting an owner or code patch.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-15T12:51:28Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No PowerToys source-code fix is currently substantiated: the reported add-app rejection is at the external Store/Intune catalog boundary before a PowerToys installer transaction is shown. A release metadata or integration correction may be needed; this classification does not assert that Intune is at fault, that the report is by design, or that the open bug should be closed."
+  },
+  "issue_context": {
+    "summary": "Intune refuses the PowerToys Store product as a new managed app and existing Company Portal deployments also stop installing after a previously working 0.81.1 release.",
+    "known_information": [
+      "PowerToys version 0.82.0 is reported and product ID XP89DCGQ3K6VLD is explicit.",
+      "The report supplies two screenshots, the precise add-app method and 'no valid latest package version' error.",
+      "The live open issue has Issue-Bug, Area-Setup/Install and Area-Enterprise labels, no comments and no assignee."
+    ],
+    "inferences": [
+      "The add-app error suggests catalog ingestion/installer metadata validation, not a proven runtime or MSI failure.",
+      "The simultaneous failure of existing deployment entries may involve the same published metadata, but this has not been verified."
+    ],
+    "analysis": "A useful next step is maintainer-side comparison of Store metadata and tenant behavior. Do not ask the reporter to supply normal PowerToys logs for a flow that may never launch PowerToys, and do not claim external fault without reproducing.",
+    "initial_investigation": [
+      "Read the complete report and confirmed there are no comments or assigned owners.",
+      "Checked the public timeline and a direct issue-number PR search; no concrete fix attempt was identified.",
+      "Located the failure boundary from the report's catalog-add step and established deployment method. No Intune tenant or live Store metadata comparison was performed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Current catalog ingestion result and the metadata field or integration step responsible for rejection.",
+        "why_needed": "Determines whether release publishing, Intune integration or an executed installer needs correction.",
+        "how_to_collect": "Maintainer follows the authorized test-tenant reproduction, recording only public package metadata and sanitized error details."
+      }
+    ]
   }
 }

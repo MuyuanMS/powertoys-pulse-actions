@@ -1,33 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 31800,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:32.1338055Z",
+  "evaluated_at": "2026-10-20T23:31:32.1338055Z",
   "source_updated_at": "2024-08-14T12:37:53Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce Magnifier sampling mismatch",
+    "detail": "The public steps are sufficient and the issue is labelled reproducible. Elevation was already tested without resolving the mismatch."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Measure magnified cursor-to-pixel mapping",
+    "reason": "Compare screen, source and capture coordinates under Windows Magnifier rather than requesting another diagnostic ZIP."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives a complete Windows Magnifier/Color Picker sequence, screenshot and diagnostic ZIP, and explicitly confirms the problem also occurs when elevated.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/31800 reports 0.79.0 and a selected color differing from the pixel visually under the pointer when Windows Magnifier exceeds 100%.",
+      "https://github.com/microsoft/PowerToys/issues/31800#issuecomment-1985434850 confirms elevation does not eliminate the issue.",
+      "Live labels include Status-Reproducible and Priority-3.",
+      "Current MouseInfoProvider.UpdateMouseInfo calls GetCursorPosition, which uses GetCursorPos, then CopyFromScreen at those coordinates."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Use known-color patches to compare visual pointer position, capture coordinates and sampled values with Magnifier off and on before selecting a capture/mapping correction.",
+    "evaluated_at": "2026-10-20T23:31:32.1338055Z",
     "source_updated_at": "2024-08-14T12:37:53Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A cursor/capture coordinate-space mismatch is a concrete applicable hypothesis. No linked fix was identified, and Color Picker's WinUI migration alone is not evidence that Windows Magnifier sampling was fixed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Sample the pixel visually under the pointer when Magnifier is active",
+      "root_cause": "Hypothesis: GetCursorPos coordinates and CopyFromScreen's sampled desktop image do not describe the same visual point after Magnifier transforms the desktop, so the picker samples an unmagnified/source position rather than the displayed pixel under the pointer. Ordinary DPI conversion and capture-composition differences remain alternatives.",
+      "plan": [
+        "Reproduce with large known-color patches, fixed display scaling and Windows Magnifier above 100%; record cursor, capture and visible patch positions with Magnifier off and in fullscreen/lens/docked modes.",
+        "Trace src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs GetCursorPosition and UpdateMouseInfo, identifying whether the discrepancy is pointer coordinates, magnification transform or the captured surface.",
+        "Choose a consistent supported coordinate/capture contract for the demonstrated mode; evaluate Windows Magnification APIs or an appropriate composited capture path rather than blindly dividing by zoom or substituting GetPhysicalCursorPos.",
+        "Keep click selection and live preview on the same sampled point, handle transform changes and unsupported capture failures safely, and add mapping tests for zoom, offsets and negative monitor coordinates."
+      ],
+      "verification": [
+        "At 100% and 200% fullscreen Magnifier, point at the center of known solid-color patches and confirm preview and selected value match the visually indicated patch.",
+        "Repeat with pan offsets, lens/docked modes and mixed-DPI monitors to identify supported versus separately handled transforms.",
+        "Verify normal picking without Magnifier and both elevated/non-elevated execution; no regression in multi-monitor sampling."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The Magnifier-only trigger and current direct cursor-to-CopyFromScreen path strongly suggest a coordinate/capture boundary, but no runtime trace determines the exact transform correction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Color Picker samples a different color than the one visibly beneath the pointer while Windows Magnifier is zoomed above 100%. The issue persists with administrator execution.",
+    "known_information": [
+      "The supplied reproduction is: open Magnifier, zoom beyond 100%, invoke Color Picker and select a color.",
+      "The report already includes a screenshot and PowerToysReport_2024-03-08-18-22-22.zip.",
+      "The author explicitly repeated the test elevated with the same failure.",
+      "The live issue is open, unassigned and marked Status-Reproducible."
+    ],
+    "inferences": [
+      "A transformed pointer/captured-surface mismatch is more consistent with the trigger than an elevation-only problem.",
+      "A single inverse-zoom formula may not cover fullscreen, lens and docked modes."
+    ],
+    "analysis": "The next discriminator requires maintainer-side known-color testing and coordinate tracing. Do not ask the reporter to repeat elevation or provide another generic archive.",
+    "initial_investigation": [
+      "Read the complete report and its sole author comment; the public cross-reference timeline has no linked work.",
+      "Read current MouseInfoProvider.cs: GetCursorPosition calls GetCursorPos, while both initial/live sampling use CopyFromScreen and GetPixel.",
+      "Exact-number and Magnifier/Color PR searches identified no specific fix for this report. PR 49174 is a UI migration, not established Magnifier coverage.",
+      "No runtime reproduction or attachment content analysis was performed in this pass."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which Magnifier modes and capture/coordinate spaces produce the mismatch on the current build.",
+        "why_needed": "Selects a correct transform or capture approach without breaking other modes and mixed-DPI layouts.",
+        "how_to_collect": "Maintainer: run the known-color matrix below and correlate cursor, sampled coordinate and visible patch identity."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-magnifier-color-mapping",
+      "type": "reproduce",
+      "label": "Compare Magnifier visual and sampled pixels",
+      "reproduce": {
+        "title": "Color Picker under Windows Magnifier",
+        "module": "Color Picker",
+        "version_requirement": "Current build; original report used 0.79.0.",
+        "prerequisites": [
+          "Windows Magnifier and Color Picker enabled.",
+          "A simple test image/window with large red, green, blue and neutral solid-color patches; keep the pointer away from edges and anti-aliasing.",
+          "Record display scaling and Magnifier mode/zoom."
+        ],
+        "steps": [
+          "With Magnifier off, pick the center of each patch and record the baseline color.",
+          "Enable fullscreen Magnifier above 100%, starting at 200%, and pick the visually indicated patch centers.",
+          "Pan the magnified desktop and repeat, recording pointer, capture and visual coordinates in a debug build.",
+          "Repeat in lens/docked modes and on a secondary monitor, then compare elevation without treating it as a required workaround.",
+          "Identify the first coordinate or captured-surface divergence before implementing a transform or capture change."
+        ],
+        "expected_result": "Live preview and committed color agree with the pixel visually under the pointer in supported Magnifier modes; ordinary and multi-monitor picking remain unchanged.",
+        "setup_prompt": "Create a harmless local image or test window with four large solid-color patches and labelled expected RGB values, using existing Windows tools. Provide steps to open it, run Windows Magnifier at 100% and 200%, and sample patch centers with Color Picker. Do not alter system color profiles, install software or modify PowerToys settings beyond the test.",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/files/14536873/PowerToysReport_2024-03-08-18-22-22.zip"
+        ]
+      }
+    },
+    {
+      "id": "approve-magnifier-mapping-plan",
+      "type": "approve_design",
+      "label": "Approve Magnifier coordinate/capture plan",
+      "note": "Confirm the actual transformed surface before choosing an API or formula; no implementation-grade design is claimed."
+    }
+  ]
 }

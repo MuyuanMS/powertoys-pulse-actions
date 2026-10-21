@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50906",
+  "number": 50906,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T20:09:30.006Z",
+  "evaluated_at": "2026-10-20T20:09:30.006Z",
+  "source_updated_at": "2026-09-30T11:42:41Z",
+  "title": "Keyboard Manager shortcut remap does not fire when extra keys are held",
+  "url": "https://github.com/microsoft/PowerToys/issues/50906",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "!",
+    "label": "Reproduce shortcut superset behavior",
+    "detail": "Current handler skips remaps with extra held keys; reproduction should establish exact-match intent versus defect."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce with an extra held key",
+    "reason": "Confirm matching rule and whether a subset shortcut should fire."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue describes a remap not firing when extra keys are held. Current HandleShortcutRemapEvent checks for additional keys and can skip a remap in that condition. This matches the symptom, but intended matching semantics are not established. Dedupe Digest lists #51426 as a duplicate of #50906.",
+    "evidence": [
+      "The report describes a configured shortcut remap that does not fire when a superset of keys is held.",
+      "Current HandleShortcutRemapEvent checks for extra held keys and skips a remap under this condition.",
+      "Current dedupe record identifies #51426 as duplicate of #50906.",
+      "No reporter follow-up or fix PR establishes whether exact matching is intended."
+    ],
+    "recommended_action": "Reproduce the configured shortcut and extra-key sequence, then confirm intended subset/exact-match semantics before proposing a change.",
+    "evaluated_at": "2026-10-20T20:09:30.006Z",
+    "source_updated_at": "2026-09-30T11:42:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Source matches the reported skip, but whether the shortcut should match with extra keys is a product decision. Keep yellow confidence and validate intent before changing it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply documented shortcut semantics when extra keys are held",
+      "root_cause": "Hypothesis: HandleShortcutRemapEvent skips a configured shortcut when additional keys are held, while user expects subset matching. Whether exact matching is intentional has not been confirmed.",
+      "plan": [
+        "Reproduce with exact mapped keys, then add one held key.",
+        "Confirm intended Keyboard Manager contract for exact versus subset matching and inspect overlapping remaps.",
+        "If subset matching is intended, adjust dispatch and test exact, superset, and overlapping rules.",
+        "If exact matching is intended, clarify behavior instead of changing dispatch."
+      ],
+      "verification": [
+        "Verify exact shortcut fires as documented.",
+        "Verify extra-key and overlapping cases do not trigger ambiguous or multiple remaps.",
+        "Run focused Keyboard Manager tests and build if behavior changes."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "Handler confirms the reported behavior, but desired matching and conflict semantics are not established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A shortcut remap reportedly does not fire when additional keys are held; current dispatch logic checks for this condition.",
+    "known_information": [
+      "Issue describes a configured remap and extra-held-key condition.",
+      "Current handler checks extra keys and skips a remap under the reported condition.",
+      "Dedupe Digest identifies #51426 as duplicate of #50906.",
+      "No substantive reporter comment or fix PR establishes intended matching."
+    ],
+    "inferences": [
+      "This may be intended exact matching or a defect if subset matching is expected.",
+      "Changing behavior without checking overlapping shortcuts could create ambiguity."
+    ],
+    "analysis": "Source behavior matches the symptom but does not define whether it is a bug. Reproduce and establish intended semantics before a fix; retain the duplicate record.",
+    "initial_investigation": [
+      "Read issue body, automated comment, labels, links, assignees, and updatedAt.",
+      "Inspected current HandleShortcutRemapEvent and confirmed extra-key skip.",
+      "Checked dedupe record linking #51426 to #50906."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-shortcut-match-50906",
+      "type": "approve_design",
+      "label": "Approve shortcut matching investigation",
+      "primary": true,
+      "confirm": true,
+      "note": "Yellow hypothesis; first establish intended matching semantics."
+    },
+    {
+      "id": "reproduce-shortcut-superset-50906",
+      "type": "reproduce",
+      "label": "Reproduce shortcut with extra held key",
+      "primary": false,
+      "confirm": false,
+      "note": "Use a non-destructive remap and check for conflicts.",
+      "reproduce": {
+        "title": "Compare exact and superset shortcut matches",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Configure one non-destructive remap with no overlapping shortcuts.",
+          "Use a keyboard capable of the reported combination and an additional held key."
+        ],
+        "steps": [
+          "Press and release the configured shortcut exactly; record whether remap fires.",
+          "Repeat while holding one additional key using the reported sequence.",
+          "Repeat with the extra key released before the mapped shortcut.",
+          "Record whether intended contract is exact-match or subset-match."
+        ],
+        "expected_result": "Establish whether extra-key behavior is intended, without triggering conflicting remaps."
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Assessment only; no upstream issue, label, assignment, or comment action was taken."
+  }
+}

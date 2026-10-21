@@ -1,33 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 25598,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:32.1338055Z",
+  "evaluated_at": "2026-10-20T23:31:32.1338055Z",
   "source_updated_at": "2024-08-16T19:38:19Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Distinguish wrong toolbar from wrong insertion",
+    "detail": "The browser-versus-Notepad comparison is already supplied. Exact browser/control, keyboard context and the displayed-versus-inserted mismatch are the remaining useful discriminators."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request a paired browser/key example",
+    "reason": "Determine whether the wrong owner letter reaches the toolbar or correct candidates are corrupted only when inserted."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Two users report browser-context wrong-letter accents while Notepad/Office work. Concrete key examples exist, but the report does not identify browser/control/layout or separate wrong displayed candidates from wrong committed text.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/25598 reports 0.69.1, elevated execution, correct Word/Notepad behavior and inconsistent candidates for O in browser fields.",
+      "https://github.com/microsoft/PowerToys/issues/25598#issuecomment-1700461688 reports S producing candidates associated with other letters.",
+      "https://github.com/microsoft/PowerToys/issues/25598#issuecomment-1700919301 reiterates that Notepad and Office work.",
+      "Related 33509 concerns an original letter remaining beside the accent, while 36502 concerns character-set selection; neither establishes this report's root cause."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Acknowledge the supplied app comparison and O/S examples; request one paired current browser/Notepad gesture with keyboard context and the visible toolbar plus committed result.",
+    "evaluated_at": "2026-10-20T23:31:32.1338055Z",
     "source_updated_at": "2024-08-16T19:38:19Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Incorrect gesture-owner/candidate state is a plausible PowerToys defect, but keyboard translation and browser insertion remain alternatives. Existing delayed-display and press-and-hold work does not establish coverage of this legacy browser-specific wrong-letter report."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep candidate generation and insertion tied to the owning letter gesture",
+      "root_cause": "Hypothesis: the owner letter or candidate state becomes stale across rapid browser input/focus transitions, so the toolbar or insertion uses a different letter's data. A keyboard-layout/remapping mismatch or browser insertion-only interaction could produce a different failure and must be distinguished first.",
+      "plan": [
+        "Reproduce a single O or S gesture in the named browser/control and Notepad with the same layout, language set and activation mode; record whether the toolbar is already wrong or only the committed text is wrong.",
+        "Trace src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp letter ownership and src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs ShowToolbar/GetCharacters; compare physical key, language mapping, display generation and insertion value.",
+        "Audit the existing DelayedDisplayState and owner-gesture protections before adding anything. If a stale-state transition is confirmed, invalidate it at that specific boundary and ensure candidates/selection are associated with one current owner gesture.",
+        "If the toolbar is correct and only insertion fails, fix the demonstrated insertion path instead; add focused coverage for the confirmed branch and avoid treating missing language sets or duplicate original letters as the same defect."
+      ],
+      "verification": [
+        "The same held O or S must offer that letter's configured accents in both the browser field and Notepad.",
+        "Rapid alternation, focus changes and cancellation must not commit candidates belonging to an earlier letter.",
+        "Verify shifted characters, active keyboard layout, selected language sets and legacy versus press-and-hold modes without duplicating existing generation protection."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "Wrong-letter examples support checking gesture ownership, but the browser/control/layout and toolbar-versus-insertion discriminator are absent."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent produces unrelated or inconsistent letters in browser text fields while the same users report correct behavior in Notepad or Office. The supplied O and S examples suggest a wrong-letter problem, not simply a missing accent.",
+    "known_information": [
+      "Original version is 0.69.1 from Microsoft Store, running elevated.",
+      "Two users describe wrong-letter results; one explicitly reports S being associated with another letter's candidates.",
+      "The browser-versus-editor contrast was already reported and should not be requested as if it were unknown.",
+      "The issue is open, unassigned and has no outstanding posted information request."
+    ],
+    "inferences": [
+      "Per-gesture state could be stale, but a globally wrong character table is less consistent with correct Notepad/Office behavior.",
+      "Browser text insertion, keyboard-layout translation and a wrong toolbar owner are different hypotheses with different fixes."
+    ],
+    "analysis": "A paired current example showing both candidates and committed text would select the correct code boundary. Ask for that discriminator rather than another generic log archive or an unsupported duplicate closure.",
+    "initial_investigation": [
+      "Read the full report, both comments and the complete public cross-reference timeline.",
+      "Read related 33509 and 36502 discussions: duplicate original letters and character-set configuration are not evidence that the wrong-letter symptom is handled.",
+      "Current KeyboardListener tracks a letter owner, PowerAccent.ShowToolbar obtains candidates for that letter, and DelayedDisplayState already protects delayed rendering.",
+      "Read merged PRs 48944 and 49701; their timer/press-and-hold changes are relevant history but are not proven fixes for the reported legacy browser case.",
+      "Exact issue-number PR search found no direct fix match; no runtime reproduction was performed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Current PowerToys version for the paired example.",
+        "why_needed": "The original 0.69.1 predates substantial gesture/display-state changes.",
+        "how_to_collect": "Read the version from PowerToys General settings and include it with the example."
+      },
+      {
+        "evidence_type": "other_software",
+        "information": "Exact browser/version and whether the failing control is the address bar or a page text box.",
+        "why_needed": "Enables a local reproduction and separates browser-specific insertion behavior.",
+        "how_to_collect": "Name the browser/version and describe a harmless public input control without sharing private content."
+      },
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Active Windows keyboard layout and any remapper used during the paired gesture.",
+        "why_needed": "Distinguishes physical-key ownership from translated/remapped letter input.",
+        "how_to_collect": "Read the active layout from the Windows input indicator and name only remappers affecting the tested keys."
+      },
+      {
+        "evidence_type": "gif_video",
+        "information": "One short paired O or S gesture showing the toolbar candidates and final inserted text in the browser and Notepad.",
+        "why_needed": "Determines whether the incorrect letter is introduced during candidate generation or only during insertion.",
+        "how_to_collect": "Record a single O or S activation in an empty browser field and Notepad with unchanged Quick Accent settings; state the held key, activation mode and selected language set, and avoid private text."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-paired-accent-owner-example",
+      "type": "request_info",
+      "label": "Request wrong-letter toolbar and insertion example",
+      "comment": {
+        "body": "Thanks for the concrete O/S examples and for already comparing browser fields with Notepad/Office. We need to distinguish a toolbar populated for the wrong letter from correct candidates being inserted incorrectly; those require different fixes.\n\n1. Please name your current PowerToys version (General settings), browser/version and whether the affected control is the address bar or a normal page text box.\n2. Please name the active Windows keyboard layout (input indicator) and any remapper affecting the tested keys.\n3. Could you attach one short recording of a single O or S activation in an empty browser field and then Notepad, without changing Quick Accent settings? Please show the toolbar and the final inserted text, and state the held key, activation mode and selected language set. Use only harmless sample text."
+      }
+    },
+    {
+      "id": "approve-accent-owner-plan",
+      "type": "approve_design",
+      "label": "Approve scoped wrong-letter gesture investigation",
+      "note": "Low-confidence plan; distinguish candidate generation from insertion and account for existing generation protections before implementing."
+    }
+  ]
 }

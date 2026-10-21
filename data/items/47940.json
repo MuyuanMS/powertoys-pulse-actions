@@ -2,87 +2,82 @@
   "number": 47940,
   "kind": "issue",
   "track": "fix",
-  "stage": "reproduction_ready",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-13T13:10:24Z",
-  "evaluated_at": "2026-09-13T13:10:24Z",
-  "source_updated_at": "2026-06-25T15:27:17Z",
+  "generated_at": "2026-10-20T16:51:51Z",
+  "evaluated_at": "2026-10-20T16:51:51Z",
+  "source_updated_at": "2026-10-15T21:31:19Z",
   "status": {
-    "glyph": "🧪",
-    "label": "Ready for maintainer reproduction",
-    "detail": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change."
+    "detail": "The reporter says Alt is unusable in Sniper Elite 5 despite Game Mode suppression and an excluded executable; separate users report Alt-bound actions failing in RuneLite, Titan Quest II, and Arc Raiders. Current Grab and Move source checks IsModifierExcluded on the foreground window before capturing the modifier and also chains input when Game Mode is detected. This does not explain why these reports bypass the pass-through path; the cause remains red.",
+    "label": "Design candidate",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "➡️",
-    "label": "Run the documented scenario on a current build before selecting a fix design.",
-    "reason": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted."
-  },
+  "next_action": "Reproduce with an excluded game and trace foreground-window identity, exclusion matching, Game Mode detection, and modifier/key-up disposition.",
   "actions": [
     {
-      "id": "reproduce-47940",
-      "type": "reproduce",
-      "label": "Reproduce Grab And Move problem with Sniper Elite 5",
-      "primary": true,
+      "type": "approve_design",
       "confirm": true,
+      "label": "Review Grab and Move Alt pass-through fix",
+      "primary": true,
+      "note": "Queues a design for maintainer approval; no upstream write occurs."
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Alt pass-through in excluded games",
       "reproduce": {
-        "module": "Grab And Move",
-        "version_requirements": "0.99.1",
         "prerequisites": [
-          "Use the reported configuration for Grab And Move.",
-          "Compare the reported PowerToys auto-update installation with a clean current installation if practical."
+          "Use a current supported build and a game with an Alt-bound action; first use Sniper Elite 5 if available.",
+          "Confirm the game executable is in excluded apps and Game Mode suppression is enabled."
         ],
+        "version_requirements": "Current supported build; Sniper Elite 5 or a reported Alt-bound game",
+        "module": "Grab And Move",
+        "expected_result": "Alt reaches the excluded game and its bound action works; Grab And Move remains enabled and does not activate for the excluded game.",
         "steps": [
-          "SE5 uses the ALt key being held down for one of its function.",
-          "The configuration of Grab and Move is set to Do not activate wehn Game Mode is on and Sniperelite5.exe has been added to Excluded apps.",
-          "Nevertheless the Alt key does not work in the game."
-        ],
-        "expected_result": "When Alt is pressed and held in the game, the \"focus\" feature should activate resulting in the screen fading and hidden objects being shown. This works if Grab and move is disable, does not work if it is enabled."
+          "Launch the excluded game and verify its foreground window before pressing Alt.",
+          "Hold Alt without a mouse drag and check the game action; then test Alt with a drag in a safe desktop app.",
+          "Capture maintainer trace of foreground process/window, exclusion result, Game Mode result, and modifier down/up disposition.",
+          "Repeat with the executable temporarily removed from exclusions and compare results."
+        ]
       }
     }
   ],
   "confidence": "Medium",
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change.",
+    "rationale": "The reporter says Alt is unusable in Sniper Elite 5 despite Game Mode suppression and an excluded executable; separate users report Alt-bound actions failing in RuneLite, Titan Quest II, and Arc Raiders. Current Grab and Move source checks IsModifierExcluded on the foreground window before capturing the modifier and also chains input when Game Mode is detected. This does not explain why these reports bypass the pass-through path; the cause remains red.",
     "evidence": [
-      "The report covers PowerToys 0.99.1, installed via PowerToys auto-update, affecting Grab And Move.",
-      "Reported reproduction: SE5 uses the ALt key being held down for one of its function. The configuration of Grab and Move is set to Do not activate wehn Game Mode is on and Sniperelite5.exe has been added to Excluded apps. Nevertheless the Alt key does not work in the game.",
-      "Reported result: Screen does not fade.",
-      "Expected result: When Alt is pressed and held in the game, the \"focus\" feature should activate resulting in the screen fading and hidden objects being shown. This works if Grab and move is disable, does not work if it is enabled.",
-      "Latest public comment by @rauscheb on 2026-06-25T15:27:00Z: I am experiencing this issue in a couple games as well where holding \"Alt\" is bound to an action. RuneLite: Holding \"Alt\" to display the gold value of ground items Titan Quest II: Holding \"Alt\" to inspect a tooltip more closely (hover on keywords for more information) A temporary workaround I found was to hold two keys simultaneously instead of just \"Alt\".…",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Grab And Move."
+      "Original report uses PowerToys 0.99.1 and says SniperElite5.exe is excluded while Game Mode suppression is enabled, yet holding Alt no longer triggers the game action.",
+      "Commenters report similar Alt-bound behavior in RuneLite and Titan Quest II; a later report adds Arc Raiders on Unreal Engine.",
+      "Grab And Move main.cpp checks the foreground process against modifierExcludedApps and chains the key when excluded; Game Mode detection also chains/pass-throughs.",
+      "The exact event sequence and foreground window at Alt keydown are not established."
     ],
-    "recommended_action": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted.",
-    "evaluated_at": "2026-09-13T13:10:24Z",
-    "source_updated_at": "2026-06-25T15:27:17Z"
+    "source_updated_at": "2026-10-15T21:31:19Z",
+    "evaluated_at": "2026-10-20T16:51:51Z",
+    "status": "actionable_design",
+    "recommended_action": "Reproduce with an excluded game and trace foreground-window identity, exclusion matching, Game Mode detection, and modifier/key-up disposition."
   },
   "schemaVersion": 5,
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A separate code fix is not appropriate at this stage because the issue is waiting, handled, external or by-design, or still requires maintainer reproduction.",
-    "existing_fix_urls": []
+    "status": "proposed",
+    "rationale": "Source contains explicit exclusion and Game Mode pass-through paths, but the reports do not show why the expected pass-through is missed."
   },
   "issue_context": {
-    "summary": "The Grab And Move report describes screen does not fade.",
-    "known_information": [
-      "The report covers PowerToys 0.99.1, installed via PowerToys auto-update, affecting Grab And Move.",
-      "Reported reproduction: SE5 uses the ALt key being held down for one of its function. The configuration of Grab and Move is set to Do not activate wehn Game Mode is on and Sniperelite5.exe has been added to Excluded apps. Nevertheless the Alt key does not work in the game.",
-      "Reported result: Screen does not fade.",
-      "Expected result: When Alt is pressed and held in the game, the \"focus\" feature should activate resulting in the screen fading and hidden objects being shown. This works if Grab and move is disable, does not work if it is enabled.",
-      "Latest public comment by @rauscheb on 2026-06-25T15:27:00Z: I am experiencing this issue in a couple games as well where holding \"Alt\" is bound to an action. RuneLite: Holding \"Alt\" to display the gold value of ground items Titan Quest II: Holding \"Alt\" to inspect a tooltip more closely (hover on keywords for more information) A temporary workaround I found was to hold two keys simultaneously instead of just \"Alt\".…",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Grab And Move."
-    ],
+    "analysis": "The cross-game reports support a reproducible input-interference issue. Source confirms the intended pass-through gates; instrument them before changing behavior.",
     "inferences": [
-      "A PowerToys code defect may be present, but the exact failing branch remains unconfirmed until current-build reproduction."
+      "The shared Alt symptom may involve modifier capture/pass-through timing or foreground-window identification, but no common cause is proven."
     ],
-    "analysis": "The live body, complete comment history, labels, assignees, and linked-work timeline were reviewed. The issue is specific enough for local verification, but no confirmed fix or sufficiently narrow root cause is present.",
     "initial_investigation": [
-      "Reviewed the complete live issue body, 3 public comment(s), current labels, assignees, and timeline through 2026-06-25T15:27:17Z.",
-      "No linked issue or pull request in the live timeline establishes a current fix or duplicate.",
-      "No current fix, active assignee, or confirmed duplicate was found; maintainer reproduction is the next discriminating step."
+      "Reviewed issue body and latest comments through 2026-10-15.",
+      "Inspected GrabAndMove/GrabAndMove/main.cpp: KeyboardProc/handler uses foreground exclusion and Game Mode checks before/after modifier session capture; no source fact identifies the failed gate.",
+      "No linked fix PR identified."
     ],
-    "information_gaps": []
+    "information_gaps": [],
+    "known_information": [
+      "Original report says SniperElite5.exe is excluded and Game Mode suppression is configured, but the Alt focus action works only when Grab And Move is disabled.",
+      "Other commenters cite RuneLite, Titan Quest II, and Arc Raiders (Unreal Engine) Alt-bound actions.",
+      "Current Grab And Move source checks foreground modifier exclusions before capturing the modifier and chains input when Game Mode is detected."
+    ],
+    "summary": "Grab And Move appears to interfere with Alt-bound game actions despite Game Mode suppression and an executable exclusion; multiple users report the symptom across game engines."
   },
   "url": "https://github.com/microsoft/PowerToys/issues/47940",
   "title": "Grab And Move problem with Sniper Elite 5",
@@ -94,7 +89,28 @@
     "Product-Grab And Move"
   ],
   "assignees": [],
-  "comments": 3,
+  "comments": 4,
   "summary": "The Grab And Move report describes screen does not fade.",
-  "proposed_fixes": []
+  "proposed_fixes": [
+    {
+      "title": "Preserve Alt input for excluded games",
+      "root_cause": "Red hypothesis: Grab And Move may evaluate the foreground window or Game Mode state at a different point from the game's Alt input, or a captured modifier session may not be returned to the application across a focus transition. Current issue evidence does not prove this sequence.",
+      "plan": [
+        "Reproduce using Sniper Elite 5 with its executable excluded and Game Mode suppression enabled; record foreground HWND/process at modifier keydown and mouse interaction.",
+        "Trace KeyboardProc modifier capture, IsModifierExcluded/MatchesExcludedApps, IsSuppressedByGameMode, and passthrough/key-up handling through the complete Alt hold/release.",
+        "Compare an excluded game with an unexcluded foreground app and repeat with Game Mode suppression toggled.",
+        "Fix only the confirmed transition that swallows Alt and add a focused regression test for excluded-app pass-through."
+      ],
+      "verification": [
+        "In Sniper Elite 5, hold Alt without a mouse drag and confirm the game action works while Grab And Move remains enabled and the executable remains excluded.",
+        "Repeat with RuneLite or another reported Alt-bound game and confirm Alt is not captured.",
+        "Confirm Alt+drag still activates Grab And Move in a non-excluded application."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "Several independent games report the same Alt failure, and source has explicit pass-through controls, but the actual missed condition is not identified."
+      }
+    }
+  ]
 }

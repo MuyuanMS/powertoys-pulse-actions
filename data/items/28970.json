@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 28970,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:44.2387841Z",
+  "evaluated_at": "2026-10-20T23:27:44.2387841Z",
   "source_updated_at": "2024-06-03T08:53:03Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Confirm remaining input crash",
+    "detail": "The original reporter recovered after a clean reinstall; another affected contributor supplied diagnostics and a standard-user versus administrator difference."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Confirm current Microsoft.UI.Input failure",
+    "reason": "Distinguish a remaining reproducible input crash from the original installation that was repaired."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The supplied reports and Event Viewer signature establish a real historical crash, but the original reporter's final response says a clean reinstall solved it. No assignee or linked fix supports the previous ownership claim.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/28970#issuecomment-1744632016 identifies Microsoft.UI.Input.dll and exception 0xc0000602; File Locksmith also crashes while PowerRename does not.",
+      "https://github.com/microsoft/PowerToys/issues/28970#issuecomment-2113277745 supplies two diagnostic ZIPs, reports the same failure with one monitor, and reports success when elevated.",
+      "https://github.com/microsoft/PowerToys/issues/28970#issuecomment-2144641978 says a clean reinstall solved the original reporter's issue."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask an affected contributor whether the same crash persists, and obtain only its current Event Viewer signature.",
+    "evaluated_at": "2026-10-20T23:27:44.2387841Z",
     "source_updated_at": "2024-06-03T08:53:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A runtime/input-lifecycle correction is a provisional code-fix path if the same crash remains. Reinstallation is a reported recovery, not evidence of an upstream fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate the nonclient-input fail-fast before changing Settings",
+      "root_cause": "Hypothesis: the affected WinUI runtime or its nonclient input integration fails during move/resize in the standard-user environment. The module signature supports this boundary, but does not identify the faulty call or prove a PowerToys defect.",
+      "plan": [
+        "Compare a current failing Event Viewer signature with the supplied 0.74/0.79 Microsoft.UI.Input fail-fast before treating later Settings startup exceptions as the same bug.",
+        "Reproduce standard-user versus elevated move/resize with the same installed runtime, then trace Settings and File Locksmith window/input initialization.",
+        "Only if that trace identifies invalid PowerToys input-object lifetime or initialization ordering, correct the shared initialization/teardown boundary and add a regression case; otherwise route the signature to the runtime owner."
+      ],
+      "verification": [
+        "Move, resize, refocus and open flyouts repeatedly as a standard user and elevated user; verify Settings and File Locksmith remain usable without changing unrelated security policy.",
+        "Verify the original affected installation no longer produces the same fail-fast signature."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The failing module is known but no stack establishes the PowerToys call site; reinstall recovery and the elevation difference leave competing causes."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "WinUI Settings and related windows were blank or crashed during movement, resizing and flyout activation. One affected installation recovered after reinstall; another user's diagnostics show a standard-user-specific failure.",
+    "known_information": [
+      "Versions 0.74 and 0.79 are represented in the discussion.",
+      "Diagnostic ZIPs, Event Viewer records and a one-monitor comparison were already supplied.",
+      "A single-monitor reboot did not resolve the second contributor's failure; administrator mode did.",
+      "The issue remains open, is labeled Issue-Bug and has no assignees."
+    ],
+    "inferences": [
+      "A runtime/input integration or installation/environment interaction is plausible; a monitor-count-only cause is weakened by the supplied comparison.",
+      "The original reporter's recovery does not establish that every contributor's installation is fixed."
+    ],
+    "analysis": "Do not repeat the fulfilled bug-report or monitor questions. A current behavior confirmation and matching crash signature determine whether maintainer debugging is still needed.",
+    "initial_investigation": [
+      "Read the report and all 11 comments, including the final reinstall recovery.",
+      "Inspected cross-references #38748 and #38777: later Settings crashes include a DashboardViewModel null reference/Microsoft.UI.Xaml signature, not proof of this Microsoft.UI.Input failure.",
+      "The issue timeline exposes no concrete linked PR; no active owner is recorded."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether an affected contributor still reproduces this exact move/resize failure, and on which PowerToys version.",
+        "why_needed": "The original reporter recovered, while the second contributor's status is unresolved.",
+        "how_to_collect": "Reply with the installed version and whether opening Settings and moving/resizing it still crashes as a standard user."
+      },
+      {
+        "evidence_type": "event_viewer",
+        "information": "The faulting module and exception code for a currently reproduced crash.",
+        "why_needed": "Separate the historical Microsoft.UI.Input fail-fast from unrelated later Settings startup failures.",
+        "how_to_collect": "After reproducing, open Event Viewer > Windows Logs > Application and copy the PowerToys.Settings.exe error's module, exception code and version fields, omitting personal paths."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "confirm-input-crash",
+      "type": "request_info",
+      "label": "Confirm current input-crash signature",
+      "comment": {
+        "body": "Thank you for the existing attachments, Microsoft.UI.Input.dll / 0xc0000602 records, and the single-monitor and administrator comparisons. The original reporter later said a clean reinstall solved their case, but the other affected installation's status is unclear.\n\n1. Could an affected contributor confirm whether Settings still crashes when moved or resized as a standard user, and provide the installed PowerToys version?\n2. If it still crashes, please open Event Viewer > Windows Logs > Application immediately afterward and copy the PowerToys.Settings.exe error's faulting module, exception code and version fields, omitting personal paths. This distinguishes the same input failure from a different startup crash.\n\nThere is no need to resend the historical ZIPs or repeat the single-monitor test."
+      }
+    },
+    {
+      "id": "review-input-plan",
+      "type": "approve_design",
+      "label": "Review provisional input-crash plan",
+      "note": "Low-confidence investigation path; confirm the signature before implementing a runtime or lifecycle change."
+    }
+  ]
 }

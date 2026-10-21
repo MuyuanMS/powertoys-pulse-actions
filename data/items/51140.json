@@ -1,0 +1,110 @@
+{
+  "judgment": {
+    "rationale": "The report gives a useful Windows 11 25H2 sequence and includes a ZIP, but it does not identify the VPN product/policy or whether the computers remain reachable over the LAN after VPN activation. Earlier MWB VPN reports involved VPNs blocking local routes, so these facts distinguish external network restrictions from an MWB/25H2 regression.",
+    "recommended_action": "Ask which VPN is used and whether the peer remains reachable with VPN on to separate routing policy from an MWB regression.",
+    "source_updated_at": "2026-10-09T09:01:45Z",
+    "evaluated_at": "2026-10-20T20:08:16.157Z",
+    "evidence": [
+      "The report says PowerToys 0.101.2362 on Windows 11 25H2 connects on the local network, then MWB fails after a company VPN is enabled.",
+      "A PowerToys report ZIP is linked; its contents were not inspected.",
+      "Earlier reports #26670 and #30005 involved VPN/local-route issues; #30005 was closed as duplicate of #43841, which concerns IPv4/IPv6 mapping across subnets.",
+      "No matching fix PR was found."
+    ],
+    "status": "needs_information"
+  },
+  "comments": 0,
+  "track": "triage",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "The scenario is reportable, but VPN routing policy and MWB endpoint selection are not known.",
+        "score": 36,
+        "level": "red"
+      },
+      "plan": [
+        "Confirm the VPN client and whether its policy permits local-LAN access; verify peer reachability before and after VPN activation.",
+        "Reproduce the connection/refresh sequence on Windows 11 25H2; compare MWB endpoint/interface behavior with the OS route change and, if available, the same VPN on 23H2.",
+        "Change endpoint selection only if the peer remains reachable and a trace shows MWB retaining an invalid endpoint; otherwise no MWB code correction is justified."
+      ],
+      "title": "Distinguish VPN route policy from MWB endpoint handling",
+      "root_cause": "Red hypothesis: enabling the VPN may change the active route/interface and leave MWB using a stale or unreachable LAN endpoint; the report does not distinguish this from VPN policy blocking peer traffic.",
+      "verification": [
+        "With the reported VPN and two computers, verify peer reachability before and after VPN activation and whether MWB reconnects when the VPN is disabled or refreshed.",
+        "If an MWB endpoint defect is confirmed, verify reconnection on VPN transitions without breaking configurations that intentionally block LAN traffic."
+      ]
+    }
+  ],
+  "issue_type": "bug",
+  "actions": [
+    {
+      "label": "Approve VPN-routing investigation",
+      "type": "approve_design",
+      "note": "Low-confidence investigation proposal; no code correction is selected until the VPN policy and peer reachability are distinguished."
+    },
+    {
+      "comment": {
+        "body": "Thanks for describing the Windows 11 25H2 sequence: Mouse Without Borders connects locally, then fails after the company VPN is enabled. Thanks also for including the report ZIP. Earlier MWB VPN reports involved profiles that blocked local peer traffic, so the issue does not show whether the peer remains reachable after VPN activation. Could you please provide:\n\n1. The VPN client/product and, if known, whether the profile permits local-LAN access or split tunneling.\n2. Whether the other computer's local IP is reachable from the affected PC with VPN off and then on (for example, ping if ICMP is allowed); note if the VPN/firewall blocks ping.\n\nThis distinguishes an external routing restriction from an MWB/Windows reconnection regression. Please omit private company configuration.",
+        "number": 51140,
+        "repository": "microsoft/PowerToys",
+        "target": "issue"
+      },
+      "type": "request_info",
+      "label": "Request VPN client and LAN reachability"
+    }
+  ],
+  "pending_author": false,
+  "state": "open",
+  "evaluated_at": "2026-10-20T20:08:16.157Z",
+  "schemaVersion": 5,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "title": "After updating to Win11 25H2, Mouse Without Border breaks on local network when enabling company VPN",
+  "url": "https://github.com/microsoft/PowerToys/issues/51140",
+  "stage": "needs_information",
+  "issue_context": {
+    "summary": "Mouse Without Borders reportedly connects on a local network under Windows 11 25H2, then fails when a company VPN is enabled. The VPN local-LAN policy and post-VPN peer reachability are unknown.",
+    "analysis": "The key missing facts are VPN identity/policy and peer reachability after activation. Request those details without repeating a request for the attached ZIP.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, assignees, and attached ZIP link; no comments are present.",
+      "Compared #26670 and #30005; #26670 describes VPN routing restrictions, while #30005 was closed as duplicate of #43841, which concerns IPv4/IPv6 mapping across subnets.",
+      "Searched related VPN reports and issue-linked PRs; no matching fix for the Windows 11 25H2 transition was found."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "This distinguishes a PowerToys failure from VPN policy that redirects or blocks local peer traffic.",
+        "information": "VPN client/product and whether the company profile permits local-LAN access or split tunneling.",
+        "evidence_type": "other_software",
+        "how_to_collect": "Reply with the VPN product and, if known, whether the company profile permits local network access or split tunneling; omit private company configuration."
+      },
+      {
+        "why_needed": "If local peer reachability disappears, routing policy may block MWB; if it remains, an MWB/OS endpoint or reconnection regression is more plausible.",
+        "information": "Whether the two computers remain reachable by their local IP addresses with the VPN off and then on.",
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "From the affected 25H2 computer, test the peer local IP before and after connecting the VPN, for example with ping if ICMP is allowed; report if VPN/firewall blocks ping."
+      }
+    ],
+    "known_information": [
+      "The report identifies PowerToys 0.101.2362, Windows 11 25H2, and a sequence where MWB connects locally before a company VPN is enabled.",
+      "A PowerToys report ZIP is attached; its contents were not inspected in this pass.",
+      "No comments, assignees, or matching fix PR are present.",
+      "Older issues #26670 and #30005 describe VPN connectivity affected by LAN/split-tunneling restrictions; #30005 was closed as duplicate of #43841, a different IPv4/IPv6 mapping case."
+    ],
+    "inferences": [
+      "VPN routing policy may prevent peer reachability independent of PowerToys.",
+      "A 25H2/MWB endpoint-selection regression remains possible if the peer stays reachable after VPN activation."
+    ]
+  },
+  "source_updated_at": "2026-10-09T09:01:45Z",
+  "kind": "issue",
+  "number": 51140,
+  "generated_at": "2026-10-20T20:08:16.157Z",
+  "updated_at": "2026-10-09T09:01:45Z",
+  "assignees": [],
+  "owes": "maintainer",
+  "fix_assessment": {
+    "rationale": "A route or adapter change could plausibly leave MWB using an unreachable local endpoint after VPN activation, but external VPN policy can cause the same symptom and is not ruled out.",
+    "status": "proposed"
+  }
+}

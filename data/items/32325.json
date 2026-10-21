@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 32325,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:46:00Z",
+  "evaluated_at": "2026-10-20T16:46:00Z",
   "source_updated_at": "2024-04-09T14:53:53Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32325",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproduce Explorer menu icon sharpness",
+    "detail": "Treat visual sharpness separately from subjective style; the closed linked PR was not merged."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare modern and classic menus across DPI",
+    "reason": "The two menu APIs use different icon-loading paths; do not apply a fixed-size bitmap change blindly."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report describes blurry/inconsistent PowerToys Explorer context-menu icons and includes a screenshot. Its enhancement template does not negate the cosmetic rendering defect, but style preference alone is not a code root cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The complete body reports fuzzy right-click menu icons; the sole comment links unrelated FancyZones/Awake icon reports.",
+      "Linked PR 45413 was closed without merging, so it is not existing-fix evidence.",
+      "Image Resizer ContextMenuHandler.cpp and PowerRenameExt.cpp classic-menu paths explicitly load 16-by-16 icons and cache converted bitmaps.",
+      "PowerRename IExplorerCommand paths instead return an icon resource or ICO path; a classic bitmap fix cannot be assumed to cover modern menus."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce visible sharpness at several display scales and identify the actual menu API/resource before selecting a focused asset or DPI-loading correction.",
+    "evaluated_at": "2026-10-20T16:46:00Z",
     "source_updated_at": "2024-04-09T14:53:53Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A measurable cosmetic-rendering correction may apply; the closed unmerged PR does not cover it and the exact surface remains to be tested."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Render crisp PowerToys Explorer context-menu icons at supported scales",
+      "root_cause": "Hypothesis: a classic-menu fixed 16-by-16 bitmap is scaled up at higher DPI, or the relevant modern-menu ICO lacks a suitable frame. The screenshot alone does not establish which menu path or asset causes the blur.",
+      "plan": [
+        "Compare PowerRename and Image Resizer in modern and classic Explorer menus at 100%, 150% and 200%, using neighboring system icons as a visual control.",
+        "Identify the invoked menu API, loaded resource and bitmap/frame dimensions; separate low-resolution rendering from subjective icon-style requests.",
+        "If classic fixed-size loading is confirmed, use the menu's appropriate DPI/system metric and matching icon frame, including cache invalidation when scale changes.",
+        "If the modern ICO asset is responsible, correct only its missing/low-quality frames; preserve menu registration, command behavior and icon-visibility settings.",
+        "Add asset/frame checks and visual validation for light/dark themes and monitor-scale transitions."
+      ],
+      "verification": [
+        "Both menus select appropriately sized crisp resources at each tested DPI.",
+        "Moving Explorer between different-DPI monitors does not reuse a visibly undersized cached bitmap.",
+        "Icon visibility settings and context-menu commands remain unchanged."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "Both classic handlers have concrete fixed-size loading and modern paths differ, supporting a focused test matrix. The original screenshot's exact menu surface and scale have not been independently reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Explorer context-menu icons are reported as blurry and stylistically inconsistent; rendering sharpness is the bounded bug candidate.",
+    "known_information": [
+      "The report includes a screenshot but no exact DPI/menu-surface comparison.",
+      "There is only a similarity-bot comment.",
+      "The sole linked PR was closed unmerged.",
+      "Classic and modern PowerRename menu implementations load icons differently; both classic module handlers request 16-by-16 icons."
+    ],
+    "inferences": [
+      "Fixed-size bitmap scaling or asset-frame quality may explain the visual defect; a subjective redesign is a separate product decision."
+    ],
+    "analysis": "No generic PowerToys diagnostic capture would identify icon raster quality. A maintainer DPI/menu matrix can reproduce the public claim without requesting personal assets.",
+    "initial_investigation": [
+      "Read the full body, bot comment and cross-reference timeline.",
+      "Checked PR 45413's state, description and changed file rather than assuming closed means fixed.",
+      "Inspected Image Resizer's classic icon loading and PowerRename's classic and IExplorerCommand icon paths."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32325",
+      "type": "approve_design",
+      "label": "Review DPI-aware menu icon plan",
+      "description": "Approve the focused visual-rendering investigation, not a broad icon-style redesign."
+    },
+    {
+      "id": "reproduce-32325",
+      "type": "reproduce",
+      "label": "Reproduce classic/modern icon blur at DPI",
+      "reproduce": {
+        "module": "PowerRename / Image Resizer",
+        "prerequisites": [
+          "Use a current PowerToys build and Explorer with both modern and Show more options menus available.",
+          "Prepare harmless image files and renameable test files; enable the module menu icons.",
+          "Use a development shell-extension build if resource-size tracing is needed."
+        ],
+        "steps": [
+          "Open each module's context-menu item at 100%, 150% and 200% scaling and capture a cropped comparison with neighboring system icons.",
+          "Repeat in the classic Show more options menu and identify which shell API is invoked.",
+          "Inspect the selected ICO/resource frame and converted bitmap dimensions.",
+          "Repeat after moving Explorer to another-DPI monitor and after reopening Explorer; compare themes and icon-visibility controls."
+        ],
+        "expected_result": "Icons render at the intended menu size without avoidable bitmap upscaling blur, and commands/settings remain functional.",
+        "setup_prompt": "Prepare non-sensitive image and text samples and a display-scale/menu-surface comparison grid. Capture cropped menus only; inspect icon frame dimensions rather than inferring sharpness from a resized screenshot."
+      }
+    }
+  ]
 }

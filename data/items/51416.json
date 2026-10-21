@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51416,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:43.539Z",
+  "evaluated_at": "2026-10-20T16:40:43.539Z",
+  "source_updated_at": "2026-10-20T01:50:57Z",
+  "updated_at": "2026-10-20T01:50:57Z",
+  "state": "open",
+  "title": "CmdPal: Disposing a dock leaves its bands alive (EXT26.C1-C2)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51416",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "rationale": "An isolated test found zero cleanup across three groups; queued publication/initialization is source-based and was not tested with a real dispatcher or monitor transition. Both parts need targeted validation.",
+    "evaluated_at": "2026-10-20T16:40:43.539Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "evidence": [
+      "The report reproduces zero cleanup across StartItems, CenterItems and EndItems after owner disposal.",
+      "It separately identifies queued setup without an owner-disposal check; no real dispatcher or monitor transition was tested.",
+      "The cited DockViewModel and DockWindowManager source areas are present."
+    ],
+    "status": "actionable_design",
+    "source_updated_at": "2026-10-20T01:50:57Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Close setup admission at owner disposal and recheck lifetime in queued callbacks before publishing or initializing.",
+        "Drain/clean current bands from all groups without remote cleanup on UI thread.",
+        "Clean candidates rejected after disposal and keep repeated disposal harmless.",
+        "Add dispatcher-controlled queued-work and dock-recreation tests."
+      ],
+      "verification": [
+        "Dispose a dock with bands in all three groups and verify each is cleaned.",
+        "Pause queued publication/initialization, dispose, release work, and verify no repopulation or subscriptions.",
+        "Recreate the dock and verify normal initialization."
+      ],
+      "title": "Correct the reported Command Palette lifecycle failure",
+      "root_cause": "DockViewModel.Dispose marks the owner disposed but does not clean its three band groups; queued SetupBands work may proceed after disposal and repopulate collections or subscriptions.",
+      "confidence": {
+        "level": "yellow",
+        "rationale": "Three-group cleanup failure is isolated-test evidence; dispatcher ordering and late candidate cleanup need verification.",
+        "score": 73
+      }
+    }
+  ],
+  "issue_context": {
+    "information_gaps": [],
+    "known_information": [
+      "The report reproduces zero cleanup across StartItems, CenterItems and EndItems after owner disposal.",
+      "It separately identifies queued setup without an owner-disposal check; no real dispatcher or monitor transition was tested.",
+      "The cited DockViewModel and DockWindowManager source areas are present."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "analysis": "An isolated test found zero cleanup across three groups; queued publication/initialization is source-based and was not tested with a real dispatcher or monitor transition. Both parts need targeted validation.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and related issue status; no upstream code or public issue action was performed."
+    ],
+    "summary": "DockViewModel disposal does not drain its owned bands, and queued SetupBands work may publish or initialize candidates after disposal."
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "design": {
+        "title": "Correct the reported Command Palette lifecycle failure"
+      },
+      "confirm": true,
+      "id": "issue-51416-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "label": "Approve bounded CmdPal lifecycle investigation"
+    },
+    {
+      "id": "issue-51416-reproduce",
+      "reproduce": {
+        "steps": [
+          "1. Initialize bands in Start, Center and End and dispose owner.",
+          "2. Hold queued SetupBands publication/initialization, dispose owner, then release work.",
+          "3. Check rejected-candidate cleanup and initialize a new dock."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "expected_result": "Disposed owners drain current bands, reject and clean queued candidates, and cannot regain items/subscriptions.",
+        "module": "Command Palette Dock",
+        "prerequisites": [
+          "Dock tests with controllable dispatcher and bands that track cleanup/subscriptions."
+        ]
+      },
+      "label": "Reproduce CmdPal lifecycle failure",
+      "type": "reproduce"
+    }
+  ]
+}

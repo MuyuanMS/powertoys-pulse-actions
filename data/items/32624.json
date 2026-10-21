@@ -2,32 +2,119 @@
   "number": 32624,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T20:11:11Z",
+  "evaluated_at": "2026-10-20T20:09:00Z",
   "source_updated_at": "2024-04-27T12:48:05Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix hypothesis; reproduce on current build",
+    "detail": "Trace identifies Calculator initialization and a missing .NET assembly, but the report is from 0.80.0.0."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Reproduce Calculator dependency failure",
+    "reason": "Confirm current packaged behavior before choosing a dependency or packaging change."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "approve-run-dependency-32624",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side investigation after current-build reproduction; no upstream write."
+    },
+    {
+      "id": "reproduce-run-dependency-32624",
+      "type": "reproduce",
+      "label": "Reproduce Calculator startup failure",
+      "reproduce": {
+        "title": "Check Calculator plugin dependency resolution",
+        "module": "PowerToys Run",
+        "version_requirement": "Current PowerToys release; original trace reports 0.80.0.0 on Windows 11 22H2",
+        "prerequisites": [
+          "Use a clean Store/MSIX installation on supported Windows x64.",
+          "Enable PowerToys Run and its Calculator plugin."
+        ],
+        "setup": [],
+        "steps": [
+          "Start PowerToys and invoke PowerToys Run.",
+          "Open Run settings or allow default plugin settings to initialize.",
+          "Evaluate 1+1 and inspect diagnostics for System.Runtime.Numerics load failure.",
+          "If it fails, record package version and whether clean reinstall changes it."
+        ],
+        "expected_result": "Calculator initializes and evaluates the query without FileNotFoundException; if it fails, the exact assembly-load path is available for dependency/package investigation."
+      }
+    }
+  ],
+  "confidence": "Yellow",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The pasted PowerToys Run stack trace identifies Calculator initialization failing because System.Runtime.Numerics 8.0.0.0 cannot load. This supports a targeted dependency hypothesis, but does not establish whether current packaging still fails.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Open Issue-Bug with Product-PowerToys Run, Needs-Triage, Run-Plugin labels; no assignee.",
+      "Diagnostic reports 0.80.0.0 on Windows 11 22H2, Store install; Calculator.Main → Mages.Core.Runtime.Global throws FileNotFoundException for System.Runtime.Numerics 8.0.0.0.",
+      "Trace proceeds through PowerLauncher.SettingsReader plugin settings at startup; sole comment identifies the Calculator plugin crash.",
+      "Template says version 0.10 while diagnostic says 0.80.0.0; latest public comment is 2024-04-27."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce on a current packaged build and inspect Calculator/Mages dependency resolution only if the assembly-load failure remains.",
+    "evaluated_at": "2026-10-20T20:09:00Z",
     "source_updated_at": "2024-04-27T12:48:05Z"
-  }
+  },
+  "title": "Showing  Me Some Times Of Errors By Messages",
+  "url": "https://github.com/microsoft/PowerToys/issues/32624",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix or later report establishes resolution; the trace gives a specific dependency path, but current behavior must be verified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure PowerToys Run packages the Calculator runtime dependency",
+      "root_cause": "Hypothesis: Calculator or its Mages dependency requests System.Runtime.Numerics 8.0.0.0, but the affected packaged install cannot resolve it during plugin initialization; packaging omission versus dependency-version mismatch is unconfirmed.",
+      "plan": [
+        "Reproduce on a current Store/MSIX install and record whether the same assembly/version fails during PowerToys Run startup.",
+        "Trace Calculator's Mages dependency version and package/runtime asset resolution for System.Runtime.Numerics; correct the package/dependency declaration only if a mismatch is confirmed.",
+        "Add a focused plugin-initialization or package validation test that exercises default Calculator options during plugin enumeration."
+      ],
+      "verification": [
+        "On a clean current packaged install, open PowerToys Run and evaluate 1+1; confirm no assembly-load exception or launcher startup failure.",
+        "Run focused Calculator/PowerToys Run initialization coverage and verify the package resolves the required runtime dependency."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The trace identifies an exact missing assembly and call path, but is old and cannot distinguish packaging, dependency version, or installation state."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A PowerToys Run diagnostic reports Calculator static initialization failing because System.Runtime.Numerics 8.0.0.0 cannot be loaded.",
+    "known_information": [
+      "Open Issue-Bug with PowerToys Run/Run-Plugin labels; no assignee.",
+      "Body includes a Store-install diagnostic from PowerToys 0.80.0.0 on Windows 11 22H2.",
+      "Exception chain names Calculator.Main, Mages.Core.Runtime.Global, and missing System.Runtime.Numerics 8.0.0.0 during plugin settings enumeration.",
+      "Only comment, by htcfreek on 2024-04-27, identifies a crash in PowerToys Run's Calculator plugin."
+    ],
+    "inferences": [
+      "A missing/incompatible runtime dependency is plausible, but source evidence does not distinguish package, dependency-version or deployment-specific causes.",
+      "The old failure may not apply to current releases; current packaged reproduction is the key discriminator."
+    ],
+    "analysis": "The stack trace is specific enough for a yellow dependency hypothesis rather than a generic request for logs. Current-build reproduction is necessary before deciding on a package change.",
+    "initial_investigation": [
+      "Read complete body/exception, labels, assignees and the sole comment; latest comment is https://github.com/microsoft/PowerToys/issues/32624#issuecomment-2080578729.",
+      "No linked PR or confirmed fix appears in the public record; noted conflicting template/diagnostic version and relied on the pasted diagnostic for occurrence evidence."
+    ],
+    "information_gaps": []
+  },
+  "schemaVersion": 5
 }

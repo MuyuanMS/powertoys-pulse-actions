@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 51414,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:40:43.539Z",
+  "evaluated_at": "2026-10-20T16:40:43.539Z",
+  "source_updated_at": "2026-10-20T01:51:53Z",
+  "updated_at": "2026-10-20T01:51:53Z",
+  "state": "open",
+  "title": "CmdPal: Failed provider initialization still sets isValid (EXT26.S1)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51414",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "rationale": "An isolated test reproduced isValid=true with zero subscribers after event add failed; current constructor source assigns isValid=true after the catch. The failure boundary is precise enough for a focused correction.",
+    "evaluated_at": "2026-10-20T16:40:43.539Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "evidence": [
+      "An isolated test reproduced isValid=true and zero subscribers after ItemsChanged add threw.",
+      "The InitializeWithHost failure path was checked in source.",
+      "Current CommandProviderWrapper constructor catches initialization errors and assigns isValid=true after the catch."
+    ],
+    "status": "actionable_design",
+    "source_updated_at": "2026-10-20T01:51:53Z"
+  },
+  "fix_assessment": {
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Make validity conditional on success of all required initialization and subscriptions.",
+        "On failure, detach partial subscriptions and release local state before reporting failure.",
+        "Ensure callers reject invalid wrappers and allow later healthy starts.",
+        "Test InitializeWithHost failure, event-add failure and successful recovery."
+      ],
+      "verification": [
+        "Make InitializeWithHost then ItemsChanged add throw separately; verify neither provider is accepted and partial state is cleaned.",
+        "Start a healthy provider after each failure and verify it is admitted.",
+        "Run focused wrapper/service tests."
+      ],
+      "title": "Correct the reported Command Palette lifecycle failure",
+      "root_cause": "The constructor catches required initialization/subscription errors but sets the wrapper valid after the catch, admitting partial provider state.",
+      "confidence": {
+        "level": "yellow",
+        "rationale": "The invalid state is reproduced and unconditional assignment is visible; partial cleanup and recovery need regression tests.",
+        "score": 80
+      }
+    }
+  ],
+  "issue_context": {
+    "information_gaps": [],
+    "known_information": [
+      "An isolated test reproduced isValid=true and zero subscribers after ItemsChanged add threw.",
+      "The InitializeWithHost failure path was checked in source.",
+      "Current CommandProviderWrapper constructor catches initialization errors and assigns isValid=true after the catch."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "analysis": "An isolated test reproduced isValid=true with zero subscribers after event add failed; current constructor source assigns isValid=true after the catch. The failure boundary is precise enough for a focused correction.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked the cited CmdPal source area and related issue status; no upstream code or public issue action was performed."
+    ],
+    "summary": "CommandProviderWrapper reports itself valid even when InitializeWithHost or event subscription throws, admitting a partial provider."
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "design": {
+        "title": "Correct the reported Command Palette lifecycle failure"
+      },
+      "confirm": true,
+      "id": "issue-51414-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "label": "Approve bounded CmdPal lifecycle investigation"
+    },
+    {
+      "id": "issue-51414-reproduce",
+      "reproduce": {
+        "steps": [
+          "1. Construct a provider whose InitializeWithHost throws and inspect accepted providers.",
+          "2. Repeat with ItemsChanged event add throwing after initialization.",
+          "3. Start a healthy provider and inspect partial subscription cleanup."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "expected_result": "Failed providers are rejected and cleaned; subsequent healthy provider initializes normally.",
+        "module": "Command Palette provider initialization",
+        "prerequisites": [
+          "Provider doubles that throw independently during initialization and subscription."
+        ]
+      },
+      "label": "Reproduce CmdPal lifecycle failure",
+      "type": "reproduce"
+    }
+  ]
+}

@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 31390,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T16:48:00Z",
+  "evaluated_at": "2026-10-20T16:48:00Z",
   "source_updated_at": "2024-04-11T18:14:56Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31390",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Reproduce cross-layout monitor reassociation",
+    "detail": "Separate the supplied reopen jump from later HDR/display-change behavior and an unrelated multilayer-layout feature request."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Trace work-area identity and snap fallback",
+    "reason": "History already includes layout IDs; adding another ID blindly would not establish a fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original Explorer/layout-change/close/reopen sequence stops jumping when FancyZones is disabled. Follow-ups broaden the case to refresh-rate/HDR transitions and same zone indices in unrelated layouts; no concrete implementation establishes coverage.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The PowerToys 0.78 report supplies a numbered sequence and a FancyZones-disabled control.",
+      "One follow-up found a secondary monitor unexpectedly using the main monitor's layout; another describes display-change moves and asks separately for multilayer layouts.",
+      "FancyZones history lookups already use work-area identity and layout ID.",
+      "UpdateWorkAreas collects persisted zone-index properties, tries current-monitor history and then scans other work areas for matching saved zone sets; OnDisplayChange separately controls positional updates."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce reopen and display-change cases separately and trace target selection, preserving genuine unplug recovery while preventing unrelated-layout reassociation if confirmed.",
+    "evaluated_at": "2026-10-20T16:48:00Z",
     "source_updated_at": "2024-04-11T18:14:56Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is a concrete work-area/history reconciliation boundary to investigate; neither broad display tracking nor an external utility issue supplies a targeted fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep FancyZones snap history bound to the intended monitor/layout",
+      "root_cause": "Hypothesis: after layout/display changes, old zone-index window properties and fallback history matching can select another work area. Existing layout-aware lookups are counterevidence against a simple missing-layout-ID claim; runtime target selection is still unconfirmed.",
+      "plan": [
+        "Reproduce the original Explorer reopen case independently from refresh-rate/HDR work-area recreation, with distinct layouts on two monitors.",
+        "Trace the window's current zone property, source/target work-area IDs, layout IDs, saved history matches and each Snap decision.",
+        "If stale provenance or multiple fallback matches are confirmed, select one valid intended target deterministically and avoid reusing bare zone indices across unrelated layouts.",
+        "Retain deliberate movement options and genuine unplug/replug recovery; do not disable all display-change repositioning as a workaround.",
+        "Add regressions for changed layouts, same-index/different-layout histories, no-layout secondary monitors and display-transition option controls."
+      ],
+      "verification": [
+        "Explorer reopens on the intended monitor after changing layout and does not immediately jump to the secondary.",
+        "HDR/refresh-rate changes do not map old zone indices into unrelated layouts.",
+        "Actual monitor removal still recovers windows correctly and opt-in movement settings retain their meaning."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The public sequence and inspected current-monitor/fallback history branches identify a plausible association boundary. No trace yet establishes which branch causes the original reopen jump, and the later display case may differ."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones can move a reopened window to the wrong monitor after changing layouts; later comments describe related display-change reassociation and a separate feature request.",
+    "known_information": [
+      "The initial report includes a FancyZones-disabled control and affected Explorer/Telegram examples.",
+      "Follow-ups describe refresh-rate/HDR changes and layout confusion on a secondary monitor.",
+      "Existing history matching already uses work-area and layout identifiers.",
+      "The source also restores zone-index-tagged windows through a cross-work-area fallback."
+    ],
+    "inferences": [
+      "A stale or ambiguous association is plausible, but the original reopen path and later display-change path must not be treated as one proven defect."
+    ],
+    "analysis": "The report is sufficient for maintainer reproduction. A blind proposal to add layout IDs duplicates existing safeguards and overlooks fallback target selection; the multilayer-layout feature request is outside this bug fix.",
+    "initial_investigation": [
+      "Read the full report, both comments and obvious linked display-change work.",
+      "Inspected layout-aware history lookups and OnDisplayChange options.",
+      "Traced UpdateWorkAreas through work-area recreation, zone-index property collection, current-monitor matching and cross-work-area fallback snapping."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-31390",
+      "type": "approve_design",
+      "label": "Review monitor/layout provenance plan",
+      "description": "Approve the bounded target-selection investigation, not a new multilayer layout feature."
+    },
+    {
+      "id": "reproduce-31390",
+      "type": "reproduce",
+      "label": "Reproduce reopen and display-change monitor jumps",
+      "reproduce": {
+        "module": "FancyZones",
+        "prerequisites": [
+          "Use two monitors with distinct layouts and a current build; back up FancyZones settings.",
+          "Prepare an instrumented build logging non-sensitive work-area/layout IDs, zone sets and chosen Snap target.",
+          "Use HDR or refresh-rate transitions only where supported and keep them separate from the basic reopen test."
+        ],
+        "steps": [
+          "Zone Explorer on the primary, switch its layout, close and reopen Explorer; compare with FancyZones disabled.",
+          "Repeat with a different secondary layout and with no secondary layout; inspect saved history and actual target.",
+          "With an open zoned window, change refresh rate or HDR and repeat with display-change movement off and on.",
+          "Create same-zone-index histories in distinct layouts and trace every fallback match; separately unplug/replug a monitor as a recovery control."
+        ],
+        "expected_result": "Windows retain the intended monitor/layout association, while deliberate display-movement and true unplug recovery continue to work.",
+        "setup_prompt": "Prepare two clearly distinct layouts that share a zone index but not a layout ID. Run reopen and HDR/refresh-rate experiments as separate cases and record selected work-area targets rather than personal window content."
+      }
+    }
+  ]
 }

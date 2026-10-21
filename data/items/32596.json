@@ -1,33 +1,115 @@
 {
+  "schemaVersion": 5,
   "number": 32596,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Enabling Color Picker leaves a blank white window",
+  "url": "https://github.com/microsoft/PowerToys/issues/32596",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-09-18T07:11:31Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Identify the blank window owner",
+    "detail": "Color Picker toggling controls the original rectangle; later sleep/wake reports involve Run and Quick Accent too, so a common cause is not established."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce startup and wake visibility",
+    "reason": "Inspect owning HWND/process and initialization state before choosing a module-local or shared correction."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Videos, versions, toggle correlation and an attached ZIP support a focused maintainer test. The linked rounded-corner issue is a different symptom and its release does not prove these persistent blank windows were fixed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original 0.80.1 report shows an immovable empty rectangle that disappears when Color Picker is disabled.",
+      "Further reports cover 0.81.1, 0.83.0 and 0.84.1.",
+      "The final comment supplies a ZIP and identifies two sleep/wake rectangles disappearing when Run and Quick Accent are toggled.",
+      "Related #31725 concerns dropper corner/background rendering and says its fix shipped in 0.82.0; this report continued afterward.",
+      "Current ColorPickerXAML/App.xaml.cs creates an overlay described as initially hidden; reproducing a visible helper window requires runtime ownership evidence."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Trace window creation/show/hide for each reproducible owner, then approve only the demonstrated lifecycle correction.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-18T07:11:31Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An initialization/visibility correction may apply, but no reviewed fix specifically covers persistent white windows across these modules."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent an uninitialized helper overlay from becoming visible",
+      "root_cause": "Hypothesis: a module helper window becomes visible before transparent content/hidden state is fully established, or is incorrectly restored after wake. Later Run/Quick Accent rectangles may be separate defects rather than the same Color Picker path.",
+      "plan": [
+        "Reproduce the Color Picker enable/disable case and inspect the blank HWND's owning process, styles and show/restore transitions; repeat the wake case with one module enabled at a time.",
+        "For a confirmed Color Picker owner, trace App.OnLaunched and ColorPickerOverlayWindow initialization in src/modules/colorPicker/ColorPickerUI/ColorPickerXAML; compare the affected historical build with the current overlay implementation.",
+        "Correct the demonstrated visibility transition so helper windows remain hidden until intentionally activated and do not show empty content after resume; do not apply a broad shared fix without matching evidence.",
+        "Add cold-start, repeated enable/disable and sleep/resume tests for the confirmed owner, preserving hotkey activation and normal dismissal."
+      ],
+      "verification": [
+        "No persistent blank rectangle remains after starting PowerToys or toggling Color Picker; normal picker hotkey interaction still works.",
+        "After sleep/resume, inspect Color Picker, Run and Quick Accent separately and verify the candidate fixes only the demonstrated owner without hiding legitimate UI."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "Module toggling narrows ownership, but the report combines different processes and current Color Picker uses a changed overlay implementation; no runtime trace confirms the lifecycle branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A persistent white helper window correlates with Color Picker enablement; later reports describe similar rectangles from Run and Quick Accent after waking the PC.",
+    "known_information": [
+      "The original report provides a recording and a deterministic module-toggle correlation.",
+      "Multiple versions and an additional screenshot/ZIP are already supplied.",
+      "The linked rounded-dropper report #31725 is closed and marked released in 0.82.0, yet this issue has later occurrences.",
+      "Live issue is open and unassigned."
+    ],
+    "inferences": [
+      "An unintended visible helper-window state is plausible; a shared multi-module root cause is unproven."
+    ],
+    "analysis": "Do not request the recording or diagnostics already present. A maintainer should establish HWND/process ownership and whether current code still fails before designing a specific visibility fix.",
+    "initial_investigation": [
+      "Read all comments, the related #31725 report, timeline-linked duplicates and matching PR search.",
+      "Inspected upstream ColorPickerXAML/App.xaml.cs overlay initialization; no claim is made to have analyzed the attached ZIP."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-32596",
+      "type": "reproduce",
+      "label": "Identify blank HWND during enable and wake",
+      "primary": true,
+      "reproduce": {
+        "module": "Color Picker; separately PowerToys Run and Quick Accent",
+        "version": "Current stable build; historical reports 0.80.1 through 0.84.1",
+        "prerequisites": [
+          "Use a window-inspection tool to identify HWND, PID and visibility styles.",
+          "Test one module at a time before testing combinations."
+        ],
+        "steps": [
+          "Start with Color Picker disabled, enable it without invoking the hotkey and look for a persistent white window.",
+          "Identify the owning process and HWND, then disable Color Picker and confirm whether that HWND disappears.",
+          "Repeat cold launch and sleep/resume while tracing creation/show/hide events.",
+          "Repeat separately for Run and Quick Accent using the final comment's toggle workaround.",
+          "Invoke each module normally to distinguish a helper-window artifact from legitimate module UI."
+        ],
+        "expected_result": "Idle modules leave no blank visible helper windows; any reproduced rectangle is attributed to its actual owning process before changing code.",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/issues/32596"
+        ]
+      }
+    },
+    {
+      "id": "approve-design-32596",
+      "type": "approve_design",
+      "label": "Approve owner-specific visibility investigation",
+      "confirm": true,
+      "note": "Low-confidence plan; establish the process and failing transition before implementing."
+    }
+  ]
 }

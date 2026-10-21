@@ -2,32 +2,87 @@
   "number": 46950,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:50:57Z",
+  "generated_at": "2026-10-20T16:45:13Z",
+  "evaluated_at": "2026-10-20T16:45:13Z",
+  "source_updated_at": "2026-10-17T03:57:33Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Design candidate",
+    "detail": "The report identifies an unchecked CreateProcessW call, potential CloseHandle on uninitialized handles, and success HRESULT on launch failure. Focused source review confirms LaunchUI ignores the process creation result and returns S_OK, so a narrow fix is strongly supported.",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Review a focused LaunchUI error-propagation fix and add failure-path coverage.",
+  "actions": [
+    {
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "label": "Review Propagate File Locksmith UI launch failures",
+      "primary": true,
+      "type": "approve_design",
+      "confirm": true
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Review a focused LaunchUI error-propagation fix and add failure-path coverage.",
+    "source_updated_at": "2026-10-17T03:57:33Z",
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-20T16:45:13Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue names ExplorerCommand::LaunchUI and reports unchecked CreateProcessW failure, unsafe handle closing, and S_OK on failure.",
+      "Focused source review confirms the call result is ignored, handles are closed unconditionally, and S_OK is returned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:50:57Z"
+    "rationale": "The report identifies an unchecked CreateProcessW call, potential CloseHandle on uninitialized handles, and success HRESULT on launch failure. Focused source review confirms LaunchUI ignores the process creation result and returns S_OK, so a narrow fix is strongly supported."
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/46950",
+  "title": "[File Locksmith] ExplorerCommand::LaunchUI ignores CreateProcessW failure",
+  "labels": [
+    "Issue-Bug",
+    "Product-File Locksmith"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "fix_assessment": {
+    "rationale": "A PowerToys code change is plausible; uncertainty and confidence are stated in the proposed plan.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Force/mock CreateProcessW failure; verify corresponding HRESULT and no invalid handle close.",
+        "Verify success still closes returned handles and reports success."
+      ],
+      "confidence": {
+        "level": "green",
+        "rationale": "The source defect matches the report and the correction is localized and directly testable.",
+        "score": 94
+      },
+      "plan": [
+        "Check CreateProcessW's result immediately.",
+        "On failure, capture GetLastError and return HRESULT_FROM_WIN32(error) without closing uninitialized handles.",
+        "On success close valid handles and preserve launch behavior.",
+        "Add focused success/failure path tests."
+      ],
+      "title": "Propagate File Locksmith UI launch failures",
+      "root_cause": "ExplorerCommand::LaunchUI ignores CreateProcessW failure, then closes process handles and returns S_OK, hiding launch errors and risking invalid handle operations."
+    }
+  ],
+  "issue_context": {
+    "analysis": "The issue’s concrete defect is corroborated in the owning source. Check the BOOL result before touching PROCESS_INFORMATION handles and return HRESULT_FROM_WIN32(GetLastError()).",
+    "initial_investigation": [
+      "Reviewed src/modules/FileLocksmith/FileLocksmithExt/ExplorerCommand.cpp around ExplorerCommand::LaunchUI; confirmed unchecked CreateProcessW and unconditional handle close / S_OK return.",
+      "No linked fix attempt identified."
+    ],
+    "inferences": [
+      "When process creation fails, current code may access invalid handles and suppress the Win32 failure."
+    ],
+    "information_gaps": [],
+    "known_information": [
+      "The report pinpoints CreateProcessW in File Locksmith ExplorerCommand::LaunchUI.",
+      "Source review confirms the process creation result is ignored and handle closing / success return are unconditional."
+    ],
+    "summary": "File Locksmith can report success when ExplorerCommand fails to launch its UI, and may close handles that were never initialized."
   }
 }

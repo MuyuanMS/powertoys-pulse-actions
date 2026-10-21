@@ -1,33 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 32625,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
   "source_updated_at": "2024-04-26T19:28:18Z",
+  "title": "Enabling Quick Accent affects 3d party automation software sends text input (using Windows API function SendInput)",
+  "url": "https://github.com/microsoft/PowerToys/issues/32625",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Issue supplies a LibreAutomate reproduction and reports a non-Space activation workaround."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Compare SendInput text with Space and non-Space Quick Accent activation."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a concrete LibreAutomate AutoTexts snippet and Notepad test. The latest reporter comment says avoiding Space as Quick Accent activation fixes missing spaces, supporting a trigger-key interaction hypothesis that still requires tracing.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.80.1, Quick Accent, LibreAutomate 1.2.0; code replacement sends `my name` using SendInput.",
+      "Expected output includes a space; with Quick Accent, output is `myname`.",
+      "Latest commenter reports a non-Space activation key avoids the issue.",
+      "Live OPEN, Issue-Bug / Product-Quick Accent, two comments, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with Space/non-Space activation and trace whether Quick Accent consumes injected spaces.",
+    "evaluated_at": "2026-10-20T20:09:08Z",
     "source_updated_at": "2024-04-26T19:28:18Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists; reporter's activation-key workaround supports a focused input-interception hypothesis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve SendInput spaces when Quick Accent uses Space activation",
+      "root_cause": "Quick Accent may treat the space injected by LibreAutomate's replacement as its own activation trigger and consume it, turning `my name` into `myname`; the workaround supports but does not prove this.",
+      "plan": [
+        "Run the supplied LibreAutomate 1.2.0 `#mn` text replacement in Notepad with Quick Accent using Space, then repeat with non-Space activation and disabled controls.",
+        "Trace Quick Accent keyboard-hook activation for injected versus physical Space events.",
+        "Adjust filtering so automation text spaces pass through while physical Quick Accent activation remains functional.",
+        "Cover injected text containing spaces, physical activation, and non-Space activation."
+      ],
+      "verification": [
+        "Verify the supplied replacement produces exactly `my name` with Quick Accent enabled and Space activation.",
+        "Verify physical activation and non-Space configuration still work."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The script and activation workaround are concrete, but the hook's injected-event behavior must be confirmed before selecting a safe fix."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "LibreAutomate's SendInput text replacement loses the space in `my name` when Quick Accent is enabled; reporter says using a non-Space activation key avoids it.",
+    "known_information": [
+      "PowerToys 0.80.1, Quick Accent and LibreAutomate 1.2.0 are listed.",
+      "Reporter gives AutoTexts snippet `tr[\"#mn\"] = \"my name\";`, compile and Notepad steps; enabled output is `myname`.",
+      "Latest reporter comment says non-Space activation fixes the symptom.",
+      "Live OPEN, Issue-Bug / Product-Quick Accent, unassigned."
+    ],
+    "inferences": [
+      "Quick Accent may intercept an injected space as its activation key, but hook behavior is unverified."
+    ],
+    "analysis": "The public repro and workaround already distinguish the likely trigger. Maintainer-side input tracing is preferable to requesting generic logs.",
+    "initial_investigation": [
+      "Reviewed full body and both comments through 2024-04-26T19:28:18Z.",
+      "No linked duplicate or fix; reporter says disabling other tools isolated Quick Accent.",
+      "Product-Quick Accent indicates ownership; no hook implementation was inspected in this lightweight pass."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-32625",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused Quick Accent investigation; no upstream write."
+    },
+    {
+      "id": "reproduce-32625",
+      "type": "reproduce",
+      "label": "Reproduce missing SendInput spaces",
+      "reproduce": {
+        "title": "Replay LibreAutomate text replacement with Quick Accent variants",
+        "module": "Quick Accent",
+        "version_requirement": "Current development build; compare 0.80.1 and LibreAutomate 1.2.0 if available",
+        "prerequisites": [
+          "Notepad and LibreAutomate 1.2.0 or equivalent SendInput-based replacement",
+          "Quick Accent enabled with configurable activation key"
+        ],
+        "setup": [
+          "Add `tr[\"#mn\"] = \"my name\";` to LibreAutomate AutoTexts boilerplate and compile."
+        ],
+        "steps": [
+          "Set Space as Quick Accent activation; trigger `mn ` in Notepad.",
+          "Repeat with non-Space activation, then with Quick Accent disabled.",
+          "Compare with a physical Space typed directly."
+        ],
+        "expected_result": "Injected replacement always yields `my name` including the space, while physical Quick Accent activation continues to work."
+      }
+    }
+  ],
+  "generated_at": "2026-10-20T20:09:08Z",
+  "evaluated_at": "2026-10-20T20:09:08Z"
 }

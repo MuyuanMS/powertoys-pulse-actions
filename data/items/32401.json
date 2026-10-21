@@ -1,33 +1,112 @@
 {
+  "schemaVersion": 5,
   "number": 32401,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
   "source_updated_at": "2024-04-12T09:23:35Z",
+  "title": "PowerToys update attempts to delete volume shadow copy and flagged as malware",
+  "url": "https://github.com/microsoft/PowerToys/issues/32401",
+  "labels": [
+    "Issue-Bug",
+    "Area-Setup/Install",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "📨",
+    "label": "Request CrowdStrike detection details",
+    "detail": "Alert operation/outcome needed to distinguish actual snapshot deletion from a heuristic."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "📨",
+    "label": "Request CrowdStrike detection details",
+    "reason": "Use the sanitized security event to decide whether installer behavior needs a code change."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report includes useful installer/hash details and a diagnostic ZIP, but not whether CrowdStrike observed a real VSS deletion or a heuristic alert. A related prior issue is not a demonstrated code fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "0.80.1 auto-update; CrowdStrike 7.11.18110.0; process path and SHA-256 are reported; PowerToys ZIP attached.",
+      "Comment links #15932, now closed; its final discussion describes installer/VSS interaction and a vendor exclusion workaround.",
+      "Live issue OPEN, Issue-Bug, Area-Setup/Install, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a sanitized CrowdStrike detection event, including operation and outcome.",
+    "evaluated_at": "2026-10-20T20:07:53Z",
     "source_updated_at": "2024-04-12T09:23:35Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No public code fix covers this report; installer/VSS behavior is a plausible but unconfirmed cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Verify the installer operation behind the VSS alert",
+      "root_cause": "The elevated Burn setup process may perform a legitimate VSS-related operation that CrowdStrike reports as deletion, but actual snapshot removal is not established.",
+      "plan": [
+        "Obtain the detection name, flagged operation, and outcome from a sanitized CrowdStrike event.",
+        "Trace the operation to setup/update code and distinguish installer-owned temporary cleanup from any VSS delete request.",
+        "Constrain any confirmed destructive operation to installer-owned resources; if heuristic-only, pursue a narrowly scoped false-positive resolution.",
+        "Verify upgrades do not remove user restore points or snapshots."
+      ],
+      "verification": [
+        "Reproduce the identified update path and verify no VSS delete request or snapshot removal occurs.",
+        "Check the resulting installer against the reported detection condition."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "A similar old alert exists, but its outcome was only an exclusion; the current event payload is missing and could show a different operation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CrowdStrike flagged the elevated PowerToys 0.80.1 auto-updater as attempting to delete a volume shadow copy; hashes, process path, and a PowerToys report ZIP are supplied.",
+    "known_information": [
+      "Auto-update to 0.80.1; CrowdStrike 7.11.18110.0; the quoted setup command, path and hashes are in the report.",
+      "Reporter attached a PowerToys report ZIP.",
+      "Related #15932 is closed; its final discussion describes a similar installer/VSS alert and exclusion, not a code fix.",
+      "Live issue OPEN, Issue-Bug, Area-Setup/Install, no assignee."
+    ],
+    "inferences": [
+      "A heuristic false positive is plausible, but the current report does not establish whether a VSS deletion occurred."
+    ],
+    "analysis": "The security product's exact event is the smallest discriminator between legitimate installer behavior and a destructive operation; the existing ZIP does not answer that question.",
+    "initial_investigation": [
+      "Reviewed full body and sole comment through 2024-04-12T09:23:35Z.",
+      "Checked #15932 state and latest discussion; closed as already fixed/doesn't apply, with vendor exclusion described rather than PowerToys code change.",
+      "Area-Setup/Install indicates ownership; no assignee or linked fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "information": "Sanitized CrowdStrike event with detection/rule name, process operation, and whether deletion was attempted or completed.",
+        "why_needed": "Distinguishes heuristic alert from actual snapshot removal and determines whether setup needs a code change.",
+        "how_to_collect": "Ask IT for the event summary/export and redact organization, device, user, and tenant identifiers."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-32401",
+      "type": "request_info",
+      "label": "Request CrowdStrike detection details",
+      "comment": {
+        "body": "Thanks for including the installer path, hashes, CrowdStrike version, and PowerToys report ZIP. The older related report #15932 described a similar installer/VSS alert, but it does not show what CrowdStrike detected in this update. Could you ask IT to share a sanitized detection event with the rule name, flagged process/operation, and whether it recorded an attempted or completed VSS deletion? Please redact organization, device, user, and tenant identifiers. This will distinguish a heuristic alert from an actual snapshot-removal path and determine whether Setup needs a code change."
+      }
+    },
+    {
+      "id": "design-32401",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused setup investigation; this does not write upstream."
+    }
+  ],
+  "generated_at": "2026-10-20T20:07:53Z",
+  "evaluated_at": "2026-10-20T20:07:53Z"
 }

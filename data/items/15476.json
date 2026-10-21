@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 15476,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Disabling Always On Top leaves pinned windows topmost",
+  "url": "https://github.com/microsoft/PowerToys/issues/15476",
+  "assignees": [
+    "SeraphimaZykova"
+  ],
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-09-10T13:56:02Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Validate existing unpin cleanup",
+    "detail": "Assigned to SeraphimaZykova; coordinate investigation with that owner. Assignment is not evidence of an implemented fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Trace disable versus cleanup completion",
+    "reason": "Current code already calls UnpinAll during cleanup; identify whether disable can terminate before that existing cleanup completes."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Multiple versions and an independent reproduction establish the historical symptom. Current source already restores topmost state on normal cleanup, so adding another unpin loop without tracing shutdown would duplicate existing behavior.",
     "evidence": [
-      "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original 0.53.1 report pins windows then disables the module; borders vanish but windows remain topmost.",
+      "Independent confirmations cover 0.76.2 and 0.84.1; Status-Reproducible is present.",
+      "AlwaysOnTop::~AlwaysOnTop joins the event thread then calls CleanUp, which calls UnpinAll and HWND_NOTOPMOST.",
+      "AlwaysOnTopModuleInterface::Disable signals termination, waits 1500 ms, then calls TerminateProcess when the process handle remains set.",
+      "No linked implementation PR was found; live assignment to SeraphimaZykova is preserved."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Coordinate with the assignee to reproduce and trace the shutdown timeout before approving a lifecycle correction.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-09-10T13:56:02Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A shutdown-ordering correction may still be necessary, but the existing normal cleanup must be accounted for. No concrete public fix attempt was identified merely from assignment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure module-owned windows are unpinned before disable exits",
+      "root_cause": "Hypothesis: the disable path's bounded wait can force termination before the existing destructor/thread-join/CleanUp sequence reaches UnpinAll, leaving OS topmost state behind. A current-build trace is needed to distinguish this from already-corrected historical behavior.",
+      "plan": [
+        "Coordinate with SeraphimaZykova and reproduce with multiple pinned windows while timing Disable, termination-event handling, thread join and UnpinAll.",
+        "If cleanup is preempted, arrange deterministic unpinning of module-owned windows before shutdown acknowledgment, reusing UnpinAll rather than introducing a second competing state tracker.",
+        "Distinguish graceful exit from timeout/failure before force termination; preserve a bounded shutdown and safe handling of destroyed or hung target windows.",
+        "Add disable/re-enable and runner-exit regression tests, including slow cleanup and windows independently marked topmost by other software."
+      ],
+      "verification": [
+        "Pin two windows, disable Always On Top, and confirm both lose the module's topmost state rather than only their borders.",
+        "Repeat under slow shutdown, destroyed-window and elevated/non-elevated cases; verify unrelated topmost windows are unchanged and shutdown remains bounded."
+      ],
+      "confidence": {
+        "score": 59,
+        "level": "yellow",
+        "rationale": "Current source exposes a plausible preempted-cleanup path, but normal cleanup already unpins; no runtime evidence yet proves the timeout causes the reported behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Turning off Always On Top removes its border but historically leaves pinned windows above other applications until they are manually unpinned.",
+    "known_information": [
+      "The report supplies a simple pin/disable sequence and a manual re-enable/unpin workaround.",
+      "Comments confirm reproduction through 0.84.1.",
+      "SeraphimaZykova remains assigned; there is no current author-evidence request."
+    ],
+    "inferences": [
+      "A shutdown race may bypass existing cleanup; assignment alone neither proves ongoing implementation nor confirms a fix."
+    ],
+    "analysis": "Preserve the actual owner and avoid parallel implementation without coordination. Reproduction is justified, but the fix hypothesis must explicitly acknowledge the UnpinAll cleanup already present.",
+    "initial_investigation": [
+      "Reviewed the complete report, all three comments, duplicate cross-references and matching PR search.",
+      "Read upstream AlwaysOnTop.cpp destructor/CleanUp/UnpinAll and AlwaysOnTopModuleInterface/dllmain.cpp Disable lifecycle."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-15476",
+      "type": "reproduce",
+      "label": "Trace unpin completion during module disable",
+      "primary": true,
+      "reproduce": {
+        "module": "Always On Top",
+        "version": "Current stable build; historical confirmations through 0.84.1",
+        "prerequisites": [
+          "Coordinate with assigned owner SeraphimaZykova.",
+          "Open two disposable test windows and an unrelated topmost control window."
+        ],
+        "steps": [
+          "Pin the two test windows using Always On Top.",
+          "Disable the module in Settings and bring a normal window in front.",
+          "Check border disappearance separately from the actual WS_EX_TOPMOST flag and z-order.",
+          "Trace termination-event receipt, thread join, UnpinAll and the 1500 ms disable wait.",
+          "Repeat for runner exit and a deliberately slow cleanup in a developer build."
+        ],
+        "expected_result": "Module-owned topmost state is removed before graceful disable completes; unrelated topmost windows are untouched."
+      }
+    },
+    {
+      "id": "approve-design-15476",
+      "type": "approve_design",
+      "label": "Approve owner-coordinated shutdown fix plan",
+      "confirm": true,
+      "note": "Coordinate with the existing assignee and prove cleanup preemption first; do not duplicate UnpinAll."
+    }
+  ]
 }

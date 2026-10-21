@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 22515,
   "kind": "issue",
   "track": "fix",
   "stage": "owned_elsewhere",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:05.469552Z",
+  "evaluated_at": "2026-10-20T23:31:05.469552Z",
   "source_updated_at": "2024-06-26T15:19:50Z",
   "status": {
     "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Related transient-window fix under review",
+    "detail": "Open PR #51162 changes the same new-window restoration path for a traced 3ds Max case; TickTick coverage remains unverified."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Test TickTick against related fix",
+    "reason": "Reuse the concrete active fix attempt instead of inventing assigned ownership or a competing implementation."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "A concrete open fix attempt addresses the same suspected transient-window restoration mechanism, so parallel implementation is not warranted before testing applicability. This issue is not claimed fixed or duplicated by #51161.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Disabling 'Move newly created windows to their last known zone' prevents the TickTick blank-window symptom; upgrading to 0.65.0 did not solve it.",
+      "https://github.com/microsoft/PowerToys/issues/33255 was closed as a duplicate of #22515.",
+      "https://github.com/microsoft/PowerToys/issues/51161 presents WinEvent traces of a transient 3ds Max window re-shown by asynchronous SW_RESTORE and explicitly identifies TickTick as a possible related family.",
+      "https://github.com/microsoft/PowerToys/pull/51162 is open and queues new windows for a 100 ms settle period before the existing WindowCreated checks; its reported E2E validation is for 3ds Max, not TickTick."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Validate TickTick with the related fix candidate, retaining this issue until its own reproduction is verified.",
+    "evaluated_at": "2026-10-20T23:31:05.469552Z",
     "source_updated_at": "2024-06-26T15:19:50Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR #51162 is an existing fix attempt for the shared candidate new-window/async-restore path, with a concrete public reproduction in #51161. Coverage of TickTick is a hypothesis requiring a separate A/B test; it is not a shipped fix or confirmed resolution of #22515.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51162",
+      "https://github.com/microsoft/PowerToys/issues/51161"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "TickTick can open an immovable white extra window when FancyZones restores newly created windows to their previous zones. Disabling restoration or launching TickTick before PowerToys avoids the symptom.",
+    "known_information": [
+      "TickTick 4.3.4.0 and PowerToys 0.64.1 were initially reported; the author confirmed persistence on 0.65.0.",
+      "Several contributors reproduced the problem, including on Windows 11.",
+      "The setting-off workaround and application-startup-order workaround are already documented.",
+      "The issue is open and has no assignees; related PR #51162 is open."
+    ],
+    "inferences": [
+      "TickTick may briefly expose a helper window that gets restored after being hidden, like the traced 3ds Max case, but no TickTick-specific trace proves it."
+    ],
+    "analysis": "Replace the false empty-assignee ownership statement with real linked work and an explicit coverage limitation. Preserve the original issue as a validation target rather than declaring it solved.",
+    "initial_investigation": [
+      "Read the original report and all eight comments.",
+      "Inspected cross-referenced #33255, #51161 and the full #51162 PR description, state and changed-file list.",
+      "Verified current upstream WindowUtils uses asynchronous SetWindowPlacement and SW_RESTORE; PR #51162 targets the new-window timing boundary without claiming TickTick E2E evidence."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "test-ticktick-related-fix",
+      "type": "reproduce",
+      "label": "Validate TickTick against PR #51162",
+      "reproduce": {
+        "title": "TickTick startup-window A/B validation",
+        "module": "FancyZones",
+        "version_requirement": "Compare a current released build with an isolated build containing PR #51162; record the exact candidate commit.",
+        "prerequisites": [
+          "TickTick installed; record version",
+          "A saved TickTick zone assignment",
+          "Test build deployment follows the normal module-validation workflow; do not replace a user's working installation without preserving it."
+        ],
+        "steps": [
+          "1. Enable 'Move newly created windows to their last known zone', snap TickTick, close it and cold-start it repeatedly while PowerToys is already running.",
+          "2. Record main/helper window visibility and zone placement; compare with the setting disabled.",
+          "3. Repeat the same sequence with PR #51162's candidate, tracing show/hide and restore ordering if a white window remains.",
+          "4. Verify the normal TickTick window still restores to its zone and unrelated applications do not lose restoration."
+        ],
+        "expected_result": "No extra immovable white window, with normal main-window zone restoration retained. If TickTick still fails, record that the related fix does not cover this reproduction.",
+        "attachments": [
+          {
+            "label": "Related open fix attempt",
+            "url": "https://github.com/microsoft/PowerToys/pull/51162"
+          },
+          {
+            "label": "Traced transient-window mechanism",
+            "url": "https://github.com/microsoft/PowerToys/issues/51161"
+          }
+        ]
+      }
+    }
+  ]
 }

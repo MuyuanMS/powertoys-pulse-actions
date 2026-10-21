@@ -2,32 +2,109 @@
   "number": 29969,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:08:16Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "generated_at": "2026-10-20T20:06:40.725Z",
+  "evaluated_at": "2026-10-20T20:06:40.725Z",
+  "source_updated_at": "2026-10-11T16:49:50Z",
+  "status": "actionable_design",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce duplicate Win/Alt modifier state",
+    "reason": "The report and recording show a concrete symptom, but no current reproduction or event trace identifies the cause."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce duplicate Win/Alt modifier state",
+      "primary": true,
+      "reproduce": {
+        "title": "Check original and remapped Win shortcut paths",
+        "module": "Keyboard Manager",
+        "version_requirement": "Latest stable PowerToys on Windows 11; record versions",
+        "prerequisites": [
+          "Keyboard Manager enabled with left Alt/Windows swapped; Win+G available.",
+          "Optionally open on-screen keyboard to observe modifier state."
+        ],
+        "setup": [],
+        "steps": [
+          "Press and release physical Win, then physical Alt, checking modifier states after each release.",
+          "Press physical Win+G and physical Alt+G separately and note whether Game Bar opens for both.",
+          "Repeat after restarting PowerToys."
+        ],
+        "expected_result": "Modifier state clears after release and the shell shortcut runs only from the key mapped to Win."
+      }
+    },
+    {
+      "id": "approve-design-29969",
+      "type": "approve_design",
+      "label": "Approve focused fix investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft action only; no upstream action was taken."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report and recording show a concrete symptom, but no current reproduction or event trace identifies the cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Report says the swap lets system shortcuts such as Win+G trigger through both combinations.",
+      "A commenter supplied an on-screen-keyboard recording where both Win and Alt appear pressed after sequential presses.",
+      "Latest comment (2024-04-28) confirms the issue; live open Issue-Bug/Needs-Triage, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:08:16Z"
-  }
+    "recommended_action": "Reproduce on a current build, then trace the proposed event path before authorizing a fix.",
+    "evaluated_at": "2026-10-20T20:06:40.725Z",
+    "source_updated_at": "2026-10-11T16:49:50Z"
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "url": "https://github.com/microsoft/PowerToys/issues/29969",
+  "schemaVersion": 5,
+  "issue_context": {
+    "summary": "After swapping left Alt and Windows, system shortcuts reportedly trigger from both original and remapped keys; a commenter also observed both modifier states on the on-screen keyboard.",
+    "known_information": [
+      "Report says the swap lets system shortcuts such as Win+G trigger through both combinations.",
+      "A commenter supplied an on-screen-keyboard recording where both Win and Alt appear pressed after sequential presses.",
+      "Latest comment (2024-04-28) confirms the issue; live open Issue-Bug/Needs-Triage, unassigned."
+    ],
+    "inferences": [
+      "The remapper may forward the original modifier or fail to balance synthesized key-up state, but the record does not distinguish duplicate dispatch from stuck state."
+    ],
+    "analysis": "The report and recording describe a modifier-state problem but do not establish its path. Reproduce and trace key-down/up before selecting a correction.",
+    "initial_investigation": [
+      "Reviewed full body, labels/assignees, and latest comment https://github.com/microsoft/PowerToys/issues/29969#issuecomment-2081622558.",
+      "Earlier discussion includes https://github.com/microsoft/PowerToys/assets/6923008/32a442bb-3333-4d1a-8e72-5967948e0d98.",
+      "No current-build reproduction or source trace was done."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A modifier-state correction is plausible, but duplicate shell dispatch versus key-up imbalance remains unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate duplicate Win/Alt state after swap",
+      "root_cause": "The swap may forward physical Win while injecting remapped modifiers or fail to balance synthesized key-up, leaving both states visible to Windows.",
+      "plan": [
+        "Reproduce the swap and capture physical/injected key transitions and shell shortcut outcomes.",
+        "Trace suppression and synthesized modifier release paths for both swap directions.",
+        "Correct only the confirmed duplicate-forwarding or key-up imbalance; add coverage for sequential presses and release order."
+      ],
+      "verification": [
+        "Check on-screen keyboard after each release and test Win+G through both physical key paths.",
+        "Run modifier-remap tests for both directions, key-up ordering, and repeated presses."
+      ],
+      "confidence": {
+        "score": 49,
+        "level": "red",
+        "rationale": "The report and recording show a concrete symptom, but no current reproduction or event trace identifies the cause."
+      }
+    }
+  ]
 }

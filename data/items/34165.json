@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 34165,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-08-06T18:24:11Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Verify localized search aliases",
+    "detail": "The report and maintainer response identify separate folder and Settings search coverage gaps, not an assigned implementation."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Compare French and English result providers",
+    "reason": "Identify which plugin misses each known-folder/settings result before extending aliases."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report supplies concrete French/English queries and screenshots; the maintainer confirms programs already account for localization while folders and settings use different direct queries.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/34165 reports 0.81.1 and the Downloads/téléchargements query difference, plus missing screen-resolution settings.",
+      "https://github.com/microsoft/PowerToys/issues/34165#issuecomment-2269284300 explicitly distinguishes program localization from folder/settings queries.",
+      "The live issue is open and unassigned, with no linked fix events or exact-number PR search matches."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the two examples on a French-language system, attribute each result to its provider, and scope localized/neutral aliases without promising full Windows Search parity.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-08-06T18:24:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Provider-specific alias coverage is an applicable code-change hypothesis supported by the maintainer's response. No existing fix attempt for this issue was identified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Match localized and neutral aliases for known folders and settings",
+      "root_cause": "Hypothesis: folder and Windows Settings result providers do not expose the same localized/neutral query aliases as the program provider, so a localized shell display name or translated settings term cannot match the available provider metadata.",
+      "plan": [
+        "On French Windows, identify whether Downloads is returned by Microsoft.Plugin.Indexer or Microsoft.Plugin.Folder and inspect its searchable metadata; separately inspect the WindowsSettings result for screen resolution.",
+        "Reuse the shell display-name mechanism in src/modules/launcher/Wox.Plugin/Common/ShellLocalization.cs for appropriate known-folder aliases while preserving the canonical path used for activation.",
+        "In src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsSettings, extend the relevant localized name/alias catalog and matching rather than translating arbitrary paths or promising every Windows Search result.",
+        "Deduplicate results across aliases and add provider tests for French accented queries, English aliases, case handling and unchanged activation targets."
+      ],
+      "verification": [
+        "On French Windows, both téléchargements and downloads must resolve to the same actual Downloads location when that provider supports known-folder discovery.",
+        "The translated screen-resolution query must return the appropriate Settings destination; launching it must open the intended page.",
+        "Verify English Windows, relocated Downloads, accented/case variants and duplicate-result suppression."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The maintainer response supports the provider-coverage explanation; the current failing provider and alias data still need a locale-specific comparison."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A bilingual French/English user finds Downloads and screen-resolution settings with Windows Search but not the corresponding localized queries in PowerToys Run.",
+    "known_information": [
+      "The Downloads query works as downloads but not téléchargements on the reported system.",
+      "The report includes comparison screenshots for both folders and screen-resolution settings.",
+      "A maintainer says programs already account for the issue, unlike the more directly queried folders and settings.",
+      "No assignee or linked implementation is present."
+    ],
+    "inferences": [
+      "The two examples likely need different provider/catalog changes rather than a single global query translation.",
+      "Bilingual aliases can improve the reported cases without establishing that Run must match all Windows Search behavior."
+    ],
+    "analysis": "Enough concrete examples exist for maintainer-side locale testing. Do not ask for logs or repeat the supplied screenshots; first identify the provider and missing alias in the current build.",
+    "initial_investigation": [
+      "Read the full report, its sole maintainer comment and the empty cross-reference timeline.",
+      "Current WindowsSettings Main.Query filters its catalog by names/areas; it is not a pass-through query to Windows Search.",
+      "Current ShellLocalization.GetLocalizedName retrieves localized shell display names and caches them, providing an existing mechanism to evaluate for folder aliases.",
+      "Direct issue-number PR search found no match; this does not prove no other localization work exists."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Current provider attribution and alias coverage for each of the two supplied French queries.",
+        "why_needed": "Selects a folder metadata change versus a Settings catalog/matching change.",
+        "how_to_collect": "Maintainer: reproduce on French Windows, isolate the relevant Run plugins, and inspect result-provider metadata for the supplied queries."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-french-provider-coverage",
+      "type": "reproduce",
+      "label": "Compare French known-folder and settings queries",
+      "reproduce": {
+        "title": "French and English query aliases in PowerToys Run",
+        "module": "PowerToys Run",
+        "version_requirement": "Current build; original report used 0.81.1.",
+        "prerequisites": [
+          "A Windows user profile with French display language and the normal Downloads known folder.",
+          "Run folder/indexing and Windows Settings plugins enabled; record which provider supplies each result."
+        ],
+        "steps": [
+          "Compare téléchargements and downloads in Windows Search and PowerToys Run, recording whether each returns the same Downloads location.",
+          "Repeat with the French screen-resolution term used by Windows Settings and inspect the matching Settings catalog entry.",
+          "Isolate relevant plugins to determine which provider is missing each result.",
+          "Compare localized display names, canonical paths and available alternate-name metadata before choosing a patch."
+        ],
+        "expected_result": "The scoped folder and settings examples should resolve through supported localized/neutral aliases and activate the correct destination; full Windows Search parity is not assumed."
+      }
+    },
+    {
+      "id": "approve-localized-alias-plan",
+      "type": "approve_design",
+      "label": "Approve localized search-alias plan",
+      "note": "Lightweight hypothesis; first confirm provider attribution and current alias coverage."
+    }
+  ]
 }

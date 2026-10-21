@@ -1,33 +1,123 @@
 {
+  "schemaVersion": 5,
   "number": 35204,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Workspaces cannot handle updated app versions",
+  "url": "https://github.com/microsoft/PowerToys/issues/35204",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "confidence": "Yellow",
+  "generated_at": "2026-10-20T23:31:24.37Z",
+  "evaluated_at": "2026-10-20T23:31:24.37Z",
   "source_updated_at": "2024-10-10T17:38:33Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Scoop portable apps use version-specific paths removed after cleanup, breaking saved Workspaces."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design stable Workspaces app paths",
+    "reason": "Inspect captured path persistence and safe stable-alias resolution."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a repeatable failure and says old binaries remaining on disk mask it. A saved workspace pointing to a version-specific executable is plausible; inspect current code before choosing stable path or alias behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reporter lists Scoop portable Vivaldi, Zotero, and Foxit PDF Reader.",
+      "Failure occurs after update moves binaries and Scoop cleanup removes the old directory.",
+      "Workspace works while old binaries remain; editor later shows red X/no identity.",
+      "Reporter supplied a diagnostic ZIP and proposed shortcuts or manual paths.",
+      "No linked fix PR found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Investigate saved executable identity/path and design stable re-resolution for portable versioned apps.",
+    "evaluated_at": "2026-10-20T23:31:24.37Z",
     "source_updated_at": "2024-10-10T17:38:33Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The versioned-path failure is within Workspaces restore behavior and no linked public fix attempt was found; this is a focused candidate, not a confirmed implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve Workspaces entries to a stable executable after app updates",
+      "root_cause": "When Workspaces captures a running portable application, it likely stores the executable path inside the current version directory. Removing that directory invalidates the saved path even if a stable shortcut or alias remains.",
+      "plan": [
+        "Inspect Workspaces capture, persistence, and restore paths to confirm what identity/path is saved for unpackaged apps.",
+        "On restore, resolve a stable shortcut/alias or user-configured path when the captured executable is missing; do not silently launch an unrelated PATH match.",
+        "Add tests for a versioned path changing while a stable alias points to the new version, plus an unresolved-path case."
+      ],
+      "verification": [
+        "Capture a workspace with a versioned portable app, update it, remove the old version, and restore.",
+        "Verify the current alias launches the intended app, while missing or ambiguous targets are reported without launching the wrong executable."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "Reporter gives a deterministic condition and says retaining the old binary masks it, implicating stale paths; restore code and safe fallback semantics remain to be confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces stops restoring portable Scoop applications after an update changes the executable directory and cleanup removes the captured old binary.",
+    "known_information": [
+      "Report lists PowerToys 0.85.0 and portable apps installed through Scoop.",
+      "Reporter names Vivaldi, Zotero, and Foxit PDF Reader.",
+      "Failure follows update into a new version directory and cleanup of the old one.",
+      "Workspace works while old binaries remain; editor displays red X/no identity after cleanup.",
+      "Reporter provided a diagnostic ZIP and asks about shortcuts or manually specified paths."
+    ],
+    "inferences": [
+      "Workspace capture likely persists a version-specific executable path for these unpackaged apps.",
+      "A stable alias or explicit path may permit relaunch, but safe resolution semantics need design."
+    ],
+    "analysis": "Retaining the previous binary masks the failure, supporting a stale-path explanation. Investigate path persistence; no additional generic diagnostics are needed.",
+    "initial_investigation": [
+      "Read full issue and all three comments, including app names and cleanup condition.",
+      "Noted the attached report and that the prior request for logs/app names was answered.",
+      "Searched related PowerToys PRs by issue number; no linked fix found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-workspaces-stable-path-35204",
+      "type": "approve_design",
+      "label": "Design stable Workspaces app paths",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve fork-side investigation of captured executable-path persistence and safe re-resolution; this does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Scoop app update path failure",
+      "reproduce": {
+        "title": "Restore a Workspace after a Scoop app update",
+        "module": "Workspaces",
+        "version_requirement": "Current stable PowerToys build",
+        "prerequisites": [
+          "Use a Scoop portable app whose executable path contains its version directory.",
+          "Capture a workspace while the application is running."
+        ],
+        "setup": [],
+        "steps": [
+          "Update the app so its executable moves to a new version directory.",
+          "Run Scoop cleanup to remove the old captured executable.",
+          "Open the saved workspace and observe whether the current executable is resolved.",
+          "Compare with a run where the old directory remains."
+        ],
+        "expected_result": "Workspaces launches the intended current executable through a stable alias/path or clearly reports no safe target; it must not silently use an obsolete or unrelated executable."
+      }
+    }
+  ]
 }

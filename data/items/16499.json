@@ -1,33 +1,118 @@
 {
+  "schemaVersion": 5,
   "number": 16499,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:29:29.61041Z",
+  "evaluated_at": "2026-10-20T23:29:29.61041Z",
   "source_updated_at": "2024-06-07T19:46:33Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce hybrid-GPU editor failure",
+    "detail": "Two reports were supplied; the extracted stack is a WPF render-thread failure on the secondary monitor."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare GPU rendering paths",
+    "reason": "The author already answered the driver-update question; isolate the rendering backend rather than asking again."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The secondary-monitor layout editing sequence, hybrid-GPU topology and concrete UCEERR_RENDERTHREADFAILURE stack support a maintainer-side rendering comparison. The author supplied the follow-up report and explained that drivers were already current.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The primary monitor uses Radeon RX 570; the secondary uses Intel i5-8400 integrated graphics.",
+      "https://github.com/microsoft/PowerToys/issues/16499#issuecomment-1048540901 extracts UCEERR_RENDERTHREADFAILURE (0x88980406) in WPF composition.",
+      "https://github.com/microsoft/PowerToys/issues/16499#issuecomment-1055663423 supplies the requested newer report after 0.56.1 also exits.",
+      "https://github.com/microsoft/PowerToys/issues/16499#issuecomment-1065321885 explains the installed drivers and rejects unnecessary driver changes."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with two GPU-driven monitors and compare hardware/software rendering in an isolated diagnostic build.",
+    "evaluated_at": "2026-10-20T23:29:29.61041Z",
     "source_updated_at": "2024-06-07T19:46:33Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The render-thread stack justifies investigating editor rendering resilience. It does not prove a GPU-driver defect or justify declaring external ownership."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate and mitigate FancyZones Editor composition failure",
+      "root_cause": "Hypothesis: WPF hardware composition fails when the editor renders added zones on the Intel-driven secondary monitor in a mixed-GPU system. The WPF render-thread failure is confirmed; the specific hardware/driver interaction is not.",
+      "plan": [
+        "Reproduce adding/resizing zones on each monitor with the reported topology, collecting the exception signature from both supplied reports and a current build.",
+        "Use an isolated diagnostic build of src/modules/fancyzones/FancyZonesEditor to compare normal WPF rendering with software rendering; do not change the machine's global rendering settings.",
+        "If the backend comparison confirms the hypothesis, design a narrowly scoped supported fallback or recovery path and preserve the unsaved layout during failure; do not attempt to resume a fatally failed WPF render thread by swallowing the exception.",
+        "Add coverage for layout-state preservation and verify any fallback on both GPUs before deciding whether runtime/driver escalation is needed."
+      ],
+      "verification": [
+        "Create, add, resize, save and reopen layouts independently on both monitors without crashing or losing zones.",
+        "Compare hardware and diagnostic software rendering; record if the exception persists so an ineffective fallback is not shipped."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The stack locates a rendering failure, but there is no controlled backend comparison and a fallback may not address the underlying cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones Editor crashes or exits while adding zones on the secondary, integrated-GPU monitor, losing unsaved changes.",
+    "known_information": [
+      "Reported on 0.55.2 and again on 0.56.1, Windows 10 21H1.",
+      "The author supplied both requested diagnostic archives.",
+      "The extracted stack identifies WPF composition failure.",
+      "The author says drivers are already current; the issue is open and unassigned."
+    ],
+    "inferences": [
+      "Hybrid-GPU composition is a useful discriminator, not a confirmed external hardware fault."
+    ],
+    "analysis": "There is sufficient public environment detail for a targeted maintainer experiment. Repeating the generic ZIP or driver request would ignore the responses.",
+    "initial_investigation": [
+      "Read the report and all eight comments, including the newer report and driver response.",
+      "No linked concrete fix appears in the issue timeline.",
+      "The supplied stack originates in WPF composition rather than a demonstrated zone-count validation exception."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-hybrid-gpu",
+      "type": "reproduce",
+      "label": "Compare editor hardware/software rendering",
+      "reproduce": {
+        "title": "Secondary-monitor zone editing render failure",
+        "module": "FancyZones Editor",
+        "version_requirement": "Compare historical 0.55.2/0.56.1 evidence with a current supported build.",
+        "prerequisites": [
+          "Two physical monitors, one on Intel integrated graphics and one on a discrete GPU",
+          "Record GPU drivers and display arrangement; preserve existing layouts."
+        ],
+        "steps": [
+          "1. Create a new layout for the secondary Intel-driven monitor.",
+          "2. Add several zones, then resize and reposition them and save.",
+          "3. Repeat on the primary monitor and compare the exception signature to the supplied WPF stack.",
+          "4. In an isolated diagnostic build, repeat with WPF software rendering and compare stability and save persistence."
+        ],
+        "expected_result": "Editing and saving succeeds on both monitors; the comparison establishes whether backend selection changes the failure.",
+        "attachments": [
+          {
+            "label": "Extracted rendering stack",
+            "url": "https://github.com/microsoft/PowerToys/issues/16499#issuecomment-1048540901"
+          },
+          {
+            "label": "Follow-up report",
+            "url": "https://github.com/microsoft/PowerToys/issues/16499#issuecomment-1055663423"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-editor-rendering",
+      "type": "approve_design",
+      "label": "Review provisional editor rendering plan",
+      "note": "Prove the backend distinction before selecting a mitigation."
+    }
+  ]
 }

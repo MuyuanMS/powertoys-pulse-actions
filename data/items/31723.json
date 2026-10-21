@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 31723,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
   "source_updated_at": "2024-04-17T12:26:54Z",
+  "title": "Window placement and zones messed up on secondary monitor state change (but not even used for the desktop)",
+  "url": "https://github.com/microsoft/PowerToys/issues/31723",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "HDMI/receiver transitions and follow-up work-area symptoms justify topology reproduction."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Correlate FancyZones placement with final display topology and taskbar work area."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The original HDMI standby/handshake sequence is detailed and a diagnostic ZIP is attached. Later comments describe taskbar work-area symptoms and a taskbar-toggle workaround, making topology/work-area ordering testable but not confirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.79.0; primary display in use, secondary TV/AV receiver connected but not active; standby/wake causes HDMI handshake.",
+      "Windows placement, size/zoom and sometimes zones become incorrect; report ZIP attached.",
+      "Follow-ups mention taskbar reserved space and display transitions; latest reporter comment supports the general transition scenario.",
+      "Live OPEN, Issue-Bug / Product-FancyZones, no assignee."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce HDMI receiver standby/wake and correlate monitor bounds, work area, and FancyZones placement.",
+    "evaluated_at": "2026-10-20T20:09:08Z",
     "source_updated_at": "2024-04-17T12:26:54Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix or assignee. Stale topology/work-area updates are plausible; Windows taskbar behavior may contribute."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reconcile FancyZones placement after secondary-display handshakes",
+      "root_cause": "FancyZones may process a display notification before monitor bounds and taskbar work area settle, then use intermediate geometry for saved zone placement.",
+      "plan": [
+        "Reproduce standby/wake with the inactive HDMI TV/receiver and capture display/work-area and window bounds before and after each handshake.",
+        "Trace FancyZones display-change/window relocation against OS taskbar work-area updates.",
+        "If ordering is confirmed, recompute against stable final topology instead of applying saved zones during an intermediate state.",
+        "Cover repeated topology notifications, inactive displays, and taskbar work-area changes."
+      ],
+      "verification": [
+        "Repeat TV/receiver standby-wake and verify window positions, sizes, zoom and zone bounds remain valid.",
+        "Confirm final zones do not extend behind taskbar or use intermediate geometry."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The trigger and work-area follow-up are concrete, but available discussion does not isolate FancyZones from Windows topology/taskbar reporting."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones placement becomes unreliable when an inactive HDMI-connected TV/receiver changes standby state; a commenter also reports taskbar work-area symptoms after monitor transitions.",
+    "known_information": [
+      "Reporter details PowerToys 0.79.0, primary display, and connected but unused secondary TV/AV receiver whose standby state triggers HDMI handshakes.",
+      "Placement, size/zoom and sometimes zone movement are affected; a PowerToys report ZIP is attached.",
+      "Three comments include taskbar reserved-space symptoms and a toggle workaround; latest reporter comment notes similar display transitions.",
+      "Live OPEN, Issue-Bug / Product-FancyZones, unassigned."
+    ],
+    "inferences": [
+      "FancyZones may act on intermediate monitor/work-area geometry, but Windows taskbar behavior could explain part of the symptom."
+    ],
+    "analysis": "The existing topology sequence supports a maintainer reproduction; recording final monitor bounds and work area is more discriminating than a generic log request.",
+    "initial_investigation": [
+      "Reviewed body and all three comments through 2024-04-17T12:26:54Z, including reporter's final note.",
+      "Taskbar toggle workaround suggests an OS work-area dimension but does not prove the FancyZones cause.",
+      "Product-FancyZones identifies ownership; no assignee or linked fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-31723",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused FancyZones display-transition investigation; no upstream write."
+    },
+    {
+      "id": "reproduce-31723",
+      "type": "reproduce",
+      "label": "Reproduce FancyZones HDMI transitions",
+      "reproduce": {
+        "title": "Observe zones across TV/receiver standby",
+        "module": "FancyZones",
+        "version_requirement": "Current development build; compare 0.79.0 if available",
+        "prerequisites": [
+          "Primary display and HDMI-connected TV/AV receiver as secondary display",
+          "Secondary display connected but not active in desktop",
+          "FancyZones enabled with zoned windows"
+        ],
+        "setup": [
+          "Record monitor/work-area geometry and taskbar configuration before testing."
+        ],
+        "steps": [
+          "Note zone and window placement while TV/receiver is in standby.",
+          "Wake the TV/receiver; wait for Windows to settle and inspect monitor bounds, taskbar work area, window placement and zones.",
+          "Return it to standby and repeat; note whether any changed OS bounds precede FancyZones movement."
+        ],
+        "expected_result": "Placement follows final OS geometry after each handshake; no unexpected resize, shift or zones behind taskbar."
+      }
+    }
+  ],
+  "generated_at": "2026-10-20T20:09:08Z",
+  "evaluated_at": "2026-10-20T20:09:08Z"
 }

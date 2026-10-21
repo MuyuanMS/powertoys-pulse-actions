@@ -2,32 +2,105 @@
   "number": 33758,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "schemaVersion": 5,
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:37:06.6904448Z",
+  "evaluated_at": "2026-10-20T23:37:06.6904448Z",
   "source_updated_at": "2024-07-11T03:59:55Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔌",
+    "label": "MWB connection state missing",
+    "detail": "0.82.0 mouse crossing and clipboard both fail; a supplied ZIP and screenshot do not by themselves establish which connection phase fails."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🔌",
+    "label": "Request peer connection transition",
+    "reason": "Distinguish initial pairing failure from a connection that stops recovering after upgrade or sleep."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "33758-peer-transition",
+      "type": "request_info",
+      "label": "Request peer connection transition",
+      "comment": {
+        "body": "Thanks for the 0.82.0 screenshot and PowerToysReport_2024-07-10-14-29-33.zip; the follow-up also places the symptom after upgrading to 0.82.0. Because mouse crossing and clipboard both fail, we first need to identify whether a working peer connection was lost or pairing never completes.\n\nPlease provide:\n1. On the latest stable PowerToys, the version and MWB service-mode state on each PC, the connection status each peer displays while crossing fails, and whether these two PCs ever worked together before the failure.\n2. Without changing keys or firewall rules, try Refresh connections once on the affected side. Does it restore crossing and clipboard, and did the failure follow upgrade, sleep, lock, or a network change?\n\nRecord the sequence as a short numbered reply; a cropped MWB status screenshot from each PC is useful if the status wording is unclear. Hide device names and security keys. This separates connection establishment from the reconnect path; please do not resend the existing ZIP just to answer these questions."
+      }
+    },
+    {
+      "id": "33758-reconnect-plan",
+      "type": "approve_design",
+      "label": "Approve MWB reconnect investigation",
+      "note": "Conditional candidate only; do not assume the tracking overview confirms this report's cause."
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The public report confirms a broad MWB failure after 0.82.0, but lacks the pairing-versus-reconnect transition needed to choose a safe code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report includes a screenshot and diagnostic ZIP; mouse crossing and clipboard are both unavailable.",
+      "A second user reports the same symptom after upgrading: https://github.com/microsoft/PowerToys/issues/33758#issuecomment-2221975119",
+      "Public tracking overview #51077 distinguishes pairing, reconnect and settings causes; it is not itself a fixing PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request both peers' connection transition and one Refresh connections comparison before choosing the reconnect candidate.",
+    "evaluated_at": "2026-10-20T23:37:06.6904448Z",
     "source_updated_at": "2024-07-11T03:59:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Reconnect recovery is a plausible code path, but no direct fixing PR or active assignee was found. Existing connectivity tracking must inform, not be mistaken for, a completed fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover a missing MWB peer connection instead of silently refusing crossing",
+      "root_cause": "Hypothesis: a peer socket lost during the upgrade/lifecycle transition is not re-established, so crossing and clipboard both lack a connected target. Initial pairing, name resolution and key mismatch remain alternatives.",
+      "plan": [
+        "Use the peer-state reply and existing diagnostics to determine whether the peers previously connected and whether Refresh connections restores them.",
+        "If the no-socket reconnect path is confirmed, trace MouseWithoutBorders SocketStuff.cs UpdateTCPClients and Common.cs reconnect signaling against #51077; add a bounded recovery trigger for configured disconnected peers outside the low-level input hook.",
+        "Prevent overlapping retry/reopen operations and retain backoff/cancellation on shutdown; test reconnect without key changes and ensure pairing errors are not hidden."
+      ],
+      "verification": [
+        "Use two physical PCs with matching versions; verify initial pairing, then loss/recovery across sleep, lock and a brief network interruption.",
+        "Verify both mouse crossing and clipboard recover without restarting PowerToys; separately verify invalid credentials remain a clear failure."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The reconnect mechanism is documented in related work, but this issue has not established that a connection ever existed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders 0.82.0 cannot transfer pointer control or clipboard to another device. A second user reports an upgrade-related onset.",
+    "known_information": [
+      "The report already supplies a screenshot and diagnostic archive.",
+      "The reporter ran non-elevated; peer versions, service mode and connection transition are not described in text.",
+      "Live issue is open, labeled Issue-Bug/Product-Mouse Without Borders, and unassigned."
+    ],
+    "inferences": [
+      "Both functions failing suggests a shared connection/target problem rather than a clipboard-only defect.",
+      "A reconnect defect is plausible only if the peers previously connected; the current report does not establish that."
+    ],
+    "analysis": "The bot's similar issues and #51077 group heterogeneous causes. A targeted two-peer status/Refresh comparison can select the correct branch without requesting diagnostics already supplied or presuming active ownership.",
+    "initial_investigation": [
+      "Read the complete report and both comments, including the bot's related-work list.",
+      "Enumerated cross-references and inspected #51077's pairing/reconnect/settings cause breakdown; no directly covering fixing PR appeared.",
+      "The overview identifies UpdateTCPClients and reconnect signaling as the no-socket recovery boundary; this issue's mapping to that path remains unconfirmed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "Both PCs' tested versions, MWB service-mode state, displayed peer connection status and prior successful pairing.",
+        "why_needed": "Distinguishes peer configuration/initial pairing from a lost established connection.",
+        "how_to_collect": "Reply with these specific fields from MWB Settings on each PC; crop screenshots and hide keys/device names rather than sharing complete settings files."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "Lifecycle event preceding the failure and whether one Refresh connections restores both functions.",
+        "why_needed": "Tests the missing reconnect-trigger hypothesis.",
+        "how_to_collect": "Give a short numbered transition sequence and one Refresh comparison without changing keys or firewall rules."
+      }
+    ]
   }
 }

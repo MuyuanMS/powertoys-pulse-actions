@@ -2,32 +2,118 @@
   "number": 3641,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-19T21:15:30Z",
+  "generated_at": "2026-10-20T20:11:11Z",
+  "evaluated_at": "2026-10-20T20:09:56Z",
+  "source_updated_at": "2026-10-11T16:50:10Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix hypothesis; canonical issue remains open",
+    "detail": "#35987 is closed as a duplicate of this still-open AltGr issue."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Reproduce AltGr remap on current layout",
+    "reason": "Check whether a paired Ctrl event survives RightAlt remapping on a current international layout."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "approve-altgr-design-3641",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve focused fork-side investigation after current-layout reproduction; no upstream write."
+    },
+    {
+      "id": "reproduce-altgr-3641",
+      "type": "reproduce",
+      "label": "Reproduce AltGr remap on current layout",
+      "reproduce": {
+        "title": "Test Right Alt remapping for AltGr",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current PowerToys development build on supported Windows",
+        "prerequisites": [
+          "Use Norwegian or another layout where AltGr+2 produces @.",
+          "Enable Keyboard Manager and configure AltGr/RightAlt→regular Alt."
+        ],
+        "setup": [],
+        "steps": [
+          "With remapping off, press AltGr+2 and confirm the layout character.",
+          "Enable RightAlt/AltGr→Alt and repeat AltGr+2.",
+          "Test ordinary Ctrl+Alt+2 and plain right-Alt shortcuts; record whether AltGr is distinguished."
+        ],
+        "expected_result": "Remapped AltGr acts as regular Alt, while ordinary Ctrl+Alt and other right-Alt shortcuts remain correct."
+      }
+    }
+  ],
+  "confidence": "Yellow",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report explains AltGr behavior on an international layout. Latest duplicate activity resolves in favor of #3641: #35987 is closed with a comment pointing here, while #3641 remains open. Ctrl+RightAlt representation is plausible but unconfirmed for the reporter's Norwegian keyboard.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Open Issue-Bug, Priority-1, Product-Keyboard Manager; no assignee.",
+      "Body reports Windows 10.0.18363.836/PowerToys 0.18.1, Norwegian layout, RightAlt/AltGr→Alt, but AltGr+2 still types @; screenshots are included.",
+      "On 2026-04-19 #3641 was discussed as duplicate of #35987, but #35987 is now closed and its latest maintainer comment says duplicate of #3641; #3641 remains open.",
+      "An April 2026 commenter says German hardware emits Left Ctrl+Right Alt for AltGr; this supports testing, not proof of Norwegian event stream."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-19T21:15:30Z"
-  }
+    "recommended_action": "Treat #3641 as canonical and reproduce AltGr→Alt on current code, checking whether paired Ctrl survives the remap.",
+    "evaluated_at": "2026-10-20T20:09:56Z",
+    "source_updated_at": "2026-10-11T16:50:10Z"
+  },
+  "title": "[KBM] Mapping ALT GR to ALT doesn't work",
+  "url": "https://github.com/microsoft/PowerToys/issues/3641",
+  "labels": [
+    "Issue-Bug",
+    "Priority-1",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "#35987 is closed as a duplicate of #3641, not a separate fix; no linked PR is recorded. A plausible input-normalization hypothesis remains to test."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Normalize AltGr input before remapping Right Alt",
+      "root_cause": "Hypothesis: some international layouts represent AltGr as Ctrl+RightAlt, so a RightAlt-only mapping leaves Ctrl active and the layout still generates AltGr characters. The original Norwegian event stream is unconfirmed.",
+      "plan": [
+        "Reproduce AltGr+2 before/after RightAlt→Alt on current PowerToys with Norwegian or equivalent layout; record observed modifiers.",
+        "Trace whether Ctrl is physical, synthesized or layout-generated and how Keyboard Manager applies the RightAlt remap.",
+        "If paired AltGr is confirmed, normalize the pair at the remap boundary and test without changing ordinary Ctrl+Alt behavior."
+      ],
+      "verification": [
+        "After remapping, AltGr+2 behaves as regular Alt rather than producing @, while the intended Ctrl+Alt sequence still yields the layout character.",
+        "Verify plain right-Alt shortcuts and left/right Ctrl/Alt key-up behavior remain correct."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "Concrete report and a related German-layout comment support the hypothesis, but do not confirm the Norwegian keyboard's event stream."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a Norwegian keyboard, mapping AltGr (detected as Right Alt) to regular Alt does not stop AltGr+2 from typing @.",
+    "known_information": [
+      "Open Issue-Bug, Priority-1, Product-Keyboard Manager; no assignee.",
+      "Body reports Windows 10.0.18363.836/PowerToys 0.18.1 and includes mapping screenshots.",
+      "Reporter expects AltGr+2 to behave as regular Alt+2; it still produces @.",
+      "#35987 is closed and its latest comment points back to #3641, which remains open."
+    ],
+    "inferences": [
+      "A paired Ctrl+RightAlt representation may survive remapping, but original layout events are unknown.",
+      "The current issue states identify #3641 as canonical despite contradictory earlier duplicate notes."
+    ],
+    "analysis": "The expected/actual behavior is concrete; maintainer-side layout reproduction is more useful than requesting generic logs. Keep the hypothesis yellow because the paired modifier evidence comes from another layout.",
+    "initial_investigation": [
+      "Read full issue and comments, labels, assignees and updatedAt.",
+      "Checked #35987 live: closed with latest comment identifying #3641 as duplicate target; #3641 remains open.",
+      "Reviewed public note about German Ctrl+RightAlt representation as a clue only."
+    ],
+    "information_gaps": []
+  },
+  "schemaVersion": 5
 }

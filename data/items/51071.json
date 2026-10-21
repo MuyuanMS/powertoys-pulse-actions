@@ -1,0 +1,129 @@
+{
+  "track": "triage",
+  "stage": "awaiting_design_approval",
+  "source_updated_at": "2026-10-07T06:37:56Z",
+  "title": "Cannot reassign \"Shortcut to toggle Easy Mouse\" after using \"Clear\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/51071",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "pending_author": false,
+  "status": {
+    "glyph": "🎯",
+    "label": "Shortcut editor clear-state fix candidate",
+    "detail": "The report isolates Clear-then-reassign and includes a diagnostic ZIP and screenshots."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter supplies a reproducible sequence and controls: an existing shortcut works, Clear removes it, then the editor accepts no keys; a never-assigned field and direct replacement still work. Current ShortcutControl code clears to empty HotkeySettings and refreshes displayed keys, but this inspection does not prove why capture stops. A focused reproduction should establish whether keyboard-hook/focus state is lost before correction.",
+    "evidence": [
+      "PowerToys 0.101.2362 from GitHub; Mouse Without Borders settings.",
+      "Numbered assign → Clear → reassign steps.",
+      "After Clear no tested key/modifier is detected; initially empty assignment and direct replacement work.",
+      "Diagnostic ZIP and two screenshots are attached; US keyboard and Japanese display language reported.",
+      "No comments, duplicate link, assignee, or linked fix."
+    ],
+    "recommended_action": "Reproduce in the shared shortcut control, compare hook/focus state after Clear versus direct replacement, and add coverage before selecting a fix.",
+    "evaluated_at": "2026-10-20T20:10:01.27Z",
+    "source_updated_at": "2026-10-07T06:37:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Settings fix appears applicable if the editor loses keyboard-capture state after clearing; the precise focus/hook failure is not confirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep the hotkey editor listening after Clear",
+      "root_cause": "Hypothesis: clearing a populated shortcut resets HotkeySettings but leaves shortcut-editor capture/focus or keyboard-hook state stale, preventing new key events. The sequence isolates Clear, but no trace confirms the state mismatch.",
+      "plan": [
+        "Reproduce existing binding → Clear → new binding and compare active ShortcutControl hook, dialog focus, and key callbacks against an initially empty field and direct replacement.",
+        "Ensure Clear resets only the saved key value while preserving or re-establishing active capture until the editor is dismissed.",
+        "Add UI regression coverage that clears an existing Easy Mouse shortcut and successfully assigns a supported new combination."
+      ],
+      "verification": [
+        "On a current build, assign a shortcut, clear it, and immediately try Ctrl+Alt+M, Shift+M, and another supported combination.",
+        "Compare with assigning an initially empty field and directly replacing an existing shortcut.",
+        "Run focused Settings UI validation; confirm dismissing after Clear preserves the empty value."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The sequence is clear, but no source trace identifies whether hook, focus, or key validation is responsible; the fix depends on reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Clearing an existing Easy Mouse shortcut removes its value but leaves the editor unable to capture a replacement combination.",
+    "known_information": [
+      "PowerToys v0.101.2362, GitHub installation, Mouse Without Borders.",
+      "Existing shortcut works before Clear.",
+      "After Clear the editor accepts no tested key; initially empty assignment and direct replacement still work.",
+      "Reporter provides screenshots, diagnostic ZIP, US keyboard layout, Japanese display language.",
+      "No comments, assignees, or linked fix/duplicate."
+    ],
+    "inferences": [
+      "The contrast suggests a transition-specific editor state issue, not unsupported keys.",
+      "Keyboard capture/focus is a candidate mechanism, not confirmed."
+    ],
+    "analysis": "The report is concrete enough for maintainer UI reproduction. Current ShortcutControl clear handling writes an empty HotkeySettings and refreshes displayed keys; this does not prove the hook is disabled. Compare event/focus state rather than ask for another diagnostic.",
+    "initial_investigation": [
+      "Read full issue body, labels/assignees, and attachment links; no discussion comments.",
+      "Inspected current ShortcutControl clear handler: C_ClearClick writes empty HotkeySettings and calls SetKeys; this alone does not explain lost input.",
+      "Current source history shows PR #49662 (2026-09-18) changed shortcut editor keyboard handling; no fix is linked from this issue.",
+      "Targeted upstream search found no other issue with this exact clear-then-reassign symptom."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-shortcut-clear-state-51071",
+      "type": "approve_design",
+      "label": "Design shortcut editor clear-state fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused Settings-side design after capture/focus state is verified."
+    },
+    {
+      "id": "reproduce-shortcut-clear-reassign-51071",
+      "type": "reproduce",
+      "label": "Reproduce Clear then reassign",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Settings - Mouse Without Borders shortcut editor",
+        "version_requirement": "PowerToys 0.101.2362 or current build; record exact version",
+        "prerequisites": [
+          "Open Settings to Mouse Without Borders.",
+          "Use a supported combination and US keyboard layout as reported.",
+          "Keep shortcut editor dialog focused."
+        ],
+        "steps": [
+          "Assign a supported shortcut to “Shortcut to toggle Easy Mouse” and verify it works.",
+          "Open editor, press Clear, confirm value is empty.",
+          "Without closing the editor, press Ctrl+Alt+M and observe if any key is captured.",
+          "Repeat with Shift+M and another supported combination.",
+          "Compare with an initially empty field and direct replacement without Clear.",
+          "Trace keyboard-hook activation, focus, and KeyDown callback immediately after Clear."
+        ],
+        "expected_result": "After Clear the value is empty and the active editor continues accepting a valid new combination.",
+        "setup_requirements": [
+          "Record exact build, keyboard layout, and whether dialog remains focused.",
+          "Do not expose private shortcut/configuration values beyond test combinations."
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51071,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:01.27Z",
+  "evaluated_at": "2026-10-20T20:10:01.27Z",
+  "revalidation_history": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No upstream or fork issue/PR writes were made."
+  }
+}

@@ -2,32 +2,115 @@
   "number": 27612,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-27T00:19:10Z",
+  "generated_at": "2026-10-20T16:45:28Z",
+  "evaluated_at": "2026-10-20T16:45:28Z",
+  "source_updated_at": "2026-10-16T11:11:25Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "detail": "The newest report documents two episodes and captures LWin/LAlt logically down after direct Advanced Paste Alt+Win+V plain-text paste, followed later by all modifiers up. It also identifies a possible restore-input race in AdvancedPasteModuleInterface/dllmain.cpp, but the ordering was not captured and Keyboard Manager interaction was not isolated. Treat this as a red hypothesis, not a confirmed cause.",
+    "glyph": "🎯",
+    "label": "Design candidate"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Instrument modifier restore decisions and reproduce physical release timing around Advanced Paste injection; compare Keyboard Manager enabled and disabled.",
+  "actions": [
+    {
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "confirm": true,
+      "primary": true,
+      "label": "Review Advanced Paste modifier restoration fix",
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "steps": [
+          "Trigger direct paste and vary when physical Alt/Win are released relative to restore sampling and SendInput.",
+          "Record only restore decisions, requested/sent input counts, and eight modifier-state snapshots.",
+          "Repeat with Keyboard Manager disabled, then with reported LWin+V remap enabled.",
+          "Confirm modifiers return to their pre-activation state."
+        ],
+        "version_requirements": "PowerToys 0.101.2362 or current supported build",
+        "expected_result": "Synthetic restore input does not leave LWin/LAlt down after physical release; no sensitive text or clipboard content is collected.",
+        "module": "Advanced Paste",
+        "prerequisites": [
+          "Use a test environment and direct Paste as plain text Alt+Win+V.",
+          "Compare Keyboard Manager enabled/disabled; do not change security software or collect typed text or clipboard contents."
+        ]
+      },
+      "label": "Trace Advanced Paste modifier restore timing",
+      "type": "reproduce"
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The newest report documents two episodes and captures LWin/LAlt logically down after direct Advanced Paste Alt+Win+V plain-text paste, followed later by all modifiers up. It also identifies a possible restore-input race in AdvancedPasteModuleInterface/dllmain.cpp, but the ordering was not captured and Keyboard Manager interaction was not isolated. Treat this as a red hypothesis, not a confirmed cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On PowerToys 0.101.2362, one snapshot after direct Alt+Win+V paste recorded LWin and LAlt down while other modifiers were up; a later snapshot showed all eight up.",
+      "The detailed report identifies try_inject_modifier_key_restore and later SendInput in AdvancedPasteModuleInterface/dllmain.cpp as a possible ordering race.",
+      "The critical ordering was not captured; Keyboard Manager was enabled and not isolated.",
+      "The report cites related #43220, #42471, and #50127 but does not establish this incident is handled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-27T00:19:10Z"
+    "evaluated_at": "2026-10-20T16:45:28Z",
+    "source_updated_at": "2026-10-16T11:11:25Z",
+    "recommended_action": "Instrument modifier restore decisions and reproduce physical release timing around Advanced Paste injection; compare Keyboard Manager enabled and disabled."
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/27612",
+  "title": "Paste As Plain Text Does Not Play Well With Sticky Keys",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "fix_assessment": {
+    "rationale": "A source-specific correction is plausible, but the key timing and Keyboard Manager interaction remain unverified.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Repeat direct Alt+Win+V plain-text paste with varied release timing and confirm modifiers return to prior state.",
+        "Repeat with the reported LWin+V Keyboard Manager mapping enabled and disabled.",
+        "Confirm ordinary modifier-held paste behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 39,
+        "level": "red",
+        "rationale": "Snapshot and code ordering support a testable hypothesis, but the key ordering was not observed and Keyboard Manager was not isolated."
+      },
+      "title": "Prevent stale modifier restoration after Advanced Paste",
+      "root_cause": "Red hypothesis: the worker may sample Win/Alt as held, queue synthetic restore key-down input, then submit it after physical key-up, leaving logical modifiers down. The ordering is not captured.",
+      "plan": [
+        "Instrument modifier restore decisions and requested/sent SendInput events for direct plain-text paste without collecting typed text or clipboard content.",
+        "Reproduce physical key release at different points between state sampling and SendInput; compare Keyboard Manager enabled and disabled.",
+        "If stale restore input is confirmed, avoid reasserting a modifier released before injection or verify release state at the established boundary.",
+        "Add focused tests for release-before-submit and normal held-modifier behavior."
+      ]
+    }
+  ],
+  "issue_context": {
+    "known_information": [
+      "The 2026-10-16 report documents two episodes; one snapshot recorded LWin and LAlt down, and a later snapshot showed all modifiers up.",
+      "Direct Advanced Paste Alt+Win+V activations were logged near the first episode.",
+      "The report identifies a possible modifier-restore then SendInput path in AdvancedPasteModuleInterface/dllmain.cpp.",
+      "Keyboard Manager was enabled with LWin+V mapped to LCtrl+V; disabling it was not tested.",
+      "The commenter states the ordering and continuous duration were not independently captured."
+    ],
+    "analysis": "The detailed evidence identifies a testable maintainer-side path. Do not ask for generic logs; instrument timing and separate logical-state observation from physical key state.",
+    "summary": "Advanced Paste plain-text paste may leave logical Win/Alt modifiers down after physical release; snapshots support the symptom but do not prove the proposed restore-input race.",
+    "initial_investigation": [
+      "Reviewed full detailed issue comment, incident timestamps, snapshots, enabled mappings, source hypothesis, and collection limits.",
+      "No causal claim is inferred from clean logs or security software presence.",
+      "Related #43220, #42471, and #50127 are cited but do not prove this exact symptom is handled."
+    ],
+    "information_gaps": [],
+    "inferences": [
+      "Synthetic Win/Alt key-down submitted after physical release could match the logical snapshot and tap-to-clear symptom, but this timing is unconfirmed.",
+      "Keyboard Manager may interact, but no conflict is established."
+    ]
   }
 }

@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 34237,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "title": "Run position changes when reopening a retained query",
+  "url": "https://github.com/microsoft/PowerToys/issues/34237",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:34:09Z",
+  "evaluated_at": "2026-10-20T23:34:09Z",
   "source_updated_at": "2024-08-22T21:43:40Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce retained-query placement",
+    "detail": "A maintainer confirmed reproduction. Current placement already uses SearchBox height, so a total-results-height explanation is not established."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Measure activation and layout ordering",
+    "reason": "Compare stable search-field coordinates before and after hiding a query with few results."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Screenshots, retained-query setup and an independent reproduction support local validation. Source inspection narrows investigation to activation/layout ordering rather than assuming the current code centers the whole results panel.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "0.83.0 report disables clear-previous-query, narrows results, hides Run and reopens it; screenshots show changed placement.",
+      "https://github.com/microsoft/PowerToys/issues/34237#issuecomment-2305785906 confirms reproduction.",
+      "MainWindow.MoveToDesiredPosition uses SearchBox.ActualHeight, while MainWindow.xaml uses SizeToContent=Height and a separate ResultList.",
+      "The live issue is open and unassigned; no linked implementation appeared in the reviewed timeline/PR search."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Trace the activation/layout sequence on a current build and validate a stable search-field anchor before implementation.",
+    "evaluated_at": "2026-10-20T23:34:09Z",
     "source_updated_at": "2024-08-22T21:43:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A placement/layout correction is plausible, but the current source contains a search-field-based placement calculation and requires runtime discrimination."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stabilize search-field position across retained-query activation",
+      "root_cause": "Hypothesis: activation calculates or saves placement before the retained-query layout and font/visibility updates settle, allowing SizeToContent or stale layout values to shift the search field. Current code does not simply center using total result-list height.",
+      "plan": [
+        "Trace MainWindow.ViewModel_PropertyChanged, UpdatePosition and MoveToDesiredPosition in src/modules/launcher/PowerLauncher/MainWindow.xaml.cs, recording Top, monitor/DPI, SearchBox.ActualHeight and result count before/after layout.",
+        "If ordering is confirmed, calculate the search-field anchor after the relevant layout settles and prevent transient LocationChanged updates from overwriting remembered placement.",
+        "Preserve the existing PerMonitorV2 placement workaround and RememberLastLaunchLocation semantics; add activation regression coverage for zero, one and many retained results."
+      ],
+      "verification": [
+        "With clear-previous-query disabled, compare search-field screen coordinates across repeated hide/reopen cycles with many, few and zero results.",
+        "Repeat with remember-position on/off, cursor/primary/focus monitor modes and mixed-DPI monitors; confirm no new repositioning or flicker."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The symptom is independently reproducible, but current source counterevidence rules out a simple total-window-height diagnosis; layout tracing is still required."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run reopens at a different position after a retained query reduces its number of results, despite the desired stable search-field location.",
+    "known_information": [
+      "Reported on 0.83.0 with clear-previous-query disabled and screenshots of the sequence.",
+      "A maintainer explicitly reproduced the report; the issue has Status-Reproducible.",
+      "The issue is open and has no assignee."
+    ],
+    "inferences": [
+      "Activation/layout timing remains a possible cause; result count alone does not establish the responsible placement calculation."
+    ],
+    "analysis": "Public evidence is adequate for local reproduction. Preserve the positive reproduction evidence without claiming a confirmed fix or asking the reporter for the same steps.",
+    "initial_investigation": [
+      "Reviewed the entire report, sole discussion comment, timeline and matching PR search.",
+      "Inspected upstream MainWindow.xaml and MainWindow.xaml.cs: separate search/results controls, SizeToContent and placement based on SearchBox.ActualHeight."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-34237",
+      "type": "reproduce",
+      "label": "Measure Run position across retained queries",
+      "primary": true,
+      "reproduce": {
+        "module": "PowerToys Run",
+        "version": "Current stable build; original and confirmed reproduction on 0.83.0",
+        "prerequisites": [
+          "Disable clear-previous-query-on-launch; keep the active monitor and pointer location fixed."
+        ],
+        "steps": [
+          "Open Run, issue a query with many results and record the search-field screen coordinates.",
+          "Extend the query until only a few results remain; record coordinates again.",
+          "Hide Run and reopen it without changing the query or monitor.",
+          "Compare coordinates and trace the placement/layout callbacks; repeat for zero results and remember-position on/off."
+        ],
+        "expected_result": "The search-field anchor remains stable across result counts and reopen cycles, subject only to the configured monitor/remember-position policy."
+      }
+    },
+    {
+      "id": "approve-design-34237",
+      "type": "approve_design",
+      "label": "Approve activation-layout fix investigation",
+      "confirm": true,
+      "note": "Do not replace the existing positioning workaround without reproducing the ordering defect."
+    }
+  ]
 }

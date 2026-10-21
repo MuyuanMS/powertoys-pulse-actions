@@ -1,33 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 26995,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
   "source_updated_at": "2024-04-19T09:46:47Z",
+  "title": "Mouse Without Borders - New key button not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/26995",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 8,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Two user workarounds isolate module activation and legacy standalone installation as test variables."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Compare key generation across fresh activation and legacy MWB states."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "New Key remains blank; recent users report this on 0.77/0.80.1. Toggling MWB from General and uninstalling legacy standalone MWB are separate workarounds, giving maintainers concrete comparison cases without confirming one root cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original 0.70 WinGet report: New Key leaves the text field empty.",
+      "Earlier commenter says uninstalling the original standalone MWB enabled key generation.",
+      "Latest commenter reports v0.80.1 on two machines and says toggling MWB in General fixes it; the toggle on MWB settings page does not.",
+      "Live OPEN, Issue-Bug / Product-Mouse Without Borders, eight comments, unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with fresh module activation and with/without legacy MWB, then trace which state suppresses generation.",
+    "evaluated_at": "2026-10-20T20:09:08Z",
     "source_updated_at": "2024-04-19T09:46:47Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists; stale enablement state or legacy-install interference is plausible, but workarounds conflict and require controlled reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make MWB key generation reliable after activation",
+      "root_cause": "New Key may execute before the current Mouse Without Borders activation/settings state is refreshed, or a legacy standalone install may interfere; the public workarounds do not identify which.",
+      "plan": [
+        "On a clean current build compare New Key immediately, after toggling MWB in General, and after changing its page-level toggle.",
+        "Repeat in an isolated test environment with and without legacy standalone MWB installed.",
+        "Fix the confirmed initialization/conflict branch so the key is displayed or a clear actionable error is shown.",
+        "Cover first activation, enable/disable transitions and legacy conflict if confirmed."
+      ],
+      "verification": [
+        "Verify New Key populates after fresh launch and after General toggle without reinstall workaround.",
+        "Compare clean and legacy-install environments without changing a user's daily-use setup."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "Two different workarounds implicate activation state and legacy conflict, but no maintainer trace identifies the failing branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "MWB's New Key button leaves the field blank; commenters report that toggling the module from General or uninstalling standalone legacy MWB can unblock it.",
+    "known_information": [
+      "Original report: PowerToys 0.70 WinGet, not elevated; New Key did nothing.",
+      "One user says uninstalling original standalone MWB fixed generation.",
+      "Latest commenter: 0.80.1 on two machines; General-page off/on fixes it, while MWB-page toggle does not.",
+      "Live OPEN, Issue-Bug / Product-Mouse Without Borders, eight comments, unassigned."
+    ],
+    "inferences": [
+      "Stale module state and legacy installation conflict are both plausible; different workarounds may represent different cases."
+    ],
+    "analysis": "The comments supply the useful comparison variables; a controlled maintainer test is more valuable than asking for generic logs.",
+    "initial_investigation": [
+      "Reviewed full body and all eight comments through 2024-04-19T09:46:47Z, including latest v0.80.1 workaround.",
+      "No maintainer response, assignee, duplicate or fix link.",
+      "Product-Mouse Without Borders identifies ownership; no source-code cause asserted."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-26995",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused MWB key-generation investigation; no upstream write."
+    },
+    {
+      "id": "reproduce-26995",
+      "type": "reproduce",
+      "label": "Reproduce MWB key generation state",
+      "reproduce": {
+        "title": "Compare New Key across activation and legacy-install states",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Current development build; compare 0.80.1 if available",
+        "prerequisites": [
+          "Windows test account with PowerToys settings",
+          "Isolated clean environment; optional separate environment with legacy standalone MWB"
+        ],
+        "setup": [
+          "Do not uninstall software from a user's daily-use machine; use an isolated test environment for legacy comparison."
+        ],
+        "steps": [
+          "Open MWB settings and click New Key; record whether key appears.",
+          "Toggle MWB off/on from General, return to MWB and click New Key again.",
+          "Repeat in clean and, if available, isolated legacy-install environments; note whether the page toggle differs from General."
+        ],
+        "expected_result": "New Key reliably displays a generated key whenever MWB is enabled; any legacy conflict produces a clear explanation, not a silent no-op."
+      }
+    }
+  ],
+  "generated_at": "2026-10-20T20:09:08Z",
+  "evaluated_at": "2026-10-20T20:09:08Z"
 }

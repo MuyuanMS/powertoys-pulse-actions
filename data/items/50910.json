@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 5,
+  "number": 50910,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T08:49:09Z",
+  "evaluated_at": "2026-10-20T08:49:09Z",
+  "source_updated_at": "2026-10-20T06:59:23Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50910",
+  "title": "Command Palette Dock",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [],
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report includes screenshots and two distinct observations: the Dock can become blank after monitor sleep/wake, and its per-monitor visibility may switch after startup when Windows and Dock settings enumerate the daisy-chained displays in opposite orders. Merged PR #50831 addresses monitor-resume timing, but the newer startup-mapping behavior has not been tested on a build containing that fix. Request one targeted current-build confirmation before designing another fix.",
+    "evidence": [
+      "Reporter identifies PowerToys 0.101.2362.0 and provides three screenshots.",
+      "Dock was initially visible on both displays; after monitors enter power-save and wake, Dock moves to secondary and forcing it back to primary leaves it blank.",
+      "PR #50831 merged 2026-09-28 and changes monitor-resume debounce because a secondary display may still be restoring.",
+      "On 2026-10-20 the reporter added that configured visibility may switch to the other display after startup; Windows and Dock settings show the daisy-chained displays in opposite orders.",
+      "Related #50255/#49604 discuss empty secondary docks; #49604 was later explained as intentional empty independent bands for a new secondary dock, not this resume or startup-mapping behavior."
+    ],
+    "recommended_action": "Ask the reporter to verify whether the physical monitor selected for Dock visibility stays the same after restarting on a build containing PR #50831, and report the version plus the Windows and Dock monitor labels.",
+    "evaluated_at": "2026-10-20T08:49:09Z",
+    "source_updated_at": "2026-10-20T06:59:23Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged PR #50831 is a concrete fix candidate for monitor-resume timing. Its scope does not establish that the reported startup visibility switch caused by differing monitor enumeration is fixed, so request a targeted retest rather than propose competing work.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50831"
+    ]
+  },
+  "issue_context": {
+    "summary": "The Dock can become blank after monitors wake, and its per-monitor visibility may switch after startup on a daisy-chained setup whose Windows and Dock monitor orders appear reversed. A merged monitor-resume fix is relevant, but its coverage of the startup behavior is unknown.",
+    "known_information": [
+      "Open; Issue-Bug, Needs-Triage, Product-Command Palette, CmdPal - Dock; no assignee.",
+      "Reporter identifies 0.101.2362.0 and supplies three screenshot attachments.",
+      "The Dock items were visible on both displays before the later failure.",
+      "After monitor power-save/wake, the Dock reappears on secondary; forcing it to primary leaves it blank.",
+      "Merged PR #50831 increases monitor-change debounce to keep docks during monitor resume.",
+      "The reporter's 2026-10-20 comment says Dock visibility may move to the other monitor after startup and that Windows and Dock settings show opposite monitor orders.",
+      "#49604 describes an intentional empty new secondary Dock; that does not resolve this issue's resume or startup visibility transition."
+    ],
+    "inferences": [
+      "PR #50831 may address the sleep/wake transition, but the reporter has not confirmed testing a build containing it.",
+      "The startup visibility switch could reflect monitor identity/order reconciliation, but the exact cause and whether it shares the resume defect are unconfirmed."
+    ],
+    "analysis": "A targeted current-build retest can distinguish a fixed resume transition from a remaining startup monitor-mapping problem without requesting generic diagnostics. The reporter should identify the same physical display using its Windows and Dock labels before and after restart.",
+    "initial_investigation": [
+      "Read the full body, all three comments, screenshot references, labels, assignees, and timeline.",
+      "Reviewed #50255 and #49604; their empty-secondary reports are not equivalent to the reported Dock movement after sleep.",
+      "Confirmed PR #50831 is merged and changes DockWindowManager monitor-resume handling; its scope does not prove that startup visibility follows physical display identity.",
+      "Owner area: DockWindowManager monitor reconciliation and per-monitor bands in MonitorConfigReconciler, DockViewModel, and DockSettings.",
+      "Checked the configured fork for issue mirrors, PRs, and matching branches; no #50910 trace."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "On a PowerToys build containing PR #50831, does Dock visibility remain assigned to the same physical display after restart, and what labels does Windows and Dock settings show for that display?",
+        "why_needed": "The new report points to reversed monitor enumeration at startup, while PR #50831 covers monitor-resume timing; the retest distinguishes a fixed resume issue from a remaining physical-monitor mapping defect.",
+        "how_to_collect": "Install the latest available PowerToys build, note its version in Settings > General > About, record the physical display selected in Dock settings and its Windows display number, restart, and report whether the same display remains selected. If convenient, repeat the previously reported sleep/wake sequence."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "confirm-50831-monitor-mapping-50910",
+      "type": "request_info",
+      "label": "Confirm dock monitor mapping",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment has been posted.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50910,
+        "body": "Thanks for the screenshots and the additional monitor-order detail. PR #50831 (merged) changes Dock handling while displays resume, but it does not yet establish whether the startup visibility switch is fixed. Please install the latest available PowerToys build, note its version from Settings > General > About, and record which physical display is selected in Dock settings and its Windows display number. After restarting, does Dock visibility remain on that same display, or switch to the other one? Please include the Windows and Dock labels for both displays; this will show whether the remaining issue is monitor mapping rather than only resume timing."
+      }
+    }
+  ]
+}

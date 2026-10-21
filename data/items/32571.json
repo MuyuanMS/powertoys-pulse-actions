@@ -1,33 +1,118 @@
 {
+  "schemaVersion": 5,
   "number": 32571,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:31:05.469552Z",
+  "evaluated_at": "2026-10-20T23:31:05.469552Z",
   "source_updated_at": "2024-06-20T08:23:21Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Profile preview blocking and ownership",
+    "detail": "The author supplied a report and a 30 GB extraction scenario; the later font-file lock may involve a different handler."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare handlers under disk load",
+    "reason": "Determine which registered preview handler blocks before attributing Explorer scheduling or font locking to PowerToys."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author answered 'all previewers', supplied diagnostics and described a concrete large-extraction comparison. A maintainer can test this without another generic evidence request, but the asserted foreground-thread explanation is not confirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/32571#issuecomment-2085439666 supplies the diagnostic ZIP.",
+      "https://github.com/microsoft/PowerToys/issues/32571#issuecomment-2128970472 describes selecting files with preview enabled during 30 GB archive extraction in another Explorer window.",
+      "https://github.com/microsoft/PowerToys/issues/32571#issuecomment-2129059015 says separate-folder processes did not prevent the stall.",
+      "The final comment describes a copied font file remaining locked by preview; PowerToys' preview module list has no dedicated font preview handler."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the disk-load scenario with known PowerToys and built-in handlers, profile the blocked process and separately identify the font lock owner.",
+    "evaluated_at": "2026-10-20T23:31:05.469552Z",
     "source_updated_at": "2024-06-20T08:23:21Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A cancellable preview/lifetime correction is plausible only for an identified PowerToys handler. Generic Explorer load and the font handler must not be assigned to PowerToys without measurement."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound preview work and release obsolete preview resources",
+      "root_cause": "Hypothesis: a handler's synchronous initialization/rendering or stale preview resources block selection under heavy I/O. The font-file lock could be a separate built-in-handler lifetime issue; a common PowerToys root cause is not established.",
+      "plan": [
+        "Identify the registered handler and blocked process for a selected PowerToys-supported file while reproducing the archive-extraction load; compare preview disabled and a built-in handler.",
+        "Trace the confirmed PowerToys handler through src/modules/previewpane and its DoPreview/Unload boundary. Measure parsing, rendering and resource release instead of assuming Explorer and rendering share one foreground thread.",
+        "If confirmed, move only safe expensive parsing off the handler UI path with bounded cancellation, marshal UI/COM operations correctly and cancel obsolete generations when selection changes.",
+        "Verify that Unload releases handler-specific streams/resources; existing common FormHandlerControl.Unload already disposes child controls, so do not claim cleanup is universally absent. Route a separately owned font lock to its actual handler."
+      ],
+      "verification": [
+        "During the 30 GB extraction comparison, Explorer selection remains responsive and stale previews never replace the current selection.",
+        "After selecting another file or closing preview, copying/deleting test files is possible when no application intentionally owns them.",
+        "Compare handlers and disk-load baselines so disk contention alone is not misreported as a PowerToys regression."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "There is a concrete stress scenario but no blocked-thread trace or handler attribution yet."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Explorer preview delays file selection during heavy archive extraction; a later report also describes a font-file lock after copying.",
+    "known_information": [
+      "A diagnostic ZIP and an 'all previewers' answer are already present.",
+      "The 30 GB extraction occurs in a different Explorer window, with separate-process folder launching enabled.",
+      "The report does not identify a specific preview handler or confirm its blocked thread.",
+      "The live issue remains an open, unassigned bug despite its original enhancement-form wording."
+    ],
+    "inferences": [
+      "I/O contention, handler work and Explorer synchronization are competing causes.",
+      "The font example is not sufficient to prove ownership by a PowerToys handler."
+    ],
+    "analysis": "The next uncertainty is maintainer profiling and ownership, not a repeated reporter checklist. Use the supplied stress sequence with controlled file types and a preview-off baseline.",
+    "initial_investigation": [
+      "Read the report and all seven comments.",
+      "Checked the issue timeline; no concrete linked fix is exposed.",
+      "Inspected current upstream previewpane handler directories and common controls: IPreviewHandlerControl defines DoPreview/Unload and FormHandlerControl.Unload already disposes controls; no dedicated font preview handler is listed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "profile-preview-load",
+      "type": "reproduce",
+      "label": "Profile preview handlers during extraction",
+      "reproduce": {
+        "title": "Preview responsiveness and lock ownership",
+        "module": "File Explorer add-ons",
+        "version_requirement": "Record a current PowerToys build and Windows version; the original post does not supply a version.",
+        "prerequisites": [
+          "An isolated test volume with sufficient space for both a 30 GB archive and extraction output",
+          "Known PowerToys-supported preview samples and a legally usable test font",
+          "Existing user files must not be used for deletion tests."
+        ],
+        "setup_prompt": "In a dedicated project test-data directory, prepare an approximately 30 GB ZIP/extraction workload and small valid SVG/Markdown samples. Verify available disk capacity first, do not alter existing files, document cleanup, and include a legally available test font only if already present. Do not perform deletion tests on user data.",
+        "steps": [
+          "1. Record the actual registered preview handler for each sample.",
+          "2. In one Explorer window extract the large test archive; in another enable preview and rapidly change selection among the small samples.",
+          "3. Compare preview disabled and built-in-handler samples while capturing the blocked process/thread and elapsed selection time.",
+          "4. Separately copy the test font, select it with preview enabled, change selection and attempt deletion; identify the holding process rather than assuming it is PowerToys."
+        ],
+        "expected_result": "Selection is responsive, obsolete previews cancel and resources release on unload; identify separately owned stalls or locks.",
+        "attachments": [
+          {
+            "label": "Original diagnostics",
+            "url": "https://github.com/microsoft/PowerToys/issues/32571#issuecomment-2085439666"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-preview-plan",
+      "type": "approve_design",
+      "label": "Review handler-specific responsiveness plan",
+      "note": "Confirm PowerToys ownership and the blocked boundary before changing threading or stream lifetime."
+    }
+  ]
 }

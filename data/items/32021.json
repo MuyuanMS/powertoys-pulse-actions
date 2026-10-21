@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 32021,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-10-20T16:46:00Z",
   "source_updated_at": "2024-04-03T13:21:25Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/32021",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Needs synchronized reconnect evidence",
+    "detail": "Existing logs show repeated close/reopen behavior; endpoint-correlated current failure evidence is needed to distinguish recovery from network/authentication causes."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Request one timestamped two-endpoint Refresh capture",
+    "reason": "The 2024 log and archive are acknowledged; do not ask for undirected logs or repeat already-tried re-pairing."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue reports daily disconnects that previously recovered through Refresh, followed by complete failure despite wired/Wi-Fi and re-pairing attempts. The supplied log contains repeated incoming connections and immediate close/reopen handling, but a one-sided historical log cannot establish which endpoint or network condition initiates it.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body identifies PowerToys 0.77, failed Refresh/re-pairing/name mapping and both wired and Wi-Fi attempts.",
+      "The already-supplied March 21 log was inspected and contains repeated socket receive exceptions, FlagReopenSocketIfNeeded and new connections.",
+      "The exception text explicitly says closure can be expected during desktop switch/reconnection; it is not proof of a specific product defect.",
+      "An April 3 follow-up supplies another PowerToys archive; related reconnect-after-sleep reports and tracker 51077 are not targeted fixes."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Draft the specific current-failure confirmation and synchronized capture request; do not mark waiting on author until a maintainer actually sends it.",
+    "evaluated_at": "2026-10-20T16:46:00Z",
     "source_updated_at": "2024-04-03T13:21:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A conditional reconnect-state correction is worth investigating, but current endpoint-correlated evidence is needed before choosing a code change."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Identify and correct the confirmed MWB reconnect failure",
+      "root_cause": "Unconfirmed: a reconnect/desktop-state transition may repeatedly close an otherwise reachable socket, but remote closure, authentication/configuration disagreement and network/security software remain alternatives.",
+      "plan": [
+        "Correlate the existing close/reopen log pattern with both endpoints around one failed Refresh attempt on a current matching version.",
+        "Trace connection acceptance, authentication outcome, desktop switch and socket reopen ownership to determine why the fresh connection is immediately lost.",
+        "Only if a product state-machine failure is confirmed, correct the responsible reopen/cleanup transition and add its regression; do not blanket-retry authentication failures or weaken security.",
+        "Test stable idle connections, sleep/resume, desktop switches, transient link loss and deliberate invalid-key controls on two physical PCs."
+      ],
+      "verification": [
+        "A failed connection recovers through the intended Refresh/reconnect path once the confirmed trigger clears.",
+        "No rapid repeated close/reopen storm occurs during ordinary connected idle use.",
+        "Deliberate invalid credentials and blocked connectivity remain rejected and diagnosable."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "An actual supplied log confirms the close/reopen pattern, but not its cause, endpoint of origin or continued presence in current builds. The plan deliberately gates any code change on correlated evidence."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders progressed from daily recoverable disconnects to failures that Refresh and re-pairing no longer repair.",
+    "known_information": [
+      "The reporter already tried Refresh, wired/Wi-Fi, re-adding devices and name mapping.",
+      "A detailed March 21 log and a later April 3 archive are supplied.",
+      "The inspected log contains repeated socket closure/reopen events but explicitly notes some closures are expected."
+    ],
+    "inferences": [
+      "Repeated connection acceptance makes simple permanent unreachability an incomplete explanation for that log interval; it does not rule out transport/security problems."
+    ],
+    "analysis": "The old handled classification relied on an empty assignee. A targeted two-endpoint comparison materially helps because the current public record cannot distinguish deliberate remote closure from failed local recovery. Existing historical captures are not ignored.",
+    "initial_investigation": [
+      "Read the complete body and all three comments and the linked-work timeline.",
+      "Read relevant connection-handling/source ownership context and inspected the already-attached March 21 text log in memory.",
+      "Compared related sleep/reconnect reports without treating the broad tracker as a fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the failure still occurs on matching current PowerToys versions, and the result/time of one coordinated Refresh attempt.",
+        "why_needed": "The existing captures are from 2024 and do not identify a shared failing attempt across endpoints.",
+        "how_to_collect": "On the affected pair, record both version numbers, active network type and exact local time with UTC offset for one Refresh attempt; state which endpoint initiated it and what each UI showed."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh capture from each endpoint immediately after that same failed Refresh attempt.",
+        "why_needed": "Correlated module state and connection/desktop events are needed to identify which endpoint closes the accepted connection, rather than infer a cause from one side's expected-close exceptions.",
+        "how_to_collect": "If the current failure remains, comment /bugreport immediately after the coordinated attempt and provide the resulting PowerToys capture from each endpoint, identifying source versus peer and the attempt time."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "design-32021",
+      "type": "approve_design",
+      "label": "Review gated reconnect investigation",
+      "description": "Approve hypothesis testing; no reconnect implementation is justified until the trigger is identified."
+    },
+    {
+      "id": "request-refresh-capture-32021",
+      "type": "request_info",
+      "label": "Request paired /bugreport after one failed Refresh",
+      "comment": {
+        "body": "Thanks for the March 21 connection log and the April 3 archive, and for already testing Refresh, re-pairing, name mapping, wired and Wi-Fi. The text log shows accepted connections followed by close/reopen handling, but those exceptions can also be expected during a desktop switch; one side alone does not tell us why the connection closes.\n\nCould you please provide:\n1. Whether this still occurs with the same current PowerToys version on both PCs, listing both version numbers and the active network type. If it no longer happens, the working versions are enough; no new capture is needed.\n2. If it still fails, make one Refresh attempt and record its exact local time with UTC offset, which PC initiated it and what each PC's connection UI showed.\n3. Immediately after that same failed attempt, comment /bugreport and supply the resulting capture from each PC, labeled source and peer. These paired captures let us correlate authentication, desktop-switch and socket-close events instead of guessing from the older one-sided log. Please review attachments for information you do not wish to share; do not post connection keys."
+      }
+    }
+  ]
 }

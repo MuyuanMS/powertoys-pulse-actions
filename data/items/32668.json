@@ -2,32 +2,119 @@
   "number": 32668,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T20:11:11Z",
+  "evaluated_at": "2026-10-20T20:09:33Z",
   "source_updated_at": "2024-04-30T19:23:04Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix hypothesis; current reproduction needed",
+    "detail": "Explorer opens the containing folder but does not select the program; no current-build confirmation or exact duplicate is established."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Reproduce Explorer selection behavior",
+    "reason": "Verify whether the current Go-to-location command passes the selected executable to Explorer before changing it."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "approve-explorer-select-32668",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve focused fork-side investigation after current reproduction; no upstream write."
+    },
+    {
+      "id": "reproduce-explorer-select-32668",
+      "type": "reproduce",
+      "label": "Reproduce Explorer selection behavior",
+      "reproduce": {
+        "title": "Test Go-to-location file selection",
+        "module": "PowerToys Run",
+        "version_requirement": "Current PowerToys release; original report used 0.80.1",
+        "prerequisites": [
+          "Have an installed program executable in a folder with multiple entries.",
+          "Enable PowerToys Run and its Program plugin."
+        ],
+        "setup": [],
+        "steps": [
+          "Search for the program in PowerToys Run and select its result.",
+          "Invoke Ctrl+Shift+E, then repeat with the Go-to-location sub-icon.",
+          "Observe whether Explorer opens the correct folder and selects the executable; inspect launch arguments if not.",
+          "Repeat with a path containing spaces."
+        ],
+        "expected_result": "Explorer opens the executable's folder with that executable selected. If it fails, the launch target/arguments distinguish missing /select from path resolution."
+      }
+    }
+  ],
+  "confidence": "Yellow",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives exact PowerToys Run steps, expected Explorer selection and the /select mechanism. A missing selection argument is plausible but the report is from 0.80.1 and this light pass did not inspect current source.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Open Issue-Bug with Run-Plugin labels; no assignee.",
+      "The user says Ctrl+Shift+E or Go-to-location opens a program folder without selecting the executable and cites Explorer.exe /select.",
+      "Latest comment is a 2024-04-30 similarity bot post. #28071 concerns wrong search-result selection, #9336 shortcut target folder, #3521 old folder opening; none confirms this exact defect.",
+      "Reviewed current issue body/comments, labels and updatedAt 2024-04-30T19:23:04Z."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce on current build and inspect whether Explorer receives the executable path via /select before finalizing a fix.",
+    "evaluated_at": "2026-10-20T20:09:33Z",
     "source_updated_at": "2024-04-30T19:23:04Z"
-  }
+  },
+  "title": "PowerToys Run: \"Open Containing Folder\" not selecting/highlighting program",
+  "url": "https://github.com/microsoft/PowerToys/issues/32668",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix confirms this exact selection behavior is resolved. Direct repro supports a concrete hypothesis, but current behavior must be tested."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Pass the selected program path to Explorer for Go-to-location",
+      "root_cause": "Hypothesis: Go-to-location opens only the containing directory, without asking Explorer to select the executable, so the folder appears at its default scroll position.",
+      "plan": [
+        "Reproduce on current build with a program executable deep in its containing folder and inspect launch target/arguments.",
+        "If the command launches only the directory, pass the resolved executable through Explorer's supported /select argument with correct quoting.",
+        "Add focused coverage for paths containing spaces and ensure the selected target is the executable, not a shortcut or parent directory."
+      ],
+      "verification": [
+        "Invoke Ctrl+Shift+E and the sub-icon; Explorer should open the correct folder with the executable selected.",
+        "Repeat with a path containing spaces and a non-file target to ensure normal folder opening remains intact."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The repro and Explorer mechanism are explicit, but current code and behavior have not been checked."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run opens a program's containing folder from Go-to-location, but Explorer does not scroll to or highlight the selected program.",
+    "known_information": [
+      "Open Issue-Bug in PowerToys Run/Run-Plugin; no assignee.",
+      "Report says PowerToys 0.80.1 on Windows 10 22H2; steps select a program then invoke Ctrl+Shift+E or its Go-to-location sub-icon.",
+      "Expected Explorer behavior is selecting the program; body cites Explorer.exe /select,<file>.",
+      "Only comment is the 2024-04-30 similarity-bot post linking #28071, #21713, #9336 and #3521."
+    ],
+    "inferences": [
+      "The command may omit Explorer's selection argument, but this is not verified against current code.",
+      "Bot suggestions share folder/search terminology but do not establish an exact duplicate."
+    ],
+    "analysis": "A focused current reproduction can discriminate missing /select from path resolution. Preserve the hypothesis as yellow and do not launch full design work before reproducing.",
+    "initial_investigation": [
+      "Read full issue and latest bot comment: https://github.com/microsoft/PowerToys/issues/32668#issuecomment-2084695257.",
+      "Compared #28071 wrong result selection, #21713 Explorer-path navigation, #9336 shortcut target folder, and #3521 old folder opening. #9336 was tracked by #3487; it is not the same selected-executable behavior."
+    ],
+    "information_gaps": []
+  },
+  "schemaVersion": 5
 }

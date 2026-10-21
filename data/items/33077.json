@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 33077,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:44.2387841Z",
+  "evaluated_at": "2026-10-20T23:27:44.2387841Z",
   "source_updated_at": "2024-06-07T19:36:41Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Need exact conversion input",
+    "detail": "The attached log proves XML parse failures; it does not establish the intended conversion for the screenshot-only example."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Request literal input and expected JSON",
+    "reason": "A text fixture distinguishes invalid XML fallback from incorrect conversion of valid XML."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Low",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The discussion retracts an initial array-shape objection and identifies malformed XML. The attached log confirms mismatched tags and an invalid DOCTYPE token. The exact reporter input and desired output remain necessary to specify the bug.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report is a screenshot-only example on PowerToys 0.81.0.",
+      "https://github.com/microsoft/PowerToys/issues/33077#issuecomment-2132156123 retracts the initial JSON-shape explanation.",
+      "https://github.com/microsoft/PowerToys/files/15447055/Log_2024-05-26.txt records LoadXml failures, including mismatched GlossSeeAlso/GlossDef tags, followed by paste dispatch."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Obtain a minimal literal clipboard sample and expected JSON; then test the current format-detection fallback.",
+    "evaluated_at": "2026-10-20T23:27:44.2387841Z",
     "source_updated_at": "2024-06-07T19:36:41Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely correction concerns format recognition/error feedback, not forcing every input into a JSON object. No covering fix is established by the inspected references."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Disambiguate invalid structured input from fallback conversion",
+      "root_cause": "Hypothesis: XML-looking but malformed input falls through format detection and yields a different JSON shape rather than an understandable unsupported-input result. A parser rejection alone is expected for invalid XML, so the intended contract must first be established.",
+      "plan": [
+        "Capture the exact input/output as a minimal text fixture and compare well-formed versus mismatched-tag XML.",
+        "Trace AdvancedPaste.Core/JsonConverter.cs format selection and the clipboard wrapper in AdvancedPaste/Helpers/JsonHelper.cs; determine whether this input is deliberately treated as CSV/plain text.",
+        "If maintainers confirm malformed XML must not silently change format, add explicit recognition and actionable failure feedback without weakening XML parsing or breaking legitimate CSV/plain-text conversion; add paired valid/invalid fixtures."
+      ],
+      "verification": [
+        "A well-formed XML sample converts with the documented structure; the malformed counterpart produces the agreed explicit result.",
+        "Existing CSV, INI, plain-text and already-JSON inputs retain their supported behavior."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The parse failures are concrete, but the reporter's literal sample and intended semantics are absent from the textual report."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "An Advanced Paste JSON example is reported as wrong; follow-up testing found malformed XML and the initial array-shape explanation was withdrawn.",
+    "known_information": [
+      "The reporter used 0.81.0 from WinGet.",
+      "The supplied log contains XML parse errors and subsequent paste operations.",
+      "No textual expected/actual output or literal input fixture is supplied in the report.",
+      "The issue remains open and unassigned."
+    ],
+    "inferences": [
+      "A format-detection fallback may explain the output, but rejecting malformed XML does not itself prove a defect."
+    ],
+    "analysis": "Ask for reproducible text, not another generic log. Do not revive the retracted assertion that JSON must be an object.",
+    "initial_investigation": [
+      "Read all three comments and the attached public conversion log.",
+      "Verified current upstream JsonHelper delegates to AdvancedPaste.Core.JsonConverter; that converter attempts XML, INI and CSV in sequence.",
+      "Cross-references #37409 and #38825 are automated similarity links, not confirmed fixes or duplicates."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "sample_file",
+        "information": "Minimal exact clipboard input, selected paste action and expected JSON output.",
+        "why_needed": "Determine whether the example is valid XML converted incorrectly or malformed input using fallback semantics.",
+        "how_to_collect": "Paste the exact input and expected output in fenced code blocks, or attach a small sanitized text file; identify the selected Advanced Paste action."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-json-fixture",
+      "type": "request_info",
+      "label": "Request exact XML-to-JSON fixture",
+      "comment": {
+        "body": "Thanks for the screenshot and follow-up conversion log. The log shows XML parser failures, including mismatched GlossSeeAlso/GlossDef tags, and the earlier suggestion that the output must always be a JSON object was retracted. Please provide a minimal exact clipboard input and the expected JSON output in fenced code blocks (or a small sanitized text attachment), and identify the selected paste action. This lets us distinguish valid XML being converted incorrectly from malformed XML falling back to another supported format. No additional generic logs are needed for that distinction."
+      }
+    },
+    {
+      "id": "review-json-fallback",
+      "type": "approve_design",
+      "label": "Review provisional conversion-contract plan",
+      "note": "Confirm the exact fixture and supported-input contract before changing format detection."
+    }
+  ]
 }

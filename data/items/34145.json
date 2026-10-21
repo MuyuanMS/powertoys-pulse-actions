@@ -1,33 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 34145,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Powertoys run calculator weird behavior with space-separated thousands",
+  "url": "https://github.com/microsoft/PowerToys/issues/34145",
+  "labels": [
+    "Issue-Bug",
+    "Idea-Enhancement",
+    "Help Wanted",
+    "Product-PowerToys Run",
+    "Cost-Small",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comments": 6,
+  "confidence": "Yellow",
+  "generated_at": "2026-10-20T23:31:24.342Z",
+  "evaluated_at": "2026-10-20T23:31:24.342Z",
   "source_updated_at": "2024-10-10T17:45:24Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Calculator interprets spaces as multiplication; maintainers note broad whitespace removal could break existing behavior."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶️",
+    "label": "Design locale-aware grouping parse",
+    "reason": "Test unambiguous three-digit groups while preserving implicit multiplication."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The exact `100 500/100` input returns 500 because whitespace is treated as implicit multiplication, as the reporter hypothesizes and a maintainer confirms. A narrow grouping rule can be explored while preserving multiplication; regression tests must address compatibility.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reporter observes `100 500/100` -> 500 and `100500/100` -> 1005.",
+      "Reporter expects whitespace to work as a thousands separator.",
+      "Maintainer suggests removing spaces; another notes `10 10` currently means implicit multiplication.",
+      "Issue 11786 records the same behavior and attributes it to mage interpreter.",
+      "Open issue 2265 proposes external Calculator-engine migration; maintainer says it is blocked on that project.",
+      "No linked fix PR found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Design and test a parser rule recognizing valid three-digit grouping spaces without changing existing implied multiplication.",
+    "evaluated_at": "2026-10-20T23:31:24.342Z",
     "source_updated_at": "2024-10-10T17:45:24Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Parser behavior is demonstrated and confirmed. A compatible distinction between grouping and multiplication is a concrete path to investigate independently of the blocked engine migration."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recognize space thousands groups without changing multiplication",
+      "root_cause": "The parser passes whitespace to an expression engine that interprets adjacent numeric expressions as implicit multiplication; it does not first recognize a space-delimited thousands group.",
+      "plan": [
+        "Inspect Calculator tokenization/normalization and the mage handoff.",
+        "Normalize whitespace only when it unambiguously forms a locale-appropriate thousands group; preserve spaces representing implicit multiplication.",
+        "Test the reported input, spaced multiplication, repeated groups, locale, decimals, and malformed groups."
+      ],
+      "verification": [
+        "Verify `100 500/100` gives 1005 when grouping is accepted for the locale.",
+        "Verify `10 10` retains existing implicit multiplication unless product direction changes.",
+        "Run Calculator parser tests and check both expressions in PowerToys Run."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "Whitespace-as-multiplication is confirmed here and in #11786; accepted grouping syntax and compatibility rules need parser validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Calculator treats a space between number groups as multiplication, so a space-grouped expression returns 500 instead of 1005; maintainers warn broad whitespace removal changes multiplication.",
+    "known_information": [
+      "Reporter tests `100 500/100` and gets 500; `100500/100` yields 1005.",
+      "Reporter expects a space as thousands separator.",
+      "Maintainers discuss removing spaces versus preserving `10 10` implicit multiplication.",
+      "Issue 11786 records the same mage whitespace-multiplication behavior.",
+      "Issue 2265 tracks an external engine migration blocked on Calculator changes."
+    ],
+    "inferences": [
+      "Three-digit groups might be recognized without deleting all whitespace, but grammar and locale rules need testing.",
+      "This is a mismatch with requested grouping; ambiguous spaced-number compatibility requires care."
+    ],
+    "analysis": "Exact input/output and maintainer comments establish parser behavior. A localized normalization candidate can be tested independently of the external migration with regression coverage preserving multiplication.",
+    "initial_investigation": [
+      "Read full issue and all six comments, including whitespace removal and implicit-multiplication discussion.",
+      "Reviewed #11786 and #2265; former confirms behavior, latter is an external migration with no near-term fix.",
+      "Searched related PowerToys PRs by issue number; no linked fix found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-calculator-space-grouping-34145",
+      "type": "approve_design",
+      "label": "Design compatible thousands grouping",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve parser design preserving implied multiplication while testing valid grouping; this does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce grouped number and multiplication cases",
+      "reproduce": {
+        "title": "Compare space grouping with implicit multiplication",
+        "module": "PowerToys Run Calculator",
+        "version_requirement": "Current stable PowerToys build",
+        "prerequisites": [
+          "Use default Calculator plugin settings."
+        ],
+        "setup": [],
+        "steps": [
+          "Enter `100 500/100` in PowerToys Run and record the result.",
+          "Enter `100500/100` and record the result.",
+          "Enter `10 10` to confirm current implicit multiplication.",
+          "Repeat grouped-number case with current Windows regional format."
+        ],
+        "expected_result": "The grouped expression yields 1005 if grouping is accepted for the locale; ungrouped spaced factors retain current implicit multiplication unless maintainers choose otherwise."
+      }
+    }
+  ]
 }

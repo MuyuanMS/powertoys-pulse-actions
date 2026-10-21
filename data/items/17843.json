@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 17843,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:29:29.61041Z",
+  "evaluated_at": "2026-10-20T23:29:29.61041Z",
   "source_updated_at": "2024-06-10T16:25:07Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Investigate duplicate result identities",
+    "detail": "Reports include UWP and PWA duplicates; a separate Win32 example was acknowledged to be distinct executables."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Trace PWA/UWP index versus displayed results",
+    "reason": "The public duplicate PWA report includes a diagnostic archive and a usable reproduction."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The discussion contains competing index and UX explanations; the confirmed duplicate #33322 supplies an Edge PWA reproduction. No evidence supports the old claim of assigned ownership.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/17843#issuecomment-1110311018 says reinstalling the UWP app stopped that case and clarifies that the notepad.exe entries were distinct executable paths.",
+      "https://github.com/microsoft/PowerToys/issues/17843#issuecomment-1110101511 reports correct plugin query results during a separate debugging observation, suggesting a UX branch.",
+      "https://github.com/microsoft/PowerToys/issues/33322 is closed as a duplicate of this issue and includes Edge PWA steps plus a diagnostic ZIP.",
+      "Current PackageRepository already subscribes to install/uninstall/update events and removes matching package entries."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Compare indexed identities, plugin query results and UI rows during PWA and UWP lifecycle operations.",
+    "evaluated_at": "2026-10-20T23:29:29.61041Z",
     "source_updated_at": "2024-06-10T16:25:07Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete linked PR covers the observed duplicates. Existing package-event removal means a simplistic missing-uninstall-handler fix would be stale."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent duplicate identities across indexing and result replacement",
+      "root_cause": "Hypothesis: lifecycle refresh or asynchronous result replacement can retain the same launch identity more than once. Distinct shortcuts, PWA registration duplication and duplicated UI rows remain separate possibilities.",
+      "plan": [
+        "Reproduce Edge PWA duplicates from #33322 and record launch identity/source path at the Win32/PWA index, plugin output and displayed-row boundaries.",
+        "For UWP cases, inspect src/modules/launcher/Plugins/Microsoft.Plugin.Program/Storage/PackageRepository.cs event ordering and equality/removal behavior; preserve its existing uninstall/update handling.",
+        "Correct the first boundary that duplicates the same identity: make repository refresh idempotent if index duplication is proven, or fix stale query-generation/UI result replacement if plugin output is unique.",
+        "Add lifecycle and rapid-query regression tests while retaining distinct applications and legitimate shortcuts with the same display name."
+      ],
+      "verification": [
+        "Install, update, remove and reinstall a test PWA/UWP app; repeated identical queries yield one row per genuine launch identity.",
+        "Rapid typing and delayed plugin completion do not append stale rows; distinct executable paths with identical titles remain available."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The identity/lifecycle boundary fits several reports, but the first duplicating layer must be measured and not all examples necessarily share a cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run sometimes shows repeated UWP/PWA results or missing icons. The discussion separates real duplicate launch identities from legitimate same-name executables.",
+    "known_information": [
+      "Initially reported on 0.57.2; a 0.81.1 Edge PWA case appears in duplicate #33322.",
+      "A UWP reinstall resolved one contributor's episode.",
+      "A contributor observed a possible cross-plugin UX issue, while the PWA reporter narrowed their own case to PWA entries.",
+      "The live issue is open, unassigned and needs team response."
+    ],
+    "inferences": [
+      "More than one duplication mechanism may be represented.",
+      "Deduplicating by display name alone would hide legitimate programs and is unsafe."
+    ],
+    "analysis": "Use the available PWA reproduction and archive to locate the first duplicated identity. Do not repeat a generic log request that a maintainer already considered unhelpful for the timing branch.",
+    "initial_investigation": [
+      "Read all ten comments and the report.",
+      "Read #33322, including its diagnostic attachment and explicit duplicate closure.",
+      "Verified current upstream PackageRepository has package event subscriptions and RemovePackage matching logic; absence of an uninstall handler is not a valid current root cause.",
+      "Issue timeline contains no concrete linked PR."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-duplicate-identities",
+      "type": "reproduce",
+      "label": "Trace PWA/UWP duplicate identities",
+      "reproduce": {
+        "title": "Separate index duplicates from stale UI rows",
+        "module": "PowerToys Run",
+        "version_requirement": "Start with the 0.81.1 PWA report; compare a current supported build.",
+        "prerequisites": [
+          "Edge with an installed test PWA such as YouTube",
+          "Run Program plugin enabled",
+          "Use a disposable test application for install/remove cycles."
+        ],
+        "steps": [
+          "1. Query the installed PWA name and record each result's launch target/source.",
+          "2. Compare repository items, plugin-returned results and displayed rows for the same query generation.",
+          "3. Remove/reinstall the test PWA, repeat queries and restart Run to distinguish persistent indexing from transient UI duplication.",
+          "4. Repeat with a UWP test app and rapid query changes; retain legitimate same-name shortcuts in a control case."
+        ],
+        "expected_result": "One UI row per genuine launch identity; identify the earliest layer where duplicates first appear.",
+        "attachments": [
+          {
+            "label": "PWA reproduction and diagnostics",
+            "url": "https://github.com/microsoft/PowerToys/issues/33322"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-duplicate-plan",
+      "type": "approve_design",
+      "label": "Review identity-safe deduplication plan",
+      "note": "Choose the index or UI correction only after tracing the first duplication boundary."
+    }
+  ]
 }

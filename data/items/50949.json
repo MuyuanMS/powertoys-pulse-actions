@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50949",
+  "number": 50949,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-10-20T19:57:08Z",
+  "evaluated_at": "2026-10-20T19:57:08Z",
+  "source_updated_at": "2026-10-02T04:37:05Z",
+  "title": "PowerDisplay needs to rescan monitors after coming back to physical session from a remote desktop session",
+  "url": "https://github.com/microsoft/PowerToys/issues/50949",
+  "author": "DeshmukhMalhar",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue gives a clear RDP transition and says manual Rescan Connected restores monitor detection, while the only stated build is 0.100.2. A plausible stale-monitor-list hypothesis is testable, but the reporter's screenshot reply did not confirm whether the issue persists on a current stable build.",
+    "evidence": [
+      "The reporter describes starting Power Display locally, connecting and disconnecting Remote Desktop, then returning to find no monitors until Rescan Connected is used.",
+      "A screenshot was added in the discussion; no later comment confirms a current-build retest.",
+      "The report's stated PowerToys version is 0.100.2, and the automated triage comment asked the reporter to update and confirm recurrence."
+    ],
+    "recommended_action": "Confirm the behavior on the current stable release before advancing the monitor-refresh hypothesis.",
+    "evaluated_at": "2026-10-20T19:57:08Z",
+    "source_updated_at": "2026-10-02T04:37:05Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The recovery through Rescan Connected suggests an automatic topology refresh may be missed, but no current-build reproduction or code trace yet confirms that Power Display owns the failure."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Refresh Power Display monitor state after returning from RDP",
+      "root_cause": "Power Display may retain a stale monitor enumeration after the display topology changes during an RDP session; the successful manual rescan is consistent with a missed automatic refresh but does not prove the notification path.",
+      "plan": [
+        "Confirm that the issue still reproduces on the current stable build using the reported local-to-RDP-to-local sequence.",
+        "Trace Power Display's monitor enumeration and topology-change notification path; compare automatic state after RDP disconnect with the state after Rescan Connected.",
+        "If the notification path misses the transition, invalidate and refresh the monitor list on the relevant display/session change and add focused regression coverage."
+      ],
+      "verification": [
+        "Run the reported sequence on a current stable build and confirm physical monitors remain visible after returning from RDP without manual rescan.",
+        "Verify manual Rescan Connected still recovers the list and that normal local monitor hot-plug changes continue to refresh correctly."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "Manual rescan recovering the list points toward stale enumeration, but the report is from 0.100.2 and no current-build retest or source-level event trace is available."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Power Display loses its detected-monitor list after returning from an RDP session, although the reporter says Rescan Connected restores it.",
+    "known_information": [
+      "The reported PowerToys version is 0.100.2 and the installation method is auto-update.",
+      "The body provides the RDP connection/disconnection sequence and states that monitors are missing until Rescan Connected is clicked.",
+      "The reporter added a screenshot after an automated triage comment asked for a current stable update; the thread contains no explicit result of that update test."
+    ],
+    "inferences": [
+      "The manual recovery is consistent with stale monitor enumeration or a missed topology-change notification.",
+      "The evidence does not establish whether the behavior remains in current PowerToys or which monitor notification path is responsible."
+    ],
+    "analysis": "The existing repro is specific enough to guide a code investigation, but the issue is old and the requested update check has not been answered. Ask only for the current build and whether the same sequence still fails; do not request generic diagnostics or redesign against a potentially fixed version.",
+    "initial_investigation": [
+      "Reviewed the full report and both comments; the second comment is a screenshot and does not answer the requested current-version retest.",
+      "Confirmed Power Display owns the reported monitor enumeration/rescan surface under src/modules/powerdisplay/PowerDisplay; no code evidence yet shows whether RDP's topology transition reaches its refresh path.",
+      "The existing triage comment already requested an update, so this action asks for the missing version/result rather than repeating a bug-report request."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The PowerToys version currently installed when retesting this issue",
+        "why_needed": "The report is from 0.100.2; the current version determines whether this remains an active regression.",
+        "how_to_collect": "Update to the current stable release and report the version shown in PowerToys About."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same RDP disconnect/return sequence still leaves monitors missing on the current stable release",
+        "why_needed": "A current reproduction is needed before selecting a Power Display monitor-refresh fix.",
+        "how_to_collect": "Repeat the numbered RDP sequence from the issue and state whether monitors appear automatically or only after Rescan Connected."
+      }
+    ]
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "confirm-powerdisplay-current-build-50949",
+      "type": "request_info",
+      "label": "Confirm Power Display behavior on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50949,
+        "body": "Thanks for the exact RDP sequence and the screenshot. The report says Rescan Connected restores the monitor list, but the stated PowerToys version is 0.100.2; the screenshot reply did not confirm whether this still happens on a newer build.\n\nPlease help distinguish an active monitor-refresh issue from behavior that may already be fixed:\n\n1. Update to the current stable PowerToys release and report the version shown in About.\n2. Repeat the same RDP connect, disconnect, and return-to-local sequence. Please confirm whether monitors are detected automatically or remain missing until you click Rescan Connected.\n\nThis result determines whether maintainers should trace Power Display's topology-refresh path on a current build."
+      }
+    },
+    {
+      "id": "approve-powerdisplay-monitor-refresh-50949",
+      "type": "approve_design",
+      "label": "Approve monitor-refresh investigation"
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Confirm current-build repro",
+    "detail": "The monitor list recovers after a manual rescan, but the issue's only reported build is 0.100.2."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Confirm Power Display behavior on current stable",
+    "reason": "Establish that this remains reproducible before investigating automatic monitor refresh."
+  }
+}

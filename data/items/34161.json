@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 34161,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-20T23:27:10.2423529Z",
+  "evaluated_at": "2026-10-20T23:27:10.2423529Z",
   "source_updated_at": "2024-08-06T18:27:43Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Compare Edge minimum size and visible bounds",
+    "detail": "The report includes a screenshot and diagnostic ZIP; the vertical-tabs versus horizontal-tabs comparison is the useful local discriminator."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce right-edge overflow",
+    "reason": "Measure requested and final window rectangles to distinguish application minimum-size enforcement from FancyZones border/DPI conversion."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The supplied comparison identifies a right-edge layout failure with Edge vertical tabs but not traditional tabs, providing a concrete local geometry experiment without another generic diagnostic request.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/34161 reports 0.83.0, WinGet, elevated execution, a right-edge zone and Edge vertical versus traditional tabs.",
+      "The report already supplies a screenshot and PowerToysReport_2024-08-05-15-35-42.zip.",
+      "There are no live comments, assignees, linked fix events or exact-number PR matches."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Compare Edge tab modes using the same zone, then widen the zone and measure minimum tracking size, outer bounds and visible bounds.",
+    "evaluated_at": "2026-10-20T23:27:10.2423529Z",
     "source_updated_at": "2024-08-06T18:27:43Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A minimum-size or frame-accounting mismatch is an applicable FancyZones hypothesis. The report does not yet establish which branch produces the overflow."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep final snapped geometry within the intended right-edge bounds",
+      "root_cause": "Hypothesis: Edge's vertical-tab mode changes its minimum tracking size or effective frame geometry, and the final size accepted by the app differs from FancyZones' requested zone rectangle. DPI/frame conversion is an alternative that must be measured rather than presumed.",
+      "plan": [
+        "Reproduce the same right-edge zone in Edge vertical and horizontal tab modes; record zone bounds, requested placement, final GetWindowRect/DWM visible bounds and minimum accepted width.",
+        "Inspect src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp placement/border adjustment and the WorkArea placement caller to determine whether the application expands the window or FancyZones computes a wrong rectangle.",
+        "If placement ignores a confirmed application size constraint, anchor the final supported size to the appropriate work-area edge using existing placement policy; if frame conversion is wrong, correct only that conversion. Do not repeatedly force the app below its minimum size.",
+        "Add focused geometry tests for narrow right-edge zones, constrained windows and scaled displays, preserving unconstrained window placement."
+      ],
+      "verification": [
+        "Switch Edge tab mode without changing the layout and compare the same snap operation.",
+        "Widen the zone beyond Edge's minimum width and confirm whether overflow disappears.",
+        "Test non-Edge windows, multiple DPI values and left/right work-area boundaries; ensure the correction does not introduce resize loops."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The tab-mode comparison supports a geometry/constraint boundary, but minimum width and frame conversion have not been measured."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Some windows extend beyond a right-edge FancyZones layout. The reporter specifically contrasts Edge vertical tabs, which overflow, with traditional tabs, which remain within the intended bounds.",
+    "known_information": [
+      "Version, elevation, screenshot and diagnostic attachment are already supplied.",
+      "The same application's tab mode is a reported behavior discriminator.",
+      "The issue is open, unassigned and has no discussion identifying an implementation."
+    ],
+    "inferences": [
+      "Application-imposed minimum dimensions or frame changes could explain a tab-mode-specific result.",
+      "A general monitor-position bug is not established merely because the failure is visible at the right edge."
+    ],
+    "analysis": "Run a maintainer-side geometry comparison before asking the reporter for more archives. The proposed fix is conditional on the observed final rectangle and accepted size, not a claim that Edge's minimum width is confirmed.",
+    "initial_investigation": [
+      "Read the complete report and empty comment/cross-reference histories; no direct fix PR was found by exact-number search.",
+      "Current WindowUtils.cpp reads outer window rectangles and has explicit border-adjustment/placement logic, making it the relevant boundary to instrument.",
+      "The linked diagnostic ZIP and screenshot were acknowledged but not decoded in this lightweight pass; no monitor measurements are asserted from them."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Requested versus accepted geometry and minimum window width for the same zone in the two tab modes.",
+        "why_needed": "Discriminates app-enforced constraints from incorrect FancyZones frame/DPI math.",
+        "how_to_collect": "Maintainer: use the supplied report's layout/topology where available, reproduce with a narrow right-edge zone, and measure outer/visible bounds and minimum accepted size before changing code."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-edge-tab-geometry",
+      "type": "reproduce",
+      "label": "Measure right-edge snapping in both Edge tab modes",
+      "reproduce": {
+        "title": "FancyZones right-edge overflow with Edge vertical tabs",
+        "module": "FancyZones",
+        "version_requirement": "Current PowerToys and Edge; compare the original 0.83.0 behavior only if needed.",
+        "prerequisites": [
+          "A custom narrow zone touching the right work-area edge.",
+          "Edge with vertical and horizontal tab modes available; record DPI and monitor work area."
+        ],
+        "steps": [
+          "Snap Edge with horizontal tabs into the right-edge zone and record its requested and actual visible bounds.",
+          "Enable vertical tabs and repeat with the identical layout and window state.",
+          "Manually find the smallest accepted Edge width and widen the zone above that width.",
+          "Compare GetWindowRect and DWM visible bounds against the zone and work area; identify whether the second size came from the app or placement code.",
+          "Repeat at another DPI and with an unconstrained ordinary window before selecting the geometry correction."
+        ],
+        "expected_result": "Snapping should honor established work-area placement policy and application size constraints without unexplained off-screen overflow or an endless resize fight.",
+        "attachments": [
+          "https://github.com/user-attachments/files/16493130/PowerToysReport_2024-08-05-15-35-42.zip"
+        ]
+      }
+    },
+    {
+      "id": "approve-edge-geometry-plan",
+      "type": "approve_design",
+      "label": "Approve scoped window-constraint plan",
+      "note": "Confirm minimum-size versus frame-conversion behavior first; no finished design or measured root cause is claimed."
+    }
+  ]
 }

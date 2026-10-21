@@ -2,66 +2,109 @@
   "schemaVersion": 5,
   "number": 47829,
   "kind": "issue",
-  "track": "triage",
-  "stage": "owned_elsewhere",
+  "track": "fix",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-13T15:30:06.9719009Z",
-  "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-  "source_updated_at": "06/18/2026 12:11:16",
+  "evaluated_at": "2026-10-20T16:40:00Z",
+  "source_updated_at": "2026-10-12T09:35:07Z",
   "url": "https://github.com/microsoft/PowerToys/issues/47829",
   "title": "Command Palette Fallback Order",
   "author": "H9inger",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Command Palette"
-  ],
-  "assignees": [],
-  "comments": 1,
+  "comments": 5,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Lightweight schema-v5 triage revalidation completed during the bounded scheduled run."
+    "label": "Reproduce fallback identity/persistence",
+    "detail": "The latest report supplies repeated fallback IDs, so the earlier fixed/owned classification is not justified."
   },
   "next_action": {
-    "glyph": "🔗",
-    "label": "Monitor linked or assigned work",
-    "reason": "Existing ownership or handling evidence means duplicate agent work is not appropriate."
+    "label": "Reproduce duplicate fallback identifiers",
+    "reason": "Determine whether ordering is lost in identity mapping, persistence, or provider reload."
   },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Public ownership or handling evidence indicates this issue is already covered elsewhere; duplicate work should not be started.",
+    "status": "reproducible",
+    "rationale": "The report supplies a reorder/OK/reopen sequence, recording, diagnostic ZIP and later duplicate-ID settings excerpt. A September build appeared fixed to one commenter, but the October 12 report supplies contrary evidence.",
     "evidence": [
-      "Open Issue-Bug report #47829: Command Palette Fallback Order",
-      "Labels present: Issue-Bug, Needs-Triage, Product-Command Palette",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The original reproduction is on 0.99.1; the reporter still saw the issue on 0.100.2.",
+      "https://github.com/microsoft/PowerToys/issues/47829#issuecomment-6121597515 shows repeated com.microsoft.powertoys.fallback identifiers and partially saved changes.",
+      "Inspected SettingsViewModel.cs rebuilds rankings with currentRankings.IndexOf(fallback.Id) and persists FallbackRankings.Select(...Id).",
+      "Merged PR 50799 addresses initial global fallback defaults, not unique ordering of duplicate fallback identities; it is not proof this report is fixed."
     ],
-    "recommended_action": "Monitor the existing owner or linked work.",
-    "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-    "source_updated_at": "06/18/2026 12:11:16"
+    "recommended_action": "Run the existing public sequence with duplicate fallback IDs, then review the identity/persistence plan before implementation.",
+    "evaluated_at": "2026-10-20T16:40:00Z",
+    "source_updated_at": "2026-10-12T09:35:07Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A competing PowerToys fix is not applicable while existing ownership or handling covers the report."
+    "status": "proposed",
+    "rationale": "No verified targeted implementation covers the latest duplicate-ID/order-reset report; an identity round-trip correction is a supported hypothesis."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Preserve distinct fallback identities across rank persistence",
+      "root_cause": "Hypothesis: fallback entries that share an Id cannot retain independent ranks because reconstruction uses the first IndexOf match and persistence saves only Id strings. A provider reload/save race remains an alternative.",
+      "plan": [
+        "Reproduce reorder/OK/reopen with multiple entries sharing the public reported fallback ID, recording the ordered command identities before and after ApplyFallbackSort.",
+        "Trace fallback identity production into SettingsViewModel and SettingsModel; define a stable provider-and-command identity when the contract permits duplicates, or fix the producer if IDs must be unique.",
+        "Migrate existing FallbackRanks deterministically without discarding user order; do not merely Distinct the list and silently merge different commands.",
+        "Add ranking round-trip tests for duplicate IDs, provider load order, missing providers, and reopening settings; preserve intentionally disabled/global-result choices."
+      ],
+      "verification": [
+        "Reorder, accept, close and reopen settings, then restart Command Palette; distinct commands retain their order.",
+        "Test both unique-ID built-in providers and a synthetic provider exposing repeated IDs.",
+        "Confirm new provider defaults do not overwrite existing user ranks."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The latest serialized duplicate IDs and first-match reconstruction align directly; no runtime trace yet proves whether identity ambiguity or a competing save is decisive."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated open Issue-Bug #47829: Command Palette Fallback Order.",
+    "summary": "Command Palette fallback order reverts after accepting settings. Later evidence of repeated fallback IDs contradicts an earlier claim that new builds fixed it.",
     "known_information": [
-      "Open Issue-Bug report #47829: Command Palette Fallback Order",
-      "Labels present: Issue-Bug, Needs-Triage, Product-Command Palette",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The report already includes a recording, screenshot and diagnostic archive.",
+      "The reporter confirmed continued failure on 0.100.2.",
+      "The latest commenter supplies repeated fallback identifiers and says only some changes persist.",
+      "There is no assignee or direct linked fix on the issue timeline."
     ],
     "inferences": [
-      "The available public evidence does not yet confirm a single root cause or implementation path."
+      "Persisting ranks by a non-unique identifier may make the user's order ambiguous; persistence races are not ruled out."
     ],
-    "analysis": "The existing ownership or handling signal is sufficient to avoid duplicating work.",
+    "analysis": "The public evidence is sufficient for a focused maintainer reproduction. Asking for another generic diagnostic ZIP would not distinguish the identity and save paths as efficiently as tracing the supplied case.",
     "initial_investigation": [
-      "Reviewed the live issue metadata, labels, public discussion count, and current artifact freshness.",
-      "Checked the schema-v5 action contract for this revalidation."
+      "Read the body and all five comments and inspected the full timeline.",
+      "Inspected SettingsViewModel fallback-rank reconstruction and ApplyFallbackSort.",
+      "Checked related merged fallback-default work and found no demonstrated coverage for duplicate-ID ordering."
     ],
     "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "design-47829",
+      "type": "approve_design",
+      "label": "Review fallback identity fix plan",
+      "description": "Approve the bounded investigation/fix plan; this lightweight proposal is not a converged implementation-grade design."
+    },
+    {
+      "id": "reproduce-47829",
+      "type": "reproduce",
+      "label": "Reproduce fallback order round-trip",
+      "reproduce": {
+        "module": "Command Palette",
+        "prerequisites": [
+          "Use the latest stable build, recording its version, and a development build for tracing.",
+          "Use multiple fallback commands, including a synthetic provider with repeated IDs; back up settings."
+        ],
+        "steps": [
+          "Open fallback order settings and record command names and IDs.",
+          "Reorder several commands, select OK, close settings and reopen.",
+          "Repeat after restarting Command Palette; compare FallbackRanks with displayed order.",
+          "Trace IDs and settings writes at ApplyFallbackSort and provider enumeration to distinguish ambiguous IDs from overwrite timing."
+        ],
+        "expected_result": "The accepted order survives reopen/restart and each distinct fallback remains distinguishable.",
+        "setup_prompt": "Prepare an isolated Command Palette development provider with two distinct named fallback commands sharing the ID com.microsoft.powertoys.fallback. Keep user settings backed up, then capture the order-to-ID mapping before and after reorder/OK/reopen."
+      }
+    }
+  ]
 }

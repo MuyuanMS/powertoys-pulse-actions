@@ -2,32 +2,113 @@
   "number": 47023,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:50:56Z",
+  "generated_at": "2026-10-20T16:48:58Z",
+  "evaluated_at": "2026-10-20T16:48:58Z",
+  "source_updated_at": "2026-10-14T16:23:11Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "detail": "The reporter confirms the display wakes normally when Awake is disabled, so the problem is associated with the Awake-enabled scenario. AwakeStateCalculator correctly uses only ES_SYSTEM_REQUIRED when Keep screen on is off; this should allow the display to power down, but the wake failure is not explained by that source branch.",
+    "label": "Design candidate",
+    "glyph": "🎯"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "next_action": "Reproduce display-off/wake behavior with Awake enabled and disabled while verifying execution-state requests and Windows display timeout settings.",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review Preserve display wake behavior while Awake keeps the system awake",
+      "primary": true,
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "confirm": true
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Awake display-off and wake",
+      "reproduce": {
+        "prerequisites": [
+          "Record Windows display-off and sleep timeout settings; use the same settings for Awake-on and Awake-off runs.",
+          "Keep Awake's Keep screen on setting off."
+        ],
+        "version_requirements": "Current supported build; Windows 11",
+        "steps": [
+          "Enable Awake, leave Keep screen on off, wait for the display timeout, and attempt wake via keyboard/mouse/power button.",
+          "Record whether the system is still awake and inspect execution-state requests around display-off/wake.",
+          "Repeat with Awake disabled under identical power settings.",
+          "Repeat with Keep screen on enabled as a control."
+        ],
+        "module": "Awake",
+        "expected_result": "With Keep screen on off, display can turn off and then wake normally; Awake does not leave the display stuck off."
+      }
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "evaluated_at": "2026-10-20T16:48:58Z",
+    "source_updated_at": "2026-10-14T16:23:11Z",
+    "status": "actionable_design",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.98.1 from Microsoft Store on Windows 11 25H2; not running elevated.",
+      "Repro uses Awake on, Keep screen on off, waits for display-off, then wakes via keyboard, mouse, or power button.",
+      "Reporter confirmed on 2026-10-14 that the display works normally when Awake is turned off.",
+      "AwakeStateCalculator uses ES_SYSTEM_REQUIRED without ES_DISPLAY_REQUIRED when Keep screen on is false."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:50:56Z"
+    "rationale": "The reporter confirms the display wakes normally when Awake is disabled, so the problem is associated with the Awake-enabled scenario. AwakeStateCalculator correctly uses only ES_SYSTEM_REQUIRED when Keep screen on is off; this should allow the display to power down, but the wake failure is not explained by that source branch.",
+    "recommended_action": "Reproduce display-off/wake behavior with Awake enabled and disabled while verifying execution-state requests and Windows display timeout settings."
+  },
+  "schemaVersion": 5,
+  "url": "https://github.com/microsoft/PowerToys/issues/47023",
+  "title": "Keep screen on during awake issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A code correction may be appropriate, but the confidence and uncertainty are stated in the proposed plan."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The A/B user observation links the symptom to Awake, but the inspected state calculation appears to honor the display-off setting and no failing transition is known."
+      },
+      "title": "Preserve display wake behavior while Awake keeps the system awake",
+      "verification": [
+        "With Awake on and Keep screen on off, verify display powers down at the configured timeout and wakes from keyboard, mouse, or power button.",
+        "Verify Awake still prevents system sleep during its configured duration and Keep screen on on still prevents display-off."
+      ],
+      "plan": [
+        "Reproduce on a current Windows 11 build with the reporter's display timeout settings and compare Awake enabled/disabled.",
+        "Trace SetThreadExecutionState requests and session/power event handling across display-off and wake; confirm Keep screen on false never adds ES_DISPLAY_REQUIRED.",
+        "If a PowerToys state transition is shown to block wake, correct that transition and add a regression test for display-off/wake with system keep-awake enabled.",
+        "If the failure occurs outside the PowerToys power request path, document and route accordingly rather than changing code."
+      ],
+      "root_cause": "Red hypothesis: Awake's continuous system-required power request or its state reapplication around display power events may interact with display wake, despite correctly omitting ES_DISPLAY_REQUIRED when Keep screen on is disabled. No faulty transition is confirmed."
+    }
+  ],
+  "issue_context": {
+    "known_information": [
+      "PowerToys 0.98.1 from Microsoft Store on Windows 11 25H2; not running elevated.",
+      "Repro uses Awake on, Keep screen on off, waits for display-off, then wakes via keyboard, mouse, or power button.",
+      "Reporter confirmed on 2026-10-14 that the display works normally when Awake is turned off.",
+      "AwakeStateCalculator uses ES_SYSTEM_REQUIRED without ES_DISPLAY_REQUIRED when Keep screen on is false."
+    ],
+    "analysis": "The A/B behavior supports maintainer-side reproduction. Do not infer that Awake requests the display remain on; instrument the execution-state transition and verify the Windows power configuration before selecting a fix.",
+    "information_gaps": [],
+    "inferences": [
+      "The symptom correlates with Awake being active, but current source shows the display-required flag is intentionally absent when the setting is off; the cause may involve power-request lifecycle or another system component."
+    ],
+    "summary": "With Awake active and Keep screen on disabled, the display turns off but reportedly fails to wake; the reporter says wake works when Awake is disabled.",
+    "initial_investigation": [
+      "Read the full issue body and maintainer follow-up; reporter confirmed the Awake-disabled control condition.",
+      "Inspected AwakeStateCalculator.ComputeAwakeState: false keepDisplayOn yields ES_SYSTEM_REQUIRED | ES_CONTINUOUS, without ES_DISPLAY_REQUIRED.",
+      "No exact Windows display timeout configuration or source cause was established."
+    ]
   }
 }

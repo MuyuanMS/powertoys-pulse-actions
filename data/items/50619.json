@@ -1,104 +1,154 @@
 {
-  "schemaVersion": 5,
-  "id": "issue-50619",
-  "number": 50619,
-  "kind": "issue",
   "track": "triage",
-  "stage": "reproduction_ready",
-  "generated_at": "2026-09-17T12:53:39.0776636Z",
-  "evaluated_at": "2026-09-17T12:53:39.0776636Z",
-  "source_updated_at": "2026-09-17T12:23:55Z",
+  "stage": "awaiting_design_approval",
+  "source_updated_at": "2026-10-08T14:20:58Z",
   "title": "Mouse highlighter draws a circle on desktop upon activation.",
   "url": "https://github.com/microsoft/PowerToys/issues/50619",
-  "summary": "Mouse Highlighter in preview v0.101.2572 reportedly shows the intended ripple effect when activated but also leaves a blue circle stuck on the desktop until reboot.",
-  "status": {
-    "glyph": "🧪",
-    "label": "Current-build reproduction ready",
-    "detail": "The report is on the current preview build and includes a bug report ZIP; maintainers should reproduce the activation path and inspect whether Mouse Highlighter leaves an always-on or button-state visual alive."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Reproduce Mouse Highlighter stuck circle",
-    "reason": "The symptom is specific enough for a maintainer-side reproduction pass, and code inspection leaves multiple plausible visual-state paths."
-  },
-  "confidence": "Medium",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
   "pending_author": false,
+  "status": {
+    "glyph": "🎯",
+    "label": "Ripple circle issue ready for focused fix design",
+    "detail": "Two follow-up reports narrow the symptom to Ripple mode and the circle left at activation or mode-switch position."
+  },
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The reporter supplied a current preview version, a direct activation scenario, and a PowerToys bug report ZIP. The lightweight code inspection found that Mouse Highlighter creates an initial always/idle visual on activation and separate ripple/button visuals with timers and fade animations, so a controlled repro trace is needed to determine which visual remains visible and why it is not cleared.",
+    "status": "actionable_design",
+    "rationale": "The body and two comments provide a repeatable Ripple-only stuck-circle symptom, including reproduction by switching from Circle Highlight to Ripple. Current Mouse Highlighter source adds a MouseButton::None point when starting a draw session and restarts drawing after settings changes; this plausibly leaves an always-on circle, but the exact composition shape must be confirmed before implementation.",
     "evidence": [
-      "The issue targets PowerToys 0.101.2572 Preview and the Mouse Utilities area.",
-      "The reported reproduction is to activate Mouse Highlighter with the activation shortcut.",
-      "Actual behavior says the feature activates with the expected ripple effect and also draws a blue circle on the desktop that cannot be removed without rebooting.",
-      "A PowerToysReport_2026-09-17-15-15-07.zip attachment is present.",
-      "MouseHighlighter::StartDrawing creates an initial MouseButton::None drawing point when activation starts.",
-      "MouseHighlighter handles ripple mode with hold timers, button state, fade animations, and ClearDrawing/StopDrawing paths that can distinguish stale always-on visuals from stale click/hold visuals."
+      "The reporter sees the intended ripple and a blue circle that remains until reboot on 0.101.2572 Preview.",
+      "A commenter says the stuck circle occurs only in Ripple mode, not Circle Highlight or Spotlight, on Settings or Win+Shift+H activation.",
+      "That commenter says switching from Circle Highlight to Ripple leaves a circle at the mode-switch cursor location.",
+      "Another commenter reports a stationary Mouse Highlighter dot after an Intel Graphics update while Crosshairs still work.",
+      "The primary report links a diagnostic ZIP; the second reporter supplied screenshots and another ZIP."
     ],
-    "recommended_action": "Run a controlled maintainer reproduction using the attached diagnostics and current Mouse Highlighter settings, then inspect whether activation leaves m_alwaysPointer, a ripple hold shape, or overlay state visible after the effect should fade."
+    "recommended_action": "Reproduce activation and Circle-to-Ripple switching, identify the composition shape that remains, then scope a fix for stale always-on geometry.",
+    "evaluated_at": "2026-10-20T20:10:01.525Z",
+    "source_updated_at": "2026-10-08T14:20:58Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is likely applicable if reproduced, but the lightweight pass cannot yet distinguish whether the stuck blue circle is the activation-created always pointer, a right-button/ripple hold visual, a stale composition shape, or a settings-specific overlay state."
+    "status": "proposed",
+    "rationale": "A PowerToys-side visual-state fix is applicable if the current-source hypothesis is confirmed; no merged fix or active upstream fix PR was found in the reviewed thread."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Do not retain the always-on circle when Mouse Highlighter enters Ripple mode",
+      "root_cause": "Hypothesis: activation or a settings-mode restart creates an always-on MouseButton::None circle while ripple mode is active, leaving it visible after the transient effect. StartDrawing creates an initial None point and settings changes restart drawing; this is not yet confirmed as the exact rendered shape.",
+      "plan": [
+        "Reproduce direct Ripple activation and Circle-to-Ripple transition with the reporter’s settings; trace whether StartDrawing/AddDrawingPoint creates the circle and whether previous composition shapes are removed.",
+        "Clear or skip the always-on circle on Ripple activation/mode changes unless explicitly part of configured behavior.",
+        "Add focused regression coverage for Ripple startup and Circle-to-Ripple transition with a stationary pointer."
+      ],
+      "verification": [
+        "Activate Ripple through its shortcut and Settings; verify no stationary circle remains after the ripple fades.",
+        "Switch from Circle Highlight to Ripple; verify the prior circle disappears while subsequent ripple clicks still render.",
+        "Run focused Mouse Highlighter validation and repeat Spotlight as a control."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The failure is corroborated and the activation/mode-switch path creates an initial always-on point, but the precise shape and graphics-update report need maintainer reproduction."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Activating Mouse Highlighter on the preview build reportedly produces the expected ripple effect plus an extra blue desktop circle that persists until reboot.",
+    "summary": "Ripple activation leaves a stationary circle; follow-up evidence narrows the ghost to switching from Circle Highlight into Ripple.",
     "known_information": [
-      "PowerToys version reported: 0.101.2572 Preview.",
-      "Installation methods selected: GitHub and PowerToys auto-update.",
-      "Area selected: Mouse Utilities.",
-      "The reporter attached a PowerToys bug report ZIP.",
-      "There are no public comments or existing upstream author-feedback requests."
+      "Primary report: PowerToys 0.101.2572 Preview; blue circle persists until reboot after activating Ripple.",
+      "Primary reporter attached a diagnostic ZIP.",
+      "A commenter first observed a stationary dot after an Intel Graphics update; Crosshairs still worked.",
+      "A second commenter says only Ripple triggers the circle, across Settings activation and Win+Shift+H; Circle Highlight and Spotlight do not.",
+      "Switching from Circle Highlight to Ripple leaves a circle at the cursor position; screenshot and diagnostic ZIP links were supplied.",
+      "Related #50194 describes the same Circle-to-Ripple stuck-circle symptom; it was closed by stale-feedback automation, not by a recorded fix."
     ],
     "inferences": [
-      "Because the normal ripple appears, the activation shortcut and module startup path are likely running.",
-      "The persistent blue circle may be a stale Mouse Highlighter composition visual rather than a failure to start the feature.",
-      "The color may correspond to right-button highlighting or a customized always-on/highlight color, but the public report does not identify the exact Mouse Highlighter settings."
+      "The intended Ripple activation is running; the residual circle may be separate composition geometry.",
+      "The initial always-on point could account for the circle, but no trace proves it is the exact visual.",
+      "The Intel Graphics update may be coincidental; no causal evidence links it to this state."
     ],
-    "analysis": "The public issue already contains enough current-build evidence for maintainer reproduction. Source inspection shows separate activation, always-pointer, ripple hold, fade, reset, and stop paths; the next useful action is a trace that identifies which object remains visible and whether StopDrawing/ClearDrawing/fade timers execute.",
+    "analysis": "There is strong reproduction evidence and a narrow owning component. Current source creates an initial MouseButton::None point and restarts drawing for settings changes, so a maintainer can test whether that point survives Ripple transitions. The report is actionable for focused design, but implementation should wait for a composition-object trace.",
     "initial_investigation": [
-      "Reviewed the issue body, labels, comments, updatedAt, and attachment metadata through 2026-09-17T12:23:55Z.",
-      "Inspected src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.cpp StartDrawing, AddDrawingPoint, ClearDrawingPoint, ClearDrawing, StopDrawing, HandleMouseEvent, and ripple timer paths.",
-      "Inspected src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.h for default colors and ripple defaults.",
-      "Inspected src/modules/MouseUtils/MouseHighlighter/dllmain.cpp settings parsing for spotlight and ripple configuration."
+      "Read the complete live body and both comments through 2026-10-08T14:20:58Z, including the mode-specific description and attachment links.",
+      "Checked #50194: it describes the same Circle-to-Ripple visual and contains a detailed second-reporter reproduction; closure was automated for lack of follow-up, not a fix.",
+      "Inspected current upstream MouseHighlighter.cpp: StartDrawing adds an initial MouseButton::None point; ApplySettings sets ripple mode and restarts drawing when visible.",
+      "Latest reviewed MouseHighlighter.cpp history is PR #49699 (2026-08-11), which moved ripple work out of the low-level hook; no later path-specific fix was identified."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "reproduce-mouse-highlighter-stuck-circle-50619",
-      "type": "reproduce",
-      "label": "Reproduce Mouse Highlighter stuck circle",
+      "id": "design-ripple-stuck-circle-50619",
+      "type": "approve_design",
+      "label": "Design Ripple circle cleanup",
       "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design only after reproduction identifies the residual composition shape."
+    },
+    {
+      "id": "reproduce-ripple-stuck-circle-50619",
+      "type": "reproduce",
+      "label": "Reproduce Ripple stuck circle",
+      "primary": false,
       "confirm": true,
       "reproduce": {
         "module": "Mouse Utilities - Mouse Highlighter",
-        "version_requirement": "PowerToys 0.101.2572 Preview or a current build containing the same Mouse Highlighter ripple implementation",
+        "version_requirement": "0.101.2572 Preview or a current build with the same Ripple implementation",
         "prerequisites": [
-          "Mouse Highlighter enabled",
-          "Use the reporter's Mouse Highlighter settings from the attached PowerToys bug report ZIP when available",
-          "Capture Mouse Highlighter trace/log output around activation and deactivation"
+          "Enable Mouse Highlighter.",
+          "Use Ripple mode with the reporter’s settings where available; otherwise record always-on color/opacity and Ripple configuration.",
+          "Observe a visible cursor position away from the taskbar."
         ],
         "steps": [
-          "Enable Mouse Highlighter and set activation to the same shortcut/settings shown in the attached diagnostic package.",
-          "Activate Mouse Highlighter with the activation shortcut.",
-          "Observe whether the expected ripple effect appears.",
-          "After the ripple fade duration, inspect whether a blue circle remains on the desktop.",
-          "If it remains, toggle Mouse Highlighter off and on, then use the activation shortcut again to determine whether StopDrawing or ClearDrawing clears the visual.",
-          "Repeat with ripple mode disabled and with the always-on/highlight color alpha set to transparent versus visible to isolate the visual source."
+          "Activate Mouse Highlighter directly while Ripple mode is selected.",
+          "Click once and wait for the ripple animation to finish; note whether a blue circle remains stationary.",
+          "Switch from Circle Highlight to Ripple while the feature is active, then observe the circle at the mode-switch position.",
+          "Repeat activation through Settings and Win+Shift+H; compare with Circle Highlight and Spotlight controls.",
+          "Trace whether the remaining visual is the initial None point, a button pointer, ripple ring/glow, or stale composition state."
         ],
-        "expected_result": "Mouse Highlighter should show only the configured transient or always-on effect and should clear transient ripple/button visuals after their fade without leaving an unremovable desktop circle.",
+        "expected_result": "Ripple should display the configured transient effect only; no stale stationary circle should remain after activation or mode change.",
         "setup_requirements": [
-          "Record the active Mouse Highlighter settings: ripple mode, spotlight mode, left/right/highlight colors, opacity, radius, fade delay, fade duration, ripple size, and release-pulse settings.",
-          "Capture whether MouseHighlighter::StartDrawing creates an initial MouseButton::None visual with non-zero alpha.",
-          "Capture whether the remaining circle corresponds to m_alwaysPointer, m_leftPointer/m_rightPointer, m_leftRippleGlow/m_rightRippleGlow, or spotlight overlay state.",
-          "Capture whether StopDrawing, ResetPendingMouseInput, ClearDrawing, and any active hold/fade timers run before the circle remains visible."
+          "Record mode, always-on/left/right colors and alpha, Ripple settings, and activation path.",
+          "Capture which composition shape remains after the ripple fades."
         ]
       }
     }
   ],
+  "schemaVersion": 5,
+  "number": 50619,
+  "kind": "issue",
+  "generated_at": "2026-10-20T20:10:01.525Z",
+  "evaluated_at": "2026-10-20T20:10:01.525Z",
+  "revalidation_history": [
+    {
+      "evaluated_at": "2026-09-17T12:53:39.0776636Z",
+      "source_updated_at": "2026-09-17T12:23:55Z",
+      "stage": "reproduction_ready",
+      "judgment": {
+        "status": "reproducible",
+        "rationale": "The reporter supplied a current preview version, a direct activation scenario, and a PowerToys bug report ZIP. The lightweight code inspection found that Mouse Highlighter creates an initial always/idle visual on activation and separate ripple/button visuals with timers and fade animations, so a controlled repro trace is needed to determine which visual remains visible and why it is not cleared.",
+        "evidence": [
+          "The issue targets PowerToys 0.101.2572 Preview and the Mouse Utilities area.",
+          "The reported reproduction is to activate Mouse Highlighter with the activation shortcut.",
+          "Actual behavior says the feature activates with the expected ripple effect and also draws a blue circle on the desktop that cannot be removed without rebooting.",
+          "A PowerToysReport_2026-09-17-15-15-07.zip attachment is present.",
+          "MouseHighlighter::StartDrawing creates an initial MouseButton::None drawing point when activation starts.",
+          "MouseHighlighter handles ripple mode with hold timers, button state, fade animations, and ClearDrawing/StopDrawing paths that can distinguish stale always-on visuals from stale click/hold visuals."
+        ],
+        "recommended_action": "Run a controlled maintainer reproduction using the attached diagnostics and current Mouse Highlighter settings, then inspect whether activation leaves m_alwaysPointer, a ripple hold shape, or overlay state visible after the effect should fade."
+      },
+      "fix_assessment": {
+        "status": "not_applicable",
+        "rationale": "A PowerToys code fix is likely applicable if reproduced, but the lightweight pass cannot yet distinguish whether the stuck blue circle is the activation-created always pointer, a right-button/ripple hold visual, a stale composition shape, or a settings-specific overlay state."
+      },
+      "proposed_fixes": []
+    }
+  ],
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+    "detail": "No upstream or fork issue/PR writes were made."
   }
 }

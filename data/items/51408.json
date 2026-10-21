@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51408,
+  "kind": "issue",
+  "issue_type": "bug",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-20T16:41:12.492Z",
+  "evaluated_at": "2026-10-20T16:41:12.492Z",
+  "source_updated_at": "2026-10-20T01:45:20Z",
+  "updated_at": "2026-10-20T01:45:20Z",
+  "state": "open",
+  "title": "CmdPal: Old providers can replace or remove current commands (EXT26.L1-L3)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51408",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock",
+    "Investigation-Finding"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "rationale": "The issue distinguishes three failures and reports isolated stale-load and queued-removal reproductions. The current manager awaits an old sender's load and applies results by ProviderId; callback retention is source-based, not measured.",
+    "source_updated_at": "2026-10-20T01:45:20Z",
+    "evidence": [
+      "Stale refresh overwrite and queued same-ID removal are reported reproduced; callback retention is source-inspected only.",
+      "Current UpdateCommandsForProvider awaits sender.LoadTopLevelCommands and replaces by ProviderId.",
+      "The related issues 51409/51410 address other provider-result and duplicate cleanup paths; those reports are not interchangeable with L1-L3 lifetime races."
+    ],
+    "evaluated_at": "2026-10-20T16:41:12.492Z",
+    "recommended_action": "Use the targeted maintainer reproduction to validate the proposed mechanism before design approval; no upstream action has been taken.",
+    "status": "actionable_design"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No matching fix was identified by focused issue-number search; keep the mechanism as a hypothesis pending reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "Two stale-lifetime races are reproduced and ID-based publication is visible; callback retirement and synchronization need focused coverage.",
+        "level": "yellow",
+        "score": 73
+      },
+      "verification": [
+        "Replace A with B sharing ProviderId, then raise A's ItemsChanged and verify it is ignored.",
+        "Pause A's load, publish B, release A and verify B's commands/bands remain.",
+        "Queue A removal, register B before execution, release work and verify B remains."
+      ],
+      "plan": [
+        "Give each registration an explicit lifetime identity and retire old wrappers/handlers.",
+        "Check current wrapper before refresh and again at publication, synchronized with replacement.",
+        "Carry wrapper identity through queued removal and clean rejected results without touching replacement objects.",
+        "Test L1-L3 separately, including failed unsubscribe."
+      ],
+      "root_cause": "Callbacks and queued load/removal work use ProviderId rather than exact wrapper lifetime; an old provider can continue, overwrite a replacement or remove the current same-ID provider.",
+      "title": "Investigate the reported PowerToys behavior"
+    }
+  ],
+  "issue_context": {
+    "summary": "Three provider-lifetime races can retain stale callbacks, let an old load overwrite a replacement, or let queued removal delete a same-ID replacement.",
+    "known_information": [
+      "Stale refresh overwrite and queued same-ID removal are reported reproduced; callback retention is source-inspected only.",
+      "Current UpdateCommandsForProvider awaits sender.LoadTopLevelCommands and replaces by ProviderId.",
+      "The related issues 51409/51410 address other provider-result and duplicate cleanup paths; those reports are not interchangeable with L1-L3 lifetime races."
+    ],
+    "inferences": [
+      "The proposed mechanism is supported by issue evidence but remains unconfirmed until the targeted maintainer reproduction is completed."
+    ],
+    "information_gaps": [],
+    "analysis": "The issue distinguishes three failures and reports isolated stale-load and queued-removal reproductions. The current manager awaits an old sender's load and applies results by ProviderId; callback retention is source-based, not measured.",
+    "initial_investigation": [
+      "Read the complete live issue body and comments; refreshed state, labels, assignees and timestamp.",
+      "Checked relevant source paths/linked work and ran a focused issue-number PR search; no result does not prove no broader work exists."
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve bounded issue investigation",
+      "id": "issue-51408-approve-design",
+      "type": "approve_design",
+      "note": "Draft only; no fork work or upstream action was taken.",
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Investigate the reported PowerToys behavior"
+      }
+    },
+    {
+      "label": "Reproduce CmdPal provider lifecycle failure",
+      "id": "issue-51408-reproduce",
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Retired callbacks are ignored and late load/removal cannot overwrite or delete current provider objects.",
+        "steps": [
+          "1. Replace A with B under the same ID, then raise an old event.",
+          "2. Pause A's load, publish B, release A; separately queue A removal before B registers.",
+          "3. Inspect command/band ownership and handler retirement."
+        ],
+        "version_requirement": "Current main/dev build; report references main ef43bf8.",
+        "prerequisites": [
+          "Provider test doubles A/B sharing an ID with controllable load and queued manager work."
+        ],
+        "module": "Command Palette provider lifecycle"
+      }
+    }
+  ]
+}
