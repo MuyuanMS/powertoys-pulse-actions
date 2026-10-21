@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-22T03:59:21.2827325+08:00",
+  "generated_at": "2026-10-22T04:28:01.4604366+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,18 +86,19 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 188,
-    "open_issues": 12304,
-    "community": 11414,
-    "artifacts": 1312
+    "open_issues": 12305,
+    "community": 11415,
+    "artifacts": 1313
   },
   "impact": {
-    "as_of": "2026-10-22T03:59:21.2827325+08:00",
+    "as_of": "2026-10-22T04:28:01.4604366+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51470,
     51466,
     51457,
     51438,
@@ -1424,13 +1425,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1442,8 +1443,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-21T18:38:09Z",
-      "updated_at": "2026-10-21T19:36:01Z",
-      "comments": 8,
+      "updated_at": "2026-10-21T19:50:00Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -1488,8 +1489,8 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": null,
       "review_decision": "APPROVED",
-      "ci_state": "pending",
-      "merge_state": "BLOCKED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 1103,
@@ -13558,6 +13559,39 @@ window.BOARD_INDEX = {
       "created_at": "2021-11-10T20:16:03Z",
       "updated_at": "2026-10-11T16:14:18Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-49436",
+      "kind": "issue",
+      "number": 49436,
+      "url": "https://github.com/microsoft/PowerToys/issues/49436",
+      "title": "bug exception",
+      "author": "munxr",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-PowerDisplay"
+      ],
+      "assignees": [],
+      "created_at": "2026-07-21T16:37:03Z",
+      "updated_at": "2026-07-21T16:40:00Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -28249,12 +28283,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49436",
+      "id": "issue-51471",
       "kind": "issue",
-      "number": 49436,
-      "url": "https://github.com/microsoft/PowerToys/issues/49436",
-      "title": "bug exception",
-      "author": "munxr",
+      "number": 51471,
+      "url": "https://github.com/microsoft/PowerToys/issues/51471",
+      "title": "Desktop Composition crashed Powertoys application.",
+      "author": "TrentNation",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -28272,13 +28306,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-PowerDisplay"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-07-21T16:37:03Z",
-      "updated_at": "2026-07-21T16:40:00Z",
-      "comments": 2,
+      "created_at": "2026-10-21T20:02:55Z",
+      "updated_at": "2026-10-21T20:04:45Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -28444,8 +28477,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-21T16:49:21Z",
-      "updated_at": "2026-10-21T18:44:32Z",
-      "comments": 2,
+      "updated_at": "2026-10-21T20:05:32Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -28730,8 +28763,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-21T09:47:41Z",
-      "updated_at": "2026-10-21T09:47:41Z",
-      "comments": 0,
+      "updated_at": "2026-10-21T20:07:14Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -58860,8 +58893,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-21T18:49:46Z",
-      "comments": 331,
+      "updated_at": "2026-10-21T20:08:00Z",
+      "comments": 332,
       "priority": null
     },
     {
@@ -222851,7 +222884,7 @@ window.BOARD_INDEX = {
       "number": 26721,
       "url": "https://github.com/microsoft/PowerToys/issues/26721",
       "title": "Additional languages - Serbian (Latin-RS) and (Cyrillic-RS)",
-      "author": "BlahBlahGaeming894",
+      "author": "niko-liberty",
       "state": "open",
       "is_draft": false,
       "is_community": true,
