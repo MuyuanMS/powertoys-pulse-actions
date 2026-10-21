@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-21T17:52:02.9844502+08:00",
+  "generated_at": "2026-10-21T18:10:27.5747301+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1306
   },
   "impact": {
-    "as_of": "2026-10-21T17:52:02.9844502+08:00",
+    "as_of": "2026-10-21T18:10:27.5747301+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -3122,7 +3122,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3139,7 +3139,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1088,
+        "fork_title": "[PR 51212] CmdPal: Redesign the Performance Monitor Memory card",
+        "fork_state": "OPEN",
+        "fork_branch": "review-head/51212-f6f2f649",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1088"
+      }
     },
     {
       "id": "pr-51211",
@@ -3159,7 +3167,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3176,7 +3184,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1087,
+        "fork_title": "[PR 51211] CmdPal: Redesign the Performance Monitor CPU card",
+        "fork_state": "OPEN",
+        "fork_branch": "review-head/51211-9b71091d",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1087"
+      }
     },
     {
       "id": "pr-51210",
@@ -3196,7 +3212,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3213,7 +3229,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1089,
+        "fork_title": "[PR 51210] CmdPal: Render Adaptive Cards bar charts natively",
+        "fork_state": "OPEN",
+        "fork_branch": "review-head/51210-387233b3-20261021",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1089"
+      }
     },
     {
       "id": "pr-51209",
@@ -3233,7 +3257,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3250,7 +3274,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1086,
+        "fork_title": "[PR 51209] CmdPal: Render Adaptive Cards ProgressBar, Badge, Icon, and rounded tiles",
+        "fork_state": "OPEN",
+        "fork_branch": "review-head/51209-943a98fe0840",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1086"
+      }
     },
     {
       "id": "pr-51208",
@@ -3270,7 +3302,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3287,7 +3319,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 1085,
+        "fork_title": "[PR 51208] CmdPal: Add an Adaptive Cards polyfills library with native Chart.Line",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51208",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/1085"
+      }
     },
     {
       "id": "pr-51206",
@@ -4271,18 +4311,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-10-21T07:03:32Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post one inline suggestion"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-PowerDisplay",
         "Ready for review"
@@ -4561,8 +4598,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_blocked",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -5960,15 +5997,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 846,
-        "fork_title": "[PR 50626] Fix ghost checkmark on unchecked checkboxes after re-enabling a settings group",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50626",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/846"
-      }
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50622",
@@ -28416,13 +28445,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-42582",
+      "id": "issue-51455",
       "kind": "issue",
-      "number": 42582,
-      "url": "https://github.com/microsoft/PowerToys/issues/42582",
-      "title": "powertoys ran into an issue",
-      "author": "sushilpaudel5",
-      "state": "closed",
+      "number": 51455,
+      "url": "https://github.com/microsoft/PowerToys/issues/51455",
+      "title": "Inconsistent spacing in Settings window",
+      "author": "ReginaldTang",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -28439,13 +28468,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-General"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2025-10-18T16:49:21Z",
-      "updated_at": "2026-04-30T09:49:51Z",
-      "comments": 3,
+      "created_at": "2026-10-21T09:47:41Z",
+      "updated_at": "2026-10-21T09:47:41Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -58610,8 +58638,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-21T08:25:30Z",
-      "comments": 318,
+      "updated_at": "2026-10-21T09:52:21Z",
+      "comments": 319,
       "priority": null
     },
     {
@@ -253401,6 +253429,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-42582",
+      "kind": "issue",
+      "number": 42582,
+      "url": "https://github.com/microsoft/PowerToys/issues/42582",
+      "title": "powertoys ran into an issue",
+      "author": "sushilpaudel5",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2025-10-18T16:49:21Z",
+      "updated_at": "2026-04-30T09:49:51Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-43035",
       "kind": "issue",
       "number": 43035,
@@ -294645,35 +294706,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-23740",
+      "id": "issue-41259",
       "kind": "issue",
-      "number": 23740,
-      "url": "https://github.com/microsoft/PowerToys/issues/23740",
-      "title": "Windows Toolbar positioning",
-      "author": "deugister",
+      "number": 41259,
+      "url": "https://github.com/microsoft/PowerToys/issues/41259",
+      "title": "Plugin installation error",
+      "author": "VISHNUKANTHMADABHUSHI",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Idea-New PowerToy",
-        "Needs-Triage"
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2023-02-02T07:57:48Z",
-      "updated_at": "2026-04-18T13:59:52Z",
+      "created_at": "2025-08-19T15:18:12Z",
+      "updated_at": "2026-04-18T14:51:10Z",
       "comments": 0,
       "priority": null
     },
@@ -329595,38 +329656,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-51455",
-      "kind": "issue",
-      "number": 51455,
-      "url": "https://github.com/microsoft/PowerToys/issues/51455",
-      "title": "Inconsistent spacing in Settings window",
-      "author": "ReginaldTang",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-21T09:47:41Z",
-      "updated_at": "2026-10-21T09:47:41Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-7012",
       "kind": "issue",
       "number": 7012,
@@ -337019,39 +337048,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41259",
-      "kind": "issue",
-      "number": 41259,
-      "url": "https://github.com/microsoft/PowerToys/issues/41259",
-      "title": "Plugin installation error",
-      "author": "VISHNUKANTHMADABHUSHI",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-General"
-      ],
-      "assignees": [],
-      "created_at": "2025-08-19T15:18:12Z",
-      "updated_at": "2026-04-18T14:51:10Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-4162",
       "kind": "issue",
       "number": 4162,
@@ -338829,6 +338825,39 @@ window.BOARD_INDEX = {
       "created_at": "2025-04-22T22:02:33Z",
       "updated_at": "2025-06-20T00:41:11Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-23740",
+      "kind": "issue",
+      "number": 23740,
+      "url": "https://github.com/microsoft/PowerToys/issues/23740",
+      "title": "Windows Toolbar positioning",
+      "author": "deugister",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Idea-New PowerToy",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2023-02-02T07:57:48Z",
+      "updated_at": "2026-04-18T13:59:52Z",
+      "comments": 0,
       "priority": null
     },
     {
