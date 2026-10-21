@@ -1,33 +1,79 @@
 {
+  "schemaVersion": 5,
   "number": 38616,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-04-07T14:00:17Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Shortcut key setting failed",
+  "url": "https://github.com/microsoft/PowerToys/issues/38616",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-10-21T06:31:47Z",
+  "evaluated_at": "2026-10-21T06:31:47Z",
+  "source_updated_at": "2026-10-11T16:49:14Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue gives a concrete Run Program sequence and an access error when launching pwsh.exe, but it is on PowerToys 0.90.0 and has no follow-up. The normal-visible launch path has since changed in PR #49571, so first validate current behavior instead of drafting a competing fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports a Microsoft Store install and a Ctrl+Shift+T mapping to a local pwsh.exe path.",
+      "The reported result is a dialog saying the system could not access the file.",
+      "The live issue has no comments, assignees, or linked PR; PR #49571 later changed normal visible Run Program launches."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-04-07T14:00:17Z"
-  }
+    "recommended_action": "Replay the mapping on current upstream main and determine whether the reported access dialog remains."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #49571 changed normal visible Run Program launches to use Explorer Shell activation, which is the same launch path implicated by this report. The PR does not explicitly verify this exact pwsh.exe access case, so coverage remains to be confirmed rather than assumed.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49571"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Keyboard Manager shortcut configured to launch pwsh.exe reportedly showed an access error on PowerToys 0.90.0.",
+    "known_information": [
+      "The reporter selected Input/Output > Keyboard Manager and mapped Ctrl+Shift+T to a local pwsh.exe file.",
+      "The expected behavior was successful launch; the actual behavior was a system access dialog.",
+      "PR #49571 subsequently changed normal visible Keyboard Manager program launches, but does not cite this issue."
+    ],
+    "inferences": [
+      "The access failure may have been affected by the later normal-launch routing change, but the exact path and result have not been tested."
+    ],
+    "analysis": "The concrete launch sequence can be replayed by a maintainer using the current implementation. The linked change is a potentially relevant existing fix attempt, so no competing design is proposed until exact coverage is checked.",
+    "initial_investigation": [
+      "Read the complete live body and confirmed there are no comments or linked work.",
+      "Inspected the current Run Program path in KeyboardEventHandlers.cpp and the launch-routing change in PR #49571.",
+      "The local source's normal-visible path uses Explorer shell activation; this is not confirmation that the reporter's exact file or dialog is fixed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-38616",
+      "type": "reproduce",
+      "label": "Retest pwsh shortcut access",
+      "reproduce": {
+        "title": "Verify pwsh.exe launch after the normal-elevation routing change",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or a build containing PR #49571",
+          "A local pwsh.exe executable",
+          "A non-administrator PowerToys session matching the reported Microsoft Store setup"
+        ],
+        "steps": [
+          "Create a Keyboard Manager Run Program shortcut for Ctrl+Shift+T that targets the local pwsh.exe executable.",
+          "Save the mapping and invoke Ctrl+Shift+T.",
+          "If the access dialog appears, record its exact text and whether pwsh.exe launches directly from Explorer under the same Windows user."
+        ],
+        "expected_result": "The configured executable opens without an access dialog; if it still fails, the exact launch target and dialog identify a remaining path or permission issue.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

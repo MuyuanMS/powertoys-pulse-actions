@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 29683,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
   "source_updated_at": "2024-10-10T17:59:02Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "url": "https://github.com/microsoft/PowerToys/issues/29683",
+  "title": "Conflict with PowerZone and PhoneLink",
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Dragging&UI",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives a sequence involving Phone Link, a specific Windows 10 build, FancyZones, and the Shift key appearing stuck, and the author supplied a PowerToys report ZIP after a maintainer requested it. No current-version confirmation exists, so use the existing evidence for a maintainer reproduction rather than request another archive.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter used PowerToys 0.75.1 on Windows 10 22H2 (19045) and describes launching Phone Link, minimizing it, reopening it, and moving it to another display.",
+      "After Phone Link soft-crashes, Shift+key input reportedly stops and FancyZones displays zones as though Shift-drag were active.",
+      "The maintainer requested /bugreport and the author supplied PowerToysReport_2023-11-09-15-12-12.zip in the next comment.",
+      "No public comment confirms whether the problem persists on current builds."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the Phone Link/display sequence with FancyZones enabled and determine whether the stuck Shift state is isolated to Phone Link or follows FancyZones.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
     "source_updated_at": "2024-10-10T17:59:02Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report identifies a concrete interaction, but the symptom may arise from Phone Link's soft crash, input focus, or FancyZones' modifier tracking. No code root cause is demonstrated."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reset stale Shift-drag state after a window/display transition",
+      "root_cause": "Hypothesis: FancyZones may retain a Shift-drag interaction state if a focused window becomes unresponsive or changes display while Shift input is active. The issue does not prove that the modifier state originates in FancyZones.",
+      "plan": [
+        "Repeat the Phone Link launch/minimize/reopen/move sequence on Windows 10 and a current supported Windows build, first with FancyZones enabled and then disabled.",
+        "After the reported soft crash, test Shift in multiple applications and check whether FancyZones shows zones without an active drag.",
+        "Trace FancyZones modifier and drag-state cleanup on focus loss and window destruction only if the behavior reproduces with FancyZones enabled.",
+        "If stale state is confirmed, reset the drag overlay on cancellation/focus loss and add a regression test for window teardown during a modifier interaction."
+      ],
+      "verification": [
+        "After reproducing the Phone Link transition, Shift+letter input works in a text field.",
+        "FancyZones zones appear only during an actual window drag with Shift held.",
+        "Repeat after closing Phone Link and with FancyZones disabled to isolate ownership."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The sequence and symptom are specific, but the report is from 0.75.1 and no evidence separates FancyZones from the Phone Link crash or Windows input state."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After reopening and moving Phone Link between a horizontal and vertical display, the app reportedly soft-crashes and Shift stops typing while FancyZones shows a Shift-drag overlay.",
+    "known_information": [
+      "The report lists PowerToys 0.75.1, Phone Link 1.23092.151.0, and Windows 10 Pro build 19045.",
+      "The sequence includes minimizing Phone Link to tray, reopening it from Windows search, and moving it to another monitor.",
+      "A PowerToys diagnostic archive was provided after a maintainer requested /bugreport; its contents were not inspected.",
+      "There are two comments and no assignee."
+    ],
+    "inferences": [
+      "A stale FancyZones drag state is plausible but not proven; Phone Link's soft crash or an OS-level modifier state could explain the same symptoms.",
+      "The issue may depend on display layout and app responsiveness."
+    ],
+    "analysis": "Use the supplied sequence to isolate FancyZones from Phone Link and Windows. Avoid another bug-report request because the author already supplied the requested archive.",
+    "initial_investigation": [
+      "Read the full issue body and both comments, including the author-provided ZIP link.",
+      "Reviewed FancyZones interaction ownership; no source-level evidence in the report proves a stuck internal modifier state."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-phonelink-shift-fz-29683",
+      "type": "reproduce",
+      "label": "Reproduce Phone Link Shift state",
+      "primary": true,
+      "reproduce": {
+        "module": "FancyZones",
+        "version_requirement": "Use a current supported PowerToys build; original report was Windows 10 Pro 19045 with PowerToys 0.75.1.",
+        "prerequisites": [
+          "Windows 10 system with a horizontal primary and vertical secondary display, if available.",
+          "FancyZones enabled and Phone Link installed.",
+          "A text field where Shift+letter behavior can be checked."
+        ],
+        "steps": [
+          "Open Phone Link, minimize it to the tray, reopen it from Windows search, and move it to the adjacent display.",
+          "If Phone Link becomes unresponsive, test Shift+letter input in another text field and observe whether FancyZones shows zones without a window drag.",
+          "Repeat with FancyZones disabled and compare; then repeat after closing Phone Link."
+        ],
+        "expected": "Shift continues to modify typed characters, and FancyZones displays zones only during a real Shift-drag.",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/files/13312865/PowerToysReport_2023-11-09-15-12-12.zip"
+        ]
+      }
+    },
+    {
+      "id": "approve-design-29683",
+      "type": "approve_design",
+      "label": "Approve focused interaction investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The stale-state hypothesis is red pending current-build reproduction."
+    }
+  ]
 }

@@ -1,33 +1,76 @@
 {
+  "schemaVersion": 5,
   "number": 34549,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:54:00Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Remap CapsLock to Ctrl does not work in Hyper-V Windows 11 VM",
+  "url": "https://github.com/microsoft/PowerToys/issues/34549",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:23Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report has a concrete Hyper-V guest remap failure, but the session/input mode and where PowerToys runs are not established. Related issue #21416 closed, but that closure does not show this report was fixed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue says a CapsLock-to-Ctrl remap does not work in a Windows 11 Hyper-V VM.",
+      "The thread links the related issue #21416, which is now closed.",
+      "No current-build retest, VMConnect session mode, or confirmed workaround is documented."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:54:00Z"
-  }
+    "recommended_action": "Reproduce in a controlled Hyper-V guest with host/guest PowerToys state and session mode recorded; do not treat #21416's closure as resolution evidence.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:23Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The host-versus-guest configuration and input session mode are missing, and the related issue closure provides no evidence that this case is fixed."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A CapsLock-to-Ctrl remap reportedly fails in a Windows 11 Hyper-V VM; the available thread does not distinguish host interception from guest-side remapping or session transport.",
+    "known_information": [
+      "The issue is labeled Issue-Bug, Needs-Triage, and Product-Keyboard Manager.",
+      "The reported destination is Ctrl and the failing target is a Windows 11 Hyper-V guest.",
+      "The issue references #21416, which is closed but does not provide proof of a fix for this report."
+    ],
+    "inferences": [
+      "The remap may be applied on the host while the VM session captures or translates the key first, or the guest may have its own PowerToys configuration.",
+      "Enhanced-session versus basic-session input could change which keyboard events reach the remapper."
+    ],
+    "analysis": "Use a small controlled Hyper-V test and identify which OS instance runs Keyboard Manager. The old related issue should not be used as a handled status without a linked fix or a current confirmation.",
+    "initial_investigation": [
+      "Read the full issue and both comments.",
+      "Checked the related #21416 status; it is closed, but no evidence links its closure to a resolution of #34549."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare Hyper-V guest input modes",
+      "reproduce": {
+        "title": "Test CapsLock-to-Ctrl remapping across Hyper-V session modes",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "A Windows 11 Hyper-V host and disposable Windows 11 guest.",
+          "Keyboard Manager installed on the host and a clean test configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "Verify the CapsLock-to-Ctrl mapping works on the host outside the VM.",
+          "With the remap configured on the host, test the guest in the current VMConnect session mode and record whether it receives Ctrl.",
+          "Repeat in the alternate available VMConnect mode, such as Enhanced Session versus basic session.",
+          "If PowerToys is also installed in the guest, disable one instance at a time and compare."
+        ],
+        "expected_result": "The configuration identifies the point where CapsLock is translated or captured, and the remap works in the supported host/guest input path."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 2
 }

@@ -1,61 +1,104 @@
 {
+  "schemaVersion": 5,
   "number": 23351,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on reporter follow-up",
-    "detail": "The current thread is blocked on updated repro information, logs, or confirmation on a newer build."
-  },
-  "next_action": {
-    "glyph": "⌛",
-    "label": "Wait for author evidence",
-    "reason": "The reporter has the next move because maintainers already asked for current-version validation or extra diagnostics."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T09:56:53Z",
+  "title": "Swapping capslock/ctrl causes false pen actions on Surface Laptop Studio",
+  "url": "https://github.com/microsoft/PowerToys/issues/23351",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:38Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The current thread is blocked on updated repro information, logs, or confirmation on a newer build.",
+    "status": "reproducible",
+    "rationale": "The reporter ties Surface pen symptoms to Keyboard Manager and asks maintainers to reproduce, but the symptom and device/input path are not isolated. Related issue #33968 is described as related but distinct, so it is not a duplicate or confirmed fix.",
     "evidence": [
-      "The current thread is blocked on updated repro information, logs, or confirmation on a newer build.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The reporter describes false pen actions after swapping CapsLock and Ctrl on a Surface Laptop Studio and says disabling Keyboard Manager removes the symptoms.",
+      "The reporter later mentions moving to a Copilot Surface Pro and asks maintainers to reproduce.",
+      "Issue #33968 is referenced as related but distinct; it does not establish a shared cause."
     ],
-    "recommended_action": "The reporter has the next move because maintainers already asked for current-version validation or extra diagnostics.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T09:56:53Z"
+    "recommended_action": "Use a Surface device and a simple CapsLock/Ctrl swap to test whether pen input changes only while Keyboard Manager is active, and capture the exact pen action and hardware state.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:38Z"
   },
-  "schemaVersion": 5,
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Fix proposal not applicable for issue in stage 'needs_reply' / judgment 'waiting_on_author'."
+    "status": "proposed",
+    "rationale": "A remapped modifier event may interact with the Surface pen input stack, but no event trace or controlled reproduction confirms that mechanism."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Prevent modifier remapping from producing unintended Surface pen actions",
+      "root_cause": "Keyboard Manager's low-level modifier remapping may change an event observed by the Surface pen/input stack in a way that triggers an unintended pen action; this interaction is only a hypothesis.",
+      "plan": [
+        "Reproduce on a Surface Laptop Studio and a Surface Pro with a single CapsLock-to-Ctrl mapping, testing pen input with Keyboard Manager on and off.",
+        "Record only the key/pen event sequence and identify whether a synthetic modifier event precedes each false pen action.",
+        "If the event trace confirms an interaction, adjust the remap path to preserve the pen input contract and add a regression test for paired key and pen events."
+      ],
+      "verification": [
+        "Verify ordinary pen writing, button actions, and modifier remapping work with the mapping both enabled and disabled.",
+        "Confirm the false action cannot be reproduced across repeated pen interactions on both supported Surface devices."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The reported on/off correlation is meaningful, but the issue does not identify the pen action, device event, or input component involved."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Swapping capslock/ctrl causes false pen actions on Surface Laptop Studio",
-    "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+    "summary": "A Surface user associates unintended pen actions with a CapsLock/Ctrl swap in Keyboard Manager, but the precise pen gesture and event path are unknown.",
+    "known_information": [
+      "The issue is labeled Issue-Bug, Needs-Repro, Priority-2, and Product-Keyboard Manager.",
+      "The reporter says disabling Keyboard Manager removes the pen symptom.",
+      "The reporter requests maintainer reproduction and refers to #33968 as related but distinct."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
+      "An interaction between remapped keyboard events and Surface pen input is possible, but the observed temporal association does not establish a root cause.",
+      "The issue may be device/driver-specific."
     ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+    "analysis": "The reporter's existing request is for reproduction rather than logs. A controlled device-side comparison is more useful than asking the reporter for another bundle; avoid conflating this report with #33968.",
+    "initial_investigation": [
+      "Read the full issue body and all three comments.",
+      "Reviewed the Keyboard Manager low-level event handling path; no source evidence directly connects it to the specific Surface pen action."
     ],
-    "information_gaps": [
-      {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
-        "evidence_type": "bugreport_zip"
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-23351",
+      "type": "approve_design",
+      "label": "Investigate Surface pen event interaction",
+      "primary": false,
+      "confirm": true,
+      "note": "Implementation design depends on confirming the key/pen event relationship."
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare Surface pen behavior with remapping",
+      "reproduce": {
+        "title": "Test Surface pen actions with a CapsLock/Ctrl remap",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "Surface Laptop Studio or Surface Pro with a working pen.",
+          "A clean Keyboard Manager configuration with only CapsLock mapped to Ctrl."
+        ],
+        "setup": [],
+        "steps": [
+          "Test a fixed set of pen hover, writing, and button gestures with Keyboard Manager disabled.",
+          "Enable Keyboard Manager and the single CapsLock-to-Ctrl mapping; repeat the identical pen gestures.",
+          "If an unintended action occurs, record the exact pen gesture and whether a keyboard key was pressed at the same time.",
+          "Disable only the mapping and repeat, then compare the result with Keyboard Manager fully disabled."
+        ],
+        "expected_result": "Pen behavior remains identical across the controlled states, or a repeatable event sequence identifies the input interaction responsible."
       }
-    ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
-  }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Repro",
+    "Priority-2",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 3
 }

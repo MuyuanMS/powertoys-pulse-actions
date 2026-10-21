@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 39077,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:07:11Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "键盘管理器：开户按钮映射时，任务管理器的输入框无法输入",
+  "url": "https://github.com/microsoft/PowerToys/issues/39077",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-10-21T06:40:01Z",
+  "evaluated_at": "2026-10-21T06:40:01Z",
+  "source_updated_at": "2026-10-11T16:49:09Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a 100%-reproducible reciprocal Left Alt↔Left Ctrl mapping that makes Task Manager input fields unusable on Windows 11 24H2 / PowerToys 0.90.1, while disabling the mapping restores input. The exact path still needs current-build replay and event tracing.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body specifies both reciprocal mappings and the affected Task Manager input fields.",
+      "The author reports the issue occurs 100% of the time and disappears when button remapping is disabled.",
+      "The live issue has no comments, assignees, or linked work."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:07:11Z"
-  }
+    "recommended_action": "Replay the reciprocal modifier mapping on a current build and isolate which Task Manager text-entry control stops receiving input."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reciprocal modifier map is a deterministic trigger and may expose interaction between remapped modifier state and elevated/system UI input. The exact event or input-control restriction is not yet proven."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep reciprocal Alt/Ctrl remaps from suppressing Task Manager text input",
+      "root_cause": "The reciprocal Left Alt/Left Ctrl mappings may leave modifier state or injected-event handling inconsistent for Task Manager's input controls. This is an unconfirmed hypothesis; the control's integrity context and event sequence must be checked.",
+      "plan": [
+        "Replay both reciprocal mappings on the reported Windows 11 24H2 setup and a current PowerToys build.",
+        "Compare typing in Task Manager's input field with a standard Notepad edit field while recording the remap event sequence and process integrity level.",
+        "Trace the first lost or misclassified key event in the Keyboard Manager hook path before changing behavior.",
+        "Add a focused regression test for reciprocal modifier mappings and the observed input/control boundary."
+      ],
+      "verification": [
+        "Task Manager input fields and ordinary text fields both accept text with the reciprocal map active.",
+        "The two modifier mappings still work as configured and do not leak unintended shortcuts.",
+        "Disabling the mapping continues to restore the original behavior."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The trigger and symptom are deterministic, but there is no evidence yet whether the failing point is Keyboard Manager state or a Task Manager/integrity boundary."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Left Alt mapped to Left Ctrl and Left Ctrl mapped to Left Alt, Task Manager input fields reportedly stop accepting text; disabling the remap restores input.",
+    "known_information": [
+      "Reported on PowerToys 0.90.1, Windows 11 Pro 24H2 build 26100.3775.",
+      "The author says the failure occurs 100% of the time with the reciprocal button mappings active.",
+      "No comments, assignees, or linked work are present."
+    ],
+    "inferences": [
+      "The reciprocal modifier state may interact with Task Manager input handling or its integrity boundary."
+    ],
+    "analysis": "The scenario is specific enough for a focused current-build replay. The hypothesis is deliberately provisional; no root cause should be claimed until the failing event and control boundary are identified.",
+    "initial_investigation": [
+      "Read the full Chinese issue body and confirmed there are no comments.",
+      "Checked live labels, assignees, and linked work; none was found.",
+      "The reported Windows build and reciprocal mapping are sufficient to create a targeted reproduction."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-39077",
+      "type": "approve_design",
+      "label": "Trace reciprocal modifier input failure",
+      "confirm": true,
+      "design": {
+        "title": "Keep reciprocal Alt/Ctrl remaps from suppressing Task Manager text input"
+      }
+    },
+    {
+      "id": "reproduce-39077",
+      "type": "reproduce",
+      "label": "Replay reciprocal Alt/Ctrl map in Task Manager",
+      "reproduce": {
+        "title": "Test text input with reciprocal Left Alt and Left Ctrl mappings",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or current build",
+          "Windows 11 24H2",
+          "Task Manager and a standard text editor"
+        ],
+        "steps": [
+          "Configure Left Alt→Left Ctrl and Left Ctrl→Left Alt in Keyboard Manager and enable the mappings.",
+          "Try typing ordinary text in a Task Manager input field and in Notepad.",
+          "Disable only the mappings and repeat both input tests.",
+          "Record whether the fields have different integrity levels and which key events are observed."
+        ],
+        "expected_result": "Text is accepted in Task Manager and ordinary text fields with the reciprocal map active, or a precise control-boundary limitation is isolated.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

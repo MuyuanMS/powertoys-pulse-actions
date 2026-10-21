@@ -1,33 +1,77 @@
 {
+  "schemaVersion": 5,
   "number": 23582,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:14:08Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Key mappings don't work when Visual Studio has focus",
+  "url": "https://github.com/microsoft/PowerToys/issues/23582",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:36Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original repro is clear but old: CapsLock/Ctrl and Win/Alt remaps work outside Visual Studio and revert inside it. A commenter points out that an elevated Visual Studio requires PowerToys at the same elevation, but the original report does not establish Visual Studio's elevation state.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter used PowerToys 0.66.0 on Windows 10 and says the remaps work until Visual Studio 2022 is focused.",
+      "A second reporter describes similar behavior in Visual Studio 2022 on Windows 10 with PowerToys 0.74.1.",
+      "A later commenter notes that if Visual Studio runs as administrator, PowerToys must also run as administrator; no confirmation of the original VS elevation state is present."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:14:08Z"
-  }
+    "recommended_action": "Reproduce the remap in Visual Studio at matching and mismatched integrity levels before treating this as an application-specific interception defect.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:36Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The existing discussion identifies an elevation boundary as a plausible explanation, but no current matched-elevation reproduction establishes a PowerToys defect."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "CapsLock/Ctrl and Win/Alt remaps reportedly stop applying while Visual Studio is focused; process elevation is an unresolved discriminator.",
+    "known_information": [
+      "The original report uses PowerToys 0.66.0, Visual Studio Community 2022, and Windows 10 21H2; PowerToys itself was not running as administrator.",
+      "A later report describes similar behavior in VS 2022 Enterprise on Windows 10 Enterprise with PowerToys 0.74.1.",
+      "A commenter advises matching PowerToys elevation to an elevated Visual Studio process.",
+      "The original reporter observes remapping resumes when focus leaves Visual Studio."
+    ],
+    "inferences": [
+      "A UIPI/integrity-level boundary could explain why a non-elevated PowerToys hook cannot affect an elevated Visual Studio window.",
+      "If the behavior persists at matching elevation, a Visual Studio-specific focus or hook issue remains possible."
+    ],
+    "analysis": "A useful maintainer check is a four-cell elevation comparison with a simple remap. This can separate a known Windows privilege boundary from an application-specific Keyboard Manager regression without requesting broad logs.",
+    "initial_investigation": [
+      "Read the full issue body and all three comments.",
+      "The discussion includes a direct elevation explanation but no confirmation of the app's elevation state or current build."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare Visual Studio and PowerToys elevation",
+      "reproduce": {
+        "title": "Test keyboard remapping across Visual Studio integrity levels",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "Visual Studio 2022 on Windows 10 or Windows 11.",
+          "A clean profile with one simple key remap, such as CapsLock to Ctrl."
+        ],
+        "setup": [],
+        "steps": [
+          "Test the remap in a standard unelevated text editor.",
+          "Run both PowerToys and Visual Studio unelevated and test the remap in a Visual Studio editor.",
+          "Run Visual Studio elevated while PowerToys remains unelevated and repeat.",
+          "Run both elevated and repeat; compare the four results and confirm remapping returns after leaving Visual Studio."
+        ],
+        "expected_result": "Remapping works when PowerToys and the target process have compatible integrity levels; any failure at matching levels identifies a separate regression."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 3
 }

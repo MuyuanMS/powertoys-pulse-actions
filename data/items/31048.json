@@ -3,86 +3,108 @@
   "number": 31048,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidation",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 03:04:11",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
+  "source_updated_at": "2026-10-11T16:49:02Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31048",
+  "title": "Keyboard Manager: Unable to select specific app for remapping shortcut",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bounded revalidation found that current evidence is insufficient to confirm a specific fix path.",
+    "status": "reproducible",
+    "rationale": "A commenter supplied a concrete stateful sequence: create a Win+W mapping limited to Google Chrome, delete it, and then observe both an unresponsive target-app field and a supposedly global mapping that remains Chrome-only. The original expectation of an app suggestion list is separate and may be a UI preference, but the stale-scope behavior warrants a current-build reproduction.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The original issue reports that typing into Target app did not populate a selectable app list; it used PowerToys 0.77.0.",
+      "The 2024-04-09 comment describes a stateful failure after deleting a Win+W mapping restricted to Google Chrome: a new target-app entry appears unresponsive and a blank-target mapping still acts only in Chrome: https://github.com/microsoft/PowerToys/issues/31048#issuecomment-2045115206.",
+      "The 2026-07-19 comment asks why an app list is expected, but it does not answer whether the separate stale-scope sequence is fixed.",
+      "The issue is cross-referenced by #32346, which is closed as a duplicate; that closure does not itself establish that this stateful behavior was fixed."
     ],
-    "recommended_action": "Collect a current reproduction and /bugreport diagnostics before detailed design.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 03:04:11"
+    "recommended_action": "Reproduce the delete-and-recreate sequence on a current build and check both the editor field and the saved app-specific runtime mapping.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
+    "source_updated_at": "2026-10-11T16:49:02Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A current report and diagnostics are needed before a defensible PowerToys fix design can be selected."
+    "rationale": "No linked implementation covers the reported stateful sequence. The current editor and app-specific engine paths are relevant, but the old report does not prove where stale scope is retained."
   },
-  "proposed_fixes": {
-    "title": "Revalidate the current failure path",
-    "root_cause": "The available public evidence does not isolate a confirmed root cause.",
-    "plan": [
-      "Collect a current reproduction and diagnostic archive.",
-      "Use the evidence to identify the owning module before proposing a code change."
-    ],
-    "verification": [
-      "Confirm the behavior on a supported current build and compare it with the collected diagnostics."
-    ],
-    "confidence": {
-      "score": 30,
-      "rationale": "Multiple plausible causes remain until current evidence is supplied.",
-      "level": "red"
+  "proposed_fixes": [
+    {
+      "title": "Clear stale target-app scope when a shortcut mapping is deleted",
+      "root_cause": "Hypothesis: deleting and recreating an app-specific shortcut may leave the prior target-app value in the editor buffer or saved mapping state, causing the field to appear stuck and a blank target to remain scoped to Chrome. This is not confirmed.",
+      "plan": [
+        "Reproduce the exact Win+W create/delete/recreate sequence in Keyboard Manager on a current build.",
+        "Inspect the target-app TextBox and remap buffer through delete, row recreation, save, and reload to identify whether stale app scope persists.",
+        "If stale state is confirmed, clear it when a row is deleted/recreated and add editor save/load tests plus an engine test proving a blank target applies globally.",
+        "Do not add an app suggestion list unless product requirements establish that behavior; it is distinct from the reported stale-scope bug."
+      ],
+      "verification": [
+        "Create Win+W scoped to Google Chrome, delete it, then create a new Win+W mapping with a blank target and save.",
+        "Verify the target-app field accepts input and that the saved mapping applies both inside and outside Chrome after restarting Keyboard Manager."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The stateful symptom and trigger are documented, but the report predates current builds and does not identify whether the editor or engine retains the stale scope."
+      }
     }
-  },
+  ],
   "issue_context": {
-    "summary": "Keyboard Manager: Unable to select specific app for remapping shortcut",
+    "summary": "The original report expects an app picker, while a later comment documents a separate stale-scope failure after deleting and recreating a Chrome-specific shortcut.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 03:04:11",
-      "."
+      "The original report used PowerToys 0.77.0 and describes a target-app field that accepts typing but does not show a list.",
+      "A commenter reproduced a stateful sequence in 0.80.0: add Win+W scoped to Google Chrome, delete the mapping, then find that a new mapping is still Chrome-only.",
+      "The issue has two comments and no assignee.",
+      "The related issue #32346 is closed with state reason duplicate; no fix commit is linked from the selected issue."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The app list may not be an intended autocomplete behavior; the separate stale-scope outcome is still a plausible functional defect.",
+      "If the delete/recreate issue persists, the stale value could be in the UI buffer, serialization, or runtime lookup."
     ],
-    "analysis": "A current diagnostic package is the smallest evidence needed to separate stale, environment-specific, and code defects.",
+    "analysis": "The supplied sequence is concrete enough for maintainers to reproduce. A focused check of the current editor and app-specific mapping flow is more useful than repeating a request for diagnostics.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the full live body and both comments, including the later question about app-list expectations.",
+      "Read the closed linked duplicate #32346 status.",
+      "Checked the current target-app editor control and app-specific lookup in src/modules/keyboardmanager/KeyboardManagerEditorLibrary/EditShortcutsWindow.cpp and src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp; these are relevant but do not confirm a stale-state root cause."
     ],
-    "information_gaps": {
-      "evidence_type": "bugreport_zip",
-      "information": "A fresh current-version diagnostic archive captured immediately after reproducing the report.",
-      "why_needed": "To distinguish a PowerToys-owned defect from environment-specific or already-fixed behavior.",
-      "how_to_collect": "Please reproduce, then comment /bugreport immediately after the failure."
-    }
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-31048",
-      "type": "request_info",
-      "label": "Request fresh bug report diagnostics",
+      "id": "reproduce-stale-target-app-31048",
+      "type": "reproduce",
+      "label": "Reproduce stale target-app scope",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 31048,
-        "body": "Thanks for the report. Please reproduce this on a supported current PowerToys version, then comment `/bugreport` immediately after the failure. Include the PowerToys version, Windows version, and a short numbered description of the expected and actual result."
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Use a current supported PowerToys build; compare with the 0.80.0 reproduction in the discussion.",
+        "prerequisites": [
+          "Keyboard Manager enabled.",
+          "Google Chrome installed as a test target.",
+          "A second application available to test global scope."
+        ],
+        "steps": [
+          "Create a Win+W shortcut remap with Target app set to Google Chrome and save it.",
+          "Delete that Win+W mapping.",
+          "Create a new Win+W mapping and leave Target app blank; also test typing a different app name in the field.",
+          "Save, restart Keyboard Manager if needed, and test Win+W in Chrome and the second application."
+        ],
+        "expected": "The recreated blank-target mapping is global, and the target-app field accepts edits without retaining the deleted Chrome scope."
       }
     },
     {
       "id": "approve-design-31048",
       "type": "approve_design",
-      "label": "Approve focused triage design",
+      "label": "Approve focused stale-scope investigation",
       "primary": false,
       "confirm": true,
-      "note": "Draft only; no upstream action was posted."
+      "note": "The suspected stale editor/runtime state is unconfirmed and scored red."
     }
   ]
 }

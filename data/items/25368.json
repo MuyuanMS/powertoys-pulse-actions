@@ -3,47 +3,105 @@
   "number": 25368,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-01-22T17:10:59Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Remaping L-CTRL to L-WIN makes R-ALT behave like WIN+ALT, making keyboard manager unusable for Norwegians.",
+  "url": "https://github.com/microsoft/PowerToys/issues/25368",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-10-21T06:40:01Z",
+  "evaluated_at": "2026-10-21T06:40:01Z",
+  "source_updated_at": "2026-10-11T16:49:07Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue supplies a deterministic Norwegian-layout reproduction: map Left Ctrl to Left Win, then press Right Alt+4, which should type `$` but instead opens the taskbar context menu as if Win+Alt+4 were pressed. Runtime code tracks right-Alt/AltGr state, but no test covers this modifier-remap combination; the root cause remains unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report specifies PowerToys 0.69.0, Norwegian NNO/NB layout, exact remap, and RAlt+4 sequence.",
+      "The observed result is a taskbar context menu rather than the `$` character.",
+      "The issue has no comments or assignees; #31042 is related but not an established fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-01-22T17:10:59Z"
+    "recommended_action": "Add a native regression for the exact AltGr plus Ctrl-to-Win event sequence and trace modifier classification."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Issue is tracked, duplicate, external, or owned elsewhere."
+    "status": "proposed",
+    "rationale": "AltGr/right-Alt state may be reinterpreted as a Win/Alt combination after left-Ctrl remapping, but current evidence does not identify the exact translation branch."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Preserve Norwegian AltGr semantics when Left Ctrl is remapped to Left Win",
+      "root_cause": "The remapped left-Ctrl-to-Win state may leak into the right-Alt/AltGr chord and cause the OS to receive Win+Alt+4 rather than a layout-generated `$`. This is a testable hypothesis, not a confirmed root cause.",
+      "plan": [
+        "Add an event-stream regression for Norwegian AltGr+4 with Left Ctrl→Left Win enabled, including the exact scan/VK sequence and key-up order.",
+        "Trace right-Alt/AltGr detection and modifier remapping in KeyboardEventHandlers.cpp to find where the logical Win modifier becomes part of the AltGr chord.",
+        "Adjust only the confirmed modifier translation so physical AltGr remains an AltGr text-input chord while explicit remappings retain their documented behavior.",
+        "Add adjacent tests for unremapped AltGr, other AltGr-generated characters, and ordinary Win shortcuts."
+      ],
+      "verification": [
+        "With Left Ctrl→Left Win active on Norwegian NNO/NB, RAlt+4 produces `$` and does not invoke a Windows shell action.",
+        "Unremapped AltGr behavior and normal left-Ctrl-to-Win remaps remain unchanged.",
+        "The regression test covers both press and release ordering."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The trigger is precise and the runtime has AltGr state handling, but no test or trace currently proves that the remapped Win state is the failure source."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "known_information": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "inferences": [
-      "Behavior consistent with reported symptoms in the affected component."
+    "summary": "On a Norwegian layout, mapping Left Ctrl to Left Win makes Right Alt+4 open the taskbar context menu instead of typing `$`.",
+    "known_information": [
+      "Reported on PowerToys 0.69.0, GitHub installation, not elevated.",
+      "The issue gives exact steps and expected/actual behavior, with an optional reverse mapping also mentioned.",
+      "No comments or direct linked work are present; #31042 is related."
     ],
-    "analysis": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "initial_investigation": "Reviewed issue description, labels, and module ownership.",
+    "inferences": [
+      "Right Alt+4 is an AltGr-generated character chord and may be mishandled after a Win modifier remap.",
+      "Existing AltGr state handling is relevant but does not confirm a code cause."
+    ],
+    "analysis": "The supplied steps are sufficient for a maintainer-side replay, so no reporter request is needed. A native event-sequence test can determine whether the interaction is in AltGr classification or another modifier path.",
+    "initial_investigation": [
+      "Read the full live issue body and confirmed no comments or assignees.",
+      "Checked linked reports and focused Keyboard Manager runtime/history, including existing AltGr state handling.",
+      "Reviewed OSLevelShortcutRemappingTests.cpp; it covers AltGr state but not this exact Ctrl-to-Win remap combination."
+    ],
     "information_gaps": []
-  }
+  },
+  "actions": [
+    {
+      "id": "approve-design-25368",
+      "type": "approve_design",
+      "label": "Design AltGr modifier-state correction",
+      "confirm": true,
+      "design": {
+        "title": "Preserve Norwegian AltGr semantics when Left Ctrl is remapped to Left Win"
+      }
+    },
+    {
+      "id": "reproduce-25368",
+      "type": "reproduce",
+      "label": "Replay Norwegian AltGr+4 with Ctrl-to-Win mapping",
+      "reproduce": {
+        "title": "Test AltGr character entry after Left Ctrl is remapped to Left Win",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or current build",
+          "Norwegian NNO or NB keyboard layout"
+        ],
+        "steps": [
+          "Map Left Ctrl to Left Win and enable Keyboard Manager.",
+          "Open Notepad and focus a text field with the Norwegian layout active.",
+          "Press Right Alt+4 and record the text and any shell action.",
+          "Repeat with the mapping disabled and capture the native keyboard event sequence if the behavior differs."
+        ],
+        "expected_result": "Right Alt+4 types `$` in both cases and never opens the taskbar context menu.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

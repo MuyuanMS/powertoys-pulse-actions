@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 26001,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:12:19Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
+  "source_updated_at": "2026-10-11T16:49:01Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/26001",
+  "title": "Keyboard Manager - Remapping is overriden by built in Windows Hotkeys.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author and a commenter supplied repeatable Alt/Win remappings and concrete Windows shortcuts that still activate or fail. The report is old, so maintainer-side testing on a current supported build is needed before suggesting an engine change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report remaps Left Alt to Left Win and Left Win to Left Alt, then reports Alt+G/Alt+W opening Xbox Game Bar.",
+      "A commenter reports related behavior with Right Alt/Right Win and Win+R, Win+Shift+S, and different Alt-letter combinations.",
+      "Another commenter says removing Microsoft.XboxGamingOverlay removes the overlay but does not restore the intended remapped command.",
+      "The report is cross-referenced by #40976 as a similar 'Keys double binding' report, but that issue has no linked fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:12:19Z"
-  }
+    "recommended_action": "Reproduce the exact left/right modifier swaps on a current Windows build and determine whether the system shortcut or remapped target receives the event.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
+    "source_updated_at": "2026-10-11T16:49:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete linked implementation covers this report. The issue does not establish whether Keyboard Manager's injected modifier state or Windows' system-shortcut handling is responsible."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure swapped Alt/Win modifiers suppress the original Windows shortcut",
+      "root_cause": "Hypothesis: the original modifier combination may still be visible to Windows' registered system-shortcut handling when Keyboard Manager injects the swapped modifier state. The report does not prove whether the hook, key-up sequence, or an external hotkey owns the behavior.",
+      "plan": [
+        "Reproduce the left and right Alt/Win swap on a current build and record the exact source and target for each test.",
+        "Test the same remaps with the Xbox Game Bar overlay disabled to separate overlay display from the underlying system shortcut.",
+        "Trace the Keyboard Manager event sequence and dummy/key-up suppression for the failing chords.",
+        "If the original system chord escapes suppression, correct the event ordering and add tests for the reproduced shortcut; otherwise classify the remaining behavior as a Windows or external-handler limitation."
+      ],
+      "verification": [
+        "Verify Alt+G and Alt+W produce only the configured remapped output and do not launch the Game Bar.",
+        "Verify Win+R and Win+Shift+S behave according to their configured mappings.",
+        "Repeat for right-side modifiers and confirm no modifier is left stuck."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The issue includes concrete examples, but reports vary across left/right keys and Windows shortcuts and the most recent evidence is old."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Swapping Alt and Win reportedly allows Windows shortcuts such as Game Bar to activate or causes remapped shortcuts to stop working, with differing results across modifier sides.",
+    "known_information": [
+      "The original report used PowerToys 0.69.1 on an unspecified Windows build and ran PowerToys as administrator.",
+      "The original sequence swaps Left Alt and Left Win, then tests Alt+G and Alt+W.",
+      "Comments add Right Alt/Win and Win+R/Win+Shift+S examples; removing the Xbox overlay hides it but does not produce the intended command.",
+      "Related issue #40976 is open and labels this report as similar; its bot comment does not establish a fix."
+    ],
+    "inferences": [
+      "The issue may involve suppression or ordering of injected modifier events, but external Windows shortcut handling remains a competing explanation.",
+      "The reported behavior may differ by modifier side or Windows feature; the examples should be retested separately."
+    ],
+    "analysis": "The public sequence is sufficient for a maintainer test. Comparing the remapped output and the system shortcut while isolating the overlay is more discriminating than asking for a broad diagnostic package.",
+    "initial_investigation": [
+      "Read the full issue body and all three comments, including the Xbox overlay workaround and additional modifier-side examples.",
+      "Checked the related open #40976 status; it is only a similarity cross-reference, not an implementation.",
+      "Reviewed the Keyboard Manager event-handler history and current modifier reset/suppression paths; no code evidence confirms the reported root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-alt-win-system-shortcuts-26001",
+      "type": "reproduce",
+      "label": "Reproduce Alt and Win shortcut swaps",
+      "primary": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Use a current supported PowerToys build on a current supported Windows build; the report used PowerToys 0.69.1.",
+        "prerequisites": [
+          "Keyboard Manager enabled.",
+          "A test account where Windows shortcuts can be exercised.",
+          "Xbox Game Bar available for the Alt+G/Alt+W comparison."
+        ],
+        "steps": [
+          "Remap Left Alt to Left Win and Left Win to Left Alt.",
+          "Press Alt+G and Alt+W and record whether the Game Bar opens or the configured target is sent.",
+          "Test Win+R and Win+Shift+S, then repeat with the right-side Alt/Win mappings separately.",
+          "If the Game Bar opens, temporarily disable only its overlay and repeat to distinguish the overlay from the underlying key event."
+        ],
+        "expected": "Only the configured remapped shortcut is received; the original Windows system shortcut does not fire, and no modifier remains stuck."
+      }
+    },
+    {
+      "id": "approve-design-26001",
+      "type": "approve_design",
+      "label": "Approve focused modifier investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The proposed root cause remains red pending current-build reproduction."
+    }
+  ]
 }

@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 35062,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:51:09Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-10-21T06:33:24Z",
+  "evaluated_at": "2026-10-21T06:33:24Z",
+  "source_updated_at": "2026-10-11T16:49:03Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/35062",
+  "title": "Key of \"/\" can't be remapped",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The reporter supplied a direct pair of mappings and observed that the single-key result appears when pressing Ctrl+/. A maintainer can test the same precedence on a current build; the discussion's explanation has not resolved the reporter's follow-up that changing mapping order still failed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The live body says the / key is mapped to the text '? ' and Ctrl+/ is mapped to the text '/'.",
+      "The reporter says Ctrl+/ still produces '? ' and later reports that changing mapping order did not resolve it.",
+      "A maintainer comment explains a possible precedence expectation, but the reporter's response leaves the observed behavior unresolved: https://github.com/microsoft/PowerToys/issues/35062#issuecomment-2374618039."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:51:09Z"
-  }
+    "recommended_action": "Reproduce both mappings on a current build and determine whether Keyboard Manager resolves the chord before the single-key mapping.",
+    "evaluated_at": "2026-10-21T06:33:24Z",
+    "source_updated_at": "2026-10-11T16:49:03Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete fix attempt is linked. The current event-handling path is relevant, but the issue does not establish whether the result is intentional remapping precedence or a defect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve the Ctrl+/ chord before the single-key slash remap",
+      "root_cause": "Hypothesis: the single-key / remap may be consuming the physical slash key before the Ctrl+/ chord handler can apply its distinct output. This is not confirmed; keyboard layout and current-build behavior have not been tested.",
+      "plan": [
+        "Recreate the two mappings on a current supported build and record the active keyboard layout and the exact virtual key captured for slash.",
+        "Trace Keyboard Manager's shortcut-versus-single-key dispatch for the matching physical key, including modifier state and injected-event suppression.",
+        "If the single-key mapping incorrectly wins over an exact chord, adjust precedence and add a focused engine test for overlapping single-key and chord mappings.",
+        "If chord precedence is intentional, document the supported ordering rather than changing engine behavior."
+      ],
+      "verification": [
+        "With / mapped to '? ' and Ctrl+/ mapped to '/', confirm each input emits its own target text.",
+        "Repeat with mapping rows entered in both orders and confirm the result is deterministic."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The failure sequence is concrete, but a maintainer explanation and the reporter's contradictory follow-up leave the intended precedence and current behavior uncertain."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A single slash remap appears to override a separate Ctrl+/ remap, even after the reporter tried adding the chord first.",
+    "known_information": [
+      "The report used PowerToys 0.84.1.",
+      "The single-key mapping sends the text '? ' and the Ctrl+/ mapping sends '/'.",
+      "The reporter says Ctrl+/ still emits '? ' and that another mapping order did not work."
+    ],
+    "inferences": [
+      "Overlapping key and chord matching could explain the result, but the issue does not prove a dispatch-order defect.",
+      "The active keyboard layout could affect the virtual key captured for slash; no layout is stated."
+    ],
+    "analysis": "The report is sufficiently reproducible for a maintainer test and already contains a failed attempted workaround. Requesting generic logs would add little; the decisive question is whether a current build dispatches the chord before the single key.",
+    "initial_investigation": [
+      "Read the complete live issue body and all four comments, including the maintainer's explanation and the reporter's mapping-order follow-up.",
+      "Checked the owning Keyboard Manager event-handler and shortcut mapping implementation in src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp and src/modules/keyboardmanager/common/MappingConfiguration.cpp; these establish relevant dispatch paths but not the cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-slash-remap-precedence-35062",
+      "type": "reproduce",
+      "label": "Reproduce slash chord precedence",
+      "primary": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Use a current supported PowerToys build; the report used 0.84.1.",
+        "prerequisites": [
+          "A text editor that displays literal typed text.",
+          "Keyboard Manager enabled."
+        ],
+        "steps": [
+          "Create a single-key mapping from / to the text '? ' (question mark followed by one space).",
+          "Create a shortcut mapping from Ctrl+/ to the text '/'.",
+          "Type / and confirm the single-key output.",
+          "Press Ctrl+/ and record the exact output.",
+          "Repeat after reversing the order in which the two mapping rows were created."
+        ],
+        "expected": "The single / input emits '? ' while Ctrl+/ emits '/', regardless of mapping-row creation order."
+      }
+    },
+    {
+      "id": "approve-design-35062",
+      "type": "approve_design",
+      "label": "Approve focused remap investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The proposed fix remains a low-confidence hypothesis pending current-build reproduction."
+    }
+  ]
 }

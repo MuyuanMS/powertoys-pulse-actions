@@ -1,33 +1,81 @@
 {
+  "schemaVersion": 5,
   "number": 39069,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:07:15Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Keyboard Manager - Not passing User Path Variables downstream with Elevation = Normal",
+  "url": "https://github.com/microsoft/PowerToys/issues/39069",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "generated_at": "2026-10-21T06:31:47Z",
+  "evaluated_at": "2026-10-21T06:31:47Z",
+  "source_updated_at": "2026-10-11T16:49:11Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "A reporter on PowerToys 0.96.0 describes launching pwsh.exe through Keyboard Manager and seeing a user PATH that omits a `code` command, while Command Palette/Windows Terminal launches have the expected PATH; reboot cleared the symptom. PR #49571 later changed normal visible program launch routing, so validate that existing work against this exact environment case before proposing anything new.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The sole comment contains a concrete environment-variable observation and distinguishes Keyboard Manager launch from Command Palette and Windows Terminal launches.",
+      "The reporter says reboot temporarily made the symptom disappear and links #42926 as a similar issue.",
+      "Merged PR #49571 changes normal visible Keyboard Manager program launches; the live issue has no assignee or linked PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:07:15Z"
-  }
+    "recommended_action": "Replay the reported PATH comparison on current upstream main and check whether PR #49571 covers the user-PATH inheritance case."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #49571 changed the normal visible program launch path and may affect environment inheritance, but it does not explicitly verify the user's PATH scenario. Treat it as existing fix work and verify coverage rather than designing a competing change.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49571"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "PowerToys 0.96.0 reportedly launched pwsh.exe with a PATH missing a user-installed `code` command, while other launch paths saw the expected PATH.",
+    "known_information": [
+      "The reporter compared a Keyboard Manager Run Program launch of pwsh.exe with Command Palette and Windows Terminal launches.",
+      "The symptom disappeared after reboot, suggesting the condition may depend on startup/environment state.",
+      "The reporter linked #42926; PR #49571 later changed normal visible program launches."
+    ],
+    "inferences": [
+      "The launch parent/environment may differ between Keyboard Manager and the working launch paths.",
+      "A restart-sensitive environment state could also explain why the report has not been confirmed after the later routing change."
+    ],
+    "analysis": "The author already supplied a focused environment comparison, so another generic information request is not useful. Current-build reproduction can establish whether the existing launch-path change covers the reported user PATH without inventing a parallel design.",
+    "initial_investigation": [
+      "Read the full live body and the single issue comment, including the comparison with Command Palette and Windows Terminal.",
+      "Checked current labels, assignees, and linked work; no issue assignment or direct PR link was present.",
+      "Reviewed the normal visible launch change in PR #49571; its exact coverage of user PATH remains unverified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-39069",
+      "type": "reproduce",
+      "label": "Compare PATH through current launch routes",
+      "reproduce": {
+        "title": "Verify user PATH inheritance for Keyboard Manager Run Program",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or a build containing PR #49571",
+          "A user PATH entry that resolves `code` in a normally launched pwsh.exe",
+          "A non-elevated PowerToys session"
+        ],
+        "steps": [
+          "Configure Keyboard Manager Run Program to launch pwsh.exe using the reported normal elevation setting.",
+          "From that pwsh.exe, run `Get-Command code` and inspect `$env:PATH`.",
+          "Launch pwsh.exe through Command Palette or Windows Terminal under the same user and compare the command lookup and PATH.",
+          "Repeat after a fresh sign-in/reboot only if the Keyboard Manager result differs."
+        ],
+        "expected_result": "The user PATH and `code` command are available consistently across normal launch routes; any remaining difference is captured with the launch parent and current build.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

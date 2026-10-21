@@ -1,46 +1,83 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 23438,
   "kind": "issue",
-  "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-01-02T07:55:02Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/23438",
   "title": "Swapping capslock/ctrl causes ctrl to stick ON (Surface Laptop Studio)",
-  "author": "notuntoward",
-  "authorAssociation": "NONE",
+  "url": "https://github.com/microsoft/PowerToys/issues/23438",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:37Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue reports a persistent stuck-Control symptom on Surface hardware. PR #37930 addressed a related generic stuck-modifier path, but the reporter said the problem persisted on 0.95.1; the existing work is only partial evidence, not a resolution of this report.",
+    "evidence": [
+      "The issue describes Ctrl remaining logically pressed after a CapsLock/Ctrl swap on a Surface Laptop Studio.",
+      "PR #37930 merged a generic fix for a related stuck-modifier problem.",
+      "The reporter stated the Surface symptom persisted on PowerToys 0.95.1 after that fix.",
+      "The thread mentions SharpKeys can show a similar symptom, so the mechanism may not be exclusive to this PowerToys path."
+    ],
+    "recommended_action": "Retain #37930 as related prior work and re-test the exact Surface sequence on current stable before considering any separate fix.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:37Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #37930 fixed a related generic stuck-modifier issue, but the reporter's v0.95.1 follow-up says this Surface case remained. No competing fix should be designed until the current result and event path are revalidated.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/37930",
+      "https://github.com/microsoft/PowerToys/issues/23438"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Surface Laptop Studio reporter says Control sticks after a CapsLock/Ctrl remap; a related generic fix did not fully resolve the reported case on the version they tested.",
+    "known_information": [
+      "The report is labeled Issue-Bug, Priority-1, and Product-Keyboard Manager.",
+      "PR #37930 merged a generic fix for a related stuck-modifier issue.",
+      "The reporter says the symptom remained on PowerToys 0.95.1 after that fix.",
+      "A comment reports similar behavior with SharpKeys, which is useful counterevidence against assuming a PowerToys-only cause."
+    ],
+    "inferences": [
+      "A modifier key-up or synthetic-event ownership issue remains possible, but the Surface-specific persistence and SharpKeys comparison leave multiple causes open.",
+      "The existing PR may have fixed only one manifestation of the broader symptom."
+    ],
+    "analysis": "Do not mark this handled based only on #37930. Reproduce with a minimal single mapping on current stable and compare the physical key state and an alternate remapper; only then decide whether a PowerToys-specific change is justified.",
+    "initial_investigation": [
+      "Read the full issue body and all 20 comments, including the report that symptoms persisted on v0.95.1.",
+      "Checked PR #37930 as the related merged modifier-state fix; it does not establish that this still-open report is resolved."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Re-test the Surface modifier issue after #37930",
+      "reproduce": {
+        "title": "Check whether the Surface Ctrl-stuck sequence remains on current stable",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "Surface Laptop Studio or the reporter's Surface device.",
+          "A clean Keyboard Manager profile with only CapsLock mapped to Ctrl.",
+          "An alternate remapper only for a controlled comparison, if available."
+        ],
+        "setup": [],
+        "steps": [
+          "Confirm Ctrl and CapsLock behave normally with Keyboard Manager disabled.",
+          "Enable only the CapsLock-to-Ctrl mapping and repeat the exact sequence described in the issue until the reported stuck state would occur.",
+          "If Ctrl sticks, inspect the logical modifier state and record which key-down/up event is missing without capturing typed content.",
+          "Compare with the alternate-remapper result and with Keyboard Manager disabled."
+        ],
+        "expected_result": "The remapped modifier always returns to an unpressed state after key release, or a focused trace identifies the missing transition beyond the related #37930 fix."
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Priority-1"
+    "Priority-1",
+    "Product-Keyboard Manager"
   ],
-  "comments": 20,
-  "confidence": "Medium-high",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for Keyboard Shortcut Manager with reproduction evidence and enough diagnostic context for deeper design investigation."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for Keyboard Shortcut Manager with reproduction evidence and enough diagnostic context for deeper design investigation.",
-    "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Priority-1",
-      "Candidate sources: hot_comments",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
-    ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-01-02T07:55:02Z"
-  },
-  "actions": []
+  "assignees": [],
+  "comments": 20
 }

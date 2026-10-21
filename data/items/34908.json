@@ -1,33 +1,79 @@
 {
+  "schemaVersion": 5,
   "number": 34908,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:52:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Keyboard Manager shortcut not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/34908",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-10-21T06:40:01Z",
+  "evaluated_at": "2026-10-21T06:40:01Z",
+  "source_updated_at": "2026-10-11T16:49:08Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author gives a concrete Win+Y/Alt+Y Run Program setup for calc.exe and says the shortcuts work only until reboot or toggling Keyboard Manager; calc also often opens behind other apps. PR #49571 later changed normal visible program launching, so validate that existing work against both symptoms.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue describes PowerToys 0.84/0.79, Win+Y and Alt+Y launching calc.exe, and failure after restart.",
+      "The author separately reports that calc.exe often does not open in the foreground.",
+      "No comments or direct linked work are present; PR #49571 later changed normal visible program launches."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:52:03Z"
-  }
+    "recommended_action": "Replay both post-restart shortcut operation and foreground behavior on current upstream main."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #49571 changed normal visible Run Program launch routing and may affect the foreground symptom. It does not establish that remap persistence or startup behavior is fixed, so both parts require verification.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49571"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Win+Y and Alt+Y Run Program remaps to calc.exe work immediately after setup but reportedly stop after reboot; when they work, calc often opens behind other applications.",
+    "known_information": [
+      "The original setup used PowerToys 0.84 and 0.79, GitHub installation, with PowerToys run as administrator.",
+      "The behavior returns temporarily after disabling and re-enabling Keyboard Manager.",
+      "PR #49571 changes the normal visible launch path; no issue comment or direct PR link connects it to this report."
+    ],
+    "inferences": [
+      "The startup symptom may involve mapping load/initialization, while the foreground symptom may involve the launch path."
+    ],
+    "analysis": "The report already includes a useful after-reboot reproduction, and a later launch-routing change is potentially relevant to the foreground symptom. Validate both separately before proposing a new fix.",
+    "initial_investigation": [
+      "Read the full issue body and confirmed there are no comments or assignees.",
+      "Checked linked-work status and reviewed PR #49571 as potentially related existing fix work."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-34908",
+      "type": "reproduce",
+      "label": "Verify startup persistence and foreground launch",
+      "reproduce": {
+        "title": "Test Win+Y and Alt+Y calc launches after restart",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or build containing PR #49571",
+          "A local calc.exe executable",
+          "A second visible application window"
+        ],
+        "steps": [
+          "Configure Win+Y and Alt+Y as Run Program shortcuts targeting calc.exe.",
+          "Restart/sign back in without changing Keyboard Manager settings and invoke both shortcuts.",
+          "Repeat while another application is foregrounded and record whether calc.exe becomes the foreground window.",
+          "If a shortcut fails, toggle Keyboard Manager once and repeat to distinguish startup initialization from launch routing."
+        ],
+        "expected_result": "Both mappings continue to launch calc.exe after restart, and the launched calculator appears in the foreground as configured.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

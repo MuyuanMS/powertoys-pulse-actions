@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 5,
+  "number": 51448,
+  "kind": "issue",
+  "title": "[Mouse Without Borders] Service mode: SYSTEM process leaks Token/Event/Thread handles at a constant rate (~10k handles/day)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51448",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-21T06:17:50Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report provides a repeatable service-mode comparison, quantified handle growth by object type, a stable interval, and an on-demand helper restart that releases the growth. The evidence supports maintainer-side tracing, but not a confirmed root cause.",
+    "evidence": [
+      "On one of two Windows 11 machines running PowerToys 0.100.2 with Mouse Without Borders service mode, the SYSTEM process grew about 105 handles per 15 minutes, in Token/Event/Thread types at a roughly 3:2:1 ratio.",
+      "The reporter says any UAC prompt restarts the helper and releases the leaked handles; the observed count otherwise grows while idle.",
+      "The second machine with the same version and settings remained near a stable handle count.",
+      "The report identifies an elevated-process handle sampler and gives repeated samples at 44 and 92 hours."
+    ],
+    "recommended_action": "Profile the service/helper process lifecycle under the reported two-machine service-mode setup and attribute one leaked Token/Event/Thread set before designing a code change.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-21T06:17:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt covers this report. A periodic per-session worker or callback lifetime may be retaining native handles, but source review has not identified the allocator or confirmed the hypothesis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Close the service-mode worker handles retained across user-session callbacks",
+      "root_cause": "The periodic Token/Event/Thread growth may come from a repeated service/helper session callback that creates native handles but fails to release one complete worker set on its normal path.",
+      "plan": [
+        "Reproduce the issue while recording handle type, owning process/thread, and creation stack for each growing Token/Event/Thread object; compare the affected helper session with the stable peer.",
+        "Trace the identified allocation stack to its exact Mouse Without Borders service/helper callback and audit success, cancellation, exception, and restart cleanup paths.",
+        "Use scoped SafeHandle or equivalent disposal at the owning lifecycle boundary and add a focused repeated-callback regression test that checks handle counts return to baseline."
+      ],
+      "verification": [
+        "Run the same service-mode workload for multiple hours and verify Token/Event/Thread counts remain bounded in both the service and helper processes.",
+        "Verify a UAC-triggered helper restart is no longer required to reclaim handles and that mouse/keyboard sharing remains functional."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The object types, fixed rate, and helper restart strongly motivate a lifetime investigation, but the allocating call stack is not known. Focused source review found token handles in Launch.ImpersonateLoggedOnUserAndDoSomething are closed in a finally block, so that path is not established as the leak."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "One service-mode Mouse Without Borders SYSTEM process accumulates a stable mix of token, event, and thread handles until the helper restarts; the other otherwise-matched PC does not.",
+    "known_information": [
+      "The report names PowerToys 0.100.2, Windows 11 build 26200, per-user installation, and service mode enabled on two PCs.",
+      "The affected process grows by about 105 handles per 15 minutes; process handles and live thread count remain approximately flat.",
+      "A cancelled UAC prompt restarts the helper and releases the accumulated handles.",
+      "The reporter offers additional collection, but no diagnostic archive or stack trace is attached."
+    ],
+    "inferences": [
+      "The growth is likely tied to a repeated service/helper lifecycle or callback rather than TCP connection churn, because the reported TCP connections remain established and the rate continues while idle.",
+      "A repeated native-handle ownership defect is plausible, but the measured ratio alone does not establish which call site leaks."
+    ],
+    "analysis": "The issue is already actionable for a maintainer-side reproducer: the report supplies a control machine, object-type breakdown, stable interval, and helper-restart discriminator. Asking the reporter for generic logs would not identify the leaking allocation as efficiently as a focused handle-stack capture.",
+    "initial_investigation": [
+      "Read the full issue body and latest author comment; labels are Issue-Bug and Needs-Triage, with no assignee or linked fix.",
+      "Read InputSimulation.SendInputEx and the per-package catch in SocketStuff.MainTCPRoutine; the reported connection remains stable, so those paths do not establish the handle leak.",
+      "Read Launch.ImpersonateLoggedOnUserAndDoSomething: it closes both user-token handles in a finally block, which is counterevidence to attributing the leak to that helper.",
+      "No repository history result identifies a change specifically for issue 51448."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-51448",
+      "type": "approve_design",
+      "label": "Investigate service-mode handle leak",
+      "primary": false,
+      "confirm": true,
+      "note": "A focused handle-lifecycle design investigation should follow only after the allocation stack is identified."
+    },
+    {
+      "type": "reproduce",
+      "label": "Profile service-mode handle growth",
+      "reproduce": {
+        "title": "Compare Mouse Without Borders service-mode handle lifetimes",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Current stable build; retain 0.100.2 only as an additional compatibility comparison",
+        "prerequisites": [
+          "Two Windows 11 PCs on the same stable network, with Mouse Without Borders service mode enabled on both.",
+          "One affected-machine-equivalent and one control-machine-equivalent configuration.",
+          "A handle sampler that records object type, process/thread ownership, and allocation stacks without collecting unrelated personal data."
+        ],
+        "setup": [],
+        "steps": [
+          "Start both PCs with the same PowerToys build and service-mode settings; record baseline Token, Event, Thread, Process, and File handle counts for each MWB process.",
+          "Leave the machines idle and connected, sampling the same object-type counts every 15 minutes for at least 24 hours.",
+          "On the test machine, correlate each growing handle set with an allocation stack and helper session; do not trigger a UAC prompt during the observation window.",
+          "At the end, trigger and cancel a UAC prompt and record whether helper restart releases the accumulated objects."
+        ],
+        "expected_result": "Counts remain bounded on both machines, or the trace identifies the exact repeated allocation and owner responsible for the growth."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1
+}

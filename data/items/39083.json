@@ -1,33 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 39083,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:07:08Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-10-21T06:33:24Z",
+  "evaluated_at": "2026-10-21T06:33:24Z",
+  "source_updated_at": "2026-10-11T16:49:03Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/39083",
+  "title": "Some function in keyboard manager doesn't seem to play well with AutoHotKey Script.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report describes stuck/repeating text remaps while AutoHotkey is active, and a merged Keyboard Manager change now covers a closely related stuck-modifier/key-to-text path. The old report does not identify the exact mapping or provide the referenced script, so the next useful step is to learn whether the current build still reproduces the issue before proposing another fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body names PowerToys 0.90.0, a key-to-text remap, and AutoHotkey as the other software.",
+      "The reporter says keys sometimes stick or loop and that a mouse action can interrupt the loop.",
+      "Merged PR #48571 fixes stuck modifiers and silently dropped single-key-to-text remaps and adds injection-failure coverage: https://github.com/microsoft/PowerToys/pull/48571.",
+      "The current local history includes the PR #48571 implementation in KeyboardEventHandlers.cpp and focused engine tests."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:07:08Z"
-  }
+    "recommended_action": "Ask whether the issue still occurs on a current build; if it does, request only the exact key-to-text mapping and a minimal sanitized AutoHotkey script that triggers it.",
+    "evaluated_at": "2026-10-21T06:33:24Z",
+    "source_updated_at": "2026-10-11T16:49:03Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged PR #48571 addresses stuck modifiers and dropped single-key-to-text remaps, which overlaps the reported symptom. It does not establish whether the separate AutoHotkey interaction is fixed.",
+    "urls": [
+      "https://github.com/microsoft/PowerToys/pull/48571"
+    ],
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/48571"
+    ]
+  },
+  "existing_fix": {
+    "urls": [
+      "https://github.com/microsoft/PowerToys/pull/48571"
+    ],
+    "coverage": "The merged change releases held modifiers safely and accepts WM_SYSKEYDOWN on the single-key-to-text path. Verify whether the AutoHotkey-triggered loop remains on the current build before opening a separate design."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A key-to-text remap reportedly gets stuck or repeats when AutoHotkey is running; a later merged Keyboard Manager change covers a related stuck-modifier path, but the original AHK-specific scenario remains unverified.",
+    "known_information": [
+      "The issue report used PowerToys 0.90.0.",
+      "The reporter describes remapping a key to a different character and says the issue may involve an AutoHotkey script.",
+      "The report says a mouse action sometimes interrupts the repeated/stuck input.",
+      "PR #48571 was merged on 2026-06-25 and covers stuck modifiers and single-key-to-text remapping failures."
+    ],
+    "inferences": [
+      "The merged fix may resolve the generic stuck-key component, but cannot be assumed to resolve the AutoHotkey interaction.",
+      "A minimal script and exact key mapping would be useful only if the issue still reproduces on the current build."
+    ],
+    "analysis": "The linked merged fix is the correct first-line coverage, so a competing design would duplicate work. A targeted status check and, only if still affected, a minimal AHK reproduction can decide whether additional code work is warranted.",
+    "initial_investigation": [
+      "Read the full issue body; it has no comments, attachment, or linked PR of its own.",
+      "Read merged PR #48571's summary and changed paths. It modifies KeyboardEventHandlers.cpp, State, input abstraction, and engine tests for the same key-to-text/stuck-modifier family.",
+      "Checked current Keyboard Manager history, which contains the merged PR #48571 implementation."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether the key-to-text loop still reproduces on the current supported PowerToys build.",
+        "why_needed": "PR #48571 may already resolve the stuck-modifier portion, so a current status determines whether further investigation is needed.",
+        "how_to_collect": "Please confirm the version shown in PowerToys About and whether the same scenario still occurs."
+      },
+      {
+        "evidence_type": "other_software",
+        "information": "If the problem still reproduces, the exact source key, text target, and smallest AutoHotkey script that triggers the loop.",
+        "why_needed": "This distinguishes a remap-engine regression from a particular AHK interception or synthesized-key interaction.",
+        "how_to_collect": "Please paste the minimal script and mapping after removing personal paths, window titles, and other private data."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-current-ahk-status-39083",
+      "type": "request_info",
+      "label": "Confirm current AHK remap behavior",
+      "primary": true,
+      "comment": {
+        "target": "issue",
+        "number": 39083,
+        "body": "The report describes a key-to-text remap that can stick or repeat while AutoHotkey is running. Since then, Keyboard Manager merged a fix for stuck modifiers and single-key-to-text injection failures in #48571. Could you confirm:\n- Whether this still reproduces on the current PowerToys version.\n- If it does, the exact source key and text target plus the smallest AutoHotkey script that triggers it, with personal paths and window titles removed.\nThis will show whether the merged remap fix covers the issue or whether a distinct AutoHotkey interaction remains."
+      }
+    }
+  ]
 }

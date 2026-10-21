@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 29779,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
   "source_updated_at": "2024-10-10T17:59:10Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "url": "https://github.com/microsoft/PowerToys/issues/29779",
+  "title": "0.75.1: image resizer not working",
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original author reports the Image Resizer context-menu action is inert on 0.75.1 across two Windows 10 PCs while 0.72.1 and 0.74.x worked; later commenters confirm failures on 0.77.0 and 0.80.1, including a progress bar that closes immediately. This is enough for a current-build maintainer reproduction.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original body says selecting Image Resize from the JPG context menu does nothing on two Windows 10 22H2 PCs, and downgrading to 0.72.1 restored it.",
+      "The author attached Windows Error Reporting, .NET Runtime, and Application event files; their contents were not inspected.",
+      "A commenter reports the same issue on PowerToys 0.77.0.",
+      "A second commenter reports that on 0.80.1 the progress bar flashes and closes."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the context-menu launch and capture the resizer process lifetime on a current build before investigating the startup failure path.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
     "source_updated_at": "2024-10-10T17:59:10Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The repeated version-specific behavior supports investigating launch/startup regressions, but the issue body and event-file references do not establish the failing component or exact root cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore reliable Image Resizer context-menu startup",
+      "root_cause": "Hypothesis: the Image Resizer context-menu invocation may be launching a process that exits during startup on affected builds. The progress bar flash reported on 0.80.1 is consistent with, but does not prove, a startup exception or initialization failure.",
+      "plan": [
+        "On a current supported build, invoke Image Resize from Explorer for one JPG and then multiple JPGs; observe whether the UI process starts and exits.",
+        "Repeat on the reporter's Windows 10 configuration if available, and compare with a known-working version only if the test environment can safely provide it.",
+        "Trace the context-menu activation through the Image Resizer startup and error handling path; use the already-attached event data only if needed for diagnosis.",
+        "If a startup failure is confirmed, fix the failing initialization path and add regression coverage for single- and multi-image launches."
+      ],
+      "verification": [
+        "The Image Resizer interface remains open after selecting one or more JPG files from Explorer.",
+        "The operation completes without a briefly flashing progress window or silent exit.",
+        "Verify the context-menu launch on Windows 10 and Windows 11 where supported."
+      ],
+      "confidence": {
+        "score": 49,
+        "level": "red",
+        "rationale": "Multiple reporters and versions show a consistent failure, but no current-build reproduction or inspected event evidence establishes why the process exits."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Image Resizer context-menu command reportedly does nothing or briefly displays progress then closes, while older releases worked for the original reporter.",
+    "known_information": [
+      "The original report is PowerToys 0.75.1 on Windows 10 22H2, reproduced on two PCs; JPG selection is specified.",
+      "The author reports 0.72.1 worked and 0.74.x also worked, while 0.75.1 did not.",
+      "Later comments confirm the symptom on 0.77.0 and 0.80.1.",
+      "The original report includes three Windows event attachments; their contents have not been opened or analyzed."
+    ],
+    "inferences": [
+      "The repeated progress-window exit suggests a launch/startup failure, but does not identify whether the UI, shell integration, or image processing path is responsible.",
+      "A regression window may lie after the 0.74.x series, but the issue does not identify the first failing release."
+    ],
+    "analysis": "The issue has enough evidence to reproduce without asking for another log package. Use the attached event references only if a current test narrows the startup failure.",
+    "initial_investigation": [
+      "Read the full body and both comments and noted the three linked Windows event files without opening their contents.",
+      "Reviewed the current Image Resizer context-menu ownership area; no evidence in the issue establishes a code-level root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-image-resizer-launch-29779",
+      "type": "reproduce",
+      "label": "Reproduce Image Resizer launch failure",
+      "primary": true,
+      "reproduce": {
+        "module": "Image Resizer",
+        "version_requirement": "Use a current supported PowerToys build; historical reports include 0.75.1, 0.77.0, and 0.80.1.",
+        "prerequisites": [
+          "Image Resizer enabled.",
+          "A JPG test image and a second JPG for multi-selection.",
+          "Windows Explorer context menu access."
+        ],
+        "steps": [
+          "Select one JPG in Explorer, invoke Image Resize, and observe whether the resizer interface stays open.",
+          "Repeat with multiple JPGs selected.",
+          "If the process exits, note whether the progress UI flashes and compare the application behavior when invoked from the module settings."
+        ],
+        "expected": "The Image Resizer interface opens and remains available to complete the resize operation."
+      }
+    },
+    {
+      "id": "approve-design-29779",
+      "type": "approve_design",
+      "label": "Approve launch-path investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "Repeated historical reports justify reproduction; startup root cause remains red."
+    }
+  ]
 }

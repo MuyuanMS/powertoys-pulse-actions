@@ -3,76 +3,108 @@
   "number": 35009,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-22T18:01:39Z",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design",
-      "description": "Approve fork-side implementation design for issue 35009"
-    }
+  "title": "Keyboard Manager: Remapping a shortcut using \"right Ctrl\"/⇨ with CAN/CSA Z243.200 fails (detected as \"VK 223\")",
+  "url": "https://github.com/microsoft/PowerToys/issues/35009",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "confidence": "Medium",
+  "assignees": [],
+  "comments": 2,
+  "generated_at": "2026-10-21T06:44:11Z",
+  "evaluated_at": "2026-10-21T06:44:11Z",
+  "source_updated_at": "2026-10-11T16:49:05Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "status": "actionable_design",
+    "rationale": "The Canadian Multilingual Standard report supplies a 10-step shortcut-remap reproduction: the bottom-right key is detected as VK 223 and the resulting shortcut does not type the configured `0`. A commenter confirms VK 223 can be used as a key with simultaneous presses, while noting the layout's modifier status is ambiguous. This supports a targeted editor/modifier-classification investigation, not a claim that VK 223 is definitely Right Ctrl.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The issue gives the layout, exact key-capture sequence, target text `0`, and missing result.",
+      "The author says the behavior spans PowerToys 0.84.1 through 0.100.2.",
+      "A commenter explains the layout's bottom-right key is reported as VK 223 and is not unambiguously a standard Right Ctrl.",
+      "A second commenter reports a workaround using VK 223 in a shortcut remap; no linked PR or assignee is present."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-22T18:01:39Z"
+    "recommended_action": "Replay VK 223 capture under the exact layout and determine whether modifier classification or key-down/up authorization prevents the shortcut."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+    "rationale": "The editor/runtime may treat VK 223 only as an ordinary key although the Canadian layout uses the physical key as a modifier. The layout's Windows virtual-key behavior is ambiguous, so a targeted regression test and classification trace are required before changing support."
   },
   "proposed_fixes": [
     {
-      "title": "Needs diagnostic information",
-      "root_cause": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+      "title": "Handle the Canadian Multilingual Standard bottom-right VK 223 consistently in shortcut remapping",
+      "root_cause": "Keyboard Manager may classify VK 223 as a regular key rather than the layout-specific modifier represented by the bottom-right key, causing the captured shortcut chord or simultaneous-press state to be misinterpreted. This remains a hypothesis because Windows and the layout standard disagree on its identity.",
       "plan": [
-        "Investigate and isolate the failure path in the owning module.",
-        "Apply the targeted fix to restore expected behavior.",
-        "Verify with regression tests and reproduction steps."
+        "Reproduce the exact capture/use sequence under CAN/CSA Z243.200 and record the VK/scan code and press/release ordering.",
+        "Trace editor modifier classification, shortcut serialization, and runtime simultaneous-press handling for VK 223.",
+        "Compare with a standard Right Ctrl key and with VK 223 used as an ordinary key before selecting a compatibility rule.",
+        "If the layout-specific modifier role is confirmed, add a narrow layout-aware or explicit-key classification path and regression tests without globally treating VK 223 as Right Ctrl."
       ],
-      "verification": "Reproduce original steps and verify expected behavior.",
+      "verification": [
+        "The bottom-right VK 223 key can participate in the documented shortcut and the target text `0` is emitted.",
+        "Standard Right Ctrl mappings and VK 223 ordinary-key mappings retain existing behavior.",
+        "The tests cover both authorized simultaneous press and key release."
+      ],
       "confidence": {
-        "score": 85,
-        "level": "green",
-        "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The issue is reproducible across versions and has an identified VK code, but the intended modifier semantics of this layout-specific key are disputed."
       }
     }
   ],
   "issue_context": {
-    "summary": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "known_information": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "inferences": [
-      "Behavior consistent with reported symptoms in the affected component."
+    "summary": "On the Canadian Multilingual Standard layout, the bottom-right key captured as VK 223 does not function as the modifier for a shortcut that should type `0`.",
+    "known_information": [
+      "The author tested PowerToys 0.84.1 through 0.100.2.",
+      "The reproduction is in the shortcut editor and then a Run command field.",
+      "The layout-specific key is detected as VK 223; a commenter reports that VK 223 can be used in a shortcut when simultaneous presses are authorized.",
+      "The layout's exact identity as Right Ctrl is ambiguous; issue #31079 is related to Right Alt limitations."
     ],
-    "analysis": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "initial_investigation": "Reviewed issue description, labels, and module ownership.",
-    "information_gaps": [
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "PowerToys diagnostic /bugreport ZIP or detailed reproduction steps.",
-        "why_needed": "To confirm module logs, settings state, and exact failure context.",
-        "how_to_collect": "Please reproduce the issue and submit a comment with /bugreport to generate diagnostic logs."
+    "inferences": [
+      "The failure could arise from modifier classification, shortcut serialization, or runtime simultaneous-press handling.",
+      "Any fix should be narrow and avoid treating every VK 223 key on every layout as Right Ctrl."
+    ],
+    "analysis": "The issue and comments provide a bounded reproduction and an identified virtual key but also caution that the layout is nonstandard. A code design can investigate the path and add tests, but should not hard-code a global VK identity without verifying the layout-specific semantics.",
+    "initial_investigation": [
+      "Read the complete live body and both comments, including the workaround and layout ambiguity.",
+      "Checked current labels, assignees, linked work, and the #31079 cross-reference.",
+      "Focused source inspection found the editor's modifier helper recognizes standard modifier VKs; this supports investigation but does not establish root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-35009",
+      "type": "approve_design",
+      "label": "Design VK 223 modifier classification investigation",
+      "confirm": true,
+      "design": {
+        "title": "Handle the Canadian Multilingual Standard bottom-right VK 223 consistently in shortcut remapping"
       }
-    ]
-  }
+    },
+    {
+      "id": "reproduce-35009",
+      "type": "reproduce",
+      "label": "Replay VK 223 shortcut capture on CAN/CSA layout",
+      "reproduce": {
+        "title": "Test the bottom-right VK 223 key as a shortcut modifier",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or current build",
+          "Canadian Multilingual Standard keyboard layout",
+          "A test Run field"
+        ],
+        "steps": [
+          "Follow the issue's sequence to capture the bottom-right key (reported VK 223) plus L, configure the target as text `0`, and save.",
+          "Invoke that exact chord in a Run field and record whether `0` appears.",
+          "Repeat with authorized simultaneous presses enabled, then test VK 223 as an ordinary key and standard Right Ctrl as a modifier.",
+          "Capture only the key identifiers and event ordering needed to compare the three cases."
+        ],
+        "expected_result": "The intended VK 223 chord emits `0` without changing standard Right Ctrl or ordinary VK 223 behavior.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }

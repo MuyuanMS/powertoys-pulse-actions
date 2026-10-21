@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 34815,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
   "source_updated_at": "2024-10-13T12:10:43Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "url": "https://github.com/microsoft/PowerToys/issues/34815",
+  "title": "Workspaces & Splash Screens",
+  "labels": [
+    "Issue-Bug",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The maintainer requested example applications and the author supplied BankTree; another user identified Microsoft Word, for which /q was suggested to suppress the splash screen. The requested information has already been provided, so use a maintainer-side reproduction with BankTree and do not repeat the application-name request.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report says Workspaces moves/resizes an application's splash screen and then leaves the main application at the wrong position and size.",
+      "The maintainer asked for an example app; the author identified BankTree accounting software and said its vendor was asked for a splash-screen option.",
+      "Another commenter named Word; a maintainer suggested the /q argument to suppress Office splash screens, and the commenter later described a separate FancyZones interaction.",
+      "No current-build reproduction or direct code-fix reference is in the discussion."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the original BankTree case on a current build and inspect whether Workspaces targets the splash screen or the main application window.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
     "source_updated_at": "2024-10-13T12:10:43Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported sequencing suggests Workspaces may arrange the transient splash window before the main window appears; the discussion has no code-level proof, and the Word /q workaround is application-specific."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Arrange the main application window after its splash screen closes",
+      "root_cause": "Hypothesis: Workspaces may apply saved placement to a transient splash screen and fail to reapply it to the application's main window after the splash closes. This has not been verified on BankTree or a current build.",
+      "plan": [
+        "Reproduce with the original BankTree application and capture which HWND Workspaces detects during the splash and after the main window appears.",
+        "Compare launch behavior with the splash enabled and, where supported, disabled; also test the documented Word /q argument only for Word.",
+        "If Workspaces targets a transient splash window, wait for the main window or reapply the saved geometry after the splash closes, while preserving applications that intentionally use separate splash windows.",
+        "Add regression coverage using an app with a separate splash and main window; do not treat Word's /q workaround as a general fix."
+      ],
+      "verification": [
+        "Launching the BankTree workspace places its main window at the saved position and size after the splash closes.",
+        "The splash window is not incorrectly resized or positioned as the final application window.",
+        "Verify a second application with a distinct splash window and a normal application with no splash are unaffected."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The described ordering and named application support a testable transient-window hypothesis, but current behavior and the actual window identities have not been observed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces reportedly resizes and moves a startup splash screen, then fails to arrange the main application window correctly.",
+    "known_information": [
+      "The issue reports PowerToys 0.84.1, installed from GitHub, and Workspaces not running as administrator.",
+      "The original author named BankTree as the most affected application after a maintainer asked for an example.",
+      "A second commenter named Microsoft Word; /q was suggested as an application-specific splash suppression argument.",
+      "That commenter later described a separate FancyZones snapping problem and said Word placement could be corrected with macros."
+    ],
+    "inferences": [
+      "The splash and main window may have different handles/lifetimes, which could explain placement being applied to the wrong window.",
+      "The Word argument workaround does not establish a general Workspaces fix or resolve the BankTree report."
+    ],
+    "analysis": "The maintainer's request for the application example has already been answered. A direct reproduction with BankTree and window identity tracking is the next useful step; do not ask again for an app name.",
+    "initial_investigation": [
+      "Read the full issue body and all five comments, including BankTree, the Word suggestion, and the later clarification about FancyZones.",
+      "Reviewed Workspaces window-arrangement ownership; no source evidence confirms a splash lifecycle defect."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-workspaces-splash-window-34815",
+      "type": "reproduce",
+      "label": "Reproduce splash-screen placement",
+      "primary": true,
+      "reproduce": {
+        "module": "Workspaces",
+        "version_requirement": "Use a current supported PowerToys build; original report used 0.84.1.",
+        "prerequisites": [
+          "BankTree installed, as named by the original author, or another application with a distinct splash window.",
+          "A saved Workspaces layout containing the application.",
+          "Window identity/position observation during startup."
+        ],
+        "steps": [
+          "Launch the workspace with BankTree included and observe its splash screen and main window separately.",
+          "Check whether the splash screen receives the saved position/size and whether the main window is later arranged.",
+          "If available, repeat with splash screen suppression to compare the main-window placement."
+        ],
+        "expected": "The main application window is positioned and sized according to the saved workspace after its splash screen has closed."
+      }
+    },
+    {
+      "id": "approve-design-34815",
+      "type": "approve_design",
+      "label": "Approve splash lifecycle investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The yellow transient-window hypothesis needs reproduction with the named BankTree application."
+    }
+  ]
 }

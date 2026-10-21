@@ -2,95 +2,113 @@
   "schemaVersion": 5,
   "number": 44650,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
+  "track": "fix",
+  "stage": "reproduce",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T15:08:39.7870394Z",
-  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-  "source_updated_at": "2026-09-07T18:39:04Z",
+  "generated_at": "2026-10-21T06:33:24Z",
+  "evaluated_at": "2026-10-21T06:33:24Z",
+  "source_updated_at": "2026-10-11T16:49:05Z",
   "url": "https://github.com/microsoft/PowerToys/issues/44650",
   "title": "Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session",
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
-  "assignees": null,
-  "comments": 6,
-  "status": {
-    "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
-  },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Ask only for the current evidence needed to confirm the failing path."
-  },
+  "assignees": [],
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
+    "status": "reproducible",
+    "rationale": "The reporter supplied a concrete host-versus-Citrix comparison, exact key mapping, Citrix version, Windows build, and a second remapping tool that fails in the same native session. The next discriminator is maintainer-side verification of Citrix full-screen keyboard forwarding, not another generic log request.",
     "evidence": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session",
-      "Area label: Product-Keyboard Shortcut Manager",
-      "Issue body excerpt: ### Microsoft PowerToys version 0.96.1 ### Installation method GitHub ### Area(s) with issue? Keyboard Manager ### Steps to reproduce 1. Use a laptop with a dedicated Copilot key (LG Gram 2025 model). 2. Open PowerToys Keyboard Manager and remap the Copilot key - recognized as Win (Left) + Shift (Left) + F23 - to Ctrl (Right). 3. Verify the remapping works l...",
-      "Latest public comment excerpt: @Jrmewam De rien ! Citrix is a virtual env, I think it use low-level driver that my program can't intercept... Sorry.",
-      "Fast revalidation read the live issue body, labels, assignees, and 6 public comment(s) on 2026-09-11T15:08:39.7870394Z."
+      "The live issue body says Win+Shift+F23 remapped to Right Ctrl works locally but is ignored in Citrix Workspace 25.8.10.36 in the virtual desktop.",
+      "The reporter says the behavior changes when Citrix TransparentKeyPassthrough is set to Local, but that breaks local Alt+Tab.",
+      "On 2026-09-07 the reporter said a separate Copilot-key remapper also works locally but fails in the same Citrix session; the linked comment is https://github.com/microsoft/PowerToys/issues/44650#issuecomment-5572801150.",
+      "The latest discussion comment hypothesizes a Citrix low-level input limitation but does not establish the cause: https://github.com/microsoft/PowerToys/issues/44650#issuecomment-5574514004.",
+      "A related open Copilot-key report, #50946, contains a different local Keyboard Manager initialization failure and does not establish a fix for this Citrix-only behavior."
     ],
-    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
-    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-    "source_updated_at": "2026-09-07T18:39:04Z"
+    "recommended_action": "Reproduce the exact host/Citrix comparison on a current supported build and trace which side receives the remapped key before proposing a code change.",
+    "evaluated_at": "2026-10-21T06:33:24Z",
+    "source_updated_at": "2026-10-11T16:49:05Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
+    "status": "proposed",
+    "rationale": "A PowerToys-side compatibility change is possible but not yet justified. The parallel failure of another remapper suggests that Citrix full-screen input forwarding may be involved; this remains a hypothesis, not a confirmed PowerToys root cause."
   },
+  "proposed_fixes": [
+    {
+      "title": "Validate keyboard remapping across Citrix full-screen input forwarding",
+      "root_cause": "Hypothesis: Citrix's native full-screen keyboard path may not forward or accept the injected remapped key sequence in the same way as local applications; the issue does not yet prove whether PowerToys or Citrix owns the failure.",
+      "plan": [
+        "Reproduce on the reported LG Gram/Citrix setup with the Copilot key mapped from Win+Shift+F23 to Right Ctrl; compare a local text editor, Citrix windowed mode, and Citrix full-screen mode.",
+        "Compare Citrix's reported TransparentKeyPassthrough settings and determine whether the remapped input reaches the host hook or the remote session.",
+        "Trace the Keyboard Manager low-level hook and injected-input path only if the failure differs from the other remapper; make a code change only if a PowerToys-owned interception defect is demonstrated.",
+        "Add a focused regression check for the proven host/Citrix input path, or document that the limitation is controlled by Citrix if the same input fails before PowerToys-specific handling."
+      ],
+      "verification": [
+        "On a current supported PowerToys build, verify the remapping in a local editor, Citrix windowed session, and Citrix full-screen session.",
+        "Confirm Alt+Tab remains local and behaves as expected under the tested passthrough setting."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The issue is specific and reproducible, but the same failure in another remapper makes the owning component uncertain."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Open PowerToys bug report for Product-Keyboard Shortcut Manager: Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session",
+    "summary": "A Copilot-key remap works on the reporter's LG Gram locally but fails in a native Citrix desktop; browser-based Citrix succeeds, and a passthrough workaround changes which side receives system shortcuts.",
     "known_information": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session",
-      "Area label: Product-Keyboard Shortcut Manager",
-      "Issue body excerpt: ### Microsoft PowerToys version 0.96.1 ### Installation method GitHub ### Area(s) with issue? Keyboard Manager ### Steps to reproduce 1. Use a laptop with a dedicated Copilot key (LG Gram 2025 model). 2. Open PowerToys Keyboard Manager and remap the Copilot key - recognized as Win (Left) + Shift (Left) + F23 - to Ctrl (Right). 3. Verify the remapping works l...",
-      "Latest public comment excerpt: @Jrmewam De rien ! Citrix is a virtual env, I think it use low-level driver that my program can't intercept... Sorry.",
-      "Fast revalidation covered live upstream activity through 2026-09-07T18:39:04.0000000Z."
+      "The report identifies PowerToys 0.96.1, Windows 11 build 26200.7171, Citrix Workspace 25.8.10.36, and an LG Gram 2025.",
+      "The reporter maps the Copilot key, observed as Win (Left)+Shift (Left)+F23, to Right Ctrl and says it works in a local editor.",
+      "The reporter says the native Citrix session ignores the mapping, including in full-screen, while Citrix for HTML5 in Edge works.",
+      "The reporter says TransparentKeyPassthrough=Local changes the result but causes Alt+Tab to switch local windows instead of remote windows.",
+      "The reporter tried another Copilot-key remapper and observed the same Citrix failure.",
+      "The latest upstream activity is 2026-10-11T16:49:05Z; the latest public comment is 2026-09-07T18:39:04Z."
     ],
     "inferences": [
-      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
+      "The native Citrix keyboard-forwarding path may be responsible, but the parallel failure in another remapper is suggestive rather than proof.",
+      "The distinct HTML5 result indicates that the failure is not simply that the physical Copilot key is unrecognized by every application."
     ],
-    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "analysis": "The issue already contains enough controlled comparisons to avoid asking for generic logs. A maintainer test can distinguish a PowerToys hook/injection defect from Citrix's full-screen input policy and avoids proposing unsupported behavior changes.",
     "initial_investigation": [
-      "Read issue metadata, labels, assignees, body, and 6 public comment(s).",
-      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 6 public comment(s) during the scheduled bounded run."
+      "Read the complete live issue body and all six public comments; the final comment proposes a low-level Citrix limitation but supplies no confirming trace.",
+      "Checked the linked, open issue #50946; its reported local Keyboard Manager initialization failure is not evidence that the Citrix-specific path is fixed.",
+      "Checked the owning Keyboard Manager event-handler path in src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp; the existing low-level hook and app-specific handling do not establish Citrix compatibility."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
-        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-repro-diagnostics-44650",
-      "type": "request_info",
-      "label": "Request repro steps and diagnostics",
+      "id": "reproduce-citrix-copilot-key-44650",
+      "type": "reproduce",
+      "label": "Reproduce Citrix full-screen key passthrough",
       "primary": true,
-      "comment": {
-        "body": "Thanks for the report. The current issue identifies the affected behavior (\"Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for Product-Keyboard Shortcut Manager and decide whether this should move to a concrete fix design."
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Use a current supported PowerToys build; compare with the reported 0.96.1 behavior if available.",
+        "prerequisites": [
+          "A laptop with a dedicated Copilot key recognized as Win+Shift+F23.",
+          "Citrix Workspace native client and a remote desktop session.",
+          "A local text editor and a remote application that can distinguish Right Ctrl."
+        ],
+        "steps": [
+          "Map Win (Left)+Shift (Left)+F23 to Right Ctrl in Keyboard Manager.",
+          "Verify the mapping in a local text editor.",
+          "Open the same remote desktop in Citrix windowed mode and test the key.",
+          "Switch Citrix to full-screen mode and test the key again.",
+          "If permitted, compare Citrix TransparentKeyPassthrough settings and record whether Alt+Tab remains local or is forwarded remotely."
+        ],
+        "expected": "The same remapped Right Ctrl input is received in the local and Citrix contexts, unless Citrix explicitly owns or suppresses that input path."
       }
+    },
+    {
+      "id": "approve-design-44650",
+      "type": "approve_design",
+      "label": "Approve focused compatibility investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The proposed plan is a low-confidence hypothesis pending maintainer reproduction."
     }
   ]
 }

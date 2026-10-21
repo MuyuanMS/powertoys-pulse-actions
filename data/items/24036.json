@@ -1,33 +1,77 @@
 {
+  "schemaVersion": 5,
   "number": 24036,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:13:48Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Keyboard Manager failed to map win+space shortcut",
+  "url": "https://github.com/microsoft/PowerToys/issues/24036",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:27Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The reporter's old configuration and two follow-ups all point to Win+Space/input-language switching or Space-key mapping, but they do not isolate whether the failure comes from Windows language-switch behavior, the chosen mapping, or Keyboard Manager.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report uses PowerToys 0.67.1 and says the first configured mapping sometimes fails to switch input method.",
+      "A commenter says Ctrl+PrintScreen mapped to Win+Space also failed to switch input method.",
+      "Another commenter says Space cannot be mapped in their setup and the on-screen keyboard does not highlight Space when pressed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:13:48Z"
-  }
+    "recommended_action": "Reproduce on a current build with Windows' own Win+Space language switch as a control, then isolate the specific source/destination mapping.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:27Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The historical thread combines input-method switching and general Space-key remapping, and lacks a current minimal reproduction that identifies a shared code defect."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Several old reports associate Keyboard Manager shortcut remapping with failed Win+Space input-method switching or inability to use Space in mappings.",
+    "known_information": [
+      "The original report is on PowerToys 0.67.1 and names Sogou input method 13.1.0.",
+      "The original configuration image is the basis for the statement that its first mapping intermittently fails.",
+      "A later commenter independently tried Ctrl+PrintScreen to Win+Space and saw no input-method switch.",
+      "A third report says Space is unavailable in mapping setup and is not highlighted by the on-screen keyboard."
+    ],
+    "inferences": [
+      "The different reports may share a Space-key event issue, but the screenshots and versions do not establish identical mapping configuration.",
+      "Windows may reserve Win+Space for language switching independently of the remapper."
+    ],
+    "analysis": "Do not infer a parser or key-hook defect from the old reports alone. Compare native Win+Space, a non-reserved destination shortcut, and the exact remap on current stable, and keep the input-method application fixed during testing.",
+    "initial_investigation": [
+      "Read the full issue body and both comments.",
+      "No linked fix or current test result is present."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Isolate Win+Space from Space-key mapping",
+      "reproduce": {
+        "title": "Compare native input switching and remapped shortcuts",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "A Windows profile with two configured input languages or methods.",
+          "A clean Keyboard Manager profile with only one test mapping."
+        ],
+        "setup": [],
+        "steps": [
+          "With Keyboard Manager disabled, confirm Windows' native Win+Space switches between configured input methods.",
+          "Enable Keyboard Manager and test the original mapping with the reported input method.",
+          "Test Ctrl+PrintScreen mapped to Win+Space, then test a non-reserved destination shortcut as a control.",
+          "Open the mapping editor and test whether Space is captured as a source key; compare with the on-screen keyboard state."
+        ],
+        "expected_result": "Native Win+Space works, and any failing remapped or Space-key path is isolated to a repeatable configuration rather than conflated with language-switch state."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 2
 }

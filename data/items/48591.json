@@ -2,66 +2,106 @@
   "schemaVersion": 5,
   "number": 48591,
   "kind": "issue",
-  "track": "triage",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-13T15:30:06.9719009Z",
-  "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-  "source_updated_at": "06/13/2026 20:10:31",
-  "url": "https://github.com/microsoft/PowerToys/issues/48591",
   "title": "Couldn't type shift with Powertoys open",
-  "author": "brentspine",
+  "url": "https://github.com/microsoft/PowerToys/issues/48591",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-21T00:22:41Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The new commenter supplied a useful constrained reproduction: Shift fails system-wide, including the on-screen keyboard, while raw low-level events still arrive and quitting PowerToys restores behavior. This is enough for maintainer-side hook isolation, but not enough to assign a root cause or call the older duplicate classification valid.",
+    "evidence": [
+      "The original report says Shift stopped working with Keyboard Manager turned off and PowerToys had to be stopped to restore it.",
+      "A 2026-10-21 commenter reproduced system-wide loss on PowerToys 0.100.0 / Windows 11 25H2, with no remaps configured in Keyboard Manager.",
+      "That commenter reports that a low-level keyboard logger still received balanced raw Shift and slash events, that alternative remappers did not restore the symptom, and that quitting PowerToys did.",
+      "The commenter lists the active PowerToys modules and states the issue occurred without using PowerToys features."
+    ],
+    "recommended_action": "Reproduce with the reported module set and instrument which active PowerToys hook consumes the event before proposing a module-specific fix.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-21T00:22:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The repository has a shared low-level KeyboardHook that returns a handled result after an active callback, making hook-consumption behavior a testable hypothesis. No evidence yet identifies which callback is responsible or confirms a defect in that implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Shift events unless an active module intentionally consumes them",
+      "root_cause": "An active global keyboard callback may be returning a consumed result for an unrelated Shift event even when Keyboard Manager has no remaps; the exact module and callback are not identified.",
+      "plan": [
+        "Replay the reported Shift-loss scenario while tracing low-level hook registration order, module callback activity, and each callback's handled result.",
+        "Identify the first callback that consumes Shift when its feature should not own that event.",
+        "Narrow the callback predicate or pass the unrelated event through, and add a test for Shift down/up with that feature enabled but inactive."
+      ],
+      "verification": [
+        "Confirm Shift works in ordinary applications and the on-screen keyboard with the reported module set.",
+        "Verify any intentionally registered Shift-based shortcut still works and that no key-down/key-up pair is lost."
+      ],
+      "confidence": {
+        "score": 41,
+        "level": "red",
+        "rationale": "The raw-event and PowerToys-shutdown comparisons implicate a PowerToys hook chain, but do not identify which active callback handles the event."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A recent confirmation narrows the intermittent Shift loss to a PowerToys-running condition despite Keyboard Manager being disabled and no remaps configured.",
+    "known_information": [
+      "The original reporter used PowerToys 0.90.1 and had Keyboard Manager off.",
+      "A second reporter observed the issue on PowerToys 0.100.0 / Windows 11 25H2 with Keyboard Manager enabled but an empty remap configuration.",
+      "The second reporter says the on-screen keyboard was affected, raw low-level Shift events arrived in order, and quitting PowerToys restored Shift.",
+      "The second reporter says disabling Sticky/Filter Keys and quitting several other key utilities one at a time did not restore Shift."
+    ],
+    "inferences": [
+      "A PowerToys low-level hook may consume an event further down the chain, but the module and exact transition are unknown.",
+      "The original and second report may share an owner, but the original report alone does not establish the same machine state or trigger."
+    ],
+    "analysis": "The new report is more specific than the original artifact's unsupported duplicate/handled classification. The correct next discriminator is a maintainer-side trace of active hook callbacks, not a generic request for more logs from a reporter who already supplied key-event evidence.",
+    "initial_investigation": [
+      "Read the complete issue body and its one full comment, including the module list and key-event observations.",
+      "Read KeyboardHook::HookProc in src/common/interop/KeyboardHook.cpp: it iterates active callbacks and returns 1 when a callback handles an event; this is a possible ownership boundary, not proof of the failing callback.",
+      "No public linked PR or explicit duplicate is present in the issue discussion."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48591",
+      "type": "approve_design",
+      "label": "Trace the Shift event consumer",
+      "primary": false,
+      "confirm": true,
+      "note": "Do not start a module-specific implementation design until the consuming callback is identified."
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace Shift with the reported modules",
+      "reproduce": {
+        "title": "Isolate the PowerToys callback that consumes Shift",
+        "module": "PowerToys shared keyboard-hook chain",
+        "version_requirement": "Current stable build, then 0.100.0 only if needed to compare with the confirmation",
+        "prerequisites": [
+          "Windows 11 25H2-class system with a standard keyboard layout.",
+          "Keyboard Manager enabled with no remaps; match the reporter's available module set where practical.",
+          "Instrumentation that records hook callback entry/return for Shift without recording typed content."
+        ],
+        "setup": [],
+        "steps": [
+          "Start PowerToys with the matched module set and verify Shift works in a text editor and the on-screen keyboard.",
+          "Leave PowerToys running without invoking module UI or shortcuts; periodically test Shift in the same applications.",
+          "If Shift stops working, capture callback return decisions while pressing and releasing Shift and a shifted punctuation key.",
+          "Disable one PowerToys module at a time only after recording the failing trace, then compare against a fully stopped PowerToys run."
+        ],
+        "expected_result": "Shift down/up reaches the target and on-screen keyboard consistently; if a callback consumes it, the trace names the exact callback and state that justified consumption."
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
   "assignees": [],
-  "comments": 0,
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Lightweight schema-v5 triage revalidation completed during the bounded scheduled run."
-  },
-  "next_action": {
-    "glyph": "🔗",
-    "label": "Monitor linked or assigned work",
-    "reason": "Existing ownership or handling evidence means duplicate agent work is not appropriate."
-  },
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Public ownership or handling evidence indicates this issue is already covered elsewhere; duplicate work should not be started.",
-    "evidence": [
-      "Open Issue-Bug report #48591: Couldn't type shift with Powertoys open",
-      "Labels present: Issue-Bug, Needs-Triage, Product-Keyboard Manager",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
-    ],
-    "recommended_action": "Monitor the existing owner or linked work.",
-    "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-    "source_updated_at": "06/13/2026 20:10:31"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A competing PowerToys fix is not applicable while existing ownership or handling covers the report."
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "Revalidated open Issue-Bug #48591: Couldn't type shift with Powertoys open.",
-    "known_information": [
-      "Open Issue-Bug report #48591: Couldn't type shift with Powertoys open",
-      "Labels present: Issue-Bug, Needs-Triage, Product-Keyboard Manager",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
-    ],
-    "inferences": [
-      "The available public evidence does not yet confirm a single root cause or implementation path."
-    ],
-    "analysis": "The existing ownership or handling signal is sufficient to avoid duplicating work.",
-    "initial_investigation": [
-      "Reviewed the live issue metadata, labels, public discussion count, and current artifact freshness.",
-      "Checked the schema-v5 action contract for this revalidation."
-    ],
-    "information_gaps": []
-  },
-  "actions": []
+  "comments": 1
 }

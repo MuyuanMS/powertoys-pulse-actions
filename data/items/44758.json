@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 44758,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:58:17Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
+  "source_updated_at": "2026-10-11T16:49:02Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/44758",
+  "title": "Shorcut Remap not Working",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author supplied the shortcut, intended Insert-triggered screenshot behavior, and a PowerToys diagnostic ZIP. The direction is understandable from the expected result, so the next step is to reproduce on a current build rather than ask for another archive.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The body says Ctrl+Shift+S is being remapped to Insert and expects pressing Insert to trigger the screenshot.",
+      "The reporter says deleting the remap restores the original Ctrl+Shift+S behavior.",
+      "The issue already includes PowerToysReport_2026-01-16-13-49-17.zip; no second diagnostic request is needed.",
+      "The report lists PowerToys 0.96.1 from the Microsoft Store."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:58:17Z"
-  }
+    "recommended_action": "Reproduce the Insert-to-Ctrl+Shift+S mapping on a current build in a text editor and the intended screenshot application.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
+    "source_updated_at": "2026-10-11T16:49:02Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt was found. The report does not establish whether Keyboard Manager emits the target chord or whether the screenshot application intercepts it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve the screenshot shortcut when triggered through Insert",
+      "root_cause": "Hypothesis: the remapped Insert event may not reach the screenshot application as the expected Ctrl+Shift+S chord, or that application's shortcut handler may consume it differently. The reported diagnostic archive and current-build reproduction have not been analyzed here.",
+      "plan": [
+        "Recreate the Insert-to-Ctrl+Shift+S mapping on a current build and test it in Notepad and the screenshot application.",
+        "Confirm whether Keyboard Manager sends the target chord by observing a harmless test target before attributing the failure to the screenshot app.",
+        "If the injected chord is missing or altered, inspect the key-down/key-up remap path and add a focused regression test; otherwise document the application-specific interaction."
+      ],
+      "verification": [
+        "With Keyboard Manager enabled, press Insert and confirm the screenshot application starts its capture workflow.",
+        "Delete the mapping and confirm Ctrl+Shift+S still starts the same workflow.",
+        "Verify the inserted chord does not trigger an unintended action in a plain text editor."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The expected sequence is stated and a report archive exists, but no current reproduction or code-level event evidence identifies the failing layer."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter expects a remapped Insert key to trigger the screenshot action associated with Ctrl+Shift+S; removing the mapping restores the original chord.",
+    "known_information": [
+      "The issue reports PowerToys 0.96.1 from the Microsoft Store.",
+      "The body describes Ctrl+Shift+S as the screenshot shortcut and expects the remapped Insert key to invoke it.",
+      "A PowerToys diagnostic ZIP is attached to the live issue."
+    ],
+    "inferences": [
+      "The failure could be in remap injection or in how the screenshot application handles injected shortcuts; the body does not isolate either.",
+      "The existing archive may help after a reproduction, but it does not justify asking the reporter for another copy."
+    ],
+    "analysis": "The public report contains enough to run a maintainer-side test. The validation should first check the injected output separately from the screenshot app, because an application-specific shortcut handler can make a correct remap appear ineffective.",
+    "initial_investigation": [
+      "Read the complete live body and confirmed the attached diagnostic archive is present; did not inspect diagnostic contents.",
+      "Checked Keyboard Manager's current low-level event handler and found no issue-specific evidence proving a root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-insert-screenshot-remap-44758",
+      "type": "reproduce",
+      "label": "Reproduce Insert screenshot remap",
+      "primary": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Use a current supported PowerToys build; compare with the reported 0.96.1 behavior if available.",
+        "prerequisites": [
+          "Keyboard Manager enabled.",
+          "A screenshot application in which Ctrl+Shift+S starts a capture workflow.",
+          "A text editor for checking the emitted chord without invoking the screenshot app."
+        ],
+        "steps": [
+          "Create a single-key remap from Insert to Ctrl+Shift+S and save it.",
+          "Press Insert in the text editor and verify that the intended chord is emitted without unrelated text.",
+          "Press Insert while the screenshot application is available and observe whether its capture workflow starts.",
+          "Delete the remap and confirm Ctrl+Shift+S again starts the capture workflow."
+        ],
+        "expected": "Pressing Insert triggers the same screenshot workflow as Ctrl+Shift+S, and deleting the mapping restores the original shortcut.",
+        "attachments": [
+          "https://github.com/user-attachments/files/24662899/PowerToysReport_2026-01-16-13-49-17.zip"
+        ]
+      }
+    },
+    {
+      "id": "approve-design-44758",
+      "type": "approve_design",
+      "label": "Approve focused shortcut investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The root-cause hypothesis is low-confidence pending current-build reproduction."
+    }
+  ]
 }

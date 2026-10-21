@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 24504,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:13:24Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "FancyZones \"quick layout switch\" ignores remappings in Keyboard Manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/24504",
+  "generated_at": "2026-10-21T06:47:08Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-10-21T06:27:31Z",
+  "source_updated_at": "2026-10-11T16:49:15Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives an exact interoperability test: remap CapsLock to Ctrl, configure a FancyZones quick-layout shortcut using Ctrl+Win+Alt+number, then compare physical Ctrl with CapsLock. The code uses a registered global hotkey while Keyboard Manager synthesizes remapped input; their interaction is plausible but unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue title identifies FancyZones quick-layout switching as ignoring Keyboard Manager remaps.",
+      "The described sequence compares a physical Ctrl chord with the remapped CapsLock-as-Ctrl chord.",
+      "FancyZones registers quick-layout hotkeys with RegisterHotKey; Keyboard Manager handles remapping through its low-level keyboard path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:13:24Z"
-  }
+    "recommended_action": "Reproduce the physical-versus-remapped modifier comparison and trace hotkey registration/input delivery before changing either module.",
+    "evaluated_at": "2026-10-21T06:27:31Z",
+    "source_updated_at": "2026-10-11T16:49:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A registered FancyZones hotkey may not recognize the synthetic modifier event produced by Keyboard Manager, but the issue has not been reproduced on a current build and the interaction is not established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make FancyZones quick-layout hotkeys recognize Keyboard Manager remapped modifiers",
+      "root_cause": "FancyZones' RegisterHotKey path may observe the remapped CapsLock-to-Ctrl chord differently from a physical Ctrl chord, causing the registered Ctrl+Win+Alt+number shortcut not to activate.",
+      "plan": [
+        "Reproduce with only CapsLock-to-Ctrl enabled and one FancyZones quick-layout chord; compare physical Ctrl+Win+Alt+number against CapsLock+Win+Alt+number.",
+        "Trace the low-level key event and registered-hotkey delivery for each chord to determine whether the remapped modifier is injected, filtered, or not reflected in the registered combination.",
+        "If the mismatch is confirmed, implement the smallest compatible integration between Keyboard Manager remapped state and FancyZones hotkey handling, preserving ordinary RegisterHotKey behavior.",
+        "Add a regression test covering physical and remapped Ctrl activation for the same FancyZones layout."
+      ],
+      "verification": [
+        "The quick-layout action fires with both physical Ctrl and CapsLock-remapped Ctrl.",
+        "Unrelated Ctrl shortcuts and existing FancyZones hotkeys retain their behavior.",
+        "Disabling the remap restores the baseline physical-key behavior without duplicate layout activation."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The two module paths provide a concrete integration hypothesis, but the event delivery behavior has not been traced and may be subject to Windows hotkey semantics."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A FancyZones quick-layout hotkey apparently does not activate when its Ctrl modifier is produced by Keyboard Manager's CapsLock-to-Ctrl remap.",
+    "known_information": [
+      "The issue is labeled Issue-Bug, Product-FancyZones, Needs-Triage, and Product-Keyboard Manager.",
+      "The reported quick-layout chord uses Ctrl+Win+Alt+number.",
+      "The comparison is between physical Ctrl and CapsLock remapped to Ctrl.",
+      "FancyZones registers quick-layout shortcuts through RegisterHotKey, while Keyboard Manager uses low-level keyboard remapping."
+    ],
+    "inferences": [
+      "The registered hotkey may not treat remapped/synthetic Ctrl the same as physical Ctrl, but no event trace confirms this.",
+      "The report could also depend on hotkey registration timing or a conflicting system shortcut."
+    ],
+    "analysis": "This is a focused cross-module interoperability case, not an established defect in either module independently. The required evidence is the physical-versus-remapped comparison plus a trace of whether the registered hotkey fires.",
+    "initial_investigation": [
+      "Read the full issue body; there are no comments or attachments.",
+      "Read FancyZones.cpp quick-layout RegisterHotKey registration and Keyboard Manager's remapping/event path; the connection is plausible but not confirmed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-24504",
+      "type": "approve_design",
+      "label": "Design the FancyZones remapped-hotkey integration",
+      "primary": false,
+      "confirm": true,
+      "note": "The design must remain conditional on reproducing the physical-versus-remapped mismatch and tracing hotkey delivery."
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare physical and remapped Ctrl in FancyZones",
+      "reproduce": {
+        "title": "Test quick-layout activation with a remapped Ctrl key",
+        "module": "FancyZones and Keyboard Manager",
+        "version_requirement": "Current stable build",
+        "prerequisites": [
+          "A clean Keyboard Manager configuration with CapsLock mapped to Ctrl.",
+          "One FancyZones quick-layout shortcut configured as Ctrl+Win+Alt+number."
+        ],
+        "setup": [],
+        "steps": [
+          "Press the configured chord using physical Ctrl and confirm whether the selected quick layout activates.",
+          "Repeat with CapsLock in place of Ctrl while keeping Win, Alt, and the number identical.",
+          "Disable the CapsLock-to-Ctrl mapping and repeat to establish the baseline.",
+          "If only the remapped chord fails, trace whether the matching registered hotkey fires and whether the low-level event is marked synthetic."
+        ],
+        "expected_result": "Both physical and remapped Ctrl activate the same layout, or the trace identifies where the remapped chord stops reaching FancyZones."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0
 }

@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 34732,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
   "source_updated_at": "2024-10-13T12:10:28Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "url": "https://github.com/microsoft/PowerToys/issues/34732",
+  "title": "PowerToys Workspaces: do not resize window more than it allows, if the window has size limits (KeePass 2)",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The author provides a detailed setup and a repeatable KeePass launch: Workspaces captures KeePass, it is closed to tray, and launching the workspace first shows a password dialog that is resized despite its size restrictions. The current arranger calls SetWindowPlacement, which makes respecting window limits a relevant code path, but does not prove the cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report specifies KeePass 2, a saved password-protected database, a captured workspace, and three 1080p displays on Windows 11 23H2.",
+      "On workspace launch, KeePass shows its password dialog first; the dialog is resized even though it cannot be resized by the user.",
+      "After entering the password, the main KeePass window appears.",
+      "Current Workspaces placement code uses SetWindowPlacement in WindowArranger.cpp; the report does not prove whether this call or later KeePass behavior violates the size restrictions."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with KeePass and inspect the password dialog's min/max constraints and final placement before changing window-arrangement logic.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
     "source_updated_at": "2024-10-13T12:10:28Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The specific transient-dialog sequence and current placement API make honoring min/max constraints a focused hypothesis. The report has no comments or code-level diagnosis confirming it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Respect fixed-size window constraints when arranging Workspace windows",
+      "root_cause": "Hypothesis: the arrangement path may apply the saved rectangle to KeePass's first password dialog without respecting its min/max size limits, or may capture the transient dialog instead of the main window. Neither possibility is confirmed.",
+      "plan": [
+        "Reproduce the exact password-protected KeePass launch with three monitors and capture the password dialog's min/max size and window identity before and after placement.",
+        "Compare the requested workspace rectangle with the bounds Windows and KeePass actually permit.",
+        "If the arranger overrides size limits, clamp the placement to the window's supported min/max bounds and center the resulting rectangle within the saved monitor area.",
+        "If the saved target is the transient password dialog, determine whether Workspaces should wait for the main window or arrange the dialog separately; add regression coverage for both dialog and main window."
+      ],
+      "verification": [
+        "Launch the workspace and confirm the KeePass password dialog keeps its supported size and is centered on the intended monitor.",
+        "After entering the password, confirm the KeePass main window is arranged at its saved location and size.",
+        "Verify ordinary resizable windows continue to match their saved workspace bounds."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The report precisely describes a size-restricted modal dialog and the current arranger's placement API is relevant, but it is unclear whether the wrong window is captured or whether KeePass/Windows changes its bounds afterward."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces resizes KeePass 2's password dialog despite its size restrictions; the main window appears only after password entry.",
+    "known_information": [
+      "The author uses PowerToys 0.84.0 from the Microsoft Store, Windows 11 23H2, and three Full HD displays.",
+      "The workspace contains KeePass with a password-protected database and is launched after KeePass is closed to tray.",
+      "The password dialog appears first and is resized; after entering the password, the main KeePass window appears normally.",
+      "There are no public comments or attachments."
+    ],
+    "inferences": [
+      "Workspaces may be arranging the transient password dialog, or may be applying bounds that exceed its min/max size constraints.",
+      "The report's expected centered placement for a fixed-size dialog is a product behavior request that should be validated with the existing arrangement contract."
+    ],
+    "analysis": "A targeted reproduction should record both dialog and main-window identity and bounds. Only then should the implementation distinguish constraint clamping from delayed-window discovery.",
+    "initial_investigation": [
+      "Read the complete live body and confirmed there are no comments.",
+      "Inspected src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp, which applies window placement; this establishes a relevant code area, not a confirmed defect."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-keepass-size-constraints-34732",
+      "type": "reproduce",
+      "label": "Reproduce KeePass dialog placement",
+      "primary": true,
+      "reproduce": {
+        "module": "Workspaces",
+        "version_requirement": "Use a current supported PowerToys build; original report used 0.84.0 on Windows 11 23H2.",
+        "prerequisites": [
+          "KeePass 2 with a password-protected database.",
+          "Three displays or an equivalent multi-monitor setup.",
+          "A saved workspace that captures KeePass."
+        ],
+        "steps": [
+          "Close KeePass to its tray icon, then launch the saved workspace.",
+          "Before entering the password, observe whether the password dialog is resized and note its position.",
+          "Enter the password and observe whether the main KeePass window is placed correctly.",
+          "Repeat after confirming the workspace captured the intended KeePass window."
+        ],
+        "expected": "The password dialog respects its size restrictions and appears on the intended monitor; the main KeePass window uses its saved workspace geometry."
+      }
+    },
+    {
+      "id": "approve-design-34732",
+      "type": "approve_design",
+      "label": "Approve window-constraint investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The yellow hypothesis is based on the reported modal dialog and current placement path; reproduce before changing behavior."
+    }
+  ]
 }

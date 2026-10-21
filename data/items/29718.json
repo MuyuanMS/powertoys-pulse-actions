@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 29718,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduce",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-10-21T06:35:56Z",
+  "evaluated_at": "2026-10-21T06:35:56Z",
   "source_updated_at": "2024-10-10T17:59:06Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "url": "https://github.com/microsoft/PowerToys/issues/29718",
+  "title": "PowerToys Systray: Left-click menu opens stretched over the screen",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Area-App Compat",
+    "Area-Flyout"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report identifies the first left-click after restart, a 5120x1440 display, and a normal-sized second-click result; a maintainer hypothesized FancyZones may treat the flyout as a normal window, and the author confirmed reproduction on 0.79.0. The next action is to test the same path on current builds and isolate FancyZones.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.75.1 on Windows 10 22H2 with a 5120x1440 ultra-wide monitor; a Surface Pro display did not show the issue.",
+      "The first tray left-click opens an unmovable, oversized window; the second click opens the menu normally.",
+      "A maintainer suggested FancyZones may be placing the flyout as a normal window: https://github.com/microsoft/PowerToys/issues/29718#issuecomment-1971281979.",
+      "The author confirmed the issue remained reproducible on 0.79.0: https://github.com/microsoft/PowerToys/issues/29718#issuecomment-1978986762."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce first-click behavior on an ultra-wide display with FancyZones enabled and disabled, and inspect flyout placement/size state.",
+    "evaluated_at": "2026-10-21T06:35:56Z",
     "source_updated_at": "2024-10-10T17:59:06Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The maintainer’s placement hypothesis and first-click-specific symptom make an exclusion/initial-size issue plausible, but no linked fix or current-build reproduction establishes it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep the tray flyout out of normal FancyZones placement",
+      "root_cause": "Hypothesis: on the first click after startup, the PowerToys tray flyout may be treated as a normal top-level window by FancyZones or use an uninitialized placement/size. The later normal open and display-specific report do not prove which layer is responsible.",
+      "plan": [
+        "Compare the first and second tray clicks after a clean PowerToys restart on a 5120x1440 display, with FancyZones enabled and then disabled.",
+        "Inspect the flyout's first-show bounds, owner/activation state, and FancyZones exclusion classification.",
+        "If FancyZones is positioning the flyout, mark it as a transient flyout and ensure it is excluded from normal zone placement; if initial bounds are wrong without FancyZones, correct first-show sizing instead.",
+        "Add a startup/first-show regression test and verify normal behavior at both ultra-wide and standard resolutions."
+      ],
+      "verification": [
+        "After restarting PowerToys, the first left-click opens a correctly sized, movable flyout.",
+        "The second click behaves consistently with the first.",
+        "Repeat at 5120x1440 and a standard display resolution, with FancyZones enabled and disabled."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The first-click sequence, display specificity, 0.79.0 confirmation, and maintainer placement hypothesis support a testable direction, but no source proof or current-build validation is available."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The first left-click on the PowerToys tray icon after restart opens an oversized, unmovable window on an ultra-wide display; the second click works normally.",
+    "known_information": [
+      "The original report lists Windows 10 22H2 and PowerToys 0.75.1; the primary monitor resolution is 5120x1440.",
+      "The issue did not appear on the author's Surface Pro 7 native display.",
+      "A maintainer suggested FancyZones might treat the flyout as a normal window.",
+      "The author confirmed the problem on 0.79.0; there is no later current-version confirmation."
+    ],
+    "inferences": [
+      "A first-show bounds/initialization or FancyZones placement interaction is plausible.",
+      "Because the second click opens normally, a persistent global layout error is less likely, but not ruled out."
+    ],
+    "analysis": "A controlled current-build comparison with FancyZones toggled is the discriminating test. A targeted fix design should follow only after determining whether the bad bounds originate in flyout initialization or zoning.",
+    "initial_investigation": [
+      "Read the full issue body, all comments, and linked screenshots from their issue references.",
+      "Reviewed the current PowerToys tray flyout ownership path; the observed first-click behavior does not establish a specific bounds or placement root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-first-tray-flyout-29718",
+      "type": "reproduce",
+      "label": "Reproduce first tray flyout open",
+      "primary": true,
+      "reproduce": {
+        "module": "PowerToys tray flyout and FancyZones",
+        "version_requirement": "Use a current supported PowerToys build; historical confirmation was on 0.79.0.",
+        "prerequisites": [
+          "A 5120x1440 or similarly ultra-wide display, if available.",
+          "FancyZones installed and enabled.",
+          "A clean PowerToys restart."
+        ],
+        "steps": [
+          "Restart PowerToys and left-click its tray icon once; record the flyout size, position, and whether it can be moved.",
+          "Close the flyout and click the tray icon a second time; compare its bounds and interaction.",
+          "Repeat with FancyZones disabled and compare the first click.",
+          "If available, repeat on a standard-resolution display."
+        ],
+        "expected": "The first and later clicks show the same normal, usable flyout without spanning most of the display."
+      }
+    },
+    {
+      "id": "approve-design-29718",
+      "type": "approve_design",
+      "label": "Approve flyout placement investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "The yellow placement hypothesis must be confirmed by current-build reproduction."
+    }
+  ]
 }

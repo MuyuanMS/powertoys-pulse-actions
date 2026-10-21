@@ -1,33 +1,112 @@
 {
+  "schemaVersion": 5,
   "number": 34834,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-29T08:49:04Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Keyboard Manager: Remap shortcut to Send Text, won't allow U+FFFD.",
+  "url": "https://github.com/microsoft/PowerToys/issues/34834",
+  "labels": [
+    "Issue-Bug",
+    "Area-Quality",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [
+    "MuyuanMS",
+    "Copilot"
+  ],
+  "comments": 4,
+  "generated_at": "2026-10-21T06:40:01Z",
+  "evaluated_at": "2026-10-21T06:40:01Z",
+  "source_updated_at": "2026-10-11T16:49:09Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter can enter U+FFFD in Send Text, but it disappears after saving and reopening. They confirmed that manually adding the literal character or a Unicode escape to the configuration works, narrowing the failure to editor persistence/round-trip rather than native text emission. The issue is assigned to the current owners; the proposal is a focused investigation, not a competing implementation.",
     "evidence": [
-      "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue gives an exact U+FFFD save/reopen reproduction on PowerToys 0.84.1.",
+      "The author says the character is absent in default.json after UI save, while manually editing configuration with the literal or Unicode escape works.",
+      "The issue is assigned to MuyuanMS and Copilot; there is no linked PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-29T08:49:04Z"
-  }
+    "recommended_action": "Trace the Send Text editor save/load round-trip for U+FFFD and add a focused persistence regression test."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The evidence localizes the loss to UI/configuration persistence. The exact serializer or validation step remains unproven and should be confirmed before changing the stored text."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve U+FFFD through the Send Text editor configuration round-trip",
+      "root_cause": "The Send Text editor save path may normalize, filter, or fail to persist U+FFFD even though the stored literal and JSON Unicode escape are accepted by the native remapping path. This is a hypothesis pending a save/load trace.",
+      "plan": [
+        "Add a focused editor-level persistence test that enters U+FFFD, saves, reloads the mapping, and compares the exact text code point.",
+        "Trace the Send Text value through the editor binding, KeyboardMappingService, SettingsManager serialization, and reload validation to identify the first point where U+FFFD is removed.",
+        "Fix only the confirmed normalization, validation, or serialization step while preserving existing Unicode and empty-text behavior.",
+        "Add a round-trip regression for both literal U+FFFD and its JSON escape representation."
+      ],
+      "verification": [
+        "The saved settings contain U+FFFD or its equivalent JSON escape after UI save.",
+        "Reopening the editor shows U+FFFD and triggering the remap emits the configured replacement character.",
+        "Existing Unicode Send Text mappings and invalid/empty mapping validation retain their behavior."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The author has isolated the UI save/reopen path and shown that manual configuration works, but the precise editor stage that drops the value has not been traced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "U+FFFD can be entered into a Keyboard Manager Send Text shortcut, but the editor drops it after save/reopen even though manually adding the character or its Unicode escape to configuration works.",
+    "known_information": [
+      "Reported on PowerToys 0.84.1 installed from GitHub.",
+      "The author and commenters distinguish the value from a mere blank display: it is absent in the JSON after UI save.",
+      "Manual configuration with the literal or Unicode escape works.",
+      "The issue is assigned to MuyuanMS and Copilot."
+    ],
+    "inferences": [
+      "The defect is likely in editor save/load or validation, not the native text-emission function.",
+      "The System.Text.Json-based settings persistence and text mapping service are focused areas to trace, not confirmed causes."
+    ],
+    "analysis": "The save/reopen differential and manual-config success make an editor round-trip hypothesis testable. Because the issue is already assigned to the responsible maintainers, the design should guide a focused trace rather than start parallel work.",
+    "initial_investigation": [
+      "Read the complete issue and all four comments, including the author's JSON comparison and successful manual-config workaround.",
+      "Checked current assignment, labels, and linked work; no PR is linked.",
+      "Inspected SettingsManager.cs persistence and the editor/native text mapping path; no root cause is confirmed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-34834",
+      "type": "approve_design",
+      "label": "Trace Send Text U+FFFD persistence",
+      "confirm": true,
+      "design": {
+        "title": "Preserve U+FFFD through the Send Text editor configuration round-trip"
+      }
+    },
+    {
+      "id": "reproduce-34834",
+      "type": "reproduce",
+      "label": "Test U+FFFD save and reload",
+      "reproduce": {
+        "title": "Reproduce U+FFFD loss in Send Text editor save/load",
+        "module": "Keyboard Manager",
+        "prerequisites": [
+          "Current upstream main or current build",
+          "A test shortcut remappable to Send Text"
+        ],
+        "steps": [
+          "Create a Send Text shortcut and enter the literal U+FFFD character.",
+          "Save the mapping and inspect the relevant serialized mapping value without copying unrelated settings.",
+          "Close and reopen the editor and compare the displayed value.",
+          "Repeat using a manually edited configuration containing the literal and then the escaped U+FFFD value."
+        ],
+        "expected_result": "UI-saved literal and escaped U+FFFD mappings round-trip and display the same configured code point as the manual configuration.",
+        "version_requirement": "Current upstream main"
+      }
+    }
+  ]
 }
