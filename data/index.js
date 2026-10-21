@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-22T00:30:52.1731282+08:00",
+  "generated_at": "2026-10-22T01:02:08.3243608+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 186,
-    "open_issues": 12300,
-    "community": 11410,
-    "artifacts": 1304
+    "open_issues": 12302,
+    "community": 11411,
+    "artifacts": 1303
   },
   "impact": {
-    "as_of": "2026-10-22T00:30:52.1731282+08:00",
+    "as_of": "2026-10-22T01:02:08.3243608+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1337,7 +1337,6 @@ window.BOARD_INDEX = {
     48421,
     36878,
     50339,
-    19277,
     48749,
     49307,
     1643,
@@ -4500,8 +4499,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-05T23:06:33Z",
-      "updated_at": "2026-10-21T03:32:02Z",
-      "comments": 6,
+      "updated_at": "2026-10-21T16:29:45Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -13059,8 +13058,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2022-03-25T14:15:13Z",
-      "updated_at": "2026-10-20T15:01:06Z",
-      "comments": 14,
+      "updated_at": "2026-10-21T16:38:58Z",
+      "comments": 13,
       "priority": null
     },
     {
@@ -28280,12 +28279,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-33945",
+      "id": "issue-51465",
       "kind": "issue",
-      "number": 33945,
-      "url": "https://github.com/microsoft/PowerToys/issues/33945",
-      "title": "Let users choose how many backups to keep",
-      "author": "CompactProducer",
+      "number": 51465,
+      "url": "https://github.com/microsoft/PowerToys/issues/51465",
+      "title": "DSC: PowerToysConfigure throws \"PowerToys installation wasn't found\" on 4-part release versions",
+      "author": "gtbuchanan",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -28298,17 +28297,47 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Settings",
+        "Needs-Author-Feedback",
+        "Product-Settings"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-21T16:49:21Z",
+      "updated_at": "2026-10-21T16:54:08Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51464",
+      "kind": "issue",
+      "number": 51464,
+      "url": "https://github.com/microsoft/PowerToys/issues/51464",
+      "title": "Add a Native Offline Translate Command Using Existing Windows/Office Translation Models",
+      "author": "snappercayt",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-07-21T15:56:53Z",
-      "updated_at": "2024-10-10T17:45:11Z",
+      "created_at": "2026-10-21T16:32:38Z",
+      "updated_at": "2026-10-21T16:32:38Z",
       "comments": 0,
       "priority": null
     },
@@ -35371,7 +35400,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
@@ -54765,8 +54794,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-09T11:02:05Z",
-      "updated_at": "2026-10-20T10:12:01Z",
-      "comments": 3,
+      "updated_at": "2026-10-21T16:30:05Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -58693,8 +58722,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-21T16:21:13Z",
-      "comments": 329,
+      "updated_at": "2026-10-21T16:37:41Z",
+      "comments": 330,
       "priority": null
     },
     {
@@ -77075,8 +77104,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2020-05-22T13:32:09Z",
-      "updated_at": "2026-10-16T13:20:43Z",
-      "comments": 3,
+      "updated_at": "2026-10-21T16:38:30Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -169808,17 +169837,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-46381",
+      "id": "issue-33945",
       "kind": "issue",
-      "number": 46381,
-      "url": "https://github.com/microsoft/PowerToys/issues/46381",
-      "title": "Bug: CPU Usage stats in Dock goes beyond 100%",
-      "author": "xShadow-Monarchx",
-      "state": "closed",
+      "number": 33945,
+      "url": "https://github.com/microsoft/PowerToys/issues/33945",
+      "title": "Let users choose how many backups to keep",
+      "author": "CompactProducer",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
+      "is_cmdpal": false,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -169826,19 +169855,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Resolution-Fix Committed",
-        "Product-Command Palette",
-        "CmdPal - Performance monitor"
+        "Idea-Enhancement",
+        "Product-Settings",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-03-21T18:41:34Z",
-      "updated_at": "2026-06-14T12:32:28Z",
-      "comments": 13,
+      "created_at": "2024-07-21T15:56:53Z",
+      "updated_at": "2024-10-10T17:45:11Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -183367,12 +183395,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-6698",
+      "id": "issue-43214",
       "kind": "issue",
-      "number": 6698,
-      "url": "https://github.com/microsoft/PowerToys/issues/6698",
-      "title": "Key Remap Stops Working",
-      "author": "viscerotic",
+      "number": 43214,
+      "url": "https://github.com/microsoft/PowerToys/issues/43214",
+      "title": "Added Display",
+      "author": "Jaxon1041",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -183390,13 +183418,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Product-Keyboard Manager"
+        "Resolution-Duplicate",
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2020-09-18T11:34:27Z",
-      "updated_at": "2026-10-11T16:31:54Z",
-      "comments": 4,
+      "created_at": "2025-11-03T00:15:11Z",
+      "updated_at": "2026-04-30T09:29:33Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -191236,8 +191264,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2022-03-03T19:54:45Z",
-      "updated_at": "2026-10-16T07:39:42Z",
-      "comments": 23,
+      "updated_at": "2026-10-21T16:38:41Z",
+      "comments": 22,
       "priority": null
     },
     {
@@ -247664,6 +247692,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-6698",
+      "kind": "issue",
+      "number": 6698,
+      "url": "https://github.com/microsoft/PowerToys/issues/6698",
+      "title": "Key Remap Stops Working",
+      "author": "viscerotic",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-09-18T11:34:27Z",
+      "updated_at": "2026-10-11T16:31:54Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-6305",
       "kind": "issue",
       "number": 6305,
@@ -248792,17 +248853,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-43214",
+      "id": "issue-46381",
       "kind": "issue",
-      "number": 43214,
-      "url": "https://github.com/microsoft/PowerToys/issues/43214",
-      "title": "Added Display",
-      "author": "Jaxon1041",
+      "number": 46381,
+      "url": "https://github.com/microsoft/PowerToys/issues/46381",
+      "title": "Bug: CPU Usage stats in Dock goes beyond 100%",
+      "author": "xShadow-Monarchx",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -248815,13 +248876,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-General"
+        "Resolution-Fix Committed",
+        "Product-Command Palette",
+        "CmdPal - Performance monitor"
       ],
       "assignees": [],
-      "created_at": "2025-11-03T00:15:11Z",
-      "updated_at": "2026-04-30T09:29:33Z",
-      "comments": 2,
+      "created_at": "2026-03-21T18:41:34Z",
+      "updated_at": "2026-06-14T12:32:28Z",
+      "comments": 13,
       "priority": null
     },
     {
@@ -339266,8 +339328,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2020-06-02T10:59:25Z",
-      "updated_at": "2026-10-19T13:33:24Z",
-      "comments": 13,
+      "updated_at": "2026-10-21T16:38:49Z",
+      "comments": 12,
       "priority": null
     },
     {
@@ -384761,14 +384823,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Priority-1",
@@ -384776,8 +384835,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2022-07-09T16:02:19Z",
-      "updated_at": "2026-10-19T13:33:27Z",
-      "comments": 20,
+      "updated_at": "2026-10-21T16:39:10Z",
+      "comments": 19,
       "priority": null
     },
     {
@@ -404884,8 +404943,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2024-11-03T15:43:35Z",
-      "updated_at": "2026-10-20T09:11:31Z",
-      "comments": 2,
+      "updated_at": "2026-10-21T16:38:22Z",
+      "comments": 1,
       "priority": null
     },
     {
