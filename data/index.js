@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-22T17:30:05.6258518+08:00",
+  "generated_at": "2026-10-22T21:03:34.7307485+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 186,
-    "open_issues": 12315,
-    "community": 11424,
-    "artifacts": 1316
+    "open_issues": 12318,
+    "community": 11427,
+    "artifacts": 1315
   },
   "impact": {
-    "as_of": "2026-10-22T17:30:05.6258518+08:00",
+    "as_of": "2026-10-22T21:03:34.7307485+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1345,7 +1345,6 @@ window.BOARD_INDEX = {
     49139,
     15476,
     36945,
-    50340,
     49543,
     48107,
     48421,
@@ -1654,7 +1653,7 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-10-21T06:02:38Z",
-      "updated_at": "2026-10-21T11:08:03Z",
+      "updated_at": "2026-10-22T11:25:46Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1888,15 +1887,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post inline suggestion"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -27410,13 +27412,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-3910",
+      "id": "issue-51485",
       "kind": "issue",
-      "number": 3910,
-      "url": "https://github.com/microsoft/PowerToys/issues/3910",
-      "title": "Keyboard Manager and PowerToys Run requests/feedback",
-      "author": "holodrum",
-      "state": "closed",
+      "number": 51485,
+      "url": "https://github.com/microsoft/PowerToys/issues/51485",
+      "title": "Last Focussed Window, Bring to Front",
+      "author": "mojoZHU",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -27432,13 +27434,43 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Product-Keyboard Manager"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2020-05-30T14:29:22Z",
-      "updated_at": "2026-10-11T16:38:55Z",
-      "comments": 2,
+      "created_at": "2026-10-22T10:59:26Z",
+      "updated_at": "2026-10-22T10:59:26Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51484",
+      "kind": "issue",
+      "number": 51484,
+      "url": "https://github.com/microsoft/PowerToys/issues/51484",
+      "title": "[Mouse Without Borders] Option to leave the cursor where it left the screen instead of moving it to the center / top-center",
+      "author": "nistoc",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Without Borders"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-22T10:48:15Z",
+      "updated_at": "2026-10-22T11:13:15Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -27723,14 +27755,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
         "Product-Always On Top",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Needs-Team-Response"
       ],
       "assignees": [],
       "created_at": "2026-10-21T21:13:46Z",
-      "updated_at": "2026-10-21T21:20:16Z",
-      "comments": 1,
+      "updated_at": "2026-10-22T11:43:25Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -31472,8 +31504,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T15:28:02Z",
-      "updated_at": "2026-10-21T12:40:59Z",
-      "comments": 3,
+      "updated_at": "2026-10-22T10:07:02Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -58410,8 +58442,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-22T08:57:14Z",
-      "comments": 339,
+      "updated_at": "2026-10-22T11:23:39Z",
+      "comments": 340,
       "priority": null
     },
     {
@@ -62446,8 +62478,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-28T11:36:17Z",
-      "updated_at": "2026-10-01T12:48:09Z",
-      "comments": 4,
+      "updated_at": "2026-10-22T11:59:14Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -241672,12 +241704,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-598",
+      "id": "issue-3910",
       "kind": "issue",
-      "number": 598,
-      "url": "https://github.com/microsoft/PowerToys/issues/598",
-      "title": "Installation as zip, portable installation",
-      "author": "per-oestergaard",
+      "number": 3910,
+      "url": "https://github.com/microsoft/PowerToys/issues/3910",
+      "title": "Keyboard Manager and PowerToys Run requests/feedback",
+      "author": "holodrum",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -241690,17 +241722,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Area-Setup/Install"
+        "Resolution-Duplicate",
+        "Product-Keyboard Manager"
       ],
       "assignees": [],
-      "created_at": "2019-10-30T12:14:19Z",
-      "updated_at": "2026-08-28T18:36:22Z",
-      "comments": 22,
+      "created_at": "2020-05-30T14:29:22Z",
+      "updated_at": "2026-10-11T16:38:55Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -263630,7 +263662,7 @@ window.BOARD_INDEX = {
       "number": 42324,
       "url": "https://github.com/microsoft/PowerToys/issues/42324",
       "title": "PowerToys Run ran  into an issue",
-      "author": "6thechosenone9",
+      "author": "peakroofline",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -286401,6 +286433,38 @@ window.BOARD_INDEX = {
       "created_at": "2025-09-05T18:56:06Z",
       "updated_at": "2026-04-16T15:27:40Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-598",
+      "kind": "issue",
+      "number": 598,
+      "url": "https://github.com/microsoft/PowerToys/issues/598",
+      "title": "Installation as zip, portable installation",
+      "author": "per-oestergaard",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Area-Setup/Install"
+      ],
+      "assignees": [],
+      "created_at": "2019-10-30T12:14:19Z",
+      "updated_at": "2026-08-28T18:36:22Z",
+      "comments": 22,
       "priority": null
     },
     {
@@ -381528,14 +381592,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -381543,8 +381604,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T17:16:11Z",
-      "updated_at": "2026-09-02T17:22:25Z",
-      "comments": 1,
+      "updated_at": "2026-10-22T12:20:45Z",
+      "comments": 2,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -384287,6 +384348,39 @@ window.BOARD_INDEX = {
       "created_at": "2022-07-10T08:30:39Z",
       "updated_at": "2024-10-13T12:14:23Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-36805",
+      "kind": "issue",
+      "number": 36805,
+      "url": "https://github.com/microsoft/PowerToys/issues/36805",
+      "title": "Quick Accent - En dash disappeared from hyphen options",
+      "author": "nikonoks",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Quick Accent"
+      ],
+      "assignees": [],
+      "created_at": "2025-01-10T20:42:29Z",
+      "updated_at": "2026-10-22T12:45:57Z",
+      "comments": 20,
       "priority": null
     },
     {

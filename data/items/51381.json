@@ -1,23 +1,72 @@
 {
+  "schemaVersion": 5,
   "number": 51381,
   "kind": "pr",
   "title": "CmdPal: Replace SupersedingAsyncGate with a coalescing runner",
   "url": "https://github.com/microsoft/PowerToys/pull/51381",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-21T10:54:00Z",
-  "evaluated_at": "2026-10-21T10:54:00Z",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-10-22T20:46:30.3423601+08:00",
+  "evaluated_at": "2026-10-22T20:40:53.6563621+08:00",
   "source_updated_at": "2026-10-17T16:35:46Z",
   "head_sha": "69855de46a49aa689880a568503e5258f61132f9",
-  "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "start_side": "RIGHT",
+      "in_diff": true,
+      "body": "**P2: Check the registered wrapper by reference**\n\n`CommandProviderWrapper.Equals` compares only `isValid`, so another registered valid provider makes `Contains(provider)` return true even after this wrapper was removed. If a timed-out enable completes after removal, the removal handler has neither invalidated that wrapper's load generation nor canceled the manager token, so the late result can pass this guard and publish commands for the removed provider. Check for the same registered instance instead; the existing rejection branch will clean up its unpublished result.\n\n```suggestion\n            isRegistered = _commandProviders.Any(candidate => ReferenceEquals(candidate, provider));\n```",
+      "line": 722,
+      "title": "Check the registered wrapper by reference",
+      "side": "RIGHT",
+      "id": "late-removed-provider-publication",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelCommandManager.cs",
+      "severity": "medium",
+      "kind": "inline",
+      "confidence": {
+        "rationale": "Pinned upstream reproduces removed-provider publication in the focused regression. The identical fixture passes with the one-line reference check; 17 late-enable cases pass, and the separate exact literal production tree builds with exit 0. Scope excludes simultaneous membership check/use races.",
+        "score": 90
+      },
+      "start_line": 722
+    }
+  ],
+  "actions": [
+    {
+      "requires_confirmation": true,
+      "label": "Post inline suggestion",
+      "type": "post_review",
+      "review": {
+        "head_sha": "69855de46a49aa689880a568503e5258f61132f9",
+        "event": "COMMENT",
+        "comment_ids": [
+          "late-removed-provider-publication"
+        ]
+      },
+      "id": "post-review-51381-provider-identity"
+    }
+  ],
   "validation": {
-    "upstream_head": {
+    "suggestion_patch": {
       "head_sha": "69855de46a49aa689880a568503e5258f61132f9",
-      "result": "failed"
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "late-removed-provider-publication"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "69855de46a49aa689880a568503e5258f61132f9",
+      "result": "passed",
+      "checked_comment_ids": [
+        "late-removed-provider-publication"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelCommandManager.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   }
 }
