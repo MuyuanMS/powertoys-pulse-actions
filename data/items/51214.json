@@ -2,33 +2,561 @@
   "number": 51214,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-21T23:33:26.2410205Z",
-  "evaluated_at": "2026-10-21T17:39:40.125605Z",
+  "generated_at": "2026-10-21T23:44:30.8570275Z",
+  "evaluated_at": "2026-10-21T23:44:30.8570275Z",
   "source_updated_at": "2026-10-15T11:16:20Z",
   "head_sha": "02023ae12724a0f0aaa9d0a739ffae20a5a2d41d",
   "title": "CmdPal: Redesign the Performance Monitor GPU card",
   "url": "https://github.com/microsoft/PowerToys/pull/51214",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The corrected availability candidate passed 148 tests. Its public literal suggestion group produces a different tree, so those results are not transferred to the draft; exact literal-candidate validation is now allocated separately. Unavailable dedicated and shared readings remain distinct from genuine zero usage. No executable suggestion or approval is published while that validation is unfinished. The earlier process-capture gap remains disclosed privately; later independent absence allowed serialized validation to proceed. Eight automated review requests are exhausted without current-head convergence; ARM64 and live GPU behavior remain unvalidated."
+    "glyph": "!",
+    "label": "Review draft ready",
+    "detail": "The exact pinned-head literal suggestion tree passed the focused x64 Debug build and test run: 148 tests passed, none failed. Raw-blob line-ending checks passed for all four target files. ARM64 and live-GPU behavior were not validated."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "gpu-memory-availability-result-flags",
+      "kind": "inline",
+      "title": "Expose independent sample-validity flags (1/17)",
+      "body": "### Expose independent sample-validity flags (1/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member adds a validity flag beside each used-memory value in the result returned to the widget; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n    internal readonly record struct MemoryInfo(\n        ulong DedicatedUsed,\n        ulong DedicatedTotal,\n        bool DedicatedAvailable,\n        ulong SharedUsed,\n        ulong SharedTotal,\n        bool SharedAvailable);\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 77,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 1,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-nullable-sample",
+      "kind": "inline",
+      "title": "Represent missing counters explicitly (2/17)",
+      "body": "### Represent missing counters explicitly (2/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member introduces a sample shape that can distinguish a missing counter from a measured zero; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n    internal readonly record struct EngineUsage(int Type, float Percent);\n\n    internal readonly record struct AdapterMemorySample(ulong? Dedicated, ulong? Shared);\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 80,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 2,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-data-state",
+      "kind": "inline",
+      "title": "Store values and availability together (3/17)",
+      "body": "### Store values and availability together (3/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member updates the data state with separate availability for dedicated and shared readings; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n        public bool DedicatedMemoryAvailable { get; private set; }\n\n        public bool SharedMemoryAvailable { get; private set; }\n\n        internal void UpdateMemorySample(AdapterMemorySample? sample)\n        {\n            var dedicated = sample?.Dedicated;\n            var shared = sample?.Shared;\n            DedicatedMemoryUsed = dedicated.GetValueOrDefault();\n            SharedMemoryUsed = shared.GetValueOrDefault();\n            DedicatedMemoryAvailable = dedicated.HasValue;\n            SharedMemoryAvailable = shared.HasValue;\n        }\n\n        /// <summary>Gets or sets the utilization of each engine type the adapter has, in percent.</summary>\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 104,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 3,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-missing-entry",
+      "kind": "inline",
+      "title": "Invalidate a missing adapter sample (4/17)",
+      "body": "### Invalidate a missing adapter sample (4/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member clears availability when the adapter is absent from this sampling cycle instead of retaining stale bytes; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n                    gpu.UpdateMemorySample(adapterMemory.TryGetValue(gpu.LuidKey, out var memory) ? memory : null);\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 285,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 4,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-reader-type",
+      "kind": "inline",
+      "title": "Return typed per-counter samples (5/17)",
+      "body": "### Return typed per-counter samples (5/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member changes the reader result to preserve whether either individual counter was observed; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n    private Dictionary<long, AdapterMemorySample> ReadAdapterMemory()\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 383,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 5,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-reader-map",
+      "kind": "inline",
+      "title": "Initialize the typed sample map (6/17)",
+      "body": "### Initialize the typed sample map (6/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member uses the same typed sample representation for the reader map; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n        var memory = new Dictionary<long, AdapterMemorySample>();\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 385,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 6,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-dedicated-read",
+      "kind": "inline",
+      "title": "Preserve dedicated-counter presence (7/17)",
+      "body": "### Preserve dedicated-counter presence (7/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member updates only the dedicated value while retaining whether the shared counter was actually read; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n                        var sample = memory.GetValueOrDefault(luidKey);\n                        memory[luidKey] = sample with { Dedicated = ToBytes(instance.RawValue) };\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 400,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 7,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-shared-read",
+      "kind": "inline",
+      "title": "Preserve shared-counter presence (8/17)",
+      "body": "### Preserve shared-counter presence (8/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member updates only the shared value while retaining whether the dedicated counter was actually read; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n                        var sample = memory.GetValueOrDefault(luidKey);\n                        memory[luidKey] = sample with { Shared = ToBytes(instance.RawValue) };\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 411,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 8,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-getter",
+      "kind": "inline",
+      "title": "Expose sample flags to the caller (9/17)",
+      "body": "### Expose sample flags to the caller (9/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member returns the two availability flags with the memory values so the UI can avoid presenting stale readings as current; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n            return new(\n                gpu.DedicatedMemoryUsed,\n                gpu.DedicatedMemoryTotal,\n                gpu.DedicatedMemoryAvailable,\n                gpu.SharedMemoryUsed,\n                gpu.SharedMemoryTotal,\n                gpu.SharedMemoryAvailable);\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "side": "RIGHT",
+      "line": 577,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 9,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-dedicated-display",
+      "kind": "inline",
+      "title": "Render unavailable dedicated memory as unavailable (10/17)",
+      "body": "### Render unavailable dedicated memory as unavailable (10/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member uses `--` for a missing dedicated sample instead of formatting retained bytes as a current reading; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n            var dedicated = memory.DedicatedAvailable ? FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal) : \"--\";\n            var shared = memory.SharedAvailable ? FormatUsedOfTotal(memory.SharedUsed, memory.SharedTotal) : \"--\";\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+      "side": "RIGHT",
+      "line": 1413,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 10,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-template-flags",
+      "kind": "inline",
+      "title": "Pass sample state to the template (11/17)",
+      "body": "### Pass sample state to the template (11/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member provides independent sample flags for the template to hide only the unavailable counter bar; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n            ContentJson[\"hasSharedMemory\"] = memory.SharedTotal > 0;\n            ContentJson[\"hasDedicatedMemorySample\"] = memory.DedicatedAvailable;\n            ContentJson[\"hasSharedMemorySample\"] = memory.SharedAvailable;\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+      "side": "RIGHT",
+      "line": 1415,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 11,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-dedicated-percent",
+      "kind": "inline",
+      "title": "Do not plot an unavailable dedicated sample (12/17)",
+      "body": "### Do not plot an unavailable dedicated sample (12/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member avoids deriving a progress percentage from a missing dedicated reading; the availability flag controls visibility; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n            ContentJson[\"gpuDedicatedPercent\"] = memory.DedicatedAvailable ? GetPercent(memory.DedicatedUsed, memory.DedicatedTotal) : 0d;\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+      "side": "RIGHT",
+      "line": 1417,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 12,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-shared-display",
+      "kind": "inline",
+      "title": "Render unavailable shared memory as unavailable (13/17)",
+      "body": "### Render unavailable shared memory as unavailable (13/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member uses the shared flag before formatting or plotting so a missing shared sample is not shown as fresh data; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n            ContentJson[\"gpuSharedPercent\"] = memory.SharedAvailable ? GetPercent(memory.SharedUsed, memory.SharedTotal) : 0d;\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+      "side": "RIGHT",
+      "line": 1419,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 13,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-dedicated-bar",
+      "kind": "inline",
+      "title": "Hide the unavailable dedicated progress bar (14/17)",
+      "body": "### Hide the unavailable dedicated progress bar (14/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member conditions the dedicated progress bar on an actual sample while leaving the memory value visible as unavailable; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n                      \"type\": \"ProgressBar\",\n                      \"$when\": \"${hasDedicatedMemorySample}\",\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Templates/SystemGPUUsageTemplate.json",
+      "side": "RIGHT",
+      "line": 180,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 14,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-shared-bar",
+      "kind": "inline",
+      "title": "Hide the unavailable shared progress bar (15/17)",
+      "body": "### Hide the unavailable shared progress bar (15/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member conditions the shared progress bar independently so a partial sample does not suppress a valid dedicated reading; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n                      \"type\": \"ProgressBar\",\n                      \"$when\": \"${hasSharedMemorySample}\",\n```",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Templates/SystemGPUUsageTemplate.json",
+      "side": "RIGHT",
+      "line": 214,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 15,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-initial-state-test",
+      "kind": "inline",
+      "title": "Assert initial sample unavailability (16/17)",
+      "body": "### Assert initial sample unavailability (16/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member asserts that an uninitialized memory sample is unavailable, preventing default zero values from looking like measured readings; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n        Assert.AreEqual(16UL, memory.SharedTotal);\n        Assert.IsFalse(memory.DedicatedAvailable);\n        Assert.IsFalse(memory.SharedAvailable);\n```",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests/GPUStatsTests.cs",
+      "side": "RIGHT",
+      "line": 183,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 16,
+        "total": 17,
+        "atomic": true
+      }
+    },
+    {
+      "id": "gpu-memory-availability-transition-test",
+      "kind": "inline",
+      "title": "Cover valid, partial, and missing transitions (17/17)",
+      "body": "### Cover valid, partial, and missing transitions (17/17)\n\n**Severity:** `medium`\n\nWhen a counter sample is missing, its previous value can look current. This member tests valid, partial, and absent samples and verifies that only the missing counter loses availability; apply all 17 suggestions together so each unavailable metric renders as `--`, not as measured zero.\n\n```suggestion\n    [TestMethod]\n    public void UpdateMemorySample_ValidThenMissingAndPartialSamplesClearAvailability()\n    {\n        var data = new GPUStats.Data();\n\n        data.UpdateMemorySample(new GPUStats.AdapterMemorySample(10, 20));\n\n        Assert.IsTrue(data.DedicatedMemoryAvailable);\n        Assert.IsTrue(data.SharedMemoryAvailable);\n        Assert.AreEqual(10UL, data.DedicatedMemoryUsed);\n        Assert.AreEqual(20UL, data.SharedMemoryUsed);\n\n        data.UpdateMemorySample(new GPUStats.AdapterMemorySample(30, null));\n\n        Assert.IsTrue(data.DedicatedMemoryAvailable);\n        Assert.IsFalse(data.SharedMemoryAvailable);\n        Assert.AreEqual(30UL, data.DedicatedMemoryUsed);\n        Assert.AreEqual(0UL, data.SharedMemoryUsed);\n\n        // A failed counter read returns no sample for this adapter.\n        data.UpdateMemorySample(null);\n\n        Assert.IsFalse(data.DedicatedMemoryAvailable);\n        Assert.IsFalse(data.SharedMemoryAvailable);\n        Assert.AreEqual(0UL, data.DedicatedMemoryUsed);\n        Assert.AreEqual(0UL, data.SharedMemoryUsed);\n    }\n\n    [TestMethod]\n```",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests/GPUStatsTests.cs",
+      "side": "RIGHT",
+      "line": 188,
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream source/caller trace directly shows retained bytes crossing a missing sample without a validity state; the proposed member is part of the tested availability-state design."
+      },
+      "selection_group": {
+        "id": "gpu-memory-sample-availability",
+        "title": "Propagate GPU-memory sample availability",
+        "position": 17,
+        "total": 17,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "pr-51214-post-review",
+      "type": "post_review",
+      "label": "Post 17 inline suggestions",
+      "note": "Posts the complete atomic set of 17 inline suggestions as a non-blocking COMMENT review.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "02023ae12724a0f0aaa9d0a739ffae20a5a2d41d",
+        "comment_ids": [
+          "gpu-memory-availability-result-flags",
+          "gpu-memory-availability-nullable-sample",
+          "gpu-memory-availability-data-state",
+          "gpu-memory-availability-missing-entry",
+          "gpu-memory-availability-reader-type",
+          "gpu-memory-availability-reader-map",
+          "gpu-memory-availability-dedicated-read",
+          "gpu-memory-availability-shared-read",
+          "gpu-memory-availability-getter",
+          "gpu-memory-availability-dedicated-display",
+          "gpu-memory-availability-template-flags",
+          "gpu-memory-availability-dedicated-percent",
+          "gpu-memory-availability-shared-display",
+          "gpu-memory-availability-dedicated-bar",
+          "gpu-memory-availability-shared-bar",
+          "gpu-memory-availability-initial-state-test",
+          "gpu-memory-availability-transition-test"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "02023ae12724a0f0aaa9d0a739ffae20a5a2d41d",
+      "result": "passed",
+      "tree_sha": "15bc0ee5b15292b542aa3c1cf9ca53ac122974d5",
+      "patch_sha256": "6C99C2E18812533F3BE927E7E768E5E9F9802F4F5BFC29D41BBCF247FDEEFA66",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "gpu-memory-availability-result-flags",
+        "gpu-memory-availability-nullable-sample",
+        "gpu-memory-availability-data-state",
+        "gpu-memory-availability-missing-entry",
+        "gpu-memory-availability-reader-type",
+        "gpu-memory-availability-reader-map",
+        "gpu-memory-availability-dedicated-read",
+        "gpu-memory-availability-shared-read",
+        "gpu-memory-availability-getter",
+        "gpu-memory-availability-dedicated-display",
+        "gpu-memory-availability-template-flags",
+        "gpu-memory-availability-dedicated-percent",
+        "gpu-memory-availability-shared-display",
+        "gpu-memory-availability-dedicated-bar",
+        "gpu-memory-availability-shared-bar",
+        "gpu-memory-availability-initial-state-test",
+        "gpu-memory-availability-transition-test"
+      ],
+      "build_exit_code": 0,
+      "test_exit_code": 0,
+      "platform": "x64",
+      "configuration": "Debug",
+      "test_total": 148,
+      "test_passed": 148,
+      "test_failed": 0,
+      "trx_sha256": "5EC692CF0451D99DE7BBD5AE6529150CC27A6790F27C9ED7E78F9E9590742051",
+      "note": "All 17 literal public suggestion blocks were applied together to the pinned upstream head and this exact tree was built and tested."
+    },
+    "line_ending_safety": {
+      "head_sha": "02023ae12724a0f0aaa9d0a739ffae20a5a2d41d",
+      "result": "passed",
+      "checked_comment_ids": [
+        "gpu-memory-availability-result-flags",
+        "gpu-memory-availability-nullable-sample",
+        "gpu-memory-availability-data-state",
+        "gpu-memory-availability-missing-entry",
+        "gpu-memory-availability-reader-type",
+        "gpu-memory-availability-reader-map",
+        "gpu-memory-availability-dedicated-read",
+        "gpu-memory-availability-shared-read",
+        "gpu-memory-availability-getter",
+        "gpu-memory-availability-dedicated-display",
+        "gpu-memory-availability-template-flags",
+        "gpu-memory-availability-dedicated-percent",
+        "gpu-memory-availability-shared-display",
+        "gpu-memory-availability-dedicated-bar",
+        "gpu-memory-availability-shared-bar",
+        "gpu-memory-availability-initial-state-test",
+        "gpu-memory-availability-transition-test"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 781,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Templates/SystemGPUUsageTemplate.json",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 231,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 1840,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests/GPUStatsTests.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 198,
+          "cr_only_count": 0
+        }
+      ],
+      "source": "raw upstream blobs at the pinned PR head"
+    },
+    "focused_build_test": {
+      "result": "passed",
+      "platform": "x64",
+      "configuration": "Debug",
+      "build_exit_code": 0,
+      "test_exit_code": 0,
+      "tests_passed": 148,
+      "tests_failed": 0,
+      "trx_sha256": "5EC692CF0451D99DE7BBD5AE6529150CC27A6790F27C9ED7E78F9E9590742051",
+      "arm64_validated": false,
+      "live_gpu_validated": false
+    }
+  },
+  "review_coverage": {
+    "cloud_complete": false
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-21T23:33:26.2410205Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-21T23:44:30.8570275Z"
   },
-  "freshness": {
-    "queued_at": "2026-10-21T17:39:40.125605Z",
-    "checkpoint_at": "2026-10-21T23:33:26.2410205Z"
-  },
-  "fork_pr": {
-    "number": 1090,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/1090"
-  }
+  "schemaVersion": 5
 }
