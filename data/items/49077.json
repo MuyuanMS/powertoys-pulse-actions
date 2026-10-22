@@ -1,22 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 49077,
   "kind": "pr",
   "title": "[Workspaces] Migrate Editor from WPF to WinUI 3",
   "url": "https://github.com/microsoft/PowerToys/pull/49077",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
   "pending_author": false,
-  "generated_at": "2026-10-19T02:09:59.6160098+08:00",
-  "evaluated_at": "2026-10-19T02:09:59.6160098+08:00",
-  "source_updated_at": "2026-08-14T16:00:29Z",
+  "generated_at": "2026-10-23T00:12:23.28373+08:00",
+  "evaluated_at": "2026-10-23T00:12:23.2866976+08:00",
+  "source_updated_at": "2026-08-15T00:00:29+08:00",
   "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
-  "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-16T15:17:12.1017431Z",
-    "checkpoint_at": "2026-10-18T23:40:51.7265077+08:00"
-  },
-  "validation": {}
+  "proposed_comments": [
+    {
+      "id": "49077-terminate-process-basename-mismatch",
+      "kind": "inline",
+      "title": "Keep executable basenames in consumer lists (1/2)",
+      "body": "### Keep executable basenames in consumer lists (1/2)\n\n**Severity:** `medium`\n\n`TerminateProcessesCA` obtains each executable name with `GetModuleBaseNameW` and compares it literally against this list. The editor's returned name is `PowerToys.WorkspacesEditor.exe`, without the `WinUI3Apps\\` directory, so this entry cannot match and this loop skips its editor-specific close/terminate branch. Keep the executable basename here; moving the installed executable does not change its basename. Other shutdown paths may still close the editor, so this is not a claim that installation fails.\n\n```suggestion\n        L\"PowerToys.WorkspacesEditor.exe\",\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "Exact upstream API-result/equality mismatch; runner-watcher and other installer shutdown paths explicitly limit the impact claim."
+      },
+      "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+      "line": 1622,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "49077-executable-basename-consumers",
+        "title": "Keep executable basenames in consumer lists",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "in_diff": true
+    },
+    {
+      "id": "49077-bugreport-process-basename",
+      "kind": "inline",
+      "title": "Keep executable basenames in consumer lists (2/2)",
+      "body": "### Keep executable basenames in consumer lists (2/2)\n\n**Severity:** `medium`\n\n`EventViewer::ReportEventViewerInfo` passes each entry as both the query name and the report filename to `EventViewerReporter`. In `EventViewer.cpp`, the reporter appends `\"EventViewer-\" + fileName + \".xml\"` directly to the report directory. This entry therefore produces `EventViewer-WinUI3Apps\\PowerToys.WorkspacesEditor.exe.xml`: an unintended nested path whose parent the reporter does not create. When that parent is absent, the report stream cannot open.\n\nKeep the executable basename so the destination is the flat `EventViewer-PowerToys.WorkspacesEditor.exe.xml` report. The registry compatibility consumer in `RegistryUtils.cpp` searches full paths by substring, so the basename still matches an installation under `WinUI3Apps`.\n\n```suggestion\n    L\"PowerToys.WorkspacesEditor.exe\",\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "Direct upstream caller/filename trace proves the unintended parent component; registry substring behavior checked. No universal EventData-format or observed event-loss claim."
+      },
+      "path": "tools/BugReportTool/BugReportTool/ProcessesList.cpp",
+      "line": 53,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "49077-executable-basename-consumers",
+        "title": "Keep executable basenames in consumer lists",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49077",
+      "type": "post_review",
+      "label": "Post two atomic inline suggestions",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+        "event": "COMMENT",
+        "comment_ids": [
+          "49077-terminate-process-basename-mismatch",
+          "49077-bugreport-process-basename"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "49077-terminate-process-basename-mismatch",
+        "49077-bugreport-process-basename"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+      "result": "passed",
+      "checked_comment_ids": [
+        "49077-terminate-process-basename-mismatch",
+        "49077-bugreport-process-basename"
+      ],
+      "files": [
+        {
+          "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "tools/BugReportTool/BugReportTool/ProcessesList.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
 }

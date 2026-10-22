@@ -1,20 +1,87 @@
 {
+  "schemaVersion": 5,
   "number": 50132,
   "kind": "pr",
   "title": "fix(release): reconcile preview deltas against full history",
   "url": "https://github.com/microsoft/PowerToys/pull/50132",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
   "pending_author": false,
-  "generated_at": "2026-10-19T00:02:37.0256014+08:00",
-  "evaluated_at": "2026-10-19T00:02:37.0256014+08:00",
+  "generated_at": "2026-10-22T23:51:43.6502287+08:00",
+  "evaluated_at": "2026-10-22T23:51:43.6524144+08:00",
   "source_updated_at": "2026-10-15T04:28:05Z",
   "head_sha": "78e44ad8e0e3c19c420424f3d269808f5ab33acc",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-16T09:04:40.666866Z",
-    "checkpoint_at": "2026-10-19T00:02:37.0256014+08:00"
+  "proposed_comments": [
+    {
+      "id": "c-root-history-config",
+      "kind": "inline",
+      "title": "Include root patches under log.showRoot=false",
+      "body": "### Include root patches when `log.showRoot` is disabled\n\n**Severity:** `medium`\n\nWith `log.showRoot=false`, this `git log --patch` invocation omits root diffs. On a branch transition, an equivalent non-root replay can therefore remain falsely added or removed when the opposite history contains that patch only in its root and PR-identity matching cannot cancel it. The documented full-history comparison explicitly includes root commits.\n\nAdd `--root` so the result does not depend on this Git setting. Default/true configurations already include roots; this is a conditional gap, not a failure in every checkout. Keep the current patch-ID header format and parser.\n\n```suggestion\n        & git -C $RepoPath log --format=%H --patch --cc --no-ext-diff --binary --root $Commit\n```\n\nCover equivalent root replays in both directions with `log.showRoot=false`, and retain default/true, unequal-patch, and unrelated-change controls.",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact conditional source path, retained root/combined differential, and unchanged literal hashes."
+      },
+      "path": ".github/skills/release-note-generation/scripts/get-preview-release-delta.ps1",
+      "line": 216,
+      "side": "RIGHT",
+      "start_line": 216,
+      "in_diff": true
+    },
+    {
+      "id": "c-single-commit-history-identity",
+      "kind": "inline",
+      "title": "Preserve single-commit historical PR association",
+      "body": "### Preserve a single-commit PR's associated identity in full-history comparison\n\n**Severity:** `medium`\n\nAn ordinary-subject historical commit can belong to the same single-commit PR as an adapted replay but have a different patch ID. `Get-HistoryPrIdentitySet` records only subject-derived PR numbers, while `Get-CommitRecord` can identify the replay through GitHub association. Neither identity nor patch comparison then cancels it, so an already-present PR is falsely reported as added or removed.\n\nIn `get-preview-release-delta.ps1`, preserve existing subject and patch-ID matching. For opposite-side delta PRs missing from the history identity set, query the paginated PR commit list and restrict the additional lookup to exactly one valid commit SHA. Require that object locally and reachable from the history tip; treat an absent object as no match, and ensure the expected Git error cannot terminate Windows PowerShell before checking its exit code; resolve its subject first, then its own associated PR, and add the identity only if it matches the candidate PR. Pass the opposite delta records into both history calls. In `Get-AssociatedPrNumber`, ignore null items from an empty association response instead of accessing their properties.\n\nVerify the associated single-commit/unequal-patch case in both directions, while retaining subject-conflict, empty-association, missing-object, offline, equal-patch and multi-commit non-cancellation controls. This bounded correction must not introduce historical cherry-pick-source expansion or decide how a partially represented multi-commit PR counts as shipped.\n",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "Same whole actual upstream/candidate scripts with real Git: exactly two single-commit unequal-patch identity gaps upstream, corrected candidate; 18 baseline controls and all20 candidate outcomes including upstream8 preserved. Limited to tested route, not all real GitHub/API shapes or multi-commit policy."
+      },
+      "path": ".github/skills/release-note-generation/scripts/get-preview-release-delta.ps1",
+      "line": 198,
+      "side": "RIGHT",
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50132-history",
+      "type": "post_review",
+      "label": "Post inline suggestion and review comment",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "78e44ad8e0e3c19c420424f3d269808f5ab33acc",
+        "event": "COMMENT",
+        "comment_ids": [
+          "c-root-history-config",
+          "c-single-commit-history-identity"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "78e44ad8e0e3c19c420424f3d269808f5ab33acc",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "c-root-history-config"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "78e44ad8e0e3c19c420424f3d269808f5ab33acc",
+      "result": "passed",
+      "checked_comment_ids": [
+        "c-root-history-config"
+      ],
+      "files": [
+        {
+          "path": ".github/skills/release-note-generation/scripts/get-preview-release-delta.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
   }
 }
