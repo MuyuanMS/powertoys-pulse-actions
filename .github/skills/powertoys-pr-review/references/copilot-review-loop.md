@@ -143,12 +143,20 @@ review complete or proceeding to Step 9. If the final build changes any code,
 request another Copilot review and rebuild after that loop converges.
 
 At the eight-round limit, finish assessing and replying to the final review
-and preserve independently validated findings privately. If convergence is
-still absent, return a current-head manual-review blocker with the exhausted
-rounds, exact remaining concerns and concrete remediation. The dashboard
-coordinator publishes that terminal blocker without approval/clean-review
-actions and continues other PRs. Do not keep the PR in an endless resumable
-loop, reset its counter, claim it is clean, or silently authorize round nine.
+and reconcile ALL accepted findings against the exact upstream head, not only
+the last response. The cap limits new automated requests; it does not prohibit
+drafting validated findings. Preserve each finding's disposition privately:
+publishable, already posted, unsupported, superseded, or validation pending.
+For independently supported author-facing corrections, complete the exact-head
+grounding and required literal-patch/EOL/build checks and emit `post_review`
+at `awaiting_review_approval`, even when the final automated response was not
+zero-comment. Do not emit an approval or claim clean convergence.
+Only when no defensible publishable finding remains should the result be
+pending with an operator exception in the private ledger. Keep request counts,
+build failures, toolchain instructions and manual remediation out of public
+artifacts. Continue unaffected PRs; never erase valid findings because another
+finding or the automation service is blocked. Do not reset the counter or
+silently authorize round nine.
 
 Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence; a non-zero count means resume the loop (fix/resolve/re-request) within the round cap, or include the remaining concerns in the explicit manual-review blocker at the cap — never present them as clean.
 

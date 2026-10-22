@@ -96,12 +96,37 @@ packets while a free build slot and the actual validation command are ready.
 For `blocked`, record `blocker.detail`, `blocker.remediation`, and
 `blocker.external`. Missing commands, idle-agent ownership, a stale coordinator
 grant, or routine dependency restore are local work, not external blockers.
-`publish_terminal_blocker` means independently adjudicate and publish a
-current-head terminal manual blocker only if the evidence really warrants it.
+`publish_terminal_blocker` is a legacy planner action name: independently
+adjudicate and record a current-head operator exception in the PRIVATE ledger.
+Never publish its detail/remediation as dashboard content.
 It does not turn the ledger flag itself into proof. At the eight-round limit,
 dispose the last review, preserve the request ledger, and finalize a specific
-manual-review outcome; do not reset the round counter or request round nine.
+manual-review outcome after drafting every independently validated finding;
+do not reset the round counter or request round nine.
 No action permits claiming convergence without the required evidence.
+
+### Public data is not a drain log
+
+`data/` contains user-facing review drafts and neutral availability metadata,
+not operator instructions. `Set-PrReviewCheckpoint.ps1` saves full receipts
+outside the repository under `POWERTOYS_PRIVATE_REVIEW_STATE` (default
+`%LOCALAPPDATA%\PowerToysPulse\review-state`), then emits only the public
+projection. `Sanitize-ActionData.ps1` archives legacy receipts there before
+removing operational fields. Recover private receipts by PR number and pinned
+head, alongside the active-run ledger and live fork traces.
+Never put `blockers`, worker phases, fork bookkeeping, summary/status prose,
+build logs, cap-override requests or `next_action` in public PR artifacts.
+Run the sanitizer even for incremental publication; `emit.ps1` also enforces
+this boundary. An unavailable automated review is not a defect in the PR.
+
+At the cap, conserve all accepted findings across rounds and finish grounding
+and validation for any publishable correction. A validated `post_review` does
+not require an unrelated zero-comment pass; `approve` still requires the clean
+review gates. If none survives, publish only neutral pending metadata and
+report the precise exception privately. Neither a terminal flag nor a cap
+outcome is completed review coverage. The public stale queue deliberately
+continues to include those PRs; reconcile private exceptions separately rather
+than manufacturing a zero stale count.
 
 ## Forward-progress invariant
 
@@ -155,9 +180,9 @@ Run a final artifact/head/coverage reconciliation, not merely a zero count.
 Keep completed results while repairing another PR; one blocked PR must not
 prevent every other PR from finishing.
 
-Report ready reviews separately from author waits and terminal manual blockers.
-Updated blocker artifacts are not completed reviews. If real external service,
+Report ready reviews separately from author waits and private operator exceptions.
+Pending artifacts are not completed reviews. If real external service,
 credential or lab failures prevent full review coverage, publish all supported
-results and one consolidated exception list; never promise a clean full drain
+results and deliver one consolidated PRIVATE exception list; never promise a clean full drain
 or manufacture evidence. Clear the active marker and stop the watchdog only
 when the recorded outcome is fully reconciled.

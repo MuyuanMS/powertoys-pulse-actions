@@ -82,10 +82,13 @@ DISPATCH UNTIL FINISHED
   "all agents idle, no queue changes" report. Missing commands, old grants,
   optional experiments and a free build slot are not external blockers.
 - Keep consuming other PRs when one hits a real external dependency. Only an
-  independently evidenced manual blocker may become current-head review_blocked
-  with terminal:true, exact detail and concrete remediation. Review-cap outcomes
-  are manual-review blockers, not clean reviews. Publish supported results for
-  all other PRs before collecting remaining exceptions into one report.
+  independently evidenced operator exception may stop that PR. Keep exact
+  detail/remediation in the private ledger, NEVER public data. At the review
+  cap, reconcile all accepted findings across rounds, complete exact-head and
+  literal-patch validation, and draft every supported correction as post_review.
+  The cap stops new requests, not publication of validated findings. Do not
+  substitute a review-cap blocker for valid comments or claim clean approval.
+  Publish supported results before collecting remaining exceptions privately.
 
 FIX THE SCHEDULES IN THIS SESSION
 Inspect the existing schedules and update them without creating duplicates.
@@ -113,18 +116,20 @@ dashboard publication authorization and source-main guard; this is not
 permission to push code changes directly to any remote main.
 
 Every ready review must pass exact-head, grounding, literal-patch/EOL and build
-gates. Checkpoints and real terminal blockers may be published without falsely
-claiming review convergence. Sync and validate the authorized Pulse data path;
+gates. Public checkpoints contain only neutral pending metadata, never worker
+diagnostics, build instructions or cap-override requests. Run the sanitizer
+before every publication, including incremental checkpoints. Sync and validate the authorized Pulse data path;
 do not deploy official Pulse without its existing approval.
 
 Before returning for my attention, reconcile every in-scope PR against its live
-head and published artifact, run the scoped stale queue with -ExcludeCmdPal
--FailOnStale, and verify canonical publication and synchronized Pulse coverage.
+head and published artifact, run the scoped stale queue with -ExcludeCmdPal,
+and verify canonical publication and synchronized Pulse coverage. Use
+-FailOnStale only when no pending reviews or private exceptions remain.
 Do not claim completion from a zero stale count alone: list ready reviews,
-justified author waits, and genuine terminal manual blockers separately.
+justified author waits, and genuine private operator exceptions separately.
 I want completed review artifacts, not blockers substituted to make the counter
 zero. If an unavoidable external service/credential/lab dependency prevents
-that goal, finish every unaffected PR, publish honest current-head exceptions,
+that goal, finish every unaffected PR, publish only neutral pending metadata,
 and give me ONE consolidated list of exact remaining human actions, not
 repeated requests or another indefinitely idle drain.
 

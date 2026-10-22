@@ -1,8 +1,10 @@
 param(
-  [string]$DataPath = (Join-Path $PSScriptRoot 'data')
+  [string]$DataPath = (Join-Path $PSScriptRoot 'data'),
+  [string]$PrivateStatePath
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot '.github\skills\powertoys-dashboard-update\scripts\PublicPrArtifact.ps1')
 $downgradedPrs = [System.Collections.Generic.HashSet[int]]::new()
 $proposedCommentCounts = @{}
 $dashboardRoot = Split-Path -Parent (Resolve-Path $DataPath).Path
@@ -259,8 +261,16 @@ if (-not (Test-Path $itemsPath)) {
 
 $encoding = [System.Text.UTF8Encoding]::new($false)
 $count = 0
+$publicPrStages = @{}
 foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
+  if ($artifact.kind -eq 'pr') {
+    $projection = ConvertTo-PublicPrArtifact $artifact
+    if (($projection | ConvertTo-Json -Depth 60 -Compress) -cne
+        ($artifact | ConvertTo-Json -Depth 60 -Compress)) {
+      Save-PrivatePrArtifact $artifact $dashboardRoot $PrivateStatePath
+    }
+  }
   if ($artifact.kind -eq 'pr' -and -not $artifact.PSObject.Properties['proposed_comments']) {
     $artifact | Add-Member -NotePropertyName proposed_comments -NotePropertyValue @()
   }
@@ -273,7 +283,8 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
         Where-Object { [string]$_.disposition -notin @('posted', 'withdrawn') }
     ).Count
   }
-  $publicArtifact = Convert-PublicValue $artifact
+  $publicArtifact = Convert-PublicValue (ConvertTo-PublicPrArtifact $artifact)
+  if ($artifact.kind -eq 'pr') { $publicPrStages[[int]$artifact.number] = $publicArtifact.stage }
   $json = $publicArtifact | ConvertTo-Json -Depth 30
   [System.IO.File]::WriteAllText($path.FullName, $json, $encoding)
   $count++
@@ -285,6 +296,12 @@ if ($downgradedPrs.Count -gt 0 -or $proposedCommentCounts.Count -gt 0) {
     $index = Get-Content $indexPath -Raw | ConvertFrom-Json
     foreach ($row in @($index.items | Where-Object { $_.kind -eq 'pr' })) {
       $number = [int]$row.number
+      if ($publicPrStages.ContainsKey($number)) {
+        $row.stage = $publicPrStages[$number]
+      }
+      foreach ($name in @('blockers', 'workflow', 'summary', 'status', 'next_action', 'mirror', 'fork_pr', 'fork_branch')) {
+        $row.PSObject.Properties.Remove($name)
+      }
       if ($proposedCommentCounts.ContainsKey($number)) {
         if ($row.PSObject.Properties['proposed_open']) {
           $row.proposed_open = $proposedCommentCounts[$number]

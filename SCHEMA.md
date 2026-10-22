@@ -440,3 +440,16 @@ reviews, labels, or pull requests.
   browser `localStorage['pt_gh_token']` and is only sent to `api.github.com`.
 - Nothing is posted without a member explicitly turning off dry-run and clicking
   an action — the board never writes on its own.
+## Public PR data boundary
+
+PR artifacts contain user-facing review comments/actions and neutral metadata.
+Updater diagnostics are not PR defects: `blockers`, `workflow`, `summary`,
+`status`, `next_action`, fork bookkeeping and build/remediation prose must not
+be published as PR artifact fields. Exact-head machine validation receipts
+remain public; detailed execution receipts are private.
+The checkpoint writer and sanitizer preserve removed state outside this
+repository under `POWERTOYS_PRIVATE_REVIEW_STATE` (default
+`%LOCALAPPDATA%\PowerToysPulse\review-state`). Do not commit that directory.
+An unfinished review remains `review_in_progress` with no invented findings
+or approval. A review-limit exception does not erase independently validated
+`post_review` drafts and does not count as completed review coverage.

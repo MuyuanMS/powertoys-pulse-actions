@@ -1145,6 +1145,8 @@ $ij = $index | ConvertTo-Json -Depth 20
 
 "index.json written: items=$($indexList.Count)  artifacts=$($artifactNumbers.Count) [$(( $artifactNumbers | Sort-Object ) -join ', ')]"
 
+& (Join-Path $here 'Sanitize-ActionData.ps1') -DataPath $outDir
+
 if (-not $AllowStaleReviewQueue) {
   $staleQueueGate = Join-Path $here '.github\skills\powertoys-dashboard-update\scripts\Get-StalePrReviewQueue.ps1'
   if (-not (Test-Path $staleQueueGate)) {

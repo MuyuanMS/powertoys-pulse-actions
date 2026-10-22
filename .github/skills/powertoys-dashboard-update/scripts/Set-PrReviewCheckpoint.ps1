@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Persist public-safe PR review progress for resumable dashboard runs.
+    Persist private review receipts and neutral public availability metadata.
 .DESCRIPTION
-    Atomically writes a minimal review_in_progress artifact whenever a review
-    reaches a durable stage. Existing completed or author-waiting artifacts are
-    protected unless -Force is supplied.
+    Saves full execution state outside the repository, then atomically writes
+    a minimal review_in_progress artifact without operator instructions.
+    Completed or author-waiting artifacts are protected unless -Force is supplied.
 #>
 [CmdletBinding()]
 param(
@@ -34,6 +34,7 @@ param(
     [string]$Fork = $env:POWERTOYS_FORK_REPO,
     [string]$PreserveEvaluatedAt,
     [string]$PreserveQueuedAt,
+    [string]$PrivateStatePath,
     [string]$Dashboard = $(if ($env:POWERTOYS_DASHBOARD_PATH) {
         $env:POWERTOYS_DASHBOARD_PATH
     } else {
@@ -43,6 +44,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'PublicPrArtifact.ps1')
 
 function ConvertTo-UtcIsoTimestamp {
     param($Value, [string]$Field)
@@ -161,6 +163,8 @@ if ($ForkBranch) {
 }
 
 $encoding = [System.Text.UTF8Encoding]::new($false)
+Save-PrivatePrArtifact ([pscustomobject]$artifact) $Dashboard $PrivateStatePath
+$artifact = ConvertTo-PublicPrArtifact ([pscustomobject]$artifact)
 $tempPath = "$artifactPath.tmp"
 [System.IO.File]::WriteAllText(
     $tempPath,

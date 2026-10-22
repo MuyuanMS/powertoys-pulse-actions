@@ -160,6 +160,13 @@ foreach ($path in @($paths)) {
   Require-Date $artifact.generated_at 'generated_at' $prefix
   Require-Date $artifact.evaluated_at 'evaluated_at' $prefix
   Require-Date $artifact.source_updated_at 'source_updated_at' $prefix
+  if ($artifact.kind -eq 'pr') {
+    foreach ($field in @('blockers', 'workflow', 'summary', 'status', 'next_action', 'fork_pr', 'fork_branch', 'fork_issue')) {
+      if ($artifact.PSObject.Properties[$field]) {
+        $errors.Add("$prefix contains private PR operator field '$field'; run Sanitize-ActionData.ps1 before publication")
+      }
+    }
+  }
   foreach ($action in @($artifact.actions)) {
     if ($action.type -eq 'hold' -or $action.label -match '(?i)^not now$') {
       $errors.Add("$prefix exposes a non-actionable hold/Not now action")

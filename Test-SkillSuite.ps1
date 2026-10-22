@@ -251,7 +251,7 @@ foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1', 
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
 }
-foreach ($testName in @('Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1')) {
+foreach ($testName in @('Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1', 'Test-PublicPrArtifact.ps1')) {
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-dashboard-update\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Drain reliability regression test failed: $testName") }
 }
@@ -514,7 +514,8 @@ if (-not (Test-Path $checkpointScript)) {
     $checkpoint = Get-Content (Join-Path $checkpointRoot 'data\items\12345.json') -Raw |
       ConvertFrom-Json
     if ($checkpoint.stage -ne 'review_in_progress' -or
-        $checkpoint.workflow.phase -ne 'waiting_copilot' -or
+        $checkpoint.PSObject.Properties['workflow'] -or
+        $checkpoint.PSObject.Properties['status'] -or
         @($checkpoint.actions).Count -ne 0) {
       $errors.Add('PR review checkpoint writer produced an invalid resumable artifact.')
     }
