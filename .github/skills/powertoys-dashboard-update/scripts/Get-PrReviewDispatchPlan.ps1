@@ -115,7 +115,7 @@ $seen = @{}
                 }
             }
         }
-        if ([int]$row.round -ge 8 -and $action -in @(
+        if ([int]$row.round -ge 3 -and $action -in @(
             'reconcile_resume', 'reconcile_missing_review'
         )) {
             $action = 'finalize_review_limit'

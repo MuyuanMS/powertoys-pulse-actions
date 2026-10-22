@@ -23,7 +23,8 @@ orchestrator:
 - **Each PR is independent on disk**: its own fork branch `pr-iterate/N` and its own worktree `C:\PowerToys-<hash>`. Git operations across PRs don't collide, so parallelism is safe.
 - Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
 - Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
-- Apply the suppressed-comment policy from [copilot-review-loop.md](./copilot-review-loop.md): important findings only in rounds 1–5, ignore all suppressed findings after round 5, and never treat them as an independent convergence blocker.
+- Each PR has at most three total review iterations, counting preserved requests across sessions and lanes, not three per worker or scheduled tick. At the cap, finish saved results and validated drafts without a fourth request.
+- Apply the suppressed-comment policy from [copilot-review-loop.md](./copilot-review-loop.md): important findings only in rounds 1–3, never request round four for suppressed findings, and never treat them as an independent convergence blocker.
 
 ## Serialize the local builds
 

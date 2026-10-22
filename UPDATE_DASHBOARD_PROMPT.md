@@ -53,6 +53,11 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- limit each PR to three total review iterations (initial request plus at most
+  two re-requests), counting preserved requests across lanes and sessions.
+  Never reset the allowance on scheduled ticks or recovery. At or above three,
+  consume saved/in-flight results and finish validated drafts without another
+  request; keep operator exceptions private and do not claim clean approval;
 - in drain mode follow `powertoys-dashboard-update/references/drain-dispatch.md`:
   execute its private-ledger dispatch plan after completions and due cloud
   checks. Idle historical agents and unchanged queue snapshots never suppress

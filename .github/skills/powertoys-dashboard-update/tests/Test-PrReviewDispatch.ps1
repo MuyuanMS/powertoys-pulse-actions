@@ -63,19 +63,29 @@ try {
     $rows[0].review.head_matches = $true
     $rows[0].review.submitted = $false
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_missing_review') 'absent request is not an indefinite wait'
-    $rows[0].round = 8
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'round cap schedules an honest manual outcome, not round nine'
+    $rows[0].round = 2
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_missing_review') 'two used iterations leave room for the third after reconciliation'
+    $rows[0].round = 3
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'three used iterations prohibit a fourth request'
+    $rows[0].review.submitted = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'third review result is consumed rather than discarded at the cap'
+    $rows[0].review.submitted = $false
+    $rows[0].review.request_pending = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'in-flight third request is checked without requesting again'
+    $rows[0].review.request_pending = $false
     $rows[0].phase = 'reviewing_findings'
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'last-round findings must still be disposed'
     $rows[0].phase = 'building'
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'validate') 'converged eighth round still receives required validation'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'validate') 'converged third round still receives required validation'
     $rows[0].phase = 'waiting_copilot'
     $savedRequest = $rows[0].request
     $rows[0].request = $null
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'recover_request_identity') 'round cap cannot discard an unidentified final review'
     $rows[0].request = $savedRequest
     $rows[0].phase = 'queued'
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'exhausted queued review cannot start round nine'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'exhausted queued review cannot start round four'
+    $rows[0].round = 8
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'legacy history exceeding three is preserved and receives no new allowance'
     $rows[0].round = 0
     $rows[0].phase = 'blocked'
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'repair_blocker_evidence') 'bare blocked label is not a terminal blocker'

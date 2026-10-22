@@ -699,6 +699,11 @@ Follow the public/private boundary in `references/drain-dispatch.md`.
 Keep operator exceptions, toolchain repairs, request limits and worker next
 steps outside `data/`; checkpoint and sanitizer scripts preserve private
 receipts before projecting neutral public metadata.
+The automated-request cap is **three total review iterations per PR**, including
+the initial request. Count preserved requests across lanes and sessions,
+including timeout/no-analysis attempts; scheduled ticks, head changes and
+restarts never reset the allowance. Existing histories at or above three get
+no new requests. Consume saved/in-flight results and finish validation.
 At the automated-request cap, draft all independently validated author-facing
 findings as `post_review` after exact-head grounding and literal-patch checks.
 A nonzero final automated response does not invalidate those findings or
@@ -765,7 +770,7 @@ work/`reviewing_findings`, and local validation/`building`. A worker waiting on
 GitHub Copilot performs one immediate status check only; if the result is not
 ready, it checkpoints and returns instead of polling.
 
-Use the sibling PR skill's `Request-CopilotReview.ps1 -TimeoutMinutes 0` only
+Use the sibling PR skill's `Request-CopilotReview.ps1 -RequestsUsed <reconciled-count> -TimeoutMinutes 0` only
 for a new round, and its read-only `Get-CopilotReviewStatus.ps1` for resume.
 Persist the returned request timestamp, fork head and baseline review ID.
 Before publishing a `waiting_copilot` checkpoint, recheck that request once:

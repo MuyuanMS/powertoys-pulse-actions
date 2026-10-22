@@ -1,6 +1,15 @@
 # Copilot Review Loop (Steps 4–8)
 
-The fork Copilot loop is **not optional** and is independent of the posting decision (Critical Rule 11). Drive it to convergence before drafting Step 9.
+The fork Copilot loop is **not optional** and is independent of the posting decision (Critical Rule 11). Drive it toward convergence within **three total review iterations** (initial request plus at most two re-requests), then draft independently validated findings even if clean convergence is absent.
+
+Count actual requests across the existing PR's preserved review lanes and
+sessions, including timed-out/no-analysis requests. Do not reset the count on
+a scheduled tick, restart, replacement fork PR, rebase, or head change. Before
+any request, reconcile saved request history and refuse a fourth iteration.
+For an existing review already at or above three, issue no new requests:
+consume saved/in-flight results and finish grounding, validation and drafting.
+A request already in flight when this policy changes may finish; it grants
+no additional round. Unknown counts require history reconciliation, not zero.
 
 > **Reviewing 2+ PRs?** Run the loop for each PR **concurrently**, not one-by-one — see [batch-parallel.md](./batch-parallel.md) (one background sub-agent per PR, builds serialized, orchestrator is the single writer of `review-data.json`). The per-PR steps below are identical; only the orchestration differs.
 
@@ -29,12 +38,14 @@ Only when a genuinely new round is needed:
 
 ```powershell
 $request = .\scripts\Request-CopilotReview.ps1 -ForkRepo <FORK_REPO> `
-  -PRNumber <fork_pr_number> -TimeoutMinutes 0
+  -PRNumber <fork_pr_number> -RequestsUsed <reconciled-count> -TimeoutMinutes 0
 ```
 
 Save `RequestedAt`, `HeadSha`, `AfterReviewId`, and, when available, `ReviewId`
 and `SubmittedAt`. The script uses the correct bot account, rejects an already
 pending Copilot request, checks immediately, and exhausts all review pages.
+It refuses missing/negative `RequestsUsed` or a count of three or more before
+any API access. This count is required, not a new per-session allowance.
 Use the default 10-minute wait only outside bounded dashboard workers.
 An empty `requested_reviewers` array proves neither unavailability nor
 completion: the review may have completed asynchronously. Require the actual
@@ -97,9 +108,9 @@ For each review comment from Copilot:
 
 Copilot may retain suppressed/internal candidate comments even when the published review has zero inline comments. Suppressed comments do **not** block convergence.
 
-- During rounds 1–5, inspect a suppressed comment only when available and act only if it identifies an important correctness, security, data-loss, crash, or significant user-impact issue.
+- During rounds 1–3, inspect a suppressed comment only when available and act only if it identifies an important correctness, security, data-loss, crash, or significant user-impact issue.
 - Ignore suppressed style, cleanup, speculative, low-severity, and preference comments. Do not create another review round for them.
-- After round 5, do not inspect, fix, reply to, or use suppressed comments to trigger another round.
+- Suppressed comments never authorize a fourth iteration.
 - A review with zero published inline comments is a zero-comment review even if suppressed candidates exist.
 
 ## Step 6: Iterate the loop
@@ -107,28 +118,28 @@ Copilot may retain suppressed/internal candidate comments even when the publishe
 **The most critical step. You must actually loop — do not stop after one round unless there are zero new comments.**
 
 ```
-round = 1
+requests_used = <reconciled actual request count across preserved lanes>
 last_review_timestamp = <timestamp before first request>
 
-LOOP:
-  1. Request Copilot review (Step 4).
+WHILE requests_used < 3:
+  1. Request Copilot review (Step 4); persist requests_used += 1 immediately.
   2. Wait for a new review with submitted_at > last_review_timestamp (poll up to 10 min).
   3. Fetch comments created after last_review_timestamp from copilot-pull-request-reviewer[bot].
-  4. If ZERO new published inline comments, and no important round-1-to-5 suppressed issue was accepted -> EXIT LOOP -> Step 7.
+  4. If ZERO new published inline comments, and no important round-1-to-3 suppressed issue was accepted -> EXIT LOOP -> Step 7.
   5. For each new comment: assess; if valid+in-scope, fix in the worktree.
   6. If any fixes were made: git add -A; commit; push to the fork branch.
   7. For each comment: reply with the fix (or the reason) AND resolve the thread.
-  8. last_review_timestamp = now; round += 1.
+  8. last_review_timestamp = now.
   9. Termination:
-       - After round 5, ignore all suppressed comments.
-       - After round 8, stop automated iteration and mark the PR for manual review if published comments still recur. Do not claim convergence.
+       - After request 3, stop new requests; finish validation and draft supported findings.
+       - If clean convergence is absent, keep any operator exception private. Do not claim approval.
        - Otherwise -> GOTO 1.
 END LOOP
 ```
 
 **Rules for the loop:**
 - **Push before re-requesting** — Copilot reviews the latest pushed code.
-- **Re-request after every push** — Copilot will not auto-review.
+- **Re-request after a push only while fewer than three requests have been used** — Copilot will not auto-review; the cap still applies.
 - **Track timestamps** — only process comments newer than the last request; do not re-process old ones.
 - **If Copilot repeats a fixed concern**, reply "Already addressed in commit `<sha>`" and resolve; do not re-fix.
 - **Out-of-scope comments** (files this PR did not modify): reply "Not applicable: this file is not modified by this PR" and resolve; do not fix.
@@ -140,9 +151,11 @@ END LOOP
 
 After both conditions hold, run the serialized Step 7 build before marking the
 review complete or proceeding to Step 9. If the final build changes any code,
-request another Copilot review and rebuild after that loop converges.
+request another Copilot review only within the three-request cap and rebuild.
+If the allowance is exhausted, validate the changed tree for supported drafts
+without claiming a fresh clean review.
 
-At the eight-round limit, finish assessing and replying to the final review
+At the three-round limit, finish assessing and replying to the final review
 and reconcile ALL accepted findings against the exact upstream head, not only
 the last response. The cap limits new automated requests; it does not prohibit
 drafting validated findings. Preserve each finding's disposition privately:
@@ -156,7 +169,7 @@ pending with an operator exception in the private ledger. Keep request counts,
 build failures, toolchain instructions and manual remediation out of public
 artifacts. Continue unaffected PRs; never erase valid findings because another
 finding or the automation service is blocked. Do not reset the counter or
-silently authorize round nine.
+silently authorize round four.
 
 Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence; a non-zero count means resume the loop (fix/resolve/re-request) within the round cap, or include the remaining concerns in the explicit manual-review blocker at the cap — never present them as clean.
 

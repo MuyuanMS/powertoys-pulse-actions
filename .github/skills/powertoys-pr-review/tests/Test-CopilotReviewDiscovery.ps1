@@ -105,9 +105,9 @@ function Read-Status {
     & (Join-Path $scripts 'Get-CopilotReviewStatus.ps1') -ForkRepo example/PowerToys `
         -PRNumber 860 -HeadSha $head -RequestedAt $requestedAt
 }
-function Send-Request([int]$Timeout = 0) {
+function Send-Request([int]$Timeout = 0, [int]$Used = 0) {
     & (Join-Path $scripts 'Request-CopilotReview.ps1') -ForkRepo example/PowerToys `
-        -PRNumber 860 -TimeoutMinutes $Timeout 6>$null 3>$null
+        -PRNumber 860 -TimeoutMinutes $Timeout -RequestsUsed $Used 6>$null 3>$null
 }
 function Assert-Fails([scriptblock]$Action, [string]$Pattern, [string]$Message) {
     $failure = ''
@@ -117,6 +117,21 @@ function Assert-Fails([scriptblock]$Action, [string]$Pattern, [string]$Message) 
 
 $savedExitCode = $global:LASTEXITCODE
 try {
+    Reset-Fixture
+    Assert-Fails {
+        & (Join-Path $scripts 'Request-CopilotReview.ps1') -ForkRepo example/PowerToys -PRNumber 860
+    } 'reconciled actual request count' 'Unknown request history cannot default to a fresh allowance.'
+    Assert-Fails { Send-Request -Used -1 } 'reconciled actual request count' 'Negative request history is rejected.'
+    foreach ($used in @(3, 8)) {
+        Assert-Fails { Send-Request -Used $used } 'three-iteration review cap' 'Current and legacy exhausted histories cannot request another review.'
+    }
+    Assert-True ($fixture.calls.Count -eq 0 -and $fixture.postCount -eq 0) 'Cap rejection happens before any API read or write.'
+    foreach ($used in @(0, 1, 2)) {
+        Reset-Fixture
+        $fixture.completeOnPost = $true
+        $result = Send-Request -Used $used
+        Assert-True ($result.Submitted -and $fixture.postCount -eq 1) "Used count $used allows exactly one remaining request."
+    }
     Reset-Fixture
     $status = Read-Status
     Assert-True ($status.Submitted -and $status.ReviewId -eq 101) 'Review beyond page 1 is discovered.'

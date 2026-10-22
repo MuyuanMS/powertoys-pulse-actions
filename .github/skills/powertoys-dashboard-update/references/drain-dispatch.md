@@ -48,6 +48,12 @@ Never report a plan as work executed. A minimal private ledger is:
 }
 ```
 
+`round` is the number of actual requests already consumed, including the initial
+request, not the next iteration number. Reconcile legacy next-round counters
+against saved request history before migration; unknown history is not zero.
+Pass that count as `Request-CopilotReview.ps1 -RequestsUsed <count>` and persist
+each actual request immediately. No helper/API fallback bypasses this cap.
+
 Use `worker_status: running|idle|none`. Resume a known idle worker only for
 the same PR; a different PR gets a fresh worker. Historical idle workers are
 neither active capacity nor a reason to skip the PR. If the queue head differs
@@ -99,10 +105,15 @@ grant, or routine dependency restore are local work, not external blockers.
 `publish_terminal_blocker` is a legacy planner action name: independently
 adjudicate and record a current-head operator exception in the PRIVATE ledger.
 Never publish its detail/remediation as dashboard content.
-It does not turn the ledger flag itself into proof. At the eight-round limit,
+It does not turn the ledger flag itself into proof. At the three-round limit,
 dispose the last review, preserve the request ledger, and finalize a specific
 manual-review outcome after drafting every independently validated finding;
-do not reset the round counter or request round nine.
+do not reset the round counter or request round four.
+Three means the initial review plus at most two re-requests, across preserved
+lanes and sessions; all actual requests, including timeout responses, count.
+Existing histories at or above three get no new allowance. Consume requests
+already in flight, complete validation and publish supported drafts instead.
+Neither a scheduler tick, head change nor recovery starts a fresh allowance.
 No action permits claiming convergence without the required evidence.
 
 ### Public data is not a drain log

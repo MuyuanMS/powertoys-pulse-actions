@@ -68,8 +68,12 @@ DISPATCH UNTIL FINISHED
   Reconcile absent review plus absent assignment; do not call it an active wait.
 - Do not demand an unavailable "full" review tier. Apply the skill's actual
   substantive-review criteria to returned Lite reviews as well. A no-analysis
-  timeout is not a clean review. Preserve request history and the eight-round
+  timeout is not a clean review. Preserve request history and the three-round
   cap; do not endlessly retry or reset counters.
+  Three is the total, including the initial request, across all preserved lanes
+  and sessions. If three or more were already used, request no more; consume
+  saved/in-flight results and complete validated drafts. Never request round four
+  or reset the allowance on schedule ticks, head changes or recovery.
 - Prepare exact validation commands early, request Copilot before ordinary
   compilation, and build after convergence. Keep actual compilations serialized
   by exclusive lock ownership, release only after the owned work is finished,

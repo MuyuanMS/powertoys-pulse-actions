@@ -15,17 +15,27 @@
 .PARAMETER TimeoutMinutes
     Maximum minutes to wait (default 10). Use 0 for one immediate check in
     bounded dashboard workers. Resume via Get-CopilotReviewStatus.ps1, not here.
+.PARAMETER RequestsUsed
+    Reconciled actual requests already used across this upstream PR's preserved
+    lanes and sessions. Required before any API access; three prohibits a new request.
 .EXAMPLE
-    ./Request-CopilotReview.ps1 -ForkRepo octocat/PowerToys -PRNumber 12
+    ./Request-CopilotReview.ps1 -ForkRepo octocat/PowerToys -PRNumber 12 -RequestsUsed 0
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $ForkRepo,
     [Parameter(Mandatory)] [int]    $PRNumber,
+    [Nullable[int]] $RequestsUsed,
     [ValidateRange(0, 60)][int] $TimeoutMinutes = 10
 )
 
 $ErrorActionPreference = 'Stop'
+if ($null -eq $RequestsUsed -or $RequestsUsed -lt 0) {
+    throw 'Pass -RequestsUsed with the reconciled actual request count across preserved lanes and sessions; do not assume zero.'
+}
+if ($RequestsUsed -ge 3) {
+    throw 'The three-iteration review cap is exhausted. Consume saved results and finish validated drafts; no fourth request is allowed.'
+}
 . (Join-Path $PSScriptRoot 'ReviewPayload.Common.ps1')
 $endpoint = "repos/$ForkRepo/pulls/$PRNumber"
 $pullRequest = Invoke-GhGet -Endpoint $endpoint
