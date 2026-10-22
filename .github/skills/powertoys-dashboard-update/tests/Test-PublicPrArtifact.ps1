@@ -64,6 +64,15 @@ try {
     $publicCheckpoint = Get-Content (Join-Path $items '125.json') -Raw
     Assert-True ($publicCheckpoint -notmatch 'missing compiler|fork_pr|workflow|next_action') 'checkpoint writer never emits operator instructions'
     Assert-True (@(Get-ChildItem (Join-Path $private '125') -File).Count -eq 1) 'checkpoint has private recovery receipt'
+    $candidate = $publicCheckpoint | ConvertFrom-Json
+    $candidate.proposed_comments = @(@{ id='saved-finding'; body='Accepted correction awaiting literal-patch validation' })
+    $candidate | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $items '125.json')
+    & $checkpoint -Dashboard $dashboard -PrivateStatePath $private -Number 125 -HeadSha $head `
+        -SourceUpdatedAt '2026-10-22T00:00:00Z' -Phase reviewing_findings -Detail 'Continue validation'
+    $receipts = @(Get-ChildItem (Join-Path $private '125') -File | ForEach-Object {
+        Get-Content $_.FullName -Raw | ConvertFrom-Json
+    })
+    Assert-True (@($receipts | Where-Object { $_.proposed_comments.id -contains 'saved-finding' }).Count -eq 1) 'checkpoint replacement cannot lose accepted findings awaiting validation'
     $validator = Join-Path $PSScriptRoot '..\scripts\Test-DashboardArtifacts.ps1'
     $blocked.evaluated_at = '2026-10-22T00:00:00Z'
     $blocked | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $items '123.json')

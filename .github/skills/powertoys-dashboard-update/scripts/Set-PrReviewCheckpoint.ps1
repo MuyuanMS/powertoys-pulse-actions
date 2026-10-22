@@ -163,6 +163,7 @@ if ($ForkBranch) {
 }
 
 $encoding = [System.Text.UTF8Encoding]::new($false)
+if ($existing) { Save-PrivatePrArtifact $existing $Dashboard $PrivateStatePath }
 Save-PrivatePrArtifact ([pscustomobject]$artifact) $Dashboard $PrivateStatePath
 $artifact = ConvertTo-PublicPrArtifact ([pscustomobject]$artifact)
 $tempPath = "$artifactPath.tmp"
