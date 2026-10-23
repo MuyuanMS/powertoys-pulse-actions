@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-23T18:05:43.8829027+08:00",
+  "generated_at": "2026-10-23T18:27:19.4569176+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 192,
     "open_issues": 12340,
     "community": 11446,
-    "artifacts": 1313
+    "artifacts": 1314
   },
   "impact": {
-    "as_of": "2026-10-23T18:05:43.8829027+08:00",
+    "as_of": "2026-10-23T18:27:19.4569176+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51511,
     51507,
     51495,
     51480,
@@ -1440,7 +1441,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-23T09:33:33Z",
-      "updated_at": "2026-10-23T09:48:34Z",
+      "updated_at": "2026-10-23T09:56:15Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1455,27 +1456,28 @@ window.BOARD_INDEX = {
       "title": "Keep clipboard helper handoffs within the active session",
       "author": "yeelam-gordon",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Mouse Without Borders"
+        "Product-Mouse Without Borders",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-23T09:23:25Z",
-      "updated_at": "2026-10-23T09:49:01Z",
-      "comments": 2,
+      "updated_at": "2026-10-23T09:58:15Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -37694,8 +37696,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T09:46:57Z",
-      "updated_at": "2026-10-23T04:59:24Z",
-      "comments": 3,
+      "updated_at": "2026-10-23T10:01:37Z",
+      "comments": 4,
       "priority": null
     },
     {
