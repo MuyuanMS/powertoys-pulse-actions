@@ -1,6 +1,6 @@
 # Copilot Review Loop (Steps 4–8)
 
-The fork Copilot loop is **not optional** and is independent of the posting decision (Critical Rule 11). Drive it toward convergence within **three total review iterations** (initial request plus at most two re-requests), then draft independently validated findings even if clean convergence is absent.
+The fork Copilot loop is required unless the grounded [architectural early-exit gate](./architecture-review.md) applies, and is independent of the posting decision (Critical Rule 11). Drive it toward convergence within **three total review iterations** (initial request plus at most two re-requests), then draft independently validated findings even if clean convergence is absent.
 
 Count actual requests across the existing PR's preserved review lanes and
 sessions, including timed-out/no-analysis requests. Do not reset the count on
@@ -78,6 +78,15 @@ If Copilot review cannot be enabled, first guide the user to turn it on (see [pr
 
 ## Step 5: Process review comments — fix, push, reply, resolve
 
+Before implementing first-round fixes or requesting round two, run
+[architecture-review.md](./architecture-review.md). Large comment volume is a
+signal to investigate independently, not proof. If the design cannot meet the
+stated goal or violates a proven invariant, stop new requests for this head and
+draft consolidated grounded concerns; do not rewrite the entire design just to
+force convergence. This exception overrides the fix/re-request rules below.
+For already-running reviews, perform this gate at the next safe checkpoint
+before another request; do not discard or duplicate any in-flight review.
+
 For each review comment from Copilot:
 
 1. **Fetch new comments**: `gh api --paginate "repos/<FORK_REPO>/pulls/<fork_pr_number>/comments?per_page=100" --jq '.[]'`, filtered to the Copilot bot and the submitted `pull_request_review_id`. Inspect the matching review body too; never count only the first comments page or substitute another round's comments.
@@ -115,7 +124,8 @@ Copilot may retain suppressed/internal candidate comments even when the publishe
 
 ## Step 6: Iterate the loop
 
-**The most critical step. You must actually loop — do not stop after one round unless there are zero new comments.**
+**Loop only after the architecture gate permits localized fixes.** A proven
+design-level flaw may stop automation after round one even with comments.
 
 ```
 requests_used = <reconciled actual request count across preserved lanes>
@@ -125,6 +135,8 @@ WHILE requests_used < 3:
   1. Request Copilot review (Step 4); persist requests_used += 1 immediately.
   2. Wait for a new review with submitted_at > last_review_timestamp (poll up to 10 min).
   3. Fetch comments created after last_review_timestamp from copilot-pull-request-reviewer[bot].
+     Before first-round fixes, investigate intent/architecture; if changes_required,
+     EXIT new requests and draft independently grounded design-level findings.
   4. If ZERO new published inline comments, and no important round-1-to-3 suppressed issue was accepted -> EXIT LOOP -> Step 7.
   5. For each new comment: assess; if valid+in-scope, fix in the worktree.
   6. If any fixes were made: git add -A; commit; push to the fork branch.
@@ -171,7 +183,10 @@ artifacts. Continue unaffected PRs; never erase valid findings because another
 finding or the automation service is blocked. Do not reset the counter or
 silently authorize round four.
 
-Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence; a non-zero count means resume the loop (fix/resolve/re-request) within the round cap, or include the remaining concerns in the explicit manual-review blocker at the cap — never present them as clean.
+For architectural early exit, preserve unresolved findings truthfully; never
+resolve a real unfixed flaw merely to satisfy a clean-thread count.
+
+Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence. For architectural early exit, draft the grounded concerns and retain unresolved-thread evidence privately without requesting another round. Otherwise resume within the round cap or preserve the remaining operator exception privately at the cap; never present unresolved concerns as clean.
 
 ## Step 8: Summarize the converged net diff
 

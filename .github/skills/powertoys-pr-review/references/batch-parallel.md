@@ -24,6 +24,11 @@ orchestrator:
 - Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
 - Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
 - Each PR has at most three total review iterations, counting preserved requests across sessions and lanes, not three per worker or scheduled tick. At the cap, finish saved results and validated drafts without a fourth request.
+- Every worker runs `architecture-review.md` before first-round fixes or round
+  two. Preserve private architectural decisions on handoff: a grounded overall
+  flaw ends new rounds for that head and yields consolidated drafts, not an
+  automatic reviewer-authored redesign. High cloud-comment volume alone is
+  not a finding. Release the slot after durable drafting/checkpointing.
 - Apply the suppressed-comment policy from [copilot-review-loop.md](./copilot-review-loop.md): important findings only in rounds 1–3, never request round four for suppressed findings, and never treat them as an independent convergence blocker.
 
 ## Serialize the local builds

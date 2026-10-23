@@ -33,6 +33,11 @@ foreach ($row in @($ledger.prs)) {
     if ([string]$row.worker_status -notin @('running', 'idle', 'none')) {
         throw "Invalid worker_status for PR $number; expected running, idle or none."
     }
+    if ($row.architecture -and [string]$row.architecture.status -notin @(
+        'pending', 'cleared', 'changes_required', 'insufficient_evidence'
+    )) {
+        throw "Invalid architecture status for PR $number; reconcile the private assessment."
+    }
     $states[$number] = $row
     if ($row.worker_status -eq 'running') {
         if (-not $row.worker_id -or $runningIds.ContainsKey([string]$row.worker_id)) {
@@ -121,6 +126,19 @@ $seen = @{}
             $action = 'finalize_review_limit'
             $rank = 0
             $needsBuild = $false
+        }
+        if ($row.architecture -and $action -in @(
+            'process_review', 'reconcile_resume', 'reconcile_missing_review',
+            'finalize_review_limit'
+        )) {
+            if ([string]$row.architecture.head_sha -ne [string]$pr.live_head_sha -or
+                $row.architecture.status -in @('pending', 'insufficient_evidence')) {
+                $action = 'investigate_architecture'
+                $rank = 1
+            } elseif ($row.architecture.status -eq 'changes_required') {
+                $action = 'draft_architecture_review'
+                $rank = 0
+            }
         }
     }
     $runnable.Add([pscustomobject]@{

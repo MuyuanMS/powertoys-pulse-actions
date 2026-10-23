@@ -87,6 +87,37 @@ try {
     $rows[0].round = 8
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'legacy history exceeding three is preserved and receives no new allowance'
     $rows[0].round = 0
+    $rows[0].phase = 'reviewing_findings'
+    $rows[0].architecture = @{ head_sha = $head; status = 'pending' }
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'investigate_architecture') 'pending design investigation takes precedence over fixing cloud findings'
+    $rows[0].round = 1
+    $rows[0].architecture.status = 'changes_required'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'draft_architecture_review') 'grounded design flaw drafts after first round without another request'
+    $rows[0].phase = 'queued'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'draft_architecture_review') 'replacement worker cannot bypass persisted design decision'
+    $rows[0].round = 3
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'draft_architecture_review') 'design drafts survive exhausted request allowance'
+    $rows[0].architecture.head_sha = 'b' * 40
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'investigate_architecture') 'stale design evidence is investigated rather than exported to new head'
+    $rows[0].architecture.head_sha = $head
+    $rows[0].architecture.status = 'insufficient_evidence'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'investigate_architecture') 'unproven suspicion cannot become a public design verdict'
+    $rows[0].architecture.status = 'cleared'
+    $rows[0].round = 1
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_resume') 'cleared design concern restores ordinary bounded review'
+    $rows[0].architecture.status = 'changes_required'
+    $rows[0].phase = 'building'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'validate') 'architecture early exit preserves requested validation'
+    $rows[0].phase = 'finalizing'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_artifact') 'validated architectural draft can finalize without repeated investigation'
+    $rows[0].phase = 'waiting_copilot'
+    $rows[0].review.request_pending = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'existing in-flight response is checked even after architectural early exit'
+    $rows[0].review.request_pending = $false
+    $rows[0].architecture.status = 'unknown'
+    Assert-Fails { Plan @($queue[0]) @($rows[0]) } 'Invalid architecture status'
+    $rows[0].architecture = $null
+    $rows[0].round = 0
     $rows[0].phase = 'blocked'
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'repair_blocker_evidence') 'bare blocked label is not a terminal blocker'
     $rows[0].blocker = @{ detail = 'Build command not derived'; remediation = 'Read changed project and derive command'; external = $false }

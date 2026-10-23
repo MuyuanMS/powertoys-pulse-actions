@@ -36,6 +36,11 @@ are made after a successful build, rebuild the changed final tree before
 completion. Exact-upstream and apply-ready suggestion candidates remain
 separate required validation trees; validate them when drafting the findings.
 
+For grounded architectural early exit (`architecture-review.md`), use the
+smallest test/trace or exact-source proof needed for the defect. Do not build
+an invented replacement merely to unlock a design comment. Record limitations;
+all existing exact-patch checks still apply if literal suggestions are drafted.
+
 ### Handling build failures during Step 7
 
 - **Spectre errors** (`MSB8040`): ensure `POWERTOYS_DISABLE_SPECTRE=1` is set and the `Cpp.Build.props` condition is in place.

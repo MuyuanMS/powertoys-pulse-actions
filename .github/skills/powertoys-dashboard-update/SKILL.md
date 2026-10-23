@@ -711,6 +711,14 @@ require discarding them. Never claim a clean approval without its full gates.
 Private terminal exceptions do not clear the public stale queue or count as
 completed reviews.
 
+Before first-round fixes or a second request, workers must follow the PR
+skill's `references/architecture-review.md`: investigate whether the upstream
+design actually meets its stated goal. A large first-round cloud response is
+only a hint. A grounded design flaw stops further requests for that head and
+produces consolidated author-facing drafts without forcing a wholesale fork
+rewrite. Preserve private `architecture` decisions across dispatch/resume;
+never publish the diagnostic ledger or mistake a draft for author-waiting.
+
 For drain execution and recovery, follow
 [drain-dispatch.md](./references/drain-dispatch.md). Verify the complete installed
 suite before starting, maintain a private per-PR next-action ledger, and execute

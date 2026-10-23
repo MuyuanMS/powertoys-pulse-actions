@@ -53,6 +53,11 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- run the PR skill's references/architecture-review.md before first-round fixes
+  or round two: investigate goal/design mismatches independently, using a large
+  cloud response as a hint, never proof. Grounded architectural flaws stop new
+  rounds for that head and produce consolidated validated comments; preserve
+  decisions privately on resume rather than rewriting the entire design;
 - limit each PR to three total review iterations (initial request plus at most
   two re-requests), counting preserved requests across lanes and sessions.
   Never reset the allowance on scheduled ticks or recovery. At or above three,

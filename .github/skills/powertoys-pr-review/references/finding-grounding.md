@@ -37,6 +37,14 @@ remove unnecessary experiments with ordinary commits if continuing that branch.
 An exact-head clean build plus rejected findings does not inherit a fresh code
 review from a divergent fork. Re-run the required review on the retained tree.
 
+For [architectural early exit](./architecture-review.md), ground the failure
+of the existing upstream approach separately from the proposed design remedy.
+A deterministic source-level proof or focused failing scenario can justify
+the concern without implementing a replacement architecture. Cite the actual
+upstream caller/invariant and counterevidence; label remedy guidance and
+untested assumptions honestly. This exception never permits an unvalidated
+literal suggestion or a clean-approval claim.
+
 ## Incident regression: PR 50472
 
 At upstream `bc8ed60536693892953b2723f1bfc966aba2fe48`, the title-bar focus

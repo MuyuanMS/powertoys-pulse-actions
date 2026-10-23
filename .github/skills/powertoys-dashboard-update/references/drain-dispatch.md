@@ -116,6 +116,25 @@ already in flight, complete validation and publish supported drafts instead.
 Neither a scheduler tick, head change nor recovery starts a fresh allowance.
 No action permits claiming convergence without the required evidence.
 
+### Architectural early exit
+
+Before first-round fixes or another request, follow the PR skill's
+`references/architecture-review.md`. Record a private `architecture` object
+with upstream `head_sha`, `status` (`pending`, `cleared`, `changes_required`,
+`insufficient_evidence`) and its evidence/next action. All workers perform the
+gate, including legacy rows with no architecture record.
+
+The planner routes saved pending/unproven or stale-head assessments to
+`investigate_architecture`, and current-head `changes_required` to
+`draft_architecture_review` instead of more fixing/requesting. These actions
+are work to execute, not evidence: investigate independently, then ground and
+draft the supported overall concern. Do not turn a noisy first review alone
+into a verdict. `cleared` permits the normal three-request loop; confirmed
+design flaws end new requests even after round one. Preserve validation and
+finalization phases, consume in-flight responses and never manufacture a
+clean result. Only the drafted contributor-relevant concern goes to public
+data; the architecture record stays private.
+
 ### Public data is not a drain log
 
 `data/` contains user-facing review drafts and neutral availability metadata,

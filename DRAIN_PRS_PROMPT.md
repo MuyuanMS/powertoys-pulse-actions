@@ -74,6 +74,12 @@ DISPATCH UNTIL FINISHED
   and sessions. If three or more were already used, request no more; consume
   saved/in-flight results and complete validated drafts. Never request round four
   or reset the allowance on schedule ticks, head changes or recovery.
+- Before fixing the first review or requesting round two, follow the PR skill's
+  references/architecture-review.md. Investigate intent and overall design,
+  especially when the first response has many distinct related findings.
+  Count alone is not proof. A grounded design flaw stops new requests for this
+  head and yields consolidated supported comments, not a speculative rewrite.
+  Preserve private architecture state across workers/ticks; no false clean claim.
 - Prepare exact validation commands early, request Copilot before ordinary
   compilation, and build after convergence. Keep actual compilations serialized
   by exclusive lock ownership, release only after the owned work is finished,

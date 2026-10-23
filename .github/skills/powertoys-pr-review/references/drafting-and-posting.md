@@ -6,7 +6,7 @@ Everything here is **drafted only** and posted only after Step 10 approval.
 
 The drafted review combines the **Phase 0 context/process findings** and the **code findings** into the set of actions a maintainer would take. Depending on Phase 0's disposition (0e), the review may be primarily a request for missing context (demo/CLA/validation), a close/redirect (duplicate/superseded/compound-quality), a code-suggestion set, or a combination.
 
-> **Gate — do not draft until the fork loop has converged.** Confirm the Step 6 *Definition of done* holds: the last freshly-requested review had **0** new comments and there are **0** unresolved Copilot threads. If not, finish the loop first (Critical Rule 11). Suggestions must reflect the *converged* net diff, not round-1 output.
+> **Gate — convergence or an explicit grounded exit.** Clean approval requires the Step 6 *Definition of done*: a fresh **0**-comment review and **0** unresolved threads, plus required validation. The three-request cap and [architectural early exit](./architecture-review.md) allow independently grounded author-facing drafts without convergence. Do not copy raw cloud comments or claim a replacement was implemented/tested when it was not. A proven architectural concern does not require a speculative reviewer-authored redesign before drafting; literal suggestions still require exact-patch validation.
 
 **9a. Draft the context actions (from Phase 0), community PRs only.** Use the per-gate reply templates in [phase0-context-review.md](./phase0-context-review.md#reply-templates-per-gate). Batch multiple asks into one comment, lead with thanks, and only ask for things the author actually owes (0b). For members/collaborators/bots, skip 9a.
 
