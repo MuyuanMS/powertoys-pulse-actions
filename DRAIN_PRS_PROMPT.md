@@ -60,6 +60,14 @@ DISPATCH UNTIL FINISHED
   assignments/coordinator_actions from Get-PrReviewDispatchPlan.ps1 after each
   completion, returned wait, or due status check. Save results and replan
   immediately. An unchanged queue is not a reason to refrain from dispatch.
+- On resume, after each cloud round and its processing, and before another
+  request, expensive validation or finalization, run the PR skill's
+  Get-UpstreamPrReviewGate.ps1 against the ORIGINAL PR and pinned upstream head.
+  Stop closed/merged/draft work, safely release slots and refresh inventory.
+  New commits require fetching/pinning and reviewing the new version,
+  re-grounding findings/architecture and invalidating old checks. Preserve
+  consumed requests; never copy old validation to a new SHA or wait on an
+  obsolete fork request before stopping/reconciling. Read errors pause work.
 - For saved cloud requests, use Get-CopilotReviewStatus.ps1 with the original
   fork head/request timestamp/baseline and exhaust pagination. Check pending
   requests at the documented interval without occupying heavy worker slots.

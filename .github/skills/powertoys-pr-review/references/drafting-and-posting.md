@@ -4,6 +4,11 @@ Everything here is **drafted only** and posted only after Step 10 approval.
 
 ## Step 9: Draft the review (context + code)
 
+Immediately before finalizing drafts, run `Get-UpstreamPrReviewGate.ps1`
+against the original PR and pinned upstream head. Stop if closed/merged/draft;
+reconcile and revalidate new commits instead of exporting old-head findings.
+This also applies to architectural early exit and request-cap drafts.
+
 The drafted review combines the **Phase 0 context/process findings** and the **code findings** into the set of actions a maintainer would take. Depending on Phase 0's disposition (0e), the review may be primarily a request for missing context (demo/CLA/validation), a close/redirect (duplicate/superseded/compound-quality), a code-suggestion set, or a combination.
 
 > **Gate — convergence or an explicit grounded exit.** Clean approval requires the Step 6 *Definition of done*: a fresh **0**-comment review and **0** unresolved threads, plus required validation. The three-request cap and [architectural early exit](./architecture-review.md) allow independently grounded author-facing drafts without convergence. Do not copy raw cloud comments or claim a replacement was implemented/tested when it was not. A proven architectural concern does not require a speculative reviewer-authored redesign before drafting; literal suggestions still require exact-patch validation.

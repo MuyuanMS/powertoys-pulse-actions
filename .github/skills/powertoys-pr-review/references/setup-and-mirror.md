@@ -8,6 +8,13 @@ A review may have been interrupted partway through. **Before mirroring, detect w
 
 Run the bundled read-only discovery first:
 
+Before acting on that discovery, check the original upstream PR with
+`Get-UpstreamPrReviewGate.ps1 -PRNumber N -HeadSha <saved-upstream-head>`.
+For fresh work, read and pin the original head first. Closed, merged or draft
+PRs stop; a changed head is reconciled before continuing the prior fork loop.
+This gate applies in self-check mode too. See the per-round lifecycle/head
+contract in `copilot-review-loop.md`; preserve consumed request counts.
+
 ```powershell
 ./scripts/Get-ReviewResumeState.ps1 -PRNumber N -AsJson
 ```

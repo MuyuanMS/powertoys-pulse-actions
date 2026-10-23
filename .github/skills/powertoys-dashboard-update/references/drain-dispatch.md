@@ -19,6 +19,18 @@ from the backup; do not silently mix two suite revisions.
 
 ## Dispatch from work state, not agent existence
 
+At each per-PR round boundary and resume, use the PR skill's read-only
+`Get-UpstreamPrReviewGate.ps1` against the original upstream PR before advancing
+the fork loop. Workers also check before another request, expensive validation
+or finalization. Save the observation privately and act on it: stop closed,
+merged or draft work, safely release owned resources and refresh the scoped
+live queue; reconcile a new upstream head before further review work.
+The offline planner cannot perform this live check. Do not let an old queue
+snapshot or an open fork PR override a newer upstream observation. Re-ground
+findings and architecture, invalidate old-head checks and preserve total
+requests when new commits arrive. Do not poll a superseded request to justify
+continuing the obsolete version; retain its identity privately.
+
 Maintain one private `prs` record per upstream number, outside public `data/`.
 At each worker completion or due cloud check, reconcile the real worker state,
 save results, and call:

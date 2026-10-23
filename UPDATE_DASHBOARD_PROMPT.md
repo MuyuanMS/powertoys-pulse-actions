@@ -53,6 +53,13 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- check the ORIGINAL PR using the PR skill's Get-UpstreamPrReviewGate.ps1 on
+  resume, after every cloud round and its processing, and before another
+  request, expensive validation or finalization. Closed/merged/draft stops
+  that PR's work and releases its slot; refresh inventory and suppress old
+  proposals. New commits require reviewing the new pinned version, re-grounding
+  findings and invalidating old checks without resetting consumed requests.
+  An API error is not permission to assume the original is still current;
 - run the PR skill's references/architecture-review.md before first-round fixes
   or round two: investigate goal/design mismatches independently, using a large
   cloud response as a hint, never proof. Grounded architectural flaws stop new

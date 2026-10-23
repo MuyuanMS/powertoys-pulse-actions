@@ -15,6 +15,51 @@ no additional round. Unknown counts require history reconciliation, not zero.
 
 ## Step 4: Request Copilot review
 
+### Original PR lifecycle/head gate (every round)
+
+At startup/resume, immediately after each cloud round returns (including
+zero-comment and timeout/no-analysis outcomes), and after processing that
+round, check the ORIGINAL upstream PR, not the fork mirror. Also refresh this
+check immediately before a new request, expensive validation, or finalizing
+drafts; a prior round's observation is not a lasting permission to proceed.
+For a waiting checkpoint, check upstream on the next scheduler pass before
+spending more work on the saved fork request.
+
+```powershell
+$gate = .\scripts\Get-UpstreamPrReviewGate.ps1 -PRNumber <upstream-number> `
+  -HeadSha <pinned-upstream-head>
+```
+
+The helper performs one read-only PR GET and returns `action`:
+
+- `stop_review`: upstream is closed, merged or draft. Stop this PR's review
+  immediately, including further requests, fixes, polling and builds. Preserve
+  history/private findings; checkpoint the actual excluded state, release the
+  worker/build slot safely and notify the coordinator to refresh inventory and
+  suppress obsolete proposals. Do not wait for an old cloud request or finish
+  a review merely because a fork PR is still open. Do not close/delete fork
+  work or post upstream. A later reopened/ready PR requires a fresh live check.
+- `reconcile_updated_head`: upstream pushed new commits or force-pushed.
+  Stop work against the old version. Save the old request/results privately,
+  fetch and pin the returned new head, inspect its new full diff and discussion,
+  and safely update the mirror/review lane without overwriting dirty/shared
+  work or losing adjudicated history. Reassess carried findings, current diff
+  anchors, architecture decisions and validation plans on the new head.
+  Old builds, suggestion candidates, clean reviews and approvals do not prove
+  the new version; do not just replace their SHA fields. Re-read the gate after
+  synchronization to catch another concurrent change.
+- `continue_review`: open, non-draft and the same upstream head; continue the
+  intended next step under the architecture gate and remaining request budget.
+
+Neither a head change nor reopening resets consumed requests. If three were
+already used, investigate/validate the new version directly for supported
+drafts without requesting round four or claiming a fresh cloud-clean result.
+An old in-flight result may be archived as evidence, but never blocks stopping
+an excluded PR or moving to the new upstream head. Keep its fork identity so
+it cannot be mistaken for the new version's result or requested twice.
+API/auth/rate-limit or malformed-response errors pause dependent work and remain
+explicit private errors; never treat them as unchanged/open, closed or clean.
+
 **Resume before requesting.** For an existing checkpoint, use the read-only
 reader; do not invoke the request script to check whether a review finished:
 
@@ -134,6 +179,8 @@ last_review_timestamp = <timestamp before first request>
 WHILE requests_used < 3:
   1. Request Copilot review (Step 4); persist requests_used += 1 immediately.
   2. Wait for a new review with submitted_at > last_review_timestamp (poll up to 10 min).
+     Check original PR lifecycle/head immediately on return: stop if excluded,
+     or reconcile the new version before processing old-head findings.
   3. Fetch comments created after last_review_timestamp from copilot-pull-request-reviewer[bot].
      Before first-round fixes, investigate intent/architecture; if changes_required,
      EXIT new requests and draft independently grounded design-level findings.
@@ -142,6 +189,8 @@ WHILE requests_used < 3:
   6. If any fixes were made: git add -A; commit; push to the fork branch.
   7. For each comment: reply with the fix (or the reason) AND resolve the thread.
   8. last_review_timestamp = now.
+     Recheck original PR lifecycle/head after processing this round and before
+     another request, final build or draft finalization.
   9. Termination:
        - After request 3, stop new requests; finish validation and draft supported findings.
        - If clean convergence is absent, keep any operator exception private. Do not claim approval.

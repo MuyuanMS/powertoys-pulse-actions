@@ -23,6 +23,12 @@ orchestrator:
 - **Each PR is independent on disk**: its own fork branch `pr-iterate/N` and its own worktree `C:\PowerToys-<hash>`. Git operations across PRs don't collide, so parallelism is safe.
 - Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
 - Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
+- After each round and before another request/finalization, every worker checks
+  the ORIGINAL PR via `Get-UpstreamPrReviewGate.ps1`. Stop closed/merged/draft
+  work and release its slot. For new commits, reconcile the new upstream head,
+  re-ground findings and invalidate old validation without resetting requests.
+  The coordinator refreshes inventory and suppresses obsolete proposals;
+  a still-open fork mirror never overrides the original lifecycle.
 - Each PR has at most three total review iterations, counting preserved requests across sessions and lanes, not three per worker or scheduled tick. At the cap, finish saved results and validated drafts without a fourth request.
 - Every worker runs `architecture-review.md` before first-round fixes or round
   two. Preserve private architectural decisions on handoff: a grounded overall

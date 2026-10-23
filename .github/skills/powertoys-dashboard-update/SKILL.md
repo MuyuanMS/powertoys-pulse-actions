@@ -761,6 +761,16 @@ Every worker prompt must explicitly say that fork-side commits, pushes, fork PR
 updates, and fork thread resolution are allowed. Prohibit only dashboard
 emission/commit/push and all writes to `microsoft/PowerToys`.
 
+Every PR worker must check the ORIGINAL PR with the PR skill's
+`Get-UpstreamPrReviewGate.ps1` on resume, after each cloud round and its
+processing, and before another request, expensive validation or finalizing.
+Closed, merged or draft stops that PR's work; preserve private history, release
+its slot and refresh inventory/suppress obsolete proposals. New upstream
+commits require pinning and reviewing the new version, re-grounding carried
+findings/architecture and invalidating old validation, never SHA-only rewrites.
+Preserve consumed requests and the three-total cap. Do not wait for an obsolete
+fork request to stop/reconcile. Read errors pause dependent work explicitly.
+
 Use `Set-PrReviewCheckpoint.ps1` after each durable transition:
 
 ```powershell
