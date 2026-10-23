@@ -1,21 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 51106,
   "kind": "pr",
   "title": "Runner: startup stage events and a startup benchmark script (PERF-3)",
   "url": "https://github.com/microsoft/PowerToys/pull/51106",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-10-19T00:24:13.6512109+08:00",
-  "evaluated_at": "2026-10-19T00:24:13.6512109+08:00",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-10-23T10:40:53.167237+08:00",
+  "evaluated_at": "2026-10-23T10:40:53.167237+08:00",
   "source_updated_at": "2026-10-12T02:38:23Z",
   "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
-  "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-12T03:15:54Z",
-    "checkpoint_at": "2026-10-19T00:24:13.6512109+08:00"
+  "proposed_comments": [
+    {
+      "id": "restore-reparse-component-guard-helper",
+      "kind": "inline",
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "tools/performance/Measure-StartupPerformance.ps1",
+      "line": 977,
+      "side": "RIGHT",
+      "title": "Add the restore-path guard (1/2)",
+      "body": "### [P2] (1/2) Add the restore-path guard\n\n**Severity:** `medium`\n\n`Restore-DataFolder` builds destinations from snapshot-relative paths and later hashes and copies them. If a parent directory is already a junction when restore reaches it, path-based `Copy-Item` can write the snapshot outside `$powerToysDataFolder` while appearing successful. This helper rejects a reparse-point root, parent, or existing target; apply it together with (2/2), which invokes it before target access. This addresses a junction that remains present during validation and does not claim to prevent replacement between checking and writing.\n\n```suggestion\nfunction Test-ReparsePoint\n{\n    param([Parameter(Mandatory)][IO.FileSystemInfo]$Item)\n\n    return ($Item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0\n}\n\nfunction Ensure-DataFolderPath\n{\n    param([Parameter(Mandatory)][string]$RelativePath)\n\n    $parts = $RelativePath -split '[\\\\/]'\n    if ([IO.Path]::IsPathRooted($RelativePath) -or $parts.Count -eq 0 -or\n        @($parts | Where-Object { [string]::IsNullOrWhiteSpace($_) -or $_ -in '.', '..' }).Count -gt 0)\n    {\n        throw \"PowerToys data path '$RelativePath' must be a relative path without traversal components.\"\n    }\n\n    if (-not (Test-Path -LiteralPath $powerToysDataFolder))\n    {\n        $null = New-Item -ItemType Directory -Force -Path $powerToysDataFolder\n    }\n\n    $root = Get-Item -LiteralPath $powerToysDataFolder -Force -ErrorAction Stop\n    if (-not $root.PSIsContainer -or (Test-ReparsePoint -Item $root))\n    {\n        throw \"PowerToys data folder '$powerToysDataFolder' must be a directory and cannot be a reparse point.\"\n    }\n\n    $parent = $powerToysDataFolder\n    for ($i = 0; $i -lt $parts.Count - 1; $i++)\n    {\n        $parent = Join-Path $parent $parts[$i]\n        if (-not (Test-Path -LiteralPath $parent))\n        {\n            $null = New-Item -ItemType Directory -Force -Path $parent\n        }\n\n        $directory = Get-Item -LiteralPath $parent -Force -ErrorAction Stop\n        if (-not $directory.PSIsContainer -or (Test-ReparsePoint -Item $directory))\n        {\n            throw \"PowerToys data path '$parent' must be a directory and cannot be a reparse point.\"\n        }\n    }\n\n    $target = Join-Path $powerToysDataFolder $RelativePath\n    if (Test-Path -LiteralPath $target)\n    {\n        $item = Get-Item -LiteralPath $target -Force -ErrorAction Stop\n        if (Test-ReparsePoint -Item $item)\n        {\n            throw \"PowerToys data path '$target' cannot be a reparse point.\"\n        }\n    }\n}\n\nfunction Save-DataFolder\n```",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact upstream junction redirection was reproduced, and the final apply-ready blocks were applied literally to the pinned blob and matched the focused candidate byte-for-byte. The exact candidate passed 2/2 focused production-function cases, including normal restore and stable junction rejection with snapshot/sentinel assertions. No concurrent replacement or cross-user privilege claim is made."
+      },
+      "in_diff": true,
+      "start_line": 977,
+      "selection_group": {
+        "id": "restore-reparse-component-guard",
+        "title": "Reject stable reparse-point restore paths",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "restore-reparse-component-guard-call",
+      "kind": "inline",
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "tools/performance/Measure-StartupPerformance.ps1",
+      "line": 1041,
+      "side": "RIGHT",
+      "title": "Validate each destination before use (2/2)",
+      "body": "### [P2] (2/2) Validate each destination before use\n\n**Severity:** `medium`\n\nThe guard in (1/2) only protects the restore if it runs inside the existing per-file `try` before the target hash/copy branch. A rejected path then follows the existing catch and failure-count path, retaining the snapshot rather than silently treating restoration as successful. Apply both atomic members together. This covers a stable parent junction, not concurrent replacement between the check and copy.\n\n```suggestion\n            Ensure-DataFolderPath -RelativePath $relative\n            if ((Test-Path -LiteralPath $target) -and (Get-FileHash -LiteralPath $target).Hash -eq (Get-FileHash -LiteralPath $source).Hash)\n```",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact upstream junction redirection was reproduced, and the final apply-ready blocks were applied literally to the pinned blob and matched the focused candidate byte-for-byte. The exact candidate passed 2/2 focused production-function cases, including normal restore and stable junction rejection with snapshot/sentinel assertions. No concurrent replacement or cross-user privilege claim is made."
+      },
+      "in_diff": true,
+      "start_line": 1041,
+      "selection_group": {
+        "id": "restore-reparse-component-guard",
+        "title": "Reject stable reparse-point restore paths",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51106-current-head",
+      "type": "post_review",
+      "label": "Post 2 inline suggestions as one atomic correction",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
+        "event": "COMMENT",
+        "comment_ids": [
+          "restore-reparse-component-guard-helper",
+          "restore-reparse-component-guard-call"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "restore-reparse-component-guard-helper",
+        "restore-reparse-component-guard-call"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
+      "result": "passed",
+      "checked_comment_ids": [
+        "restore-reparse-component-guard-helper",
+        "restore-reparse-component-guard-call"
+      ],
+      "files": [
+        {
+          "path": "tools/performance/Measure-StartupPerformance.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
   }
 }
