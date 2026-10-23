@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-23T17:22:42.3322903+08:00",
+  "generated_at": "2026-10-23T17:43:17.2311277+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,19 +85,20 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 190,
+    "open_prs": 191,
     "open_issues": 12340,
     "community": 11446,
-    "artifacts": 1311
+    "artifacts": 1312
   },
   "impact": {
-    "as_of": "2026-10-23T17:22:42.3322903+08:00",
+    "as_of": "2026-10-23T17:43:17.2311277+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51507,
     51495,
     51480,
     51475,
@@ -1412,6 +1413,40 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51511",
+      "kind": "pr",
+      "number": 51511,
+      "url": "https://github.com/microsoft/PowerToys/pull/51511",
+      "title": "Keep clipboard helper handoffs within the active session",
+      "author": "yeelam-gordon",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Without Borders"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-23T09:23:25Z",
+      "updated_at": "2026-10-23T09:23:49Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51507",
       "kind": "pr",
       "number": 51507,
@@ -1423,16 +1458,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post inline suggestion"
+      },
       "labels": [
         "Product-File Locksmith",
         "Ready for review"
@@ -2687,7 +2725,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-14T07:29:35Z",
-      "updated_at": "2026-10-22T14:44:09Z",
+      "updated_at": "2026-10-23T09:27:39Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -27793,8 +27831,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T14:47:05Z",
-      "updated_at": "2026-10-23T06:37:15Z",
-      "comments": 2,
+      "updated_at": "2026-10-23T09:34:18Z",
+      "comments": 3,
       "priority": null
     },
     {

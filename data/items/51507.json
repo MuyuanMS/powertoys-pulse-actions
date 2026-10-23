@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 5,
+  "number": 51507,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "fix(FileLocksmith): stop abandoned handle-scan workers from using freed memory",
+  "url": "https://github.com/microsoft/PowerToys/pull/51507",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-23T09:25:50.179339Z",
+  "evaluated_at": "2026-10-23T09:25:50.179339Z",
+  "source_updated_at": "2026-10-23T03:29:34Z",
+  "head_sha": "6dd9d449d0228dd05ab578aafd716e577be651f2",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51507-completed-query-handle",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "Explicit ownership transfer and exception cleanup trace leaves no owner of completed duplicate; localized relocation compiled on exact literal tree."
+      },
+      "title": "Close the completed query handle before allocating its name",
+      "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.cpp",
+      "start_line": 183,
+      "line": 189,
+      "side": "RIGHT",
+      "body": "### Close the completed query handle before allocating its name\n\n**Severity:** `medium`\n\nIn `FileNameQueryWorker::query`, a successful name query reaches `unicode_to_str` before `CloseHandle(file_handle)`. If that string allocation throws, unwinding reaches the catch in `handles()`, but the worker destructor only sends a null-handle exit request; neither it nor the block cleanup closes this completed file duplicate. The recovered scan can therefore retain the file reference until process exit.\n\nClose the duplicate after completion arbitration and before constructing the string. At that point the helper has finished using it, and the response buffer remains owned by the caller's block reference. Keep the earlier abandonment return unchanged so an in-flight query still owns its duplicate.\n\n```suggestion\n            CloseHandle(file_handle);\n\n            std::wstring result;\n            if (m_block->is_disk && NT_SUCCESS(m_block->status))\n            {\n                result = unicode_to_str(*reinterpret_cast<UNICODE_STRING*>(m_block->buffer));\n            }\n```\n\nVerify normal name retrieval and an injected allocation failure after completion, checking that the completed duplicate is closed; also verify that a timed-out helper retains its duplicate until its query returns."
+    }
+  ],
+  "actions": [
+    {
+      "id": "51507-completed-query-review",
+      "type": "post_review",
+      "label": "Post inline suggestion",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "6dd9d449d0228dd05ab578aafd716e577be651f2",
+        "event": "COMMENT",
+        "comment_ids": [
+          "51507-completed-query-handle"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "6dd9d449d0228dd05ab578aafd716e577be651f2",
+      "result": "not_run"
+    },
+    "suggestion_patch": {
+      "head_sha": "6dd9d449d0228dd05ab578aafd716e577be651f2",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51507-completed-query-handle"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "6dd9d449d0228dd05ab578aafd716e577be651f2",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51507-completed-query-handle"
+      ],
+      "files": [
+        {
+          "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
