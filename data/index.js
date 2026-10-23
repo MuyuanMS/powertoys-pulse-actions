@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-23T11:37:57.8833108+08:00",
+  "generated_at": "2026-10-23T12:12:12.0799268+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 189,
-    "open_issues": 12338,
+    "open_prs": 190,
+    "open_issues": 12339,
     "community": 11444,
     "artifacts": 1314
   },
   "impact": {
-    "as_of": "2026-10-23T11:37:57.8833108+08:00",
+    "as_of": "2026-10-23T12:12:12.0799268+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1414,6 +1414,41 @@ window.BOARD_INDEX = {
     50166
   ],
   "items": [
+    {
+      "id": "pr-51507",
+      "kind": "pr",
+      "number": 51507,
+      "url": "https://github.com/microsoft/PowerToys/pull/51507",
+      "title": "fix(FileLocksmith): stop abandoned handle-scan workers from using freed memory",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "mirror",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-File Locksmith",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-23T03:29:11Z",
+      "updated_at": "2026-10-23T03:29:34Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-51505",
       "kind": "pr",
@@ -3646,15 +3681,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 3,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post 3 grouped inline suggestions"
+      },
       "labels": [
         "Product-Keyboard Manager",
         "Ready for review"
@@ -27141,6 +27179,39 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2025-10-21T11:22:24Z",
       "updated_at": "2026-04-30T09:45:20Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-51508",
+      "kind": "issue",
+      "number": 51508,
+      "url": "https://github.com/microsoft/PowerToys/issues/51508",
+      "title": "mouse without board",
+      "author": "semyat",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Product-Mouse Without Borders"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-23T04:01:37Z",
+      "updated_at": "2026-10-23T04:07:26Z",
       "comments": 2,
       "priority": null
     },
@@ -90507,7 +90578,7 @@ window.BOARD_INDEX = {
       "author": "crutkas",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
