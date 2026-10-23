@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 5,
+  "number": 51495,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Triage team-authored issues and PRs without replying; gate no-op issue edits",
+  "url": "https://github.com/microsoft/PowerToys/pull/51495",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-10-22T22:50:00Z",
+  "evaluated_at": "2026-10-22T22:50:00Z",
+  "source_updated_at": "2026-10-22T17:10:35Z",
+  "head_sha": "c46b9c0f296fc9f158a203b640ba33f3bf9fb5e4",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "stale-feedback-source",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/workflows/issue-triage.md",
+      "line": 633,
+      "start_line": 633,
+      "side": "RIGHT",
+      "title": "Clear stale feedback labels for team-authored issues (1/2)",
+      "body": "### Clear stale feedback labels for team-authored issues (1/2)\n\n**Severity:** `medium`\n\nThis team-authored path returns without reconciling an existing `Needs-Author-Feedback` label. If a temporary permission lookup failure first sent the issue through community handling, the label can remain after lookup recovers; the scheduled policy closes open issues that retain it for seven inactive days. Clear it here and in the generated lock workflow, tolerating a concurrent 404 removal.\n\n```suggestion\n                if (teamIssueLabels.has('Needs-Author-Feedback')) {\n                  try {\n                    await github.rest.issues.removeLabel({\n                      ...context.repo,\n                      issue_number: issueNumber,\n                      name: 'Needs-Author-Feedback'\n                    });\n                  } catch (error) {\n                    if (error.status !== 404) throw error;\n                  }\n                }\n                core.info('Team-authored issue: applied labels without responding');\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "stale-feedback-label",
+        "title": "Clear stale feedback labels for team-authored issues",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact branch returns before feedback-label reconciliation, and repository policy closes inactive open issues retaining the label."
+      }
+    },
+    {
+      "id": "stale-feedback-generated-lock",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/workflows/issue-triage.lock.yml",
+      "line": 2195,
+      "start_line": 2195,
+      "side": "RIGHT",
+      "title": "Clear stale feedback labels for team-authored issues (2/2)",
+      "body": "### Clear stale feedback labels for team-authored issues (2/2)\n\n**Severity:** `medium`\n\nApply the same stale-label reconciliation in the generated lock workflow as in its source workflow. Otherwise regenerated or deployed automation can retain `Needs-Author-Feedback` after permission lookup recovers, leaving the seven-day stale-feedback close policy able to close a team-authored issue.\n\n```suggestion\n              if (teamIssueLabels.has('Needs-Author-Feedback')) {\n                try {\n                  await github.rest.issues.removeLabel({\n                    ...context.repo,\n                    issue_number: issueNumber,\n                    name: 'Needs-Author-Feedback'\n                  });\n                } catch (error) {\n                  if (error.status !== 404) throw error;\n                }\n              }\n              core.info('Team-authored issue: applied labels without responding');\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "stale-feedback-label",
+        "title": "Clear stale feedback labels for team-authored issues",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 94,
+        "rationale": "The generated lock contains the same early return and must preserve behavior with the source workflow."
+      }
+    },
+    {
+      "id": "permission-http-exception-import",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/scripts/issue-triage/issue-context.py",
+      "line": 606,
+      "start_line": 606,
+      "side": "RIGHT",
+      "title": "Handle HTTP protocol errors in the permission lookup (1/2)",
+      "body": "### Handle HTTP protocol errors in the permission lookup (1/2)\n\n**Severity:** `medium`\n\nThe permission lookup is intended to fail open, but an `http.client.HTTPException` such as `IncompleteRead` is not covered by the existing exception tuple and can escape `prepare_with_evidence`. Import the standard-library exception type for the following handler.\n\n```suggestion\n    import http.client\n    try:\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "permission-http-exception",
+        "title": "Handle HTTP protocol errors in the permission lookup",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 92,
+        "rationale": "The exact upstream handler needs the standard-library HTTPException type to catch the reproduced incomplete-read failure."
+      }
+    },
+    {
+      "id": "permission-http-exception-catch",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/scripts/issue-triage/issue-context.py",
+      "line": 608,
+      "start_line": 608,
+      "side": "RIGHT",
+      "title": "Handle HTTP protocol errors in the permission lookup (2/2)",
+      "body": "### Handle HTTP protocol errors in the permission lookup (2/2)\n\n**Severity:** `medium`\n\nAdd the protocol exception to this fail-open handler. `http.client.IncompleteRead` is an `http.client.HTTPException`, not a `RuntimeError`, `OSError`, or `ValueError`; catching the explicit base class preserves propagation of unrelated programming errors.\n\n```suggestion\n    except (RuntimeError, OSError, ValueError, http.client.HTTPException):\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "permission-http-exception",
+        "title": "Handle HTTP protocol errors in the permission lookup",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 92,
+        "rationale": "IncompleteRead inherits from HTTPException and escaped the exact upstream exception tuple."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "pr51495-post-review",
+      "type": "post_review",
+      "label": "Post the validated inline findings",
+      "note": "Four inline suggestions in two atomic groups address stale feedback-label cleanup and permission-lookup protocol exceptions.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "c46b9c0f296fc9f158a203b640ba33f3bf9fb5e4",
+        "comment_ids": [
+          "stale-feedback-source",
+          "stale-feedback-generated-lock",
+          "permission-http-exception-import",
+          "permission-http-exception-catch"
+        ]
+      },
+      "requires_confirmation": true
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "c46b9c0f296fc9f158a203b640ba33f3bf9fb5e4",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "stale-feedback-source",
+        "stale-feedback-generated-lock",
+        "permission-http-exception-import",
+        "permission-http-exception-catch"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "c46b9c0f296fc9f158a203b640ba33f3bf9fb5e4",
+      "result": "passed",
+      "checked_comment_ids": [
+        "stale-feedback-source",
+        "stale-feedback-generated-lock",
+        "permission-http-exception-import",
+        "permission-http-exception-catch"
+      ],
+      "files": [
+        {
+          "path": ".github/scripts/issue-triage/issue-context.py",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/workflows/issue-triage.md",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/workflows/issue-triage.lock.yml",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
