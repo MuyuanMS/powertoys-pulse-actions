@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-23T12:12:12.0799268+08:00",
+  "generated_at": "2026-10-23T13:29:51.5357547+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 190,
     "open_issues": 12339,
     "community": 11444,
-    "artifacts": 1314
+    "artifacts": 1312
   },
   "impact": {
-    "as_of": "2026-10-23T12:12:12.0799268+08:00",
+    "as_of": "2026-10-23T13:29:51.5357547+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -275,7 +275,6 @@ window.BOARD_INDEX = {
     51448,
     51445,
     16395,
-    51428,
     51426,
     51424,
     51423,
@@ -788,7 +787,6 @@ window.BOARD_INDEX = {
     48508,
     30981,
     48498,
-    48496,
     48493,
     30973,
     48490,
@@ -29535,20 +29533,21 @@ window.BOARD_INDEX = {
       "owes": "author",
       "pending_author": true,
       "waiting_since": "10/20/2026 13:01:43",
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-10-20T08:10:05Z",
-      "updated_at": "2026-10-20T13:01:58Z",
-      "comments": 2,
+      "updated_at": "2026-10-23T04:24:07Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -37555,8 +37554,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T09:46:57Z",
-      "updated_at": "2026-10-22T09:00:19Z",
-      "comments": 2,
+      "updated_at": "2026-10-23T04:59:24Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -111683,14 +111682,11 @@ window.BOARD_INDEX = {
       "owes": "author",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Area-Setup/Install",
@@ -111699,8 +111695,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-11T14:19:14Z",
-      "updated_at": "2026-09-09T23:03:01Z",
-      "comments": 1,
+      "updated_at": "2026-10-23T04:28:36Z",
+      "comments": 2,
       "priority": null
     },
     {
