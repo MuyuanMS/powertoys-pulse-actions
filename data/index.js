@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-23T18:27:19.4569176+08:00",
+  "generated_at": "2026-10-23T18:59:17.2618865+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1314
   },
   "impact": {
-    "as_of": "2026-10-23T18:27:19.4569176+08:00",
+    "as_of": "2026-10-23T18:59:17.2618865+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1497,9 +1497,9 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-10-23T10:32:15Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -1514,10 +1514,10 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-23T03:29:11Z",
-      "updated_at": "2026-10-23T03:29:34Z",
+      "updated_at": "2026-10-23T10:32:15Z",
       "comments": 0,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED"
     },
