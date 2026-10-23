@@ -1,18 +1,53 @@
 {
+  "schemaVersion": 5,
   "number": 50948,
   "kind": "pr",
   "title": "[Keyboard Manager] Fix duplicate-scope check, classic editor run-program crash, and editor settings backup",
   "url": "https://github.com/microsoft/PowerToys/pull/50948",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-19T00:52:54.0613519+08:00",
-  "evaluated_at": "2026-10-19T00:52:54.0613519+08:00",
-  "source_updated_at": "2026-10-14T23:12:01Z",
+  "generated_at": "2026-10-23T13:13:57.246484+08:00",
+  "evaluated_at": "2026-10-23T13:13:57.246484+08:00",
+  "source_updated_at": "2026-10-22T06:59:39Z",
   "head_sha": "7c846eefcca4f5326210bdd6cf3ace9f139df521",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "50948-close-and-end-task",
+      "kind": "inline",
+      "title": "Handle the newly selectable Close and end task action",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "Deterministic exact-source fallthrough, exact candidate native build and literal extracted helper/dispatch tests. Real app/window behavior not exercised."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorLibrary/ShortcutControl.cpp",
+      "line": 670,
+      "side": "RIGHT",
+      "body": "### Handle the newly selectable Close and end task action\n\n**Severity:** `medium`\n\n**Affected code:** `SetupRunProgramControls` here and `CreateOrShowProcessForShortcut` in `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp`.\n\n**Problem:** The new combo item selects index 5 (`CloseAndEndTask`), which `CreateNewTempShortcut` stores unchanged. For a valid target that is already running, the engine handles only `EndTask`, `Close`, and `ShowWindow`, then returns. The enum and missing engine case predate this PR, but this change newly makes the unsupported action selectable in the classic editor.\n\n**Why it matters:** Selecting “Close and end task” leaves the existing target running without even requesting a close.\n\n**Suggested change:** Keep the classic compatibility fix and add the missing existing-process dispatch case. Add a dedicated helper in the engine file, declared in `KeyboardEventHandlers.h`, that:\n1. Snapshots matching processes once and retains handles opened with `SYNCHRONIZE | PROCESS_TERMINATE`.\n2. Runs asynchronously, posts `WM_CLOSE` to each still-running target's main window, and waits against one shared bounded grace deadline (for example, one second).\n3. Calls `TerminateProcess` only for captured handles whose wait still returns `WAIT_TIMEOUT`; skips handles that cannot be opened and does not interpret a failed wait as a running process.\n\nRetain the other actions and absent-process launch path. Do not immediately chain `CloseProcessByName` and `TerminateProcessesByName`: the close helper detaches its worker and uses blocking `SendMessage`, so that sequence does not wait for graceful close.\n\n**Verification:** Cover graceful exit without forced termination, ignored close followed by timeout escalation, several matching instances sharing one deadline, inaccessible or already-exited processes, and no already-running target. Confirm ordinary launch and the other If running actions remain unchanged.",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "50948-post-review-close-and-end-task",
+      "type": "post_review",
+      "label": "Post one inline review comment",
+      "note": "Explain the unsupported classic-editor action and the bounded close-then-terminate remedy.",
+      "head_sha": "7c846eefcca4f5326210bdd6cf3ace9f139df521",
+      "source_updated_at": "2026-10-22T06:59:39Z",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "50948-close-and-end-task"
+        ],
+        "head_sha": "7c846eefcca4f5326210bdd6cf3ace9f139df521"
+      },
+      "requires_confirmation": true
+    }
+  ],
   "validation": {}
 }
