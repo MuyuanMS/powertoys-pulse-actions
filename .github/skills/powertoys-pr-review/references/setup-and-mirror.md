@@ -54,8 +54,9 @@ If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/G
 | **Loop clean, not yet built** | Fresh zero-comment review, zero unresolved threads, no passing build for the converged head | Step 7 (run the saved plan under the build lock) |
 | **Loop clean and built** | Fresh zero-comment review, zero unresolved threads, passing build for the exact converged head | Step 8–9 (summarize + draft the review) |
 
-Across sessions, rebuild the converged head before drafting even when prior
-loop traces are clean. Build claims and old dashboard payloads are not durable.
+Across sessions, verify exact-tree validation receipts and retained logs before
+drafting; reuse unchanged passing inputs per `build-and-test.md`, otherwise
+rebuild. Build claims and old dashboard payloads alone are not durable evidence.
 Do not build an obsolete pre-review head just to populate the checkpoint.
 Preserve the validation plan and code/review traces, then regenerate
 schema-version-2 `review-data.json` from the current head.

@@ -7,10 +7,9 @@
     visible on every scheduled run and cannot age out of a rolling time window.
 
     PR classifications:
-      full_review          Missing review, changed head, or incomplete review.
+      full_review          Missing/changed/incomplete review or legacy blocker.
       context_revalidation Same reviewed head with newer discussion/activity.
       waiting_author       Current author-wait state with no newer activity.
-      blocked              Current terminal blocker with no newer activity.
       no_action            Current review and covered activity.
       excluded             Draft PR.
 
@@ -166,7 +165,7 @@ $prInventory = foreach ($pr in $pullRequests) {
     } elseif (Test-IsWaitingAuthor $artifact) {
         'waiting_author'
     } elseif (Test-IsTerminalBlocker $artifact ([string]$pr.headRefOid)) {
-        'blocked'
+        'full_review'
     } else {
         'no_action'
     }
@@ -176,8 +175,8 @@ $prInventory = foreach ($pr in $pullRequests) {
         @('draft_pr')
     } elseif ($classification -eq 'waiting_author') {
         @('current_author_wait')
-    } elseif ($classification -eq 'blocked') {
-        @('current_terminal_blocker')
+    } elseif ($classification -eq 'full_review') {
+        @('missing_current_review_action')
     } else {
         @('review_head_and_activity_are_current')
     }

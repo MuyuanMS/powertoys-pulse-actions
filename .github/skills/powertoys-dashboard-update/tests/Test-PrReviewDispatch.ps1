@@ -118,12 +118,59 @@ try {
     Assert-Fails { Plan @($queue[0]) @($rows[0]) } 'Invalid architecture status'
     $rows[0].architecture = $null
     $rows[0].round = 0
+    $priorityRows = @(1..37 | ForEach-Object {
+        @{ number = $_; head_sha = $head; worker_status = 'idle'; phase = 'reviewing_findings' }
+    })
+    $priorityRows[-1].phase = 'building'
+    Assert-True ((Plan $queue $priorityRows).assignments[0].number -eq 37) 'validation-ready newest PR is not starved behind older finding processing'
     $rows[0].phase = 'blocked'
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'repair_blocker_evidence') 'bare blocked label is not a terminal blocker'
     $rows[0].blocker = @{ detail = 'Build command not derived'; remediation = 'Read changed project and derive command'; external = $false }
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'repair_local_prerequisite') 'local planning gap remains runnable'
     $rows[0].blocker.external = $true
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'publish_terminal_blocker') 'real external gate is published, not hidden in idle state'
+    $queue[0].updated_at = $now.AddHours(-1).ToString('o')
+    $rows[0].operator_exception = @{
+        head_sha = $head; category = 'review_policy'
+        detail = 'Cloud allowance exhausted with no supported author defect.'
+        remediation = 'Choose whether an independently completed review is allowed.'
+        evidence = @('Saved final review ID and exact-head disposition dossier')
+        verified_at = $now.ToString('o'); source_updated_at = $queue[0].updated_at
+    }
+    $plan = Plan @($queue[0]) @($rows[0])
+    Assert-True ($plan.assignments.Count -eq 0 -and $plan.operator_exception_count -eq 1) 'verified policy exception does not repeatedly consume a worker'
+    Assert-True ($plan.exhausted_with_exceptions -and -not $plan.complete) 'only verified exceptions is explicitly incomplete, never false drain success'
+    $rows[0].operator_exception.source_updated_at = $now.AddHours(-2).ToString('o')
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_operator_exception') 'new activity invalidates acknowledged exception even on unchanged head'
+    $rows[0].operator_exception.source_updated_at = $queue[0].updated_at
+    $rows[0].operator_exception.evidence = @()
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_operator_exception') 'a bare exception flag cannot park unfinished work'
+    $rows[0].operator_exception.evidence = @('Saved evidence')
+    $plan = Plan $queue $rows
+    Assert-True ($plan.assignments.Count -eq 6 -and $plan.assignments.number -notcontains 1) 'acknowledged older exception releases capacity to uncovered PRs'
+    $rows[0].operator_exception = $null
+    $queue[0].work_type = 'context_revalidation'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_context') 'same-head discussion is not sent through full fork iteration'
+    $rows[0].phase = 'reviewing_findings'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'context refresh does not discard findings already being processed'
+    $rows[0].phase = 'building'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'validate') 'context refresh preserves outstanding validation'
+    $rows[0].phase = 'finalizing'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_artifact') 'context refresh preserves ready publication'
+    $rows[0].phase = 'waiting_copilot'
+    $rows[0].review.submitted = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'context refresh consumes an arrived cloud result'
+    $rows[0].review.submitted = $false
+    $queue[0].work_type = 'full_review'
+    $rows[0].phase = 'waiting_copilot'
+    $rows[0].review.request_pending = $true
+    $rows[0].review.checked_at = $now.ToString('o')
+    $rows[0].request.requested_at = $now.AddMinutes(-11).ToString('o')
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'diagnose_cloud_wait') 'freshly checked old cloud request gets bounded diagnosis rather than infinite polling'
+    $rows[0].review.checked_at = $now.AddMinutes(-3).ToString('o')
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'old request still gets a fresh read before diagnosis'
+    $rows[0].phase = 'blocked'
+    $rows[0].review.request_pending = $false
     $rows[0].head_sha = 'b' * 40
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_updated_head') 'old-head blocker cannot terminate current work'
     $buildRows = @(1..3 | ForEach-Object {

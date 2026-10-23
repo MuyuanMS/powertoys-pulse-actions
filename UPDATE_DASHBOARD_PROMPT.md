@@ -70,6 +70,12 @@ rules. In particular:
   Never reset the allowance on scheduled ticks or recovery. At or above three,
   consume saved/in-flight results and finish validated drafts without another
   request; keep operator exceptions private and do not claim clean approval;
+- cloud review remains required: do not automatically substitute local review
+  for exhausted/service-failed cases. Publish supported drafts, then park only
+  verified private exceptions per drain-dispatch.md and continue unaffected PRs.
+  Same-head discussion gets focused context revalidation, not a full loop.
+  Reuse verified unchanged validation receipts; minimize suggestions before
+  building. Count delivered actions separately from checkpoints/exceptions;
 - in drain mode follow `powertoys-dashboard-update/references/drain-dispatch.md`:
   execute its private-ledger dispatch plan after completions and due cloud
   checks. Idle historical agents and unchanged queue snapshots never suppress

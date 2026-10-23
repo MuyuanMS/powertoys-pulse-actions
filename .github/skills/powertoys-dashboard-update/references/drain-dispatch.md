@@ -101,6 +101,13 @@ submitted schedules finding processing; absent review AND absent assignment
 schedules reconciliation, not an indefinite wait or blind duplicate request.
 Pending checks default to every 120 seconds, outside heavy worker slots.
 API failures are errors to diagnose with bounded backoff, not pending reviews.
+After ten minutes from the saved request, the planner first obtains a current
+read-only status, then assigns `diagnose_cloud_wait` if it is still pending.
+Diagnose the actual request/run once; a slow response is not proof of a
+service defect, clean review, or permission to duplicate the request.
+Persist the diagnosis and a concrete next action. If externally blocked,
+adjudicate the exception below rather than polling indefinitely. If a result
+arrives, consume it; never discard an eventual review because time elapsed.
 
 `building` reserves at most one build per dispatch. Pass `-BuildOwnerNumber`
 while a separately tracked build process still owns the lock. Reconcile that
@@ -110,6 +117,18 @@ All product and candidate compilations remain serialized. Read-only GitHub,
 source inspection, drafting, queue reconciliation and publication preparation
 do not take the compilation lock. Do not repeatedly prepare source-only
 packets while a free build slot and the actual validation command are ready.
+Validation-ready work has priority over starting another ordinary review
+stage; prepare receipts and publication while other PRs wait on cloud. Reuse
+verified unchanged validation inputs as described in the PR build reference,
+and minimize suggestion ranges before their first candidate build.
+
+For `work_type: context_revalidation`, the planner assigns `revalidate_context`
+instead of replaying the fork loop. Existing in-flight results, finding
+processing, validation and finalization finish first. Read the new discussion substantively:
+retain a supported current decision, withdraw invalid proposals, or escalate
+to a full current-head review if the evidence changes the code judgment.
+Do not request a new round or recompile solely because an unrelated comment
+advanced `updatedAt`; never blindly advance covered-activity timestamps.
 
 For `blocked`, record `blocker.detail`, `blocker.remediation`, and
 `blocker.external`. Missing commands, idle-agent ownership, a stale coordinator
@@ -127,6 +146,29 @@ Existing histories at or above three get no new allowance. Consume requests
 already in flight, complete validation and publish supported drafts instead.
 Neither a scheduler tick, head change nor recovery starts a fresh allowance.
 No action permits claiming convergence without the required evidence.
+
+### Park verified exceptions without hiding incomplete coverage
+
+Cloud review remains required. Do not substitute an independent/local review
+or a manufactured author-facing defect when the cloud allowance is exhausted.
+After consuming all results, grounding accepted/rejected findings and
+publishing every supportable draft, a remaining no-clean-result case is a
+private `review_policy` exception for the operator's later decision.
+
+To prevent repeatedly assigning the same exception ahead of uncovered PRs,
+save `operator_exception` only after independent coordinator adjudication:
+`head_sha`, `source_updated_at` (the covered live activity), `category`
+(`external` or `review_policy`), exact `detail`, concrete `remediation`,
+non-empty `evidence` references and `verified_at`. Local planning/build-command
+gaps, unused build slots and optional experiments are not external exceptions.
+The planner checks shape/freshness, not the truth of this evidence.
+
+Matching verified exceptions appear in `operator_exceptions`, not worker
+assignments. Changed heads/activity and incomplete receipts schedule
+revalidation. `exhausted_with_exceptions: true` is explicitly an INCOMPLETE
+drain requiring the consolidated operator decision list, never success or a
+zero stale queue. Finish all unaffected work first. Never copy these private
+fields into public artifacts or exclude them from the public coverage count.
 
 ### Architectural early exit
 

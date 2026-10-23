@@ -1,20 +1,25 @@
-# Resume the non-CmdPal PR drain
+# Start or resume a PR-only drain
 
-Paste the following into the session that owns the existing drain. It replaces
-its passive monitor behavior, not the review/evidence requirements.
+Paste the following into the owning update session. A new run covers all PR
+areas by default. To resume an explicitly scoped non-CmdPal run, retain that
+scope and use `-ExcludeCmdPal` consistently. Do not silently expand an active
+run or start overlapping workers.
 
 ```text
-Resume the existing PowerToys PR drain, recovering it rather than duplicating
-fork work. Scope: every live open, non-draft PR outside Command Palette/CmdPal
-that still needs current artifacts. Do not expand this run into issue designs
-or CmdPal PR reviews. My goal is all in-scope artifacts updated and published,
+Start or resume exactly one PowerToys PR-only drain, recovering useful prior
+fork work rather than duplicating it. For a NEW all-area run, scope is every
+live open, non-draft PR needing current artifacts, INCLUDING CmdPal. For an
+existing explicitly non-CmdPal run, preserve its scope unless I authorize
+expansion. Do not expand PR-only execution into issue designs.
+My goal is all in-scope artifacts updated and published,
 not more timestamp-only progress reports.
 
 BOOTSTRAP AND OWNERSHIP
-1. Locate the existing drain's private ledger, workers, saved cloud request
+1. Locate any existing drain's private ledger, workers, saved cloud request
    identities, worktrees, validation results and canonical dashboard checkout.
    Reconcile actual running workers/processes before any recovery. Preserve
-   useful work and evidence; do not launch a second drain.
+   useful work and evidence; do not launch a second drain. If no active owner
+   remains, establish one owner and recover useful per-PR state for the new run.
 2. Fast-forward a clean dedicated main checkout of
    https://github.com/MuyuanMS/powertoys-pulse-actions. If the old checkout is
    dirty or on a feature branch, preserve it and use a separate clean canonical
@@ -49,7 +54,8 @@ prove an untested full application. Real credential, destructive-operation,
 product-design and external-lab decisions remain genuine gates.
 
 DISPATCH UNTIL FINISHED
-- Build the live scoped queue with Get-StalePrReviewQueue.ps1 -ExcludeCmdPal.
+- Build the live queue with Get-StalePrReviewQueue.ps1. Use -ExcludeCmdPal
+  ONLY for an explicitly scoped non-CmdPal run; never filter an all-area run.
   Inspect labels/title and changed paths when area classification is ambiguous;
   preserve explicit scope decisions. Re-enumerate live PRs before finalization
   so new eligible PRs and changed heads are not silently missed.
@@ -89,7 +95,8 @@ DISPATCH UNTIL FINISHED
   head and yields consolidated supported comments, not a speculative rewrite.
   Preserve private architecture state across workers/ticks; no false clean claim.
 - Prepare exact validation commands early, request Copilot before ordinary
-  compilation, and build after convergence. Keep actual compilations serialized
+  compilation, and build after convergence or for supported drafts at the cap
+  or architectural early exit. Keep actual compilations serialized
   by exclusive lock ownership, release only after the owned work is finished,
   and reconcile stale ownership safely. Do not put read-only status/source
   checks behind the compilation lock or invent per-PR process frameworks.
@@ -107,6 +114,20 @@ DISPATCH UNTIL FINISHED
   The cap stops new requests, not publication of validated findings. Do not
   substitute a review-cap blocker for valid comments or claim clean approval.
   Publish supported results before collecting remaining exceptions privately.
+- Cloud review remains required. Do NOT switch exhausted/failed cloud cases
+  to local review or manufacture defects to create an action. After grounding
+  all saved results and publishing supported drafts, acknowledge unavoidable
+  no-clean-result cases as private review_policy exceptions for my later
+  decision. Use the verified operator_exception contract in drain-dispatch.md
+  so they stop consuming worker slots but remain counted as incomplete.
+- For new discussion on a reviewed unchanged head, execute revalidate_context,
+  not a full fork loop by default. For pending cloud requests, obtain a fresh
+  status before diagnosing a ten-minute wait. Diagnose once, save the outcome
+  and continue other PRs; do not blindly duplicate requests or poll forever.
+- Prioritize publication-ready results and available validation slots over new
+  ordinary loop work. Use smallest relevant checks, minimize suggestions BEFORE
+  candidate builds and reuse only independently verified unchanged receipts.
+  Context rollover alone is not a reason to rebuild completed inputs.
 
 FIX THE SCHEDULES IN THIS SESSION
 Inspect the existing schedules and update them without creating duplicates.
@@ -140,7 +161,7 @@ before every publication, including incremental checkpoints. Sync and validate t
 do not deploy official Pulse without its existing approval.
 
 Before returning for my attention, reconcile every in-scope PR against its live
-head and published artifact, run the scoped stale queue with -ExcludeCmdPal,
+head and published artifact, run the live stale queue with the same scope,
 and verify canonical publication and synchronized Pulse coverage. Use
 -FailOnStale only when no pending reviews or private exceptions remain.
 Do not claim completion from a zero stale count alone: list ready reviews,
@@ -150,6 +171,14 @@ zero. If an unavoidable external service/credential/lab dependency prevents
 that goal, finish every unaffected PR, publish only neutral pending metadata,
 and give me ONE consolidated list of exact remaining human actions, not
 repeated requests or another indefinitely idle drain.
+
+Report a final coverage table for EVERY in-scope PR: upstream number/live SHA,
+published action and canonical artifact link, justified author wait, or exact
+remaining private exception. Report new/missing artifacts separately from
+exhausted historical reviews. A checkpoint rewrite, fork review or successful
+plan is not a delivered action. Verify the final published files and actual
+Pulse data synchronization before claiming delivery. If only verified exceptions
+remain, say INCOMPLETE and give one decision list; never call that a full drain.
 
 Never post comments/reviews, change metadata, open PRs, or merge in
 microsoft/PowerToys without separate explicit approval. This prompt authorizes

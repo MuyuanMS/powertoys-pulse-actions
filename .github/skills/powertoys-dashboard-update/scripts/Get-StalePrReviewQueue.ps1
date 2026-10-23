@@ -189,7 +189,7 @@ foreach ($pr in $pullRequests) {
     $hasNewerActivity = Test-HasNewerActivity $artifact ([string]$pr.updatedAt)
     $isHoldState = Test-IsHoldState $artifact
     $isTerminalBlocker = Test-IsTerminalBlocker $artifact $liveHead
-    if (($isHoldState -or $isTerminalBlocker) -and -not $hasNewerActivity) {
+    if ($isHoldState -and $artifactHead -eq $liveHead -and -not $hasNewerActivity) {
         continue
     }
 

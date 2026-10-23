@@ -416,9 +416,21 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
     $resumeQueue = & $staleQueueScript -Dashboard $fixtureRoot `
       -PullRequestsJsonPath $pullRequestsPath -AsJson | ConvertFrom-Json
     $resumeNumbers = @($resumeQueue.stale_prs | ForEach-Object { [int]$_.number })
-    if (-not ($resumeNumbers -contains 14) -or ($resumeNumbers -contains 15)) {
-      $errors.Add('Stale PR queue did not resume workflow blockers while preserving explicit terminal blockers.')
+    if (-not ($resumeNumbers -contains 14) -or -not ($resumeNumbers -contains 15)) {
+      $errors.Add('Stale PR queue must retain both resumable work and legacy operator exceptions as missing review coverage.')
     }
+    $livePrs = Get-Content $pullRequestsPath -Raw | ConvertFrom-Json
+    ($livePrs | Where-Object number -eq 11).headRefOid = ('h' * 40)
+    $livePrs | ConvertTo-Json -Depth 5 | Set-Content $pullRequestsPath
+    $changedAuthorWaitQueue = & $staleQueueScript -Dashboard $fixtureRoot `
+      -PullRequestsJsonPath $pullRequestsPath -AsJson | ConvertFrom-Json
+    if (@($changedAuthorWaitQueue.stale_prs | Where-Object {
+        [int]$_.number -eq 11 -and $_.reasons -contains 'new_commits_since_artifact_head'
+      }).Count -ne 1) {
+      $errors.Add('An old-head author-wait artifact must not hide new upstream commits.')
+    }
+    ($livePrs | Where-Object number -eq 11).headRefOid = ('b' * 40)
+    $livePrs | ConvertTo-Json -Depth 5 | Set-Content $pullRequestsPath
     @{
       number = 14; kind = 'pr'; stage = 'review_ready'; head_sha = ('f' * 40)
       source_updated_at = '2026-08-05T00:00:00Z'; proposed_comments = @(); actions = @()
@@ -459,11 +471,11 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       -PrQueueJsonPath $prQueuePath -IssueQueueJsonPath $issueQueuePath -AsJson |
       Set-Content $inventoryPath
     $inventory = Get-Content $inventoryPath -Raw | ConvertFrom-Json
-    if ($inventory.summary.full_review -ne 2 -or
+    if ($inventory.summary.full_review -ne 3 -or
         $inventory.summary.context_revalidation -ne 1 -or
         $inventory.summary.issue_revalidation -ne 2 -or
         $inventory.summary.waiting_author -ne 1 -or
-        $inventory.summary.blocked -ne 1 -or
+        $inventory.summary.blocked -ne 0 -or
         $inventory.summary.no_action -ne 0 -or
         $inventory.summary.excluded -ne 1) {
       $errors.Add('Dashboard candidate inventory did not classify the complete fixture set.')
@@ -472,14 +484,14 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
     $plan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
       -PrBatchSize 1 -IssueBatchSize 1 -OldIssueReserve 0 `
       -SpareIssuesPerUnusedPrSlot 0 -AsJson | ConvertFrom-Json
-    if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 2 -or
+    if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 3 -or
         $plan.selected_issue_count -ne 1 -or $plan.deferred_issue_count -ne 1 -or
         @($plan.selected_prs)[0].classification -ne 'full_review') {
       $errors.Add('Combined dashboard run plan did not prioritize and bound candidate work.')
     }
 
     $adaptivePlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
-      -PrBatchSize 4 -IssueBatchSize 1 -OldIssueReserve 1 `
+      -PrBatchSize 5 -IssueBatchSize 1 -OldIssueReserve 1 `
       -SpareIssuesPerUnusedPrSlot 1 -AsJson | ConvertFrom-Json
     if ($adaptivePlan.policy.effective_issue_batch_size -ne 2 -or
         $adaptivePlan.policy.selected_old_issue_count -ne 1 -or
@@ -490,7 +502,7 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
 
     $drainPlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
       -DrainQueue -AsJson | ConvertFrom-Json
-    if ($drainPlan.selected_pr_count -ne 3 -or $drainPlan.deferred_pr_count -ne 0 -or
+    if ($drainPlan.selected_pr_count -ne 4 -or $drainPlan.deferred_pr_count -ne 0 -or
         $drainPlan.selected_issue_count -ne 2 -or $drainPlan.deferred_issue_count -ne 0) {
       $errors.Add('Combined dashboard drain plan did not select every candidate.')
     }

@@ -53,6 +53,7 @@ if ($runningIds.Count -gt $MaxConcurrency) {
 $runnable = [Collections.Generic.List[object]]::new()
 $checks = [Collections.Generic.List[object]]::new()
 $waits = [Collections.Generic.List[object]]::new()
+$exceptions = [Collections.Generic.List[object]]::new()
 $seen = @{}
 :prLoop foreach ($pr in @($queue.stale_prs)) {
     $number = [int]$pr.number
@@ -69,6 +70,34 @@ $seen = @{}
     if ($row -and [string]$row.head_sha -ne [string]$pr.live_head_sha) {
         $action = 'reconcile_updated_head'
         $rank = 1
+    } elseif ($row.operator_exception) {
+        $exception = $row.operator_exception
+        $verifiedAt = [datetimeoffset]::MinValue
+        $coveredActivity = [datetimeoffset]::MinValue
+        $liveActivity = [datetimeoffset]::MinValue
+        if ([string]$exception.head_sha -eq [string]$pr.live_head_sha -and
+            $exception.category -in @('external', 'review_policy') -and
+            -not [string]::IsNullOrWhiteSpace([string]$exception.detail) -and
+            -not [string]::IsNullOrWhiteSpace([string]$exception.remediation) -and
+            @($exception.evidence | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([string]$_)
+            }).Count -gt 0 -and
+            [datetimeoffset]::TryParse([string]$exception.verified_at, [ref]$verifiedAt) -and
+            $verifiedAt -le $Now -and
+            [datetimeoffset]::TryParse([string]$exception.source_updated_at, [ref]$coveredActivity) -and
+            [datetimeoffset]::TryParse([string]$pr.updated_at, [ref]$liveActivity) -and
+            $coveredActivity -eq $liveActivity) {
+            $exceptions.Add([pscustomobject]@{ number = $number; exception = $exception })
+            continue
+        }
+        $action = 'revalidate_operator_exception'
+        $rank = 2
+    } elseif ([string]$pr.work_type -eq 'context_revalidation' -and
+        (-not $row -or $row.phase -notin @(
+            'waiting_copilot', 'reviewing_findings', 'building', 'finalizing'
+        ))) {
+        $action = 'revalidate_context'
+        $rank = 2
     } elseif ($row) {
         switch ([string]$row.phase) {
             'waiting_copilot' {
@@ -89,6 +118,12 @@ $seen = @{}
                     $due = if ($row.review.checked_at) {
                         ([datetimeoffset]$row.review.checked_at).AddSeconds($PollSeconds)
                     } else { $Now }
+                    if ($due -gt $Now -and
+                        [datetimeoffset]$row.request.requested_at -le $Now.AddMinutes(-10)) {
+                        $action = 'diagnose_cloud_wait'
+                        $rank = 2
+                        break
+                    }
                     if ($due -le $Now) {
                         $checks.Add([pscustomobject]@{
                             number = $number
@@ -106,7 +141,7 @@ $seen = @{}
                 }
             }
             'reviewing_findings' { $action = 'process_review'; $rank = 1 }
-            'building' { $action = 'validate'; $rank = 2; $needsBuild = $true }
+            'building' { $action = 'validate'; $rank = 1; $needsBuild = $true }
             'finalizing' { $action = 'finalize_artifact'; $rank = 0 }
             'blocked' {
                 if (-not $row.blocker.detail -or -not $row.blocker.remediation) {
@@ -157,7 +192,8 @@ $assignments = [Collections.Generic.List[object]]::new()
 $buildReserved = $BuildOwnerNumber -gt 0 -or @($ledger.prs | Where-Object {
     $_.worker_status -eq 'running' -and $_.phase -eq 'building'
 }).Count -gt 0
-foreach ($item in @($runnable | Sort-Object rank, number)) {
+foreach ($item in @($runnable | Sort-Object rank,
+    @{ Expression = { $_.needs_build_slot }; Descending = $true }, number)) {
     if ($item.needs_build_slot -and $buildReserved) {
         $waits.Add([pscustomobject]@{ number = $item.number; reason = 'build_slot_owned' })
         continue
@@ -184,7 +220,11 @@ $plan = [pscustomobject]@{
     assignments = $assignments.ToArray()
     coordinator_actions = $coordinatorActions
     waits = $waits.ToArray()
+    operator_exceptions = $exceptions.ToArray()
+    operator_exception_count = $exceptions.Count
     next_check_at = if ($nextCheck.Count) { $nextCheck[0].next_check_at } else { $null }
     complete = $seen.Count -eq 0 -and $runningIds.Count -eq 0 -and $BuildOwnerNumber -eq 0
+    exhausted_with_exceptions = $seen.Count -gt 0 -and $seen.Count -eq $exceptions.Count -and
+        $runningIds.Count -eq 0 -and $BuildOwnerNumber -eq 0
 }
 if ($AsJson) { $plan | ConvertTo-Json -Depth 12 } else { $plan }

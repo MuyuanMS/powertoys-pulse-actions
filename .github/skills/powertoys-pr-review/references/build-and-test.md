@@ -1,6 +1,9 @@
 # Build & Test (Steps 3, 7, 7b)
 
-Goal: `x64/Debug/PowerToys.exe` launches and the changed feature works end-to-end, so the user can just run the exe. Run all build commands from the worktree directory.
+Goal: validate the exact affected tree with the smallest checks that cover the
+change. Build and launch `x64/Debug/PowerToys.exe` when application E2E is
+required, not as a prerequisite for every workflow, documentation, script or
+isolated library review. Run commands from the intended worktree directory.
 
 ## Spectre override (required on machines without Spectre libs)
 
@@ -52,11 +55,19 @@ all existing exact-patch checks still apply if literal suggestions are drafted.
 
 ## Step 7: Final build (after Copilot convergence)
 
+The three-request cap and a grounded architectural early exit also permit
+focused validation of supported author corrections before convergence.
+Run the required exact-upstream and literal-suggestion checks for those drafts;
+do not wait for an unavailable fourth round. This does not qualify the PR
+for a clean zero-finding result or bypass the cloud-review requirement.
+
 After the latest fresh Copilot round has zero published inline comments and
 all Copilot threads are resolved, run the saved validation plan against the
 converged fork tree. Acquire the batch-wide build lock only for this build;
 never hold it while waiting for Copilot or processing findings. Run the
-full chain once for this tree. `build-essentials.cmd` only builds the runner +
+focused affected-project checks once for this tree. Use the full launch chain
+below only when the validation plan requires application E2E.
+`build-essentials.cmd` only builds the runner +
 settings; it does **not** build module interface DLLs or managed module
 executables. For end-to-end testing, build the full chain:
 
@@ -107,16 +118,35 @@ same head, apply every suggestion block verbatim using its exact line range,
 and build the affected project. When suggestions may be accepted separately,
 also apply/build each structurally risky suggestion independently.
 
-After that first pass succeeds, trim unchanged leading/trailing lines from
-each suggestion range, recreate the candidate from the pinned upstream head,
-and build again. The recorded passing result must cover the final minimized
-suggestions that will be shown to the author, not an earlier context-heavy
-version.
+Before the first candidate build, trim unchanged leading/trailing lines from
+each suggestion range and apply those final minimized blocks to the pinned
+upstream head. Do not intentionally build a context-heavy candidate first.
+Rebuild only if the proposed blocks or other relevant inputs change. The
+recorded passing result must cover the exact final minimized suggestions.
 
 Record the exact head, applied item IDs, commands, and passing result under
 `internalEvidence.validation`. Never reuse a build result from a tree with a
 different diff. If the exact suggestion candidate fails syntax or compilation,
 fix the suggestion and repeat this gate before presenting it.
+
+### Reuse verified validation, not unverified claims
+
+Context rollover, a new worker and a same-head discussion revalidation do not
+alone invalidate a completed check. Preserve private receipts with exact
+upstream/fork tree identities, final candidate content hashes and applied
+comment IDs, command/configuration/toolchain, relevant dependency inputs, exit
+codes and retained logs. Verify those identities and logs on resume; rerun
+when the receipt is missing, failed, interrupted or its relevant inputs changed.
+An old sentence saying "build passed" is not a receipt. Never reuse an altered
+fork result for a different upstream tree.
+
+When fork and upstream trees are actually identical, one qualifying check can
+cover both; record and verify tree equality rather than compiling identical
+inputs twice. A changed suggestion body/range requires checking the final
+literal result; changed candidate content requires new validation. Do not
+rebuild unrelated runner/UI projects merely to renew a timestamp. New commits
+still require current-head review and validation; reuse only independently
+verified identical inputs, never relabel old evidence with a new SHA.
 
 ## Step 7b: End-to-end testing instructions
 

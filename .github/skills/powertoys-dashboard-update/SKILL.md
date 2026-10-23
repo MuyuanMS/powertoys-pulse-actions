@@ -710,6 +710,10 @@ A nonzero final automated response does not invalidate those findings or
 require discarding them. Never claim a clean approval without its full gates.
 Private terminal exceptions do not clear the public stale queue or count as
 completed reviews.
+Cloud remains mandatory; exhausted/no-substantive-result cases must not
+silently switch to local review. After drafting supported findings, park only
+coordinator-verified private exceptions through `drain-dispatch.md`, continue
+unaffected PRs and report the remaining policy decisions as incomplete.
 
 Before first-round fixes or a second request, workers must follow the PR
 skill's `references/architecture-review.md`: investigate whether the upstream
