@@ -4,19 +4,40 @@
   "title": "[Build] NOTICE.md verification script performance improvement and fixes",
   "url": "https://github.com/microsoft/PowerToys/pull/51153",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-19T02:09:59.6160098+08:00",
-  "evaluated_at": "2026-10-19T02:09:59.6160098+08:00",
+  "generated_at": "2026-10-25T05:23:26.1286795+08:00",
+  "evaluated_at": "2026-10-25T05:23:26.1286795+08:00",
   "source_updated_at": "2026-10-09T14:13:43Z",
   "head_sha": "6079adce5cd793494de5396ad903ad870fef9e75",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-12T06:46:13.3500454Z",
-    "checkpoint_at": "2026-10-16T13:35:31.6931289Z"
-  },
+  "proposed_comments": [
+    {
+      "id": "candidate-ci-boost-notice",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "title": "Missing boost attribution from root NOTICE.md",
+      "body": "### Missing `boost` from the root package notice\n\n**Severity:** `medium`\n\n**Affected code:** `NOTICE.md` (the “NuGet Packages used by PowerToys” list and package attributions); `src/modules/powerrename/PowerRenameUILib/PowerRenameUI.vcxproj` (`boost` PackageReference); `.pipelines/verifyNoticeMdAgainstNugetPackages.ps1` and `.pipelines/v2/templates/job-build-project.yml` (the missing-package check and its production caller).\n\n**Problem:** The pinned PowerRename native project directly references NuGet package `boost` 1.87.0, but the root `NOTICE.md` package list omits `boost`. In the latest Azure Pipelines run for this unchanged PR head (build 390605, October 9, 2026), the x64 and ARM64 NOTICE-verifier tasks failed; their saved task output identifies `boost` as missing for `PowerRenameUI.vcxproj`, and the verifier exits with code 1 when it finds a missing package. `NOTICE.md` already contains Boost Software License 1.0 text under `expected-lite`, but does not identify the `boost` package there.\n\n**Why it matters:** The production build invokes this verifier, so the omitted package causes the x64 and ARM64 CI checks to fail. The existing license text alone does not provide a package-specific attribution.\n\n**Suggested change:**\n1. Add `- boost` alphabetically to the root `NOTICE.md` “NuGet Packages used by PowerToys” list.\n2. Add a separate attribution for NuGet package `boost` 1.87.0 and refer to the existing Boost Software License 1.0 text under `expected-lite` rather than duplicating the license.\n3. Run `.pipelines\\verifyNoticeMdAgainstNugetPackages.ps1 -path <repository-root>\\` against the complete restored x64 and ARM64 CI trees. Confirm `boost` is absent from each `MissingFromNotice` report and inspect each complete `MissingFromNotice` and `ExtraInNotice` report; the available CI evidence does not establish that `boost` is the only discrepancy.\n\n**Verification:** After restoring the complete x64 and ARM64 inventories, run the verifier command above for each tree. Confirm both exit successfully and review the full reports for any remaining missing or unexpected package entries.",
+      "out_of_diff_reason": "The live PR diff contains only .pipelines/verifyNoticeMdAgainstNugetPackages.ps1 and its tests; NOTICE.md is unchanged, so the correction has no current RIGHT-side diff range.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The current pinned native project references boost 1.87.0, the root NOTICE package list omits it, the production verifier fails missing entries, and the latest exact-head x64 and ARM64 checks failed with saved task output naming boost. The remaining full candidate inventory is not claimed as validated."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-general-notes-51153",
+      "type": "post_review",
+      "label": "Post general review notes",
+      "note": "General review notes — separate PR conversation comments.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "6079adce5cd793494de5396ad903ad870fef9e75"
+      }
+    }
+  ],
   "validation": {}
 }
