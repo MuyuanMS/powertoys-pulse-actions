@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 5,
+  "number": 51597,
+  "kind": "issue",
+  "title": "repro crash in Administrator: File Locksmith",
+  "url": "https://github.com/microsoft/PowerToys/issues/51597",
+  "stage": "triage",
+  "generated_at": "2026-10-26T20:40:35.115Z",
+  "evaluated_at": "2026-10-26T20:40:35.115Z",
+  "source_updated_at": "2026-10-26T18:26:36Z",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "This report provides an administrator-mode File Locksmith crash and access-violation signature on 0.102.2933.0. The same handle-enumeration worker-lifetime crash is already tracked in #49789 and addressed by the open proposal in PR #49966. The new report adds useful reproduction evidence, but not a separate confirmed code path. PR #49966 is unmerged and its latest review identifies unresolved worker-lifetime/cancellation concerns; the crash is not considered fixed.",
+    "recommended_action": "Consolidate the administrator-mode reproduction and crash signature into #49789, keep that issue as the single tracker, and resolve the outstanding review findings on #49966 before treating the behavior as covered.",
+    "evidence": [
+      "The live issue body reports File Locksmith 0.102.2933.0, a failure after restarting as administrator, and an access violation in FileLocksmithLib.Interop.dll.",
+      "The reporter attached a diagnostic archive; inspected File Locksmith UI logs show startup with one selected file but do not identify the failing stack or operation.",
+      "Upstream #49789 tracks a File Locksmith handle-enumeration crash on the same release; its existing issue artifact remains needs_information and does not mark author wait.",
+      "Upstream PR #49966 is open and unmerged; its current review artifact requests changes and its review notes unresolved worker-lifetime concerns."
+    ]
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The concrete in-progress coverage is upstream PR #49966 for the same underlying handle-enumeration worker-lifetime defect. This is not a merged or verified fix: the PR remains open/unmerged and its current review identifies unresolved lifetime/cancellation gaps. Do not mark the reported crash resolved or open a competing fix.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49966"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter says File Locksmith in PowerToys 0.102.2933.0 crashes after restarting as administrator and provides an access-violation signature plus a diagnostic archive.",
+    "known_information": [
+      "PowerToys release is 0.102.2933.0 stable; installation method is auto-update.",
+      "The affected module is File Locksmith; the reported failure occurs after using Restart as Administrator.",
+      "The issue body identifies an access violation in PowerToys.FileLocksmithLib.Interop.dll and includes a bug-report archive.",
+      "The inspected File Locksmith UI log records startup with one file selected but does not show the specific failing operation or stack.",
+      "Upstream issue #49789 and open PR #49966 already cover the same handle-enumeration worker-lifetime crash area."
+    ],
+    "inferences": [
+      "This is likely additional evidence for #49789 rather than an independent defect because the module, crash family, and affected code area align; the issue evidence does not prove an identical call path.",
+      "The attached UI log alone cannot establish whether administrator elevation or the underlying handle enumeration triggers the crash."
+    ],
+    "analysis": "The new report has a specific version, action sequence, module, exception signature, and attached diagnostic archive, so another generic log request would be redundant. The archive UI log ends at startup/selection and does not establish a stack or precise failing operation. Repository history and the existing PR show the same worker-lifetime area is under active review, not shipped. Consolidate this evidence into #49789 without proposing a competing implementation or claiming resolution.",
+    "initial_investigation": [
+      "Read the current issue body, labels, full discussion (no comments), and attachment reference; confirmed the report is open and has Issue-Bug and Needs-Triage labels.",
+      "Inspected the reporter-provided archive privately; the relevant UI log shows startup with one selected file and no diagnostic failure detail.",
+      "Reviewed upstream #49789 and current canonical issue artifact: it is still an open triage item with an outstanding information request, not author-wait.",
+      "Reviewed upstream PR #49966 and its current fork review trace: open/unmerged, with requested changes and identified worker lifetime/cancellation gaps.",
+      "Checked current upstream NtdllExtensions.cpp history; latest source commit is cfdb1d7af58a and the touched worker path predates this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "consolidate-file-locksmith-crash-51597",
+      "type": "post_comment",
+      "label": "Link this report to the existing File Locksmith crash investigation",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the detailed report and the attached diagnostic archive. This appears to belong with the existing File Locksmith handle-enumeration crash investigation in #49789; please have maintainers carry this administrator-mode reproduction and the reported access-violation signature into that issue rather than start a parallel fix. PR #49966 is still open and unmerged, and its latest review discussion identifies unresolved worker-lifetime concerns, so it should not be treated as a shipped or verified fix."
+      }
+    }
+  ]
+}

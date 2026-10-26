@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 5,
+  "number": 51585,
+  "kind": "issue",
+  "title": "After switching Light Switch ON and exiting the GUI - it turns back OFF",
+  "url": "https://github.com/microsoft/PowerToys/issues/51585",
+  "stage": "needs_information",
+  "generated_at": "2026-10-26T20:56:47.38Z",
+  "evaluated_at": "2026-10-26T20:56:47.38Z",
+  "source_updated_at": "2026-10-26T10:28:00Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report says Light Switch is turned on and that schedule/theme actions occur, then the feature appears off after reopening the GUI, but it does not distinguish closing only the Settings window from exiting PowerToys or restarting the app. Current upstream Settings code initializes the toggle from GeneralSettingsConfig.Enabled.LightSwitch and writes that value back when changed; the module's runtime enabled state is separate from its theme/schedule actions. No discussion or attachment clarifies which state is resetting, so a focused reproduction and fresh report are needed before a fix judgment.",
+    "recommended_action": "Ask which process/window is closed and whether the enabled checkbox itself is off versus only the schedule or theme state. Request one minimal enable-close-reopen sequence and a fresh /bugreport immediately after the reset; do not infer that changing the OS theme toggles the module enabled state.",
+    "evidence": [
+      "The issue is open, on PowerToys 0.102.2933, and has no comments or attachment; its description combines turning the feature on, setting a schedule or using the theme shortcut, and reopening the GUI.",
+      "Current upstream LightSwitchViewModel initializes IsEnabled from GeneralSettingsConfig.Enabled.LightSwitch and updates the same property when toggled; it sends general settings through IPC.",
+      "Current upstream LightSwitch module exposes a separate runtime is_enabled state and starts/stops its service; theme toggles and schedule behavior are separate paths.",
+      "Related #42921 concerns the default theme starting in Light mode, not the enabled checkbox resetting. Merged PR #50459 adds CLI status/theme/schedule control, not this GUI persistence behavior.",
+      "No exact duplicate, candidate fix, canonical issue artifact, or fork issue/PR mirror was found."
+    ]
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No code fix is currently justified because the report does not establish whether the module's enabled setting resets, whether only the PowerToys Settings window was closed, or whether a schedule/theme state is being confused with the enable toggle. The current code already persists the GeneralSettings enabled property through the settings message path; verify the exact state and lifecycle before proposing a change.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter enables Light Switch and sets a schedule or uses the theme shortcut, then says it is off after exiting and reopening the GUI.",
+    "known_information": [
+      "PowerToys version is 0.102.2933, installed via auto-update.",
+      "The issue has no follow-up comments or diagnostic attachment.",
+      "The report does not say whether 'GUI' means the Settings window, the tray process, or PowerToys itself; it also does not identify whether the module checkbox or only the schedule/theme operation is off.",
+      "Current Settings code reads and writes GeneralSettingsConfig.Enabled.LightSwitch for the module toggle.",
+      "#42921 is a closed Light Switch theme-default issue; PR #50459 is a merged CLI for status/theme/schedule control and is not identified as a fix for this GUI symptom."
+    ],
+    "inferences": [
+      "A persisted enabled-state problem is possible, but the current wording could also describe exiting the Settings window or confusing an OS theme change with the module's enabled state.",
+      "A fresh diagnostic report after the minimal sequence could show whether the module service or settings process reinitializes differently, but the current evidence cannot identify a cause."
+    ],
+    "analysis": "The current wording combines module enablement, schedule configuration, immediate theme toggling, and GUI exit without specifying which state is observed as off. The UI binds enabled state to the general settings property, while the module runtime and schedule/theme actions are distinct. Ask only for the exact process/window lifecycle and which switch/state changes, then request a fresh /bugreport after reproducing. This avoids repeating the already-supplied version or designing against an ambiguous symptom.",
+    "initial_investigation": [
+      "Read the complete live issue body, labels, discussion (none), and attachment list (none).",
+      "Inspected current upstream LightSwitchViewModel.cs: IsEnabled is initialized from GeneralSettingsConfig.Enabled.LightSwitch and sends that property through the general settings message on change.",
+      "Inspected current upstream LightSwitch dllmain.cpp: runtime is_enabled and the service lifecycle are separate from theme toggles; no direct GUI-close reset established.",
+      "Reviewed #42921 and merged PR #50459; neither is a direct duplicate or confirmed fix for the enabled-state report.",
+      "Checked current canonical item and fork issue/PR searches; no existing issue artifact or fork mirror found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the reporter closes only Settings or exits PowerToys, and whether the module enable checkbox itself or only the schedule/theme state is off after reopening",
+        "why_needed": "These are separate state/lifecycle paths in the current implementation; clarifying the exact state that resets is necessary before assigning a code fix.",
+        "how_to_collect": "Enable Light Switch, close only the Settings window while leaving PowerToys running, reopen Settings, and check the Light Switch enable toggle. If it resets, add a comment containing /bugreport immediately after this minimal sequence; also state whether PowerToys was exited or restarted.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-lightswitch-lifecycle-repro-51585",
+      "type": "request_info",
+      "label": "Request a minimal Light Switch enable-state reproduction",
+      "primary": true,
+      "comment": {
+        "body": "Could you clarify whether you close only the PowerToys Settings window or exit PowerToys itself, and whether the Light Switch enable checkbox is off after reopening (rather than only the schedule or current theme state)? Please test this minimal sequence: enable Light Switch, close only Settings while leaving PowerToys running, reopen Settings, and check the enable toggle. If it resets, add a comment containing `/bugreport` immediately after reproducing and say whether PowerToys was exited or restarted. This will separate the persisted module setting from the schedule/theme action."
+      }
+    }
+  ]
+}

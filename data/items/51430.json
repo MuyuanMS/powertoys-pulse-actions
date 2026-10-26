@@ -2,71 +2,60 @@
   "schemaVersion": 5,
   "number": 51430,
   "kind": "issue",
-  "issue_type": "bug",
-  "track": "triage",
-  "stage": "waiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-10-20T16:40:12.397Z",
-  "evaluated_at": "2026-10-20T16:40:12.397Z",
-  "source_updated_at": "2026-10-20T13:57:25Z",
-  "updated_at": "2026-10-20T13:57:25Z",
-  "state": "open",
   "title": "PowerToys Command Palette hotkey issue",
   "url": "https://github.com/microsoft/PowerToys/issues/51430",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Author-Feedback",
-    "Needs-Triage",
-    "Product-Command Palette"
-  ],
-  "assignees": [],
-  "comments": 2,
+  "stage": "waiting_author",
+  "generated_at": "2026-10-26T20:43:36.242Z",
+  "evaluated_at": "2026-10-26T20:43:36.242Z",
+  "source_updated_at": "2026-10-26T18:13:32Z",
+  "pending_author": true,
+  "waiting_since": "2026-10-26T18:13:13Z",
   "judgment": {
-    "source_updated_at": "2026-10-20T13:57:25Z",
-    "evidence": [
-      "The report says Alt+Space fails after restart and focusing Command Palette settings makes it work.",
-      "The latest maintainer comment asks whether PowerToys Run is enabled with the same shortcut and notes CmdPal's default should be Win+Alt+Space.",
-      "Linked 38297 is closed and 50109 remains open, but neither status establishes this restart/collision case."
-    ],
-    "recommended_action": "Await the specifically requested author clarification; do not repeat the request or start a competing fix.",
     "status": "waiting_on_author",
-    "evaluated_at": "2026-10-20T16:40:12.397Z",
-    "rationale": "The issue is open and labeled Needs-Author-Feedback. The maintainer asks whether PowerToys Run is enabled with Alt+Space and notes CmdPal's expected default is Win+Alt+Space. The author has not answered; hide old fix actions until the configuration ambiguity is resolved."
+    "rationale": "The author answered the maintainer's earlier checks: PowerToys Run is disabled, though it had the same Alt+Space binding, and the author changed Command Palette to Win+Alt+Space and planned to test after restart. The maintainer explicitly asked on 2026-10-26 whether that change helped; no author reply follows. This is a real, unanswered test request, not a generic or inferred author wait.",
+    "recommended_action": "Wait for the author to report whether Win+Alt+Space works after restart. If it does, record shortcut conflict/configuration as the likely explanation; if not, resume focused startup-registration investigation with the exact resulting behavior.",
+    "evidence": [
+      "Live upstream comments: author confirmed Run disabled but shared the Alt+Space binding, then changed Command Palette to Win+Alt+Space and said they would test after restart (2026-10-21T10:05:53Z).",
+      "Live upstream maintainer follow-up explicitly asks whether the new binding helped (2026-10-26T18:13:13Z); there is no later author reply in the current complete discussion.",
+      "The attached screenshot shows the German PowerToys settings page with Command Palette enabled and its activation shortcut displayed as Alt+Space.",
+      "Current CmdPal MainWindow.SetupHotkey registers the configured shortcut using RegisterHotKey unless the low-level option is enabled; setup runs during settings application. This alone does not determine why the reported startup behavior changes after opening the settings page."
+    ]
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "No CmdPal code change is justified until the exact configured shortcut and possible PowerToys Run collision are confirmed; the maintainer already asked for that evidence."
+    "rationale": "No distinct code fix is justified yet: the screenshot and discussion show a configured Alt+Space binding, the same key had also been assigned to PowerToys Run, and the author has already changed to Win+Alt+Space but has not reported the restart result. The live evidence is consistent with shortcut conflict/configuration, but does not establish it; defer a code-fix judgment until the outstanding test is answered.",
+    "existing_fix_urls": []
   },
+  "proposed_fixes": [],
   "issue_context": {
+    "summary": "Command Palette activation using a configured Alt+Space shortcut reportedly fails after restart until the Command Palette settings page is focused. The author then changed the binding to Win+Alt+Space and is testing after restart.",
+    "known_information": [
+      "Reported version is PowerToys 0.102.2862 on Windows 11 25H2; the installation is WinGet and runs as administrator.",
+      "The screenshot shows Command Palette enabled and Alt+Space displayed as its shortcut; German UI language.",
+      "The author said PowerToys Run is disabled but previously had the same Alt+Space binding, and changed Command Palette to Win+Alt+Space.",
+      "The latest upstream maintainer comment asks whether the changed binding helped; no answer is present as of the current source update.",
+      "Upstream #38297, the general low-level keyboard hook tracking issue, is closed with Resolution-Fix Committed. PR #50982 remains open/dirty and concerns a dedicated thread for global keyboard handling, but the available evidence does not establish that it fixes this startup/configuration report."
+    ],
+    "inferences": [
+      "A conflicting or incorrectly assumed default binding is plausible because the reporter used Alt+Space and disclosed a shared Run binding; the changed shortcut test is not yet complete.",
+      "Opening the settings page may coincide with a settings reapplication that invokes SetupHotkey, but the code evidence does not prove that this explains the reported behavior."
+    ],
+    "analysis": "The current conversation already contains the exact outstanding diagnostic: whether Win+Alt+Space works after a restart. The author acknowledged the test, so do not post another information request or treat the author as unresponsive to an unasked question. The screenshot corroborates the actual Alt+Space configuration. Existing LLKH tracking and PR #50982 do not establish coverage for this case; no speculative fix design is appropriate before the test result.",
+    "initial_investigation": [
+      "Read the current full issue body, all four comments, labels, and screenshot attachment; issue is open and labeled Needs-Author-Feedback, Needs-Triage, Product-Command Palette, and CmdPal-Keyboard.",
+      "Inspected the screenshot privately: Command Palette is enabled and the displayed shortcut is Alt+Space.",
+      "Reviewed #38297; it is closed with Resolution-Fix Committed and provides general low-level-hook history, not a confirmed fix for this case.",
+      "Reviewed current PR #50982 and its canonical artifact; PR remains open with dirty merge state, and its stated scope is a dedicated keyboard-hook thread.",
+      "Read MainWindow.xaml.cs around SetupHotkey: configured global shortcuts are registered with RegisterHotKey or the optional low-level listener; SetupHotkey runs during application of settings. No root cause inferred."
+    ],
     "information_gaps": [
       {
-        "evidence_type": "behavior_confirmation",
-        "information": "Confirm the exact Command Palette shortcut, whether PowerToys Run is enabled with the same Alt+Space shortcut, and whether a unique shortcut works immediately after restart.",
-        "why_needed": "Distinguishes a shortcut collision or incorrect default assumption from a startup registration failure.",
-        "how_to_collect": "Check the shortcut displayed for Command Palette and PowerToys Run, then restart and test the configured unique shortcut before opening Settings."
+        "information": "Whether the Win+Alt+Space binding works after a restart without opening the Command Palette settings page",
+        "why_needed": "This is the author's promised test and distinguishes a conflicting Alt+Space assignment from a remaining startup registration issue.",
+        "how_to_collect": "Reply with the result after restarting Windows with the binding set to Win+Alt+Space.",
+        "evidence_type": "behavior_confirmation"
       }
-    ],
-    "inferences": "A PowerToys defect remains possible, but a specific code fix cannot be chosen until the requested configuration evidence resolves the ambiguity.",
-    "summary": "Alt+Space fails after restart until Command Palette settings are focused, but the latest maintainer comment identifies a possible shortcut collision rather than a confirmed CmdPal defect.",
-    "analysis": "The issue is open and labeled Needs-Author-Feedback. The maintainer asks whether PowerToys Run is enabled with Alt+Space and notes CmdPal's expected default is Win+Alt+Space. The author has not answered; hide old fix actions until the configuration ambiguity is resolved.",
-    "known_information": [
-      "The report says Alt+Space fails after restart and focusing Command Palette settings makes it work.",
-      "The latest maintainer comment asks whether PowerToys Run is enabled with the same shortcut and notes CmdPal's default should be Win+Alt+Space.",
-      "Linked 38297 is closed and 50109 remains open, but neither status establishes this restart/collision case."
-    ],
-    "initial_investigation": [
-      "Read the complete live issue body and comments; refreshed state, labels, assignees and upstream update timestamp.",
-      "Checked the status/title of obvious linked issues and searched upstream PRs by issue number; no matching results were returned, which does not prove that no broader work exists."
     ]
   },
-  "actions": [],
-  "proposed_fixes": [],
-  "waiting_since": "2026-10-20T13:57:25Z",
-  "author_wait_evidence": {
-    "requested_evidence": "Confirm whether the problem is only Alt+Space, whether PowerToys Run is enabled with the same shortcut, and whether Alt+Space is actually configured for Command Palette.",
-    "created_at": "2026-10-20T13:57:25Z",
-    "url": "https://github.com/microsoft/PowerToys/issues/51430#issuecomment-6292580269",
-    "author": "jiripolasek"
-  }
+  "actions": []
 }

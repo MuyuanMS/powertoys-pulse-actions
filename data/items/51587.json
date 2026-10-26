@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 5,
+  "number": 51587,
+  "kind": "issue",
+  "title": "Command Not Found is broken - Causes 'exit' to hang for 10+ seconds in elevated prompts",
+  "url": "https://github.com/microsoft/PowerToys/issues/51587",
+  "stage": "needs_information",
+  "generated_at": "2026-10-26T20:54:25.585Z",
+  "evaluated_at": "2026-10-26T20:54:25.585Z",
+  "source_updated_at": "2026-10-26T11:06:54Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report provides a strong A/B reproduction: elevated pwsh exits slowly while the Command Not Found profile hook is enabled and exits immediately after the module is removed. Current PowerToys code installs the feature by adding an Import-Module line for Microsoft.WinGet.CommandNotFound; it does not handle interactive shell exit. The attached archive contains a very large MSI log that caused automated triage to reject the bundle; the small CmdNotFound logs show module construction only, not exit behavior. The external module version and a direct import control are needed before assigning a PowerToys fix or attributing the delay to the dependency.",
+    "recommended_action": "Ask for the installed Microsoft.WinGet.CommandNotFound module version/path and a controlled timing comparison between elevated pwsh -NoProfile and a no-profile session that explicitly imports that module. Do not request another generic bug report; the attached bundle and clear A/B are already present.",
+    "evidence": [
+      "The live issue body gives exact enable/disable A/B steps, reports a 10+ second delay for exit in elevated pwsh, and reports immediate exit after disabling/removing Command Not Found.",
+      "The reporter supplies PowerToys 0.102.2933.0 machine-wide, Windows 11 Pro build 26300.9711, PowerShell/.NET runtime details, and says PowerToys itself is not running as administrator.",
+      "The attached ZIP is 1,218,656 bytes and contains a 11,406,958-byte uncompressed MSI log entry; the AI-triage comment says the archive was rejected because of an oversized entry.",
+      "Privately inspected the three small CmdNotFound module logs; they record logger initialization and object construction only, with no shell-exit or delay detail.",
+      "Current upstream integration starts EnableModule.ps1 to register Import-Module -Name Microsoft.WinGet.CommandNotFound in the user's PowerShell profile; the enable script itself is run with -NoProfile."
+    ]
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No PowerToys code fix is justified until the exit delay is isolated to the registered Command Not Found import versus the external Microsoft.WinGet.CommandNotFound module. Current PowerToys code configures the profile and does not implement interactive pwsh exit handling; if the delay reproduces with an explicit import alone, the evidence points to the dependency rather than a PowerToys exit-time path. Do not propose an ungrounded integration workaround before that control test.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "With PowerToys Command Not Found enabled, typing exit in an elevated pwsh prompt takes over 10 seconds to close; after disabling the feature or removing its profile import, the prompt closes immediately.",
+    "known_information": [
+      "PowerToys is machine-wide version 0.102.2933.0 on Windows 11 Pro build 26300.9711; PowerToys itself is not running as administrator.",
+      "The affected interactive process is an elevated pwsh prompt; the reporter provides .NET 9 and 10 runtimes and en-US locale details.",
+      "The reporter performed an enabled/disabled comparison by removing the Command Not Found profile registration; behavior changes from 10+ seconds to immediate exit.",
+      "Current upstream EnableModule.ps1 registers Microsoft.WinGet.CommandNotFound through an Import-Module statement in the user's PowerShell profile.",
+      "The attached report's CmdNotFound module logs show construction, not the slow exit; the automated triage could not analyze the archive due to an oversized MSI log entry."
+    ],
+    "inferences": [
+      "The PowerShell profile import path is associated with the delay, but the existing comparison does not establish whether the PowerToys integration or the imported Microsoft.WinGet.CommandNotFound package is responsible.",
+      "If an explicit module import in a no-profile elevated pwsh reproduces the delay, a dependency-level issue is more likely; this control has not been reported."
+    ],
+    "analysis": "The A/B is materially stronger than a generic performance report, and the user already supplied a diagnostic archive, so neither another generic reproduction checklist nor another whole PowerToys ZIP is warranted. Upstream source shows PowerToys writes a profile import for the external WinGet CommandNotFound module; the package version/path and an explicit-import control distinguish integration from dependency behavior. The relevant module logs in the archive contain no runtime exit trace, while the large MSI log is unrelated to the shell close symptom. Request only the missing module identity and control-test timings.",
+    "initial_investigation": [
+      "Read the live issue body and full discussion, labels, and attachment reference. The sole comment is an automated triage note stating that the ZIP was rejected for an oversized entry; no human author follow-up is present.",
+      "Downloaded and hashed the attached ZIP privately, listed entries without extracting the archive, and identified the 11.4 MB uncompressed MSI log that triggered the size rejection.",
+      "Read only the three small CmdNotFound module log entries; they record initialization/object construction but no interactive PowerShell shutdown event.",
+      "Reviewed current upstream CmdNotFound dllmain.cpp and EnableModule.ps1: the module invokes the profile setup script, which imports Microsoft.WinGet.CommandNotFound in the user's interactive PowerShell profile.",
+      "Searched current upstream issue/PR and fork traces; no exact duplicate, candidate fix, or mirror was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "The installed Microsoft.WinGet.CommandNotFound module version/path and timing of elevated pwsh exit with no profile versus with only that module explicitly imported",
+        "why_needed": "This distinguishes a delay caused by the external module's load/shutdown behavior from a PowerToys profile-integration issue; the attached PowerToys logs contain no exit trace.",
+        "how_to_collect": "Run Get-Module -ListAvailable Microsoft.WinGet.CommandNotFound | Select Name,Version,Path and report the output. In an elevated terminal compare `pwsh.exe -NoProfile` followed by exit with a no-profile pwsh session that explicitly imports Microsoft.WinGet.CommandNotFound before exit; report approximate close times for each.",
+        "evidence_type": "other_software"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-cmdnotfound-module-exit-control-51587",
+      "type": "request_info",
+      "label": "Request Command Not Found module version and exit control test",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the clear enabled/disabled comparison and for attaching the report. The archive's small Command Not Found logs show module initialization but no PowerShell exit trace. Could you please provide the output of `Get-Module -ListAvailable Microsoft.WinGet.CommandNotFound | Select Name,Version,Path` and compare exit time in an elevated `pwsh.exe -NoProfile` with a no-profile session that explicitly imports `Microsoft.WinGet.CommandNotFound` before exiting? This will distinguish the imported dependency from the PowerToys profile integration without asking you to recreate the already-reported A/B."
+      }
+    }
+  ]
+}
