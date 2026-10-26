@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-26T10:22:03.9112196+08:00",
+  "generated_at": "2026-10-26T10:37:10.2767839+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 202,
+    "open_prs": 203,
     "open_issues": 12382,
     "community": 11478,
     "artifacts": 1294
   },
   "impact": {
-    "as_of": "2026-10-26T10:22:03.9112196+08:00",
+    "as_of": "2026-10-26T10:37:10.2767839+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1395,6 +1395,43 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51579",
+      "kind": "pr",
+      "number": 51579,
+      "url": "https://github.com/microsoft/PowerToys/pull/51579",
+      "title": "CmdPal: Turn built-in fallback commands into normal top-level commands",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-10-26T02:09:30Z",
+      "updated_at": "2026-10-26T02:16:16Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": "UNSTABLE"
+    },
+    {
       "id": "pr-51575",
       "kind": "pr",
       "number": 51575,
@@ -1708,7 +1745,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-24T01:38:48Z",
-      "updated_at": "2026-10-26T01:15:54Z",
+      "updated_at": "2026-10-26T02:17:34Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -5431,10 +5468,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 4,
+      "proposed_open": 3,
       "primary_action": {
         "type": "post_review",
-        "label": "Post 3 inline review comments and 1 general review note"
+        "label": "Post 3 inline review comments"
       },
       "labels": [
         "Needs-Triage",

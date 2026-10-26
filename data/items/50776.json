@@ -6,99 +6,84 @@
   "url": "https://github.com/microsoft/PowerToys/pull/50776",
   "track": "review",
   "stage": "awaiting_review_approval",
-  "generated_at": "2026-10-23T10:18:02.0602556+08:00",
-  "evaluated_at": "2026-10-23T10:13:42.2004029+08:00",
-  "source_updated_at": "2026-10-23T02:54:14+08:00",
-  "head_sha": "ea4d47642a552bfe4b3cefe96b388f26fc14667e",
+  "generated_at": "2026-10-26T10:13:03.6271909+08:00",
+  "evaluated_at": "2026-10-26T10:13:03.6272616+08:00",
+  "source_updated_at": "2026-10-25T18:21:16+08:00",
+  "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
   "proposed_comments": [
     {
-      "kind": "inline",
-      "disposition": "proposed",
+      "id": "mapped-dns-placeholder",
+      "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "in_diff": true,
       "confidence": {
         "score": 90,
         "rationale": "A mapped client that reaches Connected first may remove the dummy socket; that winning schedule is unaffected. The failing schedule is DNS failure before that completion. Module status aggregation can replace NA with the mapped client, but does not replace an earlier HostNotFound. Existing useName2IP records that validated mapped addresses were actually started."
       },
-      "id": "mapped-dns-placeholder",
-      "body": "### [P2] Do not report DNS failure while a configured address is connecting\n\n**Severity:** `medium`\n\nThe Name-to-IP branch starts client connections before attempting DNS. When that DNS lookup fails, the earlier placeholder is still reported as HostNotFound even though the configured address can be usable. RequestMachineSocketStateAsync keeps the first non-NA status for a machine, and Settings treats HostNotFound as terminal. Leave the placeholder neutral when mapped clients were started, while preserving HostNotFound when no mapping exists. Verify an unresolvable mapped peer both while its client is connecting and after it connects, plus an unmapped unresolvable peer.\n\n```suggestion\n                    UpdateTcpSockets(dummyTcp, useName2IP ? SocketStatus.NA : SocketStatus.HostNotFound);\n```",
-      "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
-      "line": 957,
       "severity": "medium",
+      "start_line": 956,
+      "line": 956,
+      "body": "### [P2] Do not report DNS failure while a configured address is connecting\n\n**Severity:** `medium`\n\nThe Name-to-IP branch starts client connections before attempting DNS. When that DNS lookup fails, the earlier placeholder is still reported as HostNotFound even though the configured address can be usable. RequestMachineSocketStateAsync keeps the first non-NA status for a machine, and Settings treats HostNotFound as terminal. Leave the placeholder neutral when mapped clients were started, while preserving HostNotFound when no mapping exists. Verify an unresolvable mapped peer both while its client is connecting and after it connects, plus an unmapped unresolvable peer.\n\n```suggestion\n                    UpdateTcpSockets(dummyTcp, useName2IP ? SocketStatus.NA : SocketStatus.HostNotFound);\n```",
       "side": "RIGHT",
-      "start_line": 957,
-      "in_diff": true,
-      "title": "[P2] Do not report DNS failure while a configured address is connecting"
+      "disposition": "proposed",
+      "title": "[P2] Do not report DNS failure while a configured address is connecting",
+      "kind": "inline"
     },
     {
-      "kind": "inline",
-      "disposition": "proposed",
+      "id": "preserve-hostnotfound",
+      "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "in_diff": true,
       "confidence": {
         "score": 90,
         "rationale": "The author explicitly wants legacy-app conflict diagnostics and reports successful dogfooding. That supports retaining the override for generic connection failures, but an installed legacy app cannot change a DNS failure into successful name resolution. The specific HostNotFound switch arm exists but is bypassed under the detector-true condition."
       },
-      "id": "preserve-hostnotfound",
+      "severity": "medium",
+      "start_line": 959,
+      "line": 959,
       "body": "### [P2] Preserve the specific host-not-found diagnostic\n\n**Severity:** `medium`\n\nHostNotFound currently reaches the legacy-app override before the status switch. If the standalone app is also detected, a DNS failure is reported as a local application conflict instead of identifying the invalid peer name. Exclude HostNotFound from the override, just like InvalidKey, so the existing specific message remains reachable. Verify HostNotFound with legacy detection both true and false, and retain the conflict message for a generic timeout.\n\n```suggestion\n            if (status is not (SocketStatus.InvalidKey or SocketStatus.HostNotFound) && IsLegacyMouseWithoutBordersPresent())\n```",
-      "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
-      "line": 937,
-      "severity": "medium",
       "side": "RIGHT",
-      "start_line": 937,
+      "disposition": "proposed",
+      "title": "[P2] Preserve the specific host-not-found diagnostic",
+      "kind": "inline"
+    },
+    {
+      "id": "connection-attempt-recovery-ownership",
+      "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
       "in_diff": true,
-      "title": "[P2] Preserve the specific host-not-found diagnostic"
-    },
-    {
-      "kind": "companion",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 100,
-        "rationale": "The exact upstream and DNS-only candidate both fail the same existing authorization source test; the one-line boundary correction passes all 102 selected product tests independently and together."
-      },
-      "id": "getter-test-boundary",
-      "out_of_diff_reason": "The required replacement is line 127 in the unchanged IpcSerializationCompatibilityTests.cs file, which has no current RIGHT-side diff range. The added RestoreSecurityKey implementation is not the code to replace.",
-      "body": "### [P2] Keep the authorization wiring test scoped to the getter\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/IpcSerializationCompatibilityTests.cs`, `GetCurrentPairingKeyAuthorizesBeforeReadingRuntimeStateWithoutAccessingStoredSettings`.\r\n\r\n**Problem:** The test slices `Program.cs` from `GetCurrentPairingKey` through the declaration of `ConnectToMachine`. The new `RestoreSecurityKey` method now lies inside that interval, so its additional `Encryption.MyKey` references fail the getter's uniqueness assertion. Its `Setting.Values` references would also fail the following assertion.\r\n\r\n**Why it matters:** The authorization wiring test now fails even though the getter itself still has the expected guard and single runtime-key read.\r\n\r\n**Suggested change:**\r\n1. In that test, change the end-delimiter lookup from `source.IndexOf(\"public Task ConnectToMachine(\", start, StringComparison.Ordinal)` to `source.IndexOf(\"public void RestoreSecurityKey(\", start, StringComparison.Ordinal)`.\r\n2. Keep the guard-order, unique-key-read and no-stored-settings assertions unchanged; the fix should exclude the neighboring method rather than weaken the getter's contract.\r\n\r\n**Verification:** Rebuild `MouseWithoutBorders.UnitTests`, then run `GetCurrentPairingKeyAuthorizesBeforeReadingRuntimeStateWithoutAccessingStoredSettings` along with `IpcSerializationCompatibilityTests`, `PairingKeyCodecTests` and `SettingsKeyTests`. The current source-boundary assertion should pass without changing `GetCurrentPairingKey` or the restore implementation.",
-      "severity": "medium",
-      "in_diff": false,
-      "title": "Keep the authorization wiring test scoped to the getter"
-    },
-    {
-      "kind": "inline",
-      "disposition": "proposed",
       "confidence": {
         "score": 95,
-        "rationale": "The exact nullable-helper path deterministically consumes recovery ownership without a restore or retry; no live fault-injection or remedy implementation is claimed."
+        "rationale": "The exact current requireConnection:true restore path consumes the prior-key snapshot before an endpoint connection can throw; failure logs without retaining recovery ownership. No runtime fault injection or remedy implementation is claimed."
       },
-      "id": "connection-attempt-recovery-ownership",
-      "body": "### [P2] Keep rollback ownership until the failed attempt is settled\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs`: `SubmitConnectionRequestAsync`, `ReportConnectFailure`, `CheckPendingConnectStatus` and `RestorePreviousSecurityKeyIfNeededAsync`; `src/modules/MouseWithoutBorders/App/Class/Program.cs`: `SettingsSyncHelper.ConnectToMachine`.\r\n\r\n**Problem:** The module persists the submitted key before the connection result is known, but Settings drops its recovery state before restoration succeeds. For example, start with key K0, submit valid-length K1, then receive a terminal connection failure. `CheckPendingConnectStatus` clears the pending name and starts restoration; this method clears the saved K0 before opening the helper. If the pipe is unavailable, `GetSettingsSyncHelperAsync` returns null, the restore call is skipped, and subsequent polls return immediately because the pending name is empty. K1 remains persisted with no automatic retry of K0. The submit-exception path also clears the pending name via `ReportConnectFailure(..., keyWasChanged: true)` without initiating restoration when the RPC may already have changed the key.\r\n\r\n**Why it matters:** Reporting a failed attempt and retaining the typed fields does not settle its module-side credential change. A transient IPC failure can permanently discard the information needed by the rollback this change introduces.\r\n\r\n**Suggested change:**\r\n1. Keep the previous key and recovery status attached to the specific connection attempt until that attempt succeeds or its restoration is confirmed; do not consume the snapshot before the IPC operation.\r\n2. Route terminal failure, timeout and an ambiguous submit/RPC exception through the same recovery transition. If the helper is unavailable or restoration fails, retain an explicit retry/recovery state rather than treating the attempt as settled.\r\n3. Prevent a new attempt from overwriting unresolved recovery state, or serialize recovery with attempt identity so an old restore cannot replace a newer attempt's key. Moving only the assignment below the flush is insufficient because the pending name is already cleared and polling does not retry.\r\n4. Use an acknowledged restore operation or equivalent confirmation before discarding recovery ownership. This is corrective guidance, not a claim that a replacement protocol has been implemented.\r\n\r\n**Verification:** Inject helper-null and failed-restore paths after an accepted K1 submission, then restore IPC. Verify that K0 is restored or recovery remains explicitly pending, never silently forgotten. Also inject an RPC failure after module-side persistence, and submit another attempt while recovery is pending; verify that the old recovery cannot overwrite the newer key. The failure above follows directly from the current control flow; live IPC fault injection and a replacement implementation still need testing.",
-      "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
-      "line": 896,
       "severity": "medium",
+      "start_line": 920,
+      "line": 920,
+      "body": "### [P2] Keep rollback ownership until the failed attempt is settled\n\n**Severity:** `medium`\n\n**Affected code:** `src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs`: `SubmitConnectionRequestAsync`, `ReportConnectFailure`, `CheckPendingConnectStatus`, and `RestorePreviousSecurityKeyIfNeededAsync`; `src/modules/MouseWithoutBorders/App/Class/Program.cs`: `SettingsSyncHelper.ConnectToMachine` and `RestoreSecurityKey`.\n\n**Problem:** `ConnectToMachine` replaces and saves the local key before the remote connection succeeds. On a terminal socket failure, Settings clears the pending machine and removes the saved previous key before attempting the restore. If connecting to the restore endpoint throws before the command is sent, the catch only logs the failure: the module retains the attempted key, the old-key snapshot has been consumed, and subsequent status checks return immediately because no machine remains pending. Separately, an exception after submitting `ConnectToMachine` reports `keyWasChanged: true` but clears the pending machine without starting recovery, even when the module already applied the new key.\n\n**Why it matters:** After a failed connection attempt, the entered fields remain visible, but the previously working local key can remain replaced. This contradicts the promised restoration of the previous key on failure.\n\n**Suggested change:** Retain an attempt-owned recovery record until restoration is confirmed. Route terminal status failures and ambiguous submission failures through a common failure transition. Keep a failed restore pending for retry or expose an explicit recovery action instead of consuming the only snapshot on dispatch. Associate restoration with its attempt so an older recovery cannot overwrite a newer attempt. The awaited restore RPC is useful, but an exception must not discard recovery ownership.\n\n**Verification:** Start with key K0, submit K1, observe a terminal failure, then make the next restore connection fail before sending its command. After endpoint recovery, verify K0 is restored or an explicit recoverable state remains available. Also cover an accepted connection RPC whose response is lost and a later attempt while recovery is pending. These are acceptance checks for the remedy; this finding is based on the existing source transitions, not a claimed runtime fault-injection result.",
       "side": "RIGHT",
-      "start_line": 896,
-      "in_diff": true,
-      "title": "Keep rollback ownership until the failed attempt is settled"
+      "disposition": "proposed",
+      "title": "Keep rollback ownership until the failed attempt is settled",
+      "kind": "inline"
     }
   ],
   "actions": [
     {
       "requires_confirmation": true,
-      "label": "Post 3 inline review comments and 1 general review note",
+      "id": "post-review-50776-a20acde9",
+      "label": "Post 3 inline review comments",
+      "note": "Two literal suggestions and one recovery-ownership concern.",
       "type": "post_review",
-      "id": "post-review-50776-current-head",
-      "note": "Includes 2 inline suggestions and 1 general review note posted as a separate PR conversation comment.",
       "review": {
         "comment_ids": [
           "mapped-dns-placeholder",
           "preserve-hostnotfound",
-          "getter-test-boundary",
           "connection-attempt-recovery-ownership"
         ],
-        "head_sha": "ea4d47642a552bfe4b3cefe96b388f26fc14667e",
+        "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
         "event": "COMMENT"
       }
     }
   ],
   "validation": {
     "suggestion_patch": {
-      "head_sha": "ea4d47642a552bfe4b3cefe96b388f26fc14667e",
+      "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
@@ -107,7 +92,7 @@
       ]
     },
     "line_ending_safety": {
-      "head_sha": "ea4d47642a552bfe4b3cefe96b388f26fc14667e",
+      "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
       "result": "passed",
       "checked_comment_ids": [
         "mapped-dns-placeholder",
