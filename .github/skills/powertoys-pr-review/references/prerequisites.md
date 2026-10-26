@@ -53,7 +53,9 @@ gh api repos/<FORK_REPO>/pulls/<N>/requested_reviewers -X POST -f "reviewers[]=c
 2. Ensure their GitHub account has Copilot access (individual at `https://github.com/settings/copilot`, or org-level via an admin).
 3. Re-request the review.
 
-If the user cannot enable it (e.g., no Copilot license), fall back to a local code-review sub-agent as a last resort (see [copilot-review-loop.md](./copilot-review-loop.md#fallback-local-review)).
+If the user cannot enable it (e.g., no Copilot license), return the exact
+prerequisite failure privately. Cloud review is required for this workflow;
+do not automatically substitute a local reviewer.
 
 ## 4. Visual Studio build tools
 

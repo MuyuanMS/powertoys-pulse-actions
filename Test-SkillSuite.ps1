@@ -16,68 +16,6 @@ foreach ($skill in $requiredSkills) {
   }
 }
 
-$reviewContractFiles = @(
-  (Join-Path $skillsRoot 'powertoys-pr-review\SKILL.md')
-  (Join-Path $skillsRoot 'powertoys-pr-review\references\build-and-test.md')
-  (Join-Path $skillsRoot 'powertoys-pr-review\references\setup-and-mirror.md')
-  (Join-Path $skillsRoot 'powertoys-pr-review\references\batch-parallel.md')
-  (Join-Path $skillsRoot 'powertoys-pr-review\references\copilot-review-loop.md')
-  (Join-Path $PSScriptRoot 'UPDATE_DASHBOARD_PROMPT.md')
-)
-if (@($reviewContractFiles | Where-Object { -not (Test-Path $_) }).Count -gt 0) {
-  $errors.Add('Missing a review build-order or dashboard prompt contract file.')
-} else {
-  $prReviewText = Get-Content $reviewContractFiles[0] -Raw
-  $buildTestText = Get-Content $reviewContractFiles[1] -Raw
-  $setupText = Get-Content $reviewContractFiles[2] -Raw
-  $batchText = Get-Content $reviewContractFiles[3] -Raw
-  $reviewLoopText = Get-Content $reviewContractFiles[4] -Raw
-  $promptText = Get-Content $reviewContractFiles[5] -Raw
-  $planStep = $prReviewText.IndexOf('| 3 | **Prepare and checkpoint the focused validation plan**')
-  $requestStep = $prReviewText.IndexOf('| 4 | **Request Copilot review**')
-  if ($planStep -lt 0 -or $requestStep -le $planStep) {
-    $errors.Add('PR review workflow must prepare its validation plan before the first Copilot request.')
-  }
-  if ($buildTestText -notmatch '(?s)## Step 3: Prepare the validation plan.*?Do not compile the ordinary fork worktree in Step 3' -or
-      $buildTestText -notmatch '## Step 7: Final build \(after Copilot convergence\)') {
-    $errors.Add('PR review must defer the ordinary fork build until after Copilot convergence.')
-  }
-  if ($setupText -notmatch 'Step 7 \(run the saved plan under the build lock\)' -or
-      $setupText -match 'Step 3 \(build\)') {
-    $errors.Add('PR review resume guidance must resume review before building and use the saved plan.')
-  }
-  if ($batchText -notmatch 'Do not hold the lock while waiting for Copilot' -or
-      $batchText -notmatch 'Only after that PR.s loop converges') {
-    $errors.Add('Parallel review guidance must reserve the serialized build lock for post-convergence builds.')
-  }
-  if ($batchText -notmatch 'dashboard planner.s cap \(three in normal mode, six in drain mode\)') {
-    $errors.Add('Direct batch and dashboard review concurrency limits must be distinguished.')
-  }
-  if ($reviewLoopText -match 'before leaving Step 6' -or
-      $reviewLoopText -notmatch 'After both conditions hold, run the serialized Step 7 build') {
-    $errors.Add('Copilot convergence must precede the final build and review completion.')
-  }
-  if ($promptText -notmatch 'request Copilot\s+without a pre-review compile' -or
-      $promptText -notmatch 'checkpoint the exact\s+focused validation commands') {
-    $errors.Add('Dashboard update prompt must pipeline Copilot requests and preserve resumable validation plans.')
-  }
-  $drainReference = Join-Path $skillsRoot 'powertoys-dashboard-update\references\drain-dispatch.md'
-  $drainPrompt = Join-Path $PSScriptRoot 'DRAIN_PRS_PROMPT.md'
-  if (-not (Test-Path $drainReference) -or -not (Test-Path $drainPrompt)) {
-    $errors.Add('Missing PR-drain dispatch contract or copyable recovery prompt.')
-  } else {
-    $drainText = Get-Content $drainReference -Raw
-    $recoveryText = Get-Content $drainPrompt -Raw
-    if ($drainText -notmatch 'Get-PrReviewDispatchPlan.ps1' -or
-        $recoveryText -notmatch 'Install-Skills.ps1 -VerifyOnly' -or
-        $recoveryText -notmatch 'INCLUDING CmdPal' -or
-        $recoveryText -notmatch 'five-minute drain watchdog' -or
-        $recoveryText -notmatch 'FailOnStale') {
-      $errors.Add('PR-drain recovery must enforce suite freshness, active dispatch, scoped completion and all-area schedule recovery.')
-    }
-  }
-}
-
 $forbiddenFiles = Get-ChildItem $skillsRoot -Recurse -File | Where-Object {
   $_.Name -match '^review-data-\d+\.json$|^syncfork-\d+\.json$' -or
   $_.FullName -match '\\assets\\dashboard-v3\\data\\items\\'
@@ -251,7 +189,7 @@ foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1', 
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
 }
-foreach ($testName in @('Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1', 'Test-PublicPrArtifact.ps1')) {
+foreach ($testName in @('Test-SkillContracts.ps1', 'Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1', 'Test-PublicPrArtifact.ps1')) {
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-dashboard-update\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Drain reliability regression test failed: $testName") }
 }

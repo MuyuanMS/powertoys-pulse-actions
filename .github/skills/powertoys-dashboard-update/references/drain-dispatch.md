@@ -1,50 +1,24 @@
-# PR drain dispatch and schedule contract
+# PR-only drain: coordinator execution contract
 
-A drain is an execution loop, not a repeated inventory report. Use this
-contract for a PR-only drain without starting issue/design work. The operator
-may exclude Command Palette with `Get-StalePrReviewQueue.ps1 -ExcludeCmdPal`;
-use the same switch for the final `-FailOnStale` gate. Without that switch,
-normal scheduled updates continue to include Command Palette.
+Read this with the dashboard entry point. Review decisions belong to the PR
+skill; this file defines dispatch, persistence and delivery only.
+Do not load issue workflows, Outlook or project synchronization for this path.
 
-## Load the complete execution suite
+## One owner, one queue, one publisher
 
-At run startup, fast-forward a clean canonical `main` checkout, then run its
-`Install-Skills.ps1 -Update` and `Install-Skills.ps1 -VerifyOnly`. The installer
-backs up existing copies outside the skills directory before replacing them
-and verifies every file in all four skills. Read the updated entry points and
-references, especially `powertoys-pr-review`, and record the source commit in
-the private run ledger and worker prompts. Reloading only the orchestrator is
-not an upgrade of the execution skills. Preserve and adjudicate local fixes
-from the backup; do not silently mix two suite revisions.
+Recover existing `run_id`, `owner_session_id`, scope, suite revision, workers,
+requests and build owner before starting. Check actual worker/process state;
+an old timestamp alone does not authorize a second owner. Preserve useful
+branches, commits, receipts and request counts.
 
-## Dispatch from work state, not agent existence
+Default new PR-only drains include all areas. Use `-ExcludeCmdPal` only for an
+explicit non-CmdPal scope, consistently on discovery and final verification.
+Drain mode has no selection limit/deadline; it does not enable issue work.
+Default six active distinct-PR workers, explicit maximum eight; no nested
+workers. Resume idle workers for the same PR only. Idle agents are not capacity.
 
-At each per-PR round boundary and resume, use the PR skill's read-only
-`Get-UpstreamPrReviewGate.ps1` against the original upstream PR before advancing
-the fork loop. Workers also check before another request, expensive validation
-or finalization. Save the observation privately and act on it: stop closed,
-merged or draft work, safely release owned resources and refresh the scoped
-live queue; reconcile a new upstream head before further review work.
-The offline planner cannot perform this live check. Do not let an old queue
-snapshot or an open fork PR override a newer upstream observation. Re-ground
-findings and architecture, invalidate old-head checks and preserve total
-requests when new commits arrive. Do not poll a superseded request to justify
-continuing the obsolete version; retain its identity privately.
-
-Maintain one private `prs` record per upstream number, outside public `data/`.
-At each worker completion or due cloud check, reconcile the real worker state,
-save results, and call:
-
-```powershell
-.\scripts\Get-PrReviewDispatchPlan.ps1 `
-  -QueueJsonPath <scoped-live-queue.json> `
-  -StateJsonPath <private-ledger.json> -MaxConcurrency 8 -AsJson
-```
-
-This read-only planner neither launches workers nor verifies review evidence.
-The coordinator must execute its returned `assignments` and
-`coordinator_actions`, save the actual result, and immediately replan.
-Never report a plan as work executed. A minimal private ledger is:
+Run `Get-StalePrReviewQueue.ps1 -Dashboard <canonical-main> -AsJson`.
+Persist a live snapshot and one PRIVATE ledger outside public `data/`:
 
 ```json
 {
@@ -53,220 +27,116 @@ Never report a plan as work executed. A minimal private ledger is:
     "head_sha": "0123456789012345678901234567890123456789",
     "phase": "reviewing_findings",
     "worker_status": "idle",
-    "worker_id": "known-worker-id",
-    "next_action": "Assess saved review 123, implement valid findings, reply and resolve.",
-    "round": 2
+    "worker_id": "known-worker",
+    "round": 1,
+    "next_action": "Assess saved review 123, then fix valid localized issues."
   }]
 }
 ```
 
-`round` is the number of actual requests already consumed, including the initial
-request, not the next iteration number. Reconcile legacy next-round counters
-against saved request history before migration; unknown history is not zero.
-Pass that count as `Request-CopilotReview.ps1 -RequestsUsed <count>` and persist
-each actual request immediately. No helper/API fallback bypasses this cap.
+`round` means actual requests used across preserved lanes/sessions. Unknown
+history must be reconciled, never initialized to zero. A live head mismatch
+requires the PR skill's upstream gate and repinning, not an old-state resume.
+Keep running workers outside the queue tracked until safely reconciled.
 
-Use `worker_status: running|idle|none`. Resume a known idle worker only for
-the same PR; a different PR gets a fresh worker. Historical idle workers are
-neither active capacity nor a reason to skip the PR. If the queue head differs
-from the ledger head, reconcile the new head before using old review, blocker,
-or build evidence. Include running workers outside the queue until safely
-finished or reconciled; do not duplicate their operations.
+## Execute until no runnable work remains
 
-The planner uses phases `waiting_copilot`, `reviewing_findings`, `building`,
-`finalizing`, and `blocked`; other legacy states schedule resume reconciliation.
-For `waiting_copilot`, save:
-
-```json
-{
-  "request": {
-    "fork_repo": "example/PowerToys",
-    "fork_pr": 100,
-    "head_sha": "0123456789012345678901234567890123456789",
-    "requested_at": "2026-10-18T15:00:00Z",
-    "after_review_id": 123
-  },
-  "review": {
-    "checked_at": "2026-10-18T15:01:00Z",
-    "submitted": false,
-    "request_pending": true
-  }
-}
+```powershell
+.\scripts\Get-PrReviewDispatchPlan.ps1 `
+  -QueueJsonPath <live-queue.json> -StateJsonPath <private-ledger.json> `
+  -MaxConcurrency 6 -AsJson
 ```
 
-These review fields come from the fully paginated read-only status helper,
-not assignment emptiness or a guessed request time. Preserve the exact fork
-head independently of the upstream head. Unknown status schedules a check;
-submitted schedules finding processing; absent review AND absent assignment
-schedules reconciliation, not an indefinite wait or blind duplicate request.
-Pending checks default to every 120 seconds, outside heavy worker slots.
-API failures are errors to diagnose with bounded backoff, not pending reviews.
-After ten minutes from the saved request, the planner first obtains a current
-read-only status, then assigns `diagnose_cloud_wait` if it is still pending.
-Diagnose the actual request/run once; a slow response is not proof of a
-service defect, clean review, or permission to duplicate the request.
-Persist the diagnosis and a concrete next action. If externally blocked,
-adjudicate the exception below rather than polling indefinitely. If a result
-arrives, consume it; never discard an eventual review because time elapsed.
+On each completion or due check: save results, execute coordinator actions,
+publish newly ready results, execute assignments into free slots, then replan.
+An unchanged queue never justifies idle runnable work.
 
-`building` reserves at most one build per dispatch. Pass `-BuildOwnerNumber`
-while a separately tracked build process still owns the lock. Reconcile that
-owner if all workers are idle; never steal a lock or kill unrelated processes.
-Use actual exclusive lock ownership, not a historical permission token.
-All product and candidate compilations remain serialized. Read-only GitHub,
-source inspection, drafting, queue reconciliation and publication preparation
-do not take the compilation lock. Do not repeatedly prepare source-only
-packets while a free build slot and the actual validation command are ready.
-Validation-ready work has priority over starting another ordinary review
-stage; prepare receipts and publication while other PRs wait on cloud. Reuse
-verified unchanged validation inputs as described in the PR build reference,
-and minimize suggestion ranges before their first candidate build.
+| Planner action | Execute and save |
+| --- | --- |
+| `reconcile_resume`, `recover_request_identity`, `reconcile_fork_head`, `reconcile_missing_review`, `reconcile_updated_head` | Worker recovers the exact existing lane/request, then resumes the PR skill. No blind re-request. |
+| `check_saved_review` | Read-only paginated `Get-CopilotReviewStatus.ps1`; save actual status/IDs/time. Arrived results become `reviewing_findings`. |
+| `process_review`, `investigate_architecture`, `draft_architecture_review`, `finalize_review_limit` | Worker executes the PR skill's assess/exit rules. Move supported output to `building` or `finalizing`, not another generic resume. |
+| `validate` | Run saved focused commands under the single build slot; retain exact-input receipts; then `finalizing` on success. |
+| `finalize_artifact` | Complete grounding/schema checks, then coordinator publishes and verifies delivery. Do not leave it in finalization after successful publication. |
+| `revalidate_context` | Read new same-head discussion; retain/withdraw the decision or escalate when substantive evidence warrants it. No full loop merely to renew timestamps. |
+| `diagnose_cloud_wait` | Diagnose the saved request once; save `review.diagnosed_request_at` equal to its `request.requested_at`, plus evidence and next action. Continue checks or adjudicate an actual external failure. |
+| `repair_blocker_evidence`, `repair_local_prerequisite`, `revalidate_operator_exception`, `publish_terminal_blocker` | Repair local work or verify a PRIVATE exception. The last name is legacy; never publish an operational blocker. |
+| `reconcile_build_owner` | Check the specific owned process/lock; release only when actually finished. Never kill unrelated processes or steal a live lock. |
 
-For `work_type: context_revalidation`, the planner assigns `revalidate_context`
-instead of replaying the fork loop. Existing in-flight results, finding
-processing, validation and finalization finish first. Read the new discussion substantively:
-retain a supported current decision, withdraw invalid proposals, or escalate
-to a full current-head review if the evidence changes the code judgment.
-Do not request a new round or recompile solely because an unrelated comment
-advanced `updatedAt`; never blindly advance covered-activity timestamps.
+Coordinator actions do not occupy heavy worker slots. One exclusive compilation
+at a time; do not hold it for cloud waits, inspection or drafting. Finalization
+and ready validation get priority. Verify unchanged receipts rather than
+rebuilding solely because a worker/context changed.
 
-For `blocked`, record `blocker.detail`, `blocker.remediation`, and
-`blocker.external`. Missing commands, idle-agent ownership, a stale coordinator
-grant, or routine dependency restore are local work, not external blockers.
-`publish_terminal_blocker` is a legacy planner action name: independently
-adjudicate and record a current-head operator exception in the PRIVATE ledger.
-Never publish its detail/remediation as dashboard content.
-It does not turn the ledger flag itself into proof. At the three-round limit,
-dispose the last review, preserve the request ledger, and finalize a specific
-manual-review outcome after drafting every independently validated finding;
-do not reset the round counter or request round four.
-Three means the initial review plus at most two re-requests, across preserved
-lanes and sessions; all actual requests, including timeout responses, count.
-Existing histories at or above three get no new allowance. Consume requests
-already in flight, complete validation and publish supported drafts instead.
-Neither a scheduler tick, head change nor recovery starts a fresh allowance.
-No action permits claiming convergence without the required evidence.
+After two passes without a substantive transition, execute the missing command
+or diagnose the exact failure. Do not create more planning/grant packets.
+Ordinary authorized fork/local operations require no per-step permission.
 
-### Park verified exceptions without hiding incomplete coverage
+## Waiting is a saved request, not a stopped drain
 
-Cloud review remains required. Do not substitute an independent/local review
-or a manufactured author-facing defect when the cloud allowance is exhausted.
-After consuming all results, grounding accepted/rejected findings and
-publishing every supportable draft, a remaining no-clean-result case is a
-private `review_policy` exception for the operator's later decision.
+Save `request.fork_repo`, `fork_pr`, fork `head_sha`, `requested_at` and
+`after_review_id`. Save reader results under `review`: `checked_at`,
+`head_matches`, `submitted`, `request_pending`, and submitted review identity.
+Upstream and fork heads are distinct.
 
-To prevent repeatedly assigning the same exception ahead of uncovered PRs,
-save `operator_exception` only after independent coordinator adjudication:
-`head_sha`, `source_updated_at` (the covered live activity), `category`
-(`external` or `review_policy`), exact `detail`, concrete `remediation`,
-non-empty `evidence` references and `verified_at`. Local planning/build-command
-gaps, unused build slots and optional experiments are not external exceptions.
-The planner checks shape/freshness, not the truth of this evidence.
+Use the read-only reader, not the requester, for status. Checks default to
+120 seconds, outside worker/build slots. After ten minutes and a fresh status,
+the planner schedules one diagnosis per request. Time alone does not authorize
+another request or prove a service failure. Inspect actual review content:
+a startup warning can coexist with substantive findings.
 
-Matching verified exceptions appear in `operator_exceptions`, not worker
-assignments. Changed heads/activity and incomplete receipts schedule
-revalidation. `exhausted_with_exceptions: true` is explicitly an INCOMPLETE
-drain requiring the consolidated operator decision list, never success or a
-zero stale queue. Finish all unaffected work first. Never copy these private
-fields into public artifacts or exclude them from the public coverage count.
+On cloud wait or build-slot wait, persist state and release the worker.
+Immediately use the slot for another PR. If every remaining PR is waiting,
+confirm a real next wake, not just a promise to resume.
 
-### Architectural early exit
+## Worker handoff
 
-Before first-round fixes or another request, follow the PR skill's
-`references/architecture-review.md`. Record a private `architecture` object
-with upstream `head_sha`, `status` (`pending`, `cleared`, `changes_required`,
-`insufficient_evidence`) and its evidence/next action. All workers perform the
-gate, including legacy rows with no architecture record.
+Pass upstream number/head, configured fork and existing lane, private saved
+state/receipt locations, suite revision, assigned action and normal-run deadline
+if any. Tell workers to load `powertoys-pr-review`, execute directly without
+nested agents, and return its outcome contract.
+Fork pushes/replies/resolution are allowed; dashboard writes and all upstream
+writes are not. Do not paste this entire coordinator guide into every worker.
 
-The planner routes saved pending/unproven or stale-head assessments to
-`investigate_architecture`, and current-head `changes_required` to
-`draft_architecture_review` instead of more fixing/requesting. These actions
-are work to execute, not evidence: investigate independently, then ground and
-draft the supported overall concern. Do not turn a noisy first review alone
-into a verdict. `cleared` permits the normal three-request loop; confirmed
-design flaws end new requests even after round one. Preserve validation and
-finalization phases, consume in-flight responses and never manufacture a
-clean result. Only the drafted contributor-relevant concern goes to public
-data; the architecture record stays private.
+The coordinator saves worker results before reuse/replacement. Never mark
+`worker_status: running` based only on an old agent's existence.
 
-### Public data is not a drain log
+## Delivery and exceptions
 
-`data/` contains user-facing review drafts and neutral availability metadata,
-not operator instructions. `Set-PrReviewCheckpoint.ps1` saves full receipts
-outside the repository under `POWERTOYS_PRIVATE_REVIEW_STATE` (default
-`%LOCALAPPDATA%\PowerToysPulse\review-state`), then emits only the public
-projection. `Sanitize-ActionData.ps1` archives legacy receipts there before
-removing operational fields. Recover private receipts by PR number and pinned
-head, alongside the active-run ledger and live fork traces.
-Never put `blockers`, worker phases, fork bookkeeping, summary/status prose,
-build logs, cap-override requests or `next_action` in public PR artifacts.
-Run the sanitizer even for incremental publication; `emit.ps1` also enforces
-this boundary. An unavailable automated review is not a defect in the PR.
+Follow [publication.md](./publication.md). Checkpoint privately immediately;
+publish completed artifacts immediately, other substantive pending changes
+after two transitions or five minutes. No full generator on unchanged ticks.
+Publication errors retain validated output for retry; do not restart reviews.
+Record the published commit/artifact head after verifying canonical delivery.
 
-At the cap, conserve all accepted findings across rounds and finish grounding
-and validation for any publishable correction. A validated `post_review` does
-not require an unrelated zero-comment pass; `approve` still requires the clean
-review gates. If none survives, publish only neutral pending metadata and
-report the precise exception privately. Neither a terminal flag nor a cap
-outcome is completed review coverage. The public stale queue deliberately
-continues to include those PRs; reconcile private exceptions separately rather
-than manufacturing a zero stale count.
+Local planning gaps, interrupted runnable builds and unused slots are not
+external exceptions. If all supportable findings are delivered but a real
+external/review-policy decision remains, independently verify and save:
 
-## Forward-progress invariant
+```text
+operator_exception:
+  head_sha, source_updated_at, category (external|review_policy),
+  detail, remediation, evidence[] and verified_at
+```
 
-An unchanged queue is not permission to do nothing. On every dispatch pass,
-each unfinished PR must be running, dispatched, due for a cloud check, waiting
-until a recorded next check, waiting on an actual build owner, or being
-finalized with independently supported external-blocker evidence.
+The planner parks matching verified exceptions, and revalidates them after
+head/activity changes. It checks shape/freshness, not truth. Exceptions remain
+incomplete coverage; no automatic local-review fallback or fabricated finding.
 
-If workers are idle and any local work is runnable, dispatch it in the same
-pass. After two consecutive passes without a substantive transition, audit
-each PR's exact next operation and eliminate local planning/grant loops.
-Do not rewrite timestamps, send more reminders, or invent product findings to
-simulate progress. Reuse a proven build launcher and dependency setup across
-PRs, with isolated outputs and exact-tree results; do not commission a new
-process-custody/projection framework for every review.
+Refresh live scope and reconcile every PR with its actual published artifact.
+Only use `-FailOnStale` when no unfinished PRs/exceptions remain.
+`exhausted_with_exceptions` means INCOMPLETE, never drain success.
+Return one coverage table: PR/live head, delivered artifact/action, justified
+author wait, excluded state, or private exact remaining exception.
 
-Routine local/fork operations already authorized by the operator do not need
-another approval per command or review round. Genuine credential, destructive,
-upstream-posting, runtime-lab, or product-design decisions remain gated.
-Finite technical retries must end in a verified alternative or an honest
-specific blocker, not perpetual `review_in_progress`.
+## Schedule handoff
 
-## Coexistence with scheduled updates
+Keep the regular schedule's cadence. With no active drain it runs a bounded
+all-area update INCLUDING CmdPal; with a drain it services the same owner/run.
+Do not start another drain, issue batch or competing publisher.
 
-Keep one regular update schedule at its existing cadence. When no drain is
-active, it runs the normal bounded update with all areas, including CmdPal.
-When a drain is active, it services that same run through dispatch/status and
-publication; it must not start another drain, issue-design batch, or competing
-publisher. Do not mutate schedules from another session.
-
-Use worker/process completion notifications for immediate re-dispatch. If a
-scheduled watchdog is needed, keep only one lightweight five-minute drain
-watchdog; it runs dispatch, not a full inventory rebuild or a no-op idle report.
-If all remaining work is genuine cloud wait, keep a real wake mechanism for
-the next checks. Do not end the loop with only "await next tick" unless the
-schedule is confirmed active. Stop this temporary watchdog when the drain is
-finished; leave the regular update schedule active.
-
-Persist `run_id`, `owner_session_id`, scope, suite commit, running workers,
-last substantive progress, next check, and completion state in the private
-active-run marker. An expired timestamp alone neither proves ownership nor
-authorizes a competing drain. Reconcile owner/process state on recovery;
-resume orphaned work once, retaining review identities and results.
-
-## Finish and report honestly
-
-Refresh live scope before the final gate, handling new heads and newly eligible
-PRs. Validate and publish every concluded artifact, verify it in canonical
-`main` and synchronized Pulse, and run the scoped stale-queue gate.
-Run a final artifact/head/coverage reconciliation, not merely a zero count.
-Keep completed results while repairing another PR; one blocked PR must not
-prevent every other PR from finishing.
-
-Report ready reviews separately from author waits and private operator exceptions.
-Pending artifacts are not completed reviews. If real external service,
-credential or lab failures prevent full review coverage, publish all supported
-results and deliver one consolidated PRIVATE exception list; never promise a clean full drain
-or manufacture evidence. Clear the active marker and stop the watchdog only
-when the recorded outcome is fully reconciled.
+Use completion notifications for immediate refill. If needed, keep one
+five-minute drain watchdog that executes dispatch and recovers handoffs, not a
+passive idle report. Persist the next check and active owner across rollover.
+Stop the watchdog after the final reconciled outcome; retain the normal schedule.
+Only the owning session changes its schedules.

@@ -24,6 +24,70 @@ function Assert-Fails([scriptblock]$Action, [string]$Pattern) {
     Assert-True ($failure -match $Pattern) "Expected $Pattern, got '$failure'"
 }
 try {
+    $candidatePath = Join-Path $root 'candidates.json'
+    @{
+        prs = @(
+            @{ number = 1; classification = 'full_review'; live_head_sha = $head; live_updated_at = $now.ToString('o') }
+            @{ number = 2; classification = 'context_revalidation'; live_head_sha = $head; live_updated_at = $now.ToString('o') }
+            @{ number = 3; classification = 'context_revalidation'; live_head_sha = $head; live_updated_at = $now.AddDays(-1).ToString('o') }
+        )
+        issues = @()
+        summary = @{}
+    } | ConvertTo-Json -Depth 6 | Set-Content $candidatePath
+    $updatePlanPath = Join-Path $root 'update-plan.json'
+    & (Join-Path $PSScriptRoot '..\scripts\Get-DashboardUpdateRunPlan.ps1') `
+        -Dashboard $root -CandidatesJsonPath $candidatePath -PrBatchSize 2 `
+        -IssueBatchSize 1 -OldIssueReserve 0 -MaxConcurrency 1 -RunBudgetMinutes 50 `
+        -AsJson | Set-Content $updatePlanPath
+    $savedPlan = Get-Content $updatePlanPath -Raw | ConvertFrom-Json
+    Assert-True (([datetimeoffset]$savedPlan.deadline_utc -
+        [datetimeoffset]$savedPlan.planned_at).TotalMinutes -eq 50) 'normal run plan records the exact configured deadline'
+    Assert-True (([datetimeoffset]$savedPlan.stop_new_work_after_utc -
+        [datetimeoffset]$savedPlan.planned_at).TotalMinutes -eq 40) 'worker cutoff leaves ten minutes to checkpoint and publish'
+    @{ prs = @() } | ConvertTo-Json | Set-Content (Join-Path $root 'state.json')
+    $inherited = & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -Now $now
+    Assert-True ($inherited.available_slots -eq 1 -and $inherited.assignments.Count -eq 1) 'dispatcher inherits normal-plan concurrency without a second manual setting'
+    $delta = & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -MaxConcurrency 3 -Now $now
+    Assert-True ($delta.stale_count -eq 2 -and $delta.assignments.Count -eq 2) 'actual bounded update plan feeds the common dispatcher directly'
+    Assert-True ($delta.assignments.number -notcontains 3) 'normal update cannot accidentally dispatch deferred PRs'
+    Assert-True (@($delta.assignments | Where-Object {
+        $_.number -eq 2 -and $_.action -eq 'revalidate_context'
+    }).Count -eq 1) 'normal-plan field adaptation preserves same-head context work'
+    @{
+        prs = @(@{
+            number = 1; head_sha = $head; worker_status = 'idle'
+            operator_exception = @{
+                head_sha = $head; category = 'external'; detail = 'Service unavailable'
+                remediation = 'Restore service'; evidence = @('Confirmed service response')
+                verified_at = $now.ToString('o'); source_updated_at = $now.ToString('o')
+            }
+        })
+    } | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $root 'state.json')
+    $delta = & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -MaxConcurrency 3 -Now $now
+    Assert-True ($delta.operator_exception_count -eq 1) 'normal-plan adaptation preserves activity for exception freshness'
+    @{ selected_prs = @() } | ConvertTo-Json | Set-Content $updatePlanPath
+    $delta = & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -Now $now
+    Assert-True $delta.complete 'normal empty selection does not pull in deferred work'
+    @{ selected_prs = @(@{ number = 9; live_head_sha = 'invalid' }) } |
+        ConvertTo-Json -Depth 4 | Set-Content $updatePlanPath
+    Assert-Fails { & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -Now $now } 'unpinned queue'
+    @{ selected_prs = $null } | ConvertTo-Json | Set-Content $updatePlanPath
+    Assert-Fails { & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -Now $now } 'Expected selected_prs'
+    $savedPlan.policy.max_concurrency = 9
+    $savedPlan | ConvertTo-Json -Depth 8 | Set-Content $updatePlanPath
+    Assert-Fails { & $planner -RunPlanJsonPath $updatePlanPath `
+        -StateJsonPath (Join-Path $root 'state.json') -Now $now } 'MaxConcurrency'
+    $fullPlan = & (Join-Path $PSScriptRoot '..\scripts\Get-DashboardUpdateRunPlan.ps1') `
+        -Dashboard $root -CandidatesJsonPath $candidatePath -DrainQueue `
+        -MaxConcurrency 6 -RunBudgetMinutes 0 -AsJson | ConvertFrom-Json
+    Assert-True ($fullPlan.selected_pr_count -eq 3 -and
+        $null -eq $fullPlan.deadline_utc -and $null -eq $fullPlan.stop_new_work_after_utc) 'explicit drain plan removes normal selection and deadline without changing the worker'
     $queue = @(1..37 | ForEach-Object { @{ number = $_; live_head_sha = $head } })
     $rows = @(1..37 | ForEach-Object {
         @{ number = $_; head_sha = $head; worker_id = "old-$_"; worker_status = 'idle'; phase = 'review_in_progress' }
@@ -67,6 +131,8 @@ try {
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_missing_review') 'two used iterations leave room for the third after reconciliation'
     $rows[0].round = 3
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'three used iterations prohibit a fourth request'
+    Assert-True ((Plan @($queue[0]) @($rows[0]) 3).assignments[0].action -eq
+        (Plan @($queue[0]) @($rows[0]) 6).assignments[0].action) 'normal delta and drain use the same capped worker transition'
     $rows[0].review.submitted = $true
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'third review result is consumed rather than discarded at the cap'
     $rows[0].review.submitted = $false
@@ -167,6 +233,15 @@ try {
     $rows[0].review.checked_at = $now.ToString('o')
     $rows[0].request.requested_at = $now.AddMinutes(-11).ToString('o')
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'diagnose_cloud_wait') 'freshly checked old cloud request gets bounded diagnosis rather than infinite polling'
+    $rows[0].review.diagnosed_request_at = $rows[0].request.requested_at
+    $resumedPlan = Plan @($queue[0]) @($rows[0])
+    Assert-True ($resumedPlan.assignments.Count -eq 0 -and $resumedPlan.next_check_at) 'persisted diagnosis survives resume without reassigning the same investigation'
+    $rows[0].review.submitted = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'a diagnosed request still consumes its eventual result'
+    $rows[0].review.submitted = $false
+    $rows[0].request.requested_at = $now.AddMinutes(-12).ToString('o')
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'diagnose_cloud_wait') 'a different request does not inherit the old diagnosis'
+    $rows[0].review.diagnosed_request_at = $null
     $rows[0].review.checked_at = $now.AddMinutes(-3).ToString('o')
     Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'old request still gets a fresh read before diagnosis'
     $rows[0].phase = 'blocked'

@@ -40,6 +40,14 @@ param(
     } else {
         4
     }),
+    [ValidateRange(1, 8)]
+    [int]$MaxConcurrency = $(if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
+        [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY
+    } else { 3 }),
+    [ValidateRange(0, 90)]
+    [int]$RunBudgetMinutes = $(if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
+        [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES
+    } else { 50 }),
     [int[]]$PrNumbers,
     [int[]]$IssueNumbers,
     [switch]$DrainQueue,
@@ -56,6 +64,12 @@ if ($isDrainMode) {
     }
     if (-not $PSBoundParameters.ContainsKey('IssueBatchSize') -and -not $env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE) {
         $IssueBatchSize = [int]::MaxValue
+    }
+    if (-not $PSBoundParameters.ContainsKey('MaxConcurrency') -and -not $env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
+        $MaxConcurrency = 6
+    }
+    if (-not $PSBoundParameters.ContainsKey('RunBudgetMinutes') -and -not $env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
+        $RunBudgetMinutes = 0
     }
 }
 
@@ -137,12 +151,19 @@ $deferredIssues = @($issueCandidates | Where-Object {
     [int]$_.number -notin $selectedIssueNumbers
 })
 
+$plannedAt = [datetimeoffset]::UtcNow
 $plan = [pscustomobject]@{
-    planned_at = (Get-Date).ToUniversalTime().ToString('o')
+    planned_at = $plannedAt.ToString('o')
+    deadline_utc = if ($RunBudgetMinutes -gt 0) { $plannedAt.AddMinutes($RunBudgetMinutes).ToString('o') } else { $null }
+    stop_new_work_after_utc = if ($RunBudgetMinutes -gt 0) {
+        $plannedAt.AddMinutes([math]::Max(0, $RunBudgetMinutes - 10)).ToString('o')
+    } else { $null }
     upstream = $Upstream
     dashboard = $Dashboard
     policy = [pscustomobject]@{
         drain_mode = $isDrainMode
+        max_concurrency = $MaxConcurrency
+        run_budget_minutes = $RunBudgetMinutes
         pr_batch_size = $PrBatchSize
         issue_batch_size = $IssueBatchSize
         effective_issue_batch_size = $effectiveIssueBatchSize

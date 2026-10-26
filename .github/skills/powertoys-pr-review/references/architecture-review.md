@@ -63,6 +63,12 @@ counterevidence, verification results/limitations and next action.
   and investigate or seek narrowly targeted clarification. Do not spend another
   cloud round simply to settle an unverified design hypothesis.
 
+Do not repeat the same architecture investigation on every dispatch. Finish
+the current focused trace with a disposition: clear an unsupported hypothesis,
+record a grounded flaw, or identify the specific missing external evidence for
+coordinator adjudication. A preference for another design is not a reason to
+keep `pending` forever or block localized review output.
+
 Consume any request already in flight without duplicating it. On resume, these
 decisions survive worker replacement and scheduler ticks. A changed upstream
 head requires rechecking the evidence, not carrying an obsolete accusation

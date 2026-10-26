@@ -11,7 +11,7 @@ This also applies to architectural early exit and request-cap drafts.
 
 The drafted review combines the **Phase 0 context/process findings** and the **code findings** into the set of actions a maintainer would take. Depending on Phase 0's disposition (0e), the review may be primarily a request for missing context (demo/CLA/validation), a close/redirect (duplicate/superseded/compound-quality), a code-suggestion set, or a combination.
 
-> **Gate — convergence or an explicit grounded exit.** Clean approval requires the Step 6 *Definition of done*: a fresh **0**-comment review and **0** unresolved threads, plus required validation. The three-request cap and [architectural early exit](./architecture-review.md) allow independently grounded author-facing drafts without convergence. Do not copy raw cloud comments or claim a replacement was implemented/tested when it was not. A proven architectural concern does not require a speculative reviewer-authored redesign before drafting; literal suggestions still require exact-patch validation.
+> **Gate — convergence or an explicit grounded exit.** A clean result requires the worker loop's clean evidence: a fresh **0**-comment review and **0** unresolved threads, plus required validation. The three-request cap and [architectural early exit](./architecture-review.md) allow independently grounded author-facing drafts without convergence. Do not copy raw cloud comments or claim a replacement was implemented/tested when it was not. A proven architectural concern does not require a speculative reviewer-authored redesign before drafting; literal suggestions still require exact-patch validation.
 
 **9a. Draft the context actions (from Phase 0), community PRs only.** Use the per-gate reply templates in [phase0-context-review.md](./phase0-context-review.md#reply-templates-per-gate). Batch multiple asks into one comment, lead with thanks, and only ask for things the author actually owes (0b). For members/collaborators/bots, skip 9a.
 
@@ -140,7 +140,7 @@ smallest possible line range.
 
 ### Minimal-range pass
 
-After the exact-patch build passes, perform a separate readability pass:
+Before the first exact-patch build, perform the minimal-range pass:
 
 1. Compare the selected original lines with the suggestion replacement.
 2. Remove their longest identical prefix and suffix.
@@ -148,8 +148,9 @@ After the exact-patch build passes, perform a separate readability pass:
 4. The only exception is a pure insertion, where GitHub requires one unchanged
    anchor line; retain exactly one nearby anchor, preferably the closing line
    immediately after the insertion.
-5. Reapply and rebuild the minimized suggestion set. Minimization must not
-   reuse validation from the pre-minimized patch.
+5. Apply and validate this final minimized set. If an already-validated patch
+   changes, reapply and check the final literal result; do not intentionally
+   build a context-heavy intermediate version first.
 
 Example — avoid replacing an unchanged block:
 

@@ -1,60 +1,46 @@
-# Batch (parallel) review — 2+ PRs at once
+# Multiple independent PR reviews
 
-When asked to review multiple PRs (e.g. "review PRs 123, 456, 789"), **review them concurrently, not one after another.** Each PR spends most of its wall-clock time *waiting* for Copilot, so request reviews as soon as each mirror/rebase/scope check is complete and overlap those waits with processing other PRs. Do not put an ordinary local build in front of the first review request.
+Use one coordinator and one worker per distinct active PR. The worker follows
+the same `SKILL.md`/cloud-loop contract as a single review; batch mode adds no
+convergence requirement. Clean, cap and architecture outcomes all return.
 
-Do not fall back to one-PR-at-a-time execution merely because background sub-agents are unavailable. Use the pipelined single-agent mode below so multiple PRs still have review requests and waits concurrently in flight.
+## Share only what must be shared
 
-## Concurrency model: one background sub-agent per PR
+- Recover existing lanes and sync the fork base once before dispatch.
+  Workers use independent review branches/worktrees; do not race fork-main
+  syncs or reset divergent shared history.
+- The coordinator alone writes dashboard/review-data files and publishes.
+  Workers return drafts and private state; fork pushes/replies are permitted.
+- Serialize actual compilations under one owned build slot. Do not hold the
+  lock while waiting for Copilot, reading code or drafting. Validation after
+  cap/architecture exits is allowed; it never waits for clean convergence.
+- No nested workers. Direct batches normally use three workers, up to five
+  when appropriate; dashboard runs use their planner's configured cap.
 
-The orchestrator (this session) fans out **one background sub-agent per PR** and stays as the coordinator. Each sub-agent owns its PR end-to-end through the code-review engine (Steps 0–8): resume-check, mirror, worktree, rebase, save a focused validation plan, and drive the **full Copilot loop to convergence** (Rule 11 — 0 new comments, 0 unresolved threads). Only after that PR's loop converges does it acquire the build lock and run the saved final build plan. It then returns its converged net diff + validation result + drafted suggestions + Phase 0 disposition to the orchestrator.
+## Dispatch and handoff
 
-```
-orchestrator:
-  1. Parse the PR list. Run Phase-0 author-type + prerequisites ONCE up front.
-  2. Sync the fork's main from upstream ONCE (do NOT let each child race on this — see Shared state).
-  3. Run `Get-ReviewResumeState.ps1` for the full batch, reuse every durable trace it finds, then seed schema-version-2 review-data.json with one entry per PR at phase:"queued" and launch the dashboard.
-  4. Fan out background sub-agents, capped at MAX_CONCURRENT (3–5). As each finishes, launch the next queued PR.
-  5. Poll children; as each reports a phase change, update review-data.json (orchestrator is the SINGLE writer).
-  6. When a child converges, record its contextComment + suggestions and set phase:"ready".
-  7. When all are ready/held, present for the Step 10 approval gate (or hand to the dashboard).
-```
+Seed one row per PR, recover saved requests, and start available work.
+Release a worker on cloud/build-slot wait; use completion notifications and
+due read-only checks to resume work and refill slots. Never keep a PR stranded
+at round one merely because a worker returned a durable wait.
 
-- **Cap concurrency at 3–5 for direct batch reviews.** For dashboard runs, use the dashboard planner's cap (three in normal mode, six in drain mode) rather than overriding it with this direct-review limit. More workers invite GitHub rate limits (review requests, API calls) and can thrash the machine. Launch the next PR only as a slot frees.
-- **Each PR is independent on disk**: its own fork branch `pr-iterate/N` and its own worktree `C:\PowerToys-<hash>`. Git operations across PRs don't collide, so parallelism is safe.
-- Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
-- Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
-- After each round and before another request/finalization, every worker checks
-  the ORIGINAL PR via `Get-UpstreamPrReviewGate.ps1`. Stop closed/merged/draft
-  work and release its slot. For new commits, reconcile the new upstream head,
-  re-ground findings and invalidate old validation without resetting requests.
-  The coordinator refreshes inventory and suppresses obsolete proposals;
-  a still-open fork mirror never overrides the original lifecycle.
-- Each PR has at most three total review iterations, counting preserved requests across sessions and lanes, not three per worker or scheduled tick. At the cap, finish saved results and validated drafts without a fourth request.
-- Every worker runs `architecture-review.md` before first-round fixes or round
-  two. Preserve private architectural decisions on handoff: a grounded overall
-  flaw ends new rounds for that head and yields consolidated drafts, not an
-  automatic reviewer-authored redesign. High cloud-comment volume alone is
-  not a finding. Release the slot after durable drafting/checkpointing.
-- Apply the suppressed-comment policy from [copilot-review-loop.md](./copilot-review-loop.md): important findings only in rounds 1–3, never request round four for suppressed findings, and never treat them as an independent convergence blocker.
+Pass the PR number, actual fork config, saved state, suite revision, assigned
+operation and any normal-run deadline. Give workers the compact PR entry point
+and only the operation's needed reference, not the coordinator's whole history.
+Each returns the worker outcome contract with exact upstream/request identities.
 
-## Serialize the local builds
+If subagents are unavailable, pipeline requests/waits in the coordinator:
+prepare/request ready PRs, process arrived results, serialize validation.
+Do not wait for one PR's entire loop before requesting another ready PR.
+Use one run-level wake mechanism, not a separate schedule for every PR.
 
-Parallel C++/MSBuild builds contend badly (CPU, disk, and shared intermediate state) and can corrupt each other. **Allow only one build at a time across the whole batch.** Give the children a simple mutex: a lock file (e.g. `<clone>\.pr-review-build.lock`) or a build queue the orchestrator hands out. A child acquires the lock for each compilation—the final fork build and any required upstream/suggestion-candidate builds—only after its Copilot loop converges, then releases it. Do not hold the lock while waiting for Copilot or processing findings. A rebuild is required if code changes after the successful build. Everything else (mirror, rebase, push, Copilot polling, fixing code) remains parallel.
+## Deliver independently
 
-## Shared state — do these ONCE, not per child
+Publish/present each validated result without waiting for unrelated failures.
+A clean review needs the clean evidence; cap/architecture drafts need their
+grounding/validation, not zero unresolved threads. Preserve real unresolved
+concerns truthfully. Never treat an operational failure as an upstream defect.
 
-Some steps touch shared resources and must not race:
-
-- **Fork `main` sync** (Step 2 / 2c): the orchestrator fast-forwards and pushes the fork's `main` once, up front, before any child mirrors. If every child pushes `main` concurrently you get non-fast-forward rejects and diff bloat. Children rebase their own branch onto the already-synced `origin/main`.
-- **`review-data.json`**: the orchestrator is the **single writer** (Rule from [approval-dashboard.md](./approval-dashboard.md)). Children do **not** write it directly — they report status back to the orchestrator (via their turn output / background-agent messages), and the orchestrator writes atomically (`.tmp` then `Move-Item -Force`). This keeps the dashboard poller from ever seeing a half-written or conflicting file.
-- **Upstream publishing**: workers never post directly. The coordinator validates the complete batch with `Test-ReviewData.ps1 -CheckGitHub`, waits for explicit approval, and uses `Publish-ApprovedReview.ps1`.
-
-## Aggregation and the approval gate
-
-- Collect each child's converged result: Phase 0 disposition, the net-diff suggestions (Step 9 format), and the worktree path for e2e testing.
-- **Before presenting, run the stranded-loop self-audit for every PR** ([scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) — expect 0 each). Any non-zero means that PR's loop isn't done; resume it before Step 10. Parallelism must not become an excuse to present a stranded PR.
-- Present all PRs together at the single Step 10 approval gate (the dashboard is the natural surface for this — it already renders one row per PR). Posting still happens only after explicit approval and the mandatory per-PR freshness re-check (Critical Rule 1).
-
-## If sub-agents aren't available (pipelined parallel fallback)
-
-If the environment can't spawn background sub-agents, still **pipeline the waits** in the single agent instead of fully serializing: for *all* PRs, do mirror → rebase → validate scope → save the exact validation plan → **request Copilot review** up front so every review clock runs at once; then cycle through processing whichever review returns first (fix → push → re-request). Build each converged PR one at a time under the lock; do not wait to request another PR's review until a build finishes. Use a `manage_schedule` monitor per PR when loops must continue across turns. At no point should an independent PR wait for another PR to converge before its own mirror/review request begins.
+For direct reviews, `approval-dashboard.md` is an optional approval UI, not a
+prerequisite for starting review. Upstream posting always remains separately
+approved and validated through the existing publisher.

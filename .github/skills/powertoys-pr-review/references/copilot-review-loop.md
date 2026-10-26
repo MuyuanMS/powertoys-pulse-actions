@@ -1,272 +1,127 @@
-# Copilot Review Loop (Steps 4–8)
+# Cloud review: bounded worker transitions
 
-The fork Copilot loop is required unless the grounded [architectural early-exit gate](./architecture-review.md) applies, and is independent of the posting decision (Critical Rule 11). Drive it toward convergence within **three total review iterations** (initial request plus at most two re-requests), then draft independently validated findings even if clean convergence is absent.
+This is the authoritative review-loop policy. The coordinator schedules work;
+it does not impose a second definition of convergence or request allowance.
 
-Count actual requests across the existing PR's preserved review lanes and
-sessions, including timed-out/no-analysis requests. Do not reset the count on
-a scheduled tick, restart, replacement fork PR, rebase, or head change. Before
-any request, reconcile saved request history and refuse a fourth iteration.
-For an existing review already at or above three, issue no new requests:
-consume saved/in-flight results and finish grounding, validation and drafting.
-A request already in flight when this policy changes may finish; it grants
-no additional round. Unknown counts require history reconciliation, not zero.
-
-> **Reviewing 2+ PRs?** Run the loop for each PR **concurrently**, not one-by-one — see [batch-parallel.md](./batch-parallel.md) (one background sub-agent per PR, builds serialized, orchestrator is the single writer of `review-data.json`). The per-PR steps below are identical; only the orchestration differs.
-
-## Step 4: Request Copilot review
-
-### Original PR lifecycle/head gate (every round)
-
-At startup/resume, immediately after each cloud round returns (including
-zero-comment and timeout/no-analysis outcomes), and after processing that
-round, check the ORIGINAL upstream PR, not the fork mirror. Also refresh this
-check immediately before a new request, expensive validation, or finalizing
-drafts; a prior round's observation is not a lasting permission to proceed.
-For a waiting checkpoint, check upstream on the next scheduler pass before
-spending more work on the saved fork request.
+## Original PR lifecycle/head gate (every round)
 
 ```powershell
-$gate = .\scripts\Get-UpstreamPrReviewGate.ps1 -PRNumber <upstream-number> `
-  -HeadSha <pinned-upstream-head>
+$gate = .\scripts\Get-UpstreamPrReviewGate.ps1 `
+  -PRNumber <upstream-number> -HeadSha <pinned-upstream-head>
 ```
 
-The helper performs one read-only PR GET and returns `action`:
+Check on resume, after a returned cloud result and its processing, and before
+another request, expensive validation or finalization.
 
-- `stop_review`: upstream is closed, merged or draft. Stop this PR's review
-  immediately, including further requests, fixes, polling and builds. Preserve
-  history/private findings; checkpoint the actual excluded state, release the
-  worker/build slot safely and notify the coordinator to refresh inventory and
-  suppress obsolete proposals. Do not wait for an old cloud request or finish
-  a review merely because a fork PR is still open. Do not close/delete fork
-  work or post upstream. A later reopened/ready PR requires a fresh live check.
-- `reconcile_updated_head`: upstream pushed new commits or force-pushed.
-  Stop work against the old version. Save the old request/results privately,
-  fetch and pin the returned new head, inspect its new full diff and discussion,
-  and safely update the mirror/review lane without overwriting dirty/shared
-  work or losing adjudicated history. Reassess carried findings, current diff
-  anchors, architecture decisions and validation plans on the new head.
-  Old builds, suggestion candidates, clean reviews and approvals do not prove
-  the new version; do not just replace their SHA fields. Re-read the gate after
-  synchronization to catch another concurrent change.
-- `continue_review`: open, non-draft and the same upstream head; continue the
-  intended next step under the architecture gate and remaining request budget.
+| Gate action | Worker action |
+| --- | --- |
+| `stop_review` | Stop closed/merged/draft work, including obsolete polling/fixes/builds. Preserve history, safely release owned resources, notify coordinator to suppress old proposals. |
+| `reconcile_updated_head` | Fetch/pin new upstream head and inspect its full diff/discussion; reassess findings, architecture and validation. Preserve request count and old evidence under its actual identity. |
+| `continue_review` | Continue the assigned operation for this pinned version. |
 
-Neither a head change nor reopening resets consumed requests. If three were
-already used, investigate/validate the new version directly for supported
-drafts without requesting round four or claiming a fresh cloud-clean result.
-An old in-flight result may be archived as evidence, but never blocks stopping
-an excluded PR or moving to the new upstream head. Keep its fork identity so
-it cannot be mistaken for the new version's result or requested twice.
-API/auth/rate-limit or malformed-response errors pause dependent work and remain
-explicit private errors; never treat them as unchanged/open, closed or clean.
+A still-open fork never overrides upstream state. Do not wait for an obsolete
+request before stopping/repinning. Never rewrite SHA fields on old evidence.
+API/auth/malformed-response failures are explicit private errors; retry the
+failed read with bounded backoff, not assumed-open progress.
 
-**Resume before requesting.** For an existing checkpoint, use the read-only
-reader; do not invoke the request script to check whether a review finished:
+## Resume or request
+
+Run the saved request reader first when a request identity exists:
 
 ```powershell
-.\scripts\Get-CopilotReviewStatus.ps1 -ForkRepo <FORK_REPO> `
-  -PRNumber <fork_pr_number> -HeadSha <saved-fork-head> `
-  -RequestedAt <saved-UTC-request-time> -AsJson
+.\scripts\Get-CopilotReviewStatus.ps1 -ForkRepo <fork-repo> `
+  -PRNumber <fork-pr> -HeadSha <saved-fork-head> `
+  -RequestedAt <saved-request-time> -AfterReviewId <saved-baseline-id> -AsJson
 ```
 
-Pass `-AfterReviewId` too when the checkpoint contains the baseline returned by
-the request script. Discovery without a saved timestamp may omit `RequestedAt`,
-but never invent a new request time for old work. The reader exhausts REST pages
-and matches the exact **fork** head, bot identity and submitted timestamp.
-An upstream head and a fork head with review fixes are different identities.
-`Submitted: true` means the result arrived, not that it is clean: consume its
-review body/comments and inspect unresolved threads before proceeding.
-If `HeadMatches: false`, reconcile the changed branch; do not transfer the result.
-An API/pagination error is not evidence that the review is still pending.
+The reader exhausts REST review pages and matches the fork head/request/bot.
+Use discovered history when an old timestamp is missing; do not invent one.
+Submitted means arrived, not clean. An empty assignment is neither failure
+nor success. A changed fork head requires identity reconciliation.
 
-Only when a genuinely new round is needed:
+Only request a genuinely new round after reconciling actual requests used:
 
 ```powershell
-$request = .\scripts\Request-CopilotReview.ps1 -ForkRepo <FORK_REPO> `
-  -PRNumber <fork_pr_number> -RequestsUsed <reconciled-count> -TimeoutMinutes 0
+$request = .\scripts\Request-CopilotReview.ps1 -ForkRepo <fork-repo> `
+  -PRNumber <fork-pr> -RequestsUsed <reconciled-count> -TimeoutMinutes 0
 ```
 
-Save `RequestedAt`, `HeadSha`, `AfterReviewId`, and, when available, `ReviewId`
-and `SubmittedAt`. The script uses the correct bot account, rejects an already
-pending Copilot request, checks immediately, and exhausts all review pages.
-It refuses missing/negative `RequestsUsed` or a count of three or more before
-any API access. This count is required, not a new per-session allowance.
-Use the default 10-minute wait only outside bounded dashboard workers.
-An empty `requested_reviewers` array proves neither unavailability nor
-completion: the review may have completed asynchronously. Require the actual
-matching submitted review. Do not infer a clean pass from an empty first page
-or from the absence of an assignment.
+Persist the returned fork `HeadSha`, `RequestedAt`, `AfterReviewId`, any
+`ReviewId`/`SubmittedAt`, and increment consumed requests immediately.
+If the command fails after submission may have occurred, recover GitHub/history
+before any retry. A failed caller is not proof that no request was sent.
 
-Review effort is not an extra completion gate: a submitted Lite review is not
-automatically a failure. Inspect the actual body and findings against the same
-convergence criteria. A timeout/no-analysis service response is not substantive
-review, but do not invent a requirement for an unavailable "full" tier.
-Repeated service failure needs a bounded diagnostic and an exact manual
-remediation, not unlimited identical requests.
+**Three total requests**, including initial request and timeout/no-analysis
+attempts, across preserved lanes, sessions and upstream head changes.
+The helper rejects missing/negative counts and counts >=3 before API access.
+Unknown history must be reconciled, not assumed zero.
 
-For bounded workers, if the immediate check finds no review, checkpoint
-`waiting_copilot` and return the slot. Before the coordinator republishes a
-waiting checkpoint, recheck once with the read-only reader; if a result arrived,
-record it and queue/continue `reviewing_findings` or `building`, not another wait.
-Do not request again merely because a timeout elapsed. Across all manual API
-fallbacks, reviews and comments must use `--paginate` (not just `per_page=100`);
-GraphQL threads must traverse `pageInfo`. This avoids the PR 50663 failure where
-review 39 was invisible to a 30-row default request.
+If no review has arrived, checkpoint `waiting_copilot`, return the exact
+identity and release the worker/build slot. The coordinator checks at the
+saved interval and resumes arrived results; no status-check re-requests.
+Cloud remains required; a local reviewer is not an automatic substitute.
 
-### Fallback: local review
+## Assess the returned round
 
-If Copilot review cannot be enabled, first guide the user to turn it on (see [prerequisites.md](./prerequisites.md#3-copilot-code-review-on-the-fork)). If they choose local review instead:
+Read the matching review body, all its published comments and all thread
+cursors. Match by review ID rather than a guessed "newer than now" timestamp.
+A startup warning may accompany real comments; inspect the actual result.
+A substantive Lite review is not invalid merely because it is not full-tier.
+A no-analysis timeout is not a clean pass.
 
-- Launch a local code-review sub-agent against the changed files in the worktree.
-- Focus on correctness, PowerToys style conventions, potential bugs, performance, and edge cases.
-- Treat the local agent's findings the same as Copilot comments for the rest of the loop.
+Before first-round fixes, follow `architecture-review.md`: trace intent and
+the pinned upstream mechanism. High comment count is a hint, never a verdict.
+A proven goal/design mismatch ends new requests for that head and moves to
+grounded overall drafting, not a speculative reviewer-authored redesign.
 
-## Step 5: Process review comments — fix, push, reply, resolve
+For each published concern, use `finding-grounding.md` to classify:
 
-Before implementing first-round fixes or requesting round two, run
-[architecture-review.md](./architecture-review.md). Large comment volume is a
-signal to investigate independently, not proof. If the design cannot meet the
-stated goal or violates a proven invariant, stop new requests for this head and
-draft consolidated grounded concerns; do not rewrite the entire design just to
-force convergence. This exception overrides the fix/re-request rules below.
-For already-running reviews, perform this gate at the next safe checkpoint
-before another request; do not discard or duplicate any in-flight review.
+- Upstream defect: prove the failing path and remedy; fix localized valid code.
+- Review-introduced regression: repair it; never export it as an upstream flaw.
+- Already addressed, unsupported or optional: preserve specific counterevidence.
 
-For each review comment from Copilot:
+After local fixes, commit only intended changes and push the review branch.
+Reply to fork comments with the fix commit or evidence-based disposition and
+resolve addressed/rejected threads. Never resolve an unfixed real design flaw
+solely to manufacture a clean count. If thread resolution fails, keep the
+actual unresolved state; minimizing a comment is not resolving its thread.
 
-1. **Fetch new comments**: `gh api --paginate "repos/<FORK_REPO>/pulls/<fork_pr_number>/comments?per_page=100" --jq '.[]'`, filtered to the Copilot bot and the submitted `pull_request_review_id`. Inspect the matching review body too; never count only the first comments page or substitute another round's comments.
-2. **Assess validity and origin** — follow [finding-grounding.md](./finding-grounding.md).
-   Inspect the pinned upstream source and first affected commit. Is this an
-   upstream defect, an agent-introduced regression, already fixed, optional,
-   or unsupported? Check the existing guards and the author's stated intent.
-   Fixing a review-introduced regression never creates an upstream finding.
-3. **If valid — actually fix the code.** Open the referenced file and make the change. Do not just acknowledge — fix it.
-4. **If invalid / not applicable** — note a clear reason for the reply (e.g., "intentional because...", "out of scope for this fix because...").
-5. **After processing all comments in the round:**
-   ```powershell
-   cd <worktree-path>
-   git add -A
-   git commit -m "Address review round N: <brief summary of fixes>"
-   git push <FORK_REMOTE> pr-iterate/N
-   ```
-   Then reply to each comment **and** resolve it:
-   ```powershell
-   # Reply
-   gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/comments/<comment_id>/replies -f body="Fixed in <commit-sha>: <brief description>"
-   # Resolve the thread
-   gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "<thread_node_id>"}) { thread { isResolved } } }'
-   ```
-   Every comment must be **both** replied to and resolved. If `resolveReviewThread` is unavailable, try `minimizeComment` with `classifier: RESOLVED` using the comment's `node_id`.
+Suppressed/internal candidates are advisory: inspect available important
+correctness/crash/security/data-loss concerns, ignore speculative style noise.
+They do not count as published comments or independently force another round.
 
-### Suppressed-comment policy
+## Choose exactly one next transition
 
-Copilot may retain suppressed/internal candidate comments even when the published review has zero inline comments. Suppressed comments do **not** block convergence.
+| Condition after assessment | Next state |
+| --- | --- |
+| Grounded architectural flaw | Validate the supported concern, then draft; no more cloud requests for this head. |
+| Fresh substantive zero published inline comments, zero unresolved threads, no later unreviewed fixes | `building`, then final drafting. |
+| Fewer than three requests used, no clean result and localized iteration remains appropriate | Push fixes, recheck upstream, request the next round. |
+| Three or more used | Assess ALL saved findings, then validate/draft supported output. Never wait for a fourth/zero-comment pass. |
+| Actual external/API/build failure | Preserve work and exact error/remediation; coordinator repairs or independently adjudicates an exception. |
 
-- During rounds 1–3, inspect a suppressed comment only when available and act only if it identifies an important correctness, security, data-loss, crash, or significant user-impact issue.
-- Ignore suppressed style, cleanup, speculative, low-severity, and preference comments. Do not create another review round for them.
-- Suppressed comments never authorize a fourth iteration.
-- A review with zero published inline comments is a zero-comment review even if suppressed candidates exist.
+A review with supported findings is useful output even without clean
+convergence. The cap ends new requests, not the review's finalization work.
+Do not drop accepted earlier-round findings because the last round is empty.
 
-## Step 6: Iterate the loop
+For a clean zero-finding result, require the fresh zero-comment/thread gates,
+context completion and passing exact-upstream validation. A divergent fixed
+fork is not a clean original PR. Changes after a clean result invalidate that
+clean claim; re-request only within allowance, otherwise finalize supported
+drafts without claiming fresh convergence.
 
-**Loop only after the architecture gate permits localized fixes.** A proven
-design-level flaw may stop automation after round one even with comments.
+When no supported finding survives and clean evidence is absent, return the
+honest private exception. Never invent a defect or silently use local-only
+completion. Finish unaffected PRs.
 
-```
-requests_used = <reconciled actual request count across preserved lanes>
-last_review_timestamp = <timestamp before first request>
+## Finalize the net result
 
-WHILE requests_used < 3:
-  1. Request Copilot review (Step 4); persist requests_used += 1 immediately.
-  2. Wait for a new review with submitted_at > last_review_timestamp (poll up to 10 min).
-     Check original PR lifecycle/head immediately on return: stop if excluded,
-     or reconcile the new version before processing old-head findings.
-  3. Fetch comments created after last_review_timestamp from copilot-pull-request-reviewer[bot].
-     Before first-round fixes, investigate intent/architecture; if changes_required,
-     EXIT new requests and draft independently grounded design-level findings.
-  4. If ZERO new published inline comments, and no important round-1-to-3 suppressed issue was accepted -> EXIT LOOP -> Step 7.
-  5. For each new comment: assess; if valid+in-scope, fix in the worktree.
-  6. If any fixes were made: git add -A; commit; push to the fork branch.
-  7. For each comment: reply with the fix (or the reason) AND resolve the thread.
-  8. last_review_timestamp = now.
-     Recheck original PR lifecycle/head after processing this round and before
-     another request, final build or draft finalization.
-  9. Termination:
-       - After request 3, stop new requests; finish validation and draft supported findings.
-       - If clean convergence is absent, keep any operator exception private. Do not claim approval.
-       - Otherwise -> GOTO 1.
-END LOOP
-```
+Account for every fork-only hunk relative to pinned upstream:
+supported upstream correction, agent-introduced regression, rejected/optional
+experiment or already upstream. Retain reasons and remove rejected experiments
+with ordinary commits if needed; no shared-history reset.
 
-**Rules for the loop:**
-- **Push before re-requesting** — Copilot reviews the latest pushed code.
-- **Re-request after a push only while fewer than three requests have been used** — Copilot will not auto-review; the cap still applies.
-- **Track timestamps** — only process comments newer than the last request; do not re-process old ones.
-- **If Copilot repeats a fixed concern**, reply "Already addressed in commit `<sha>`" and resolve; do not re-fix.
-- **Out-of-scope comments** (files this PR did not modify): reply "Not applicable: this file is not modified by this PR" and resolve; do not fix.
-- **Suppressed candidates are advisory only** — apply the policy above and never count them as published inline comments.
-
-**Step 6 convergence conditions:**
-1. The most recent **freshly-requested** Copilot review returned **zero published inline comments**. Suppressed candidates do not count.
-2. **Zero** unresolved Copilot review threads remain (every thread replied-to and resolved).
-
-After both conditions hold, run the serialized Step 7 build before marking the
-review complete or proceeding to Step 9. If the final build changes any code,
-request another Copilot review only within the three-request cap and rebuild.
-If the allowance is exhausted, validate the changed tree for supported drafts
-without claiming a fresh clean review.
-
-At the three-round limit, finish assessing and replying to the final review
-and reconcile ALL accepted findings against the exact upstream head, not only
-the last response. The cap limits new automated requests; it does not prohibit
-drafting validated findings. Preserve each finding's disposition privately:
-publishable, already posted, unsupported, superseded, or validation pending.
-For independently supported author-facing corrections, complete the exact-head
-grounding and required literal-patch/EOL/build checks and emit `post_review`
-at `awaiting_review_approval`, even when the final automated response was not
-zero-comment. Do not emit an approval or claim clean convergence.
-Only when no defensible publishable finding remains should the result be
-pending with an operator exception in the private ledger. Keep request counts,
-build failures, toolchain instructions and manual remediation out of public
-artifacts. Continue unaffected PRs; never erase valid findings because another
-finding or the automation service is blocked. Do not reset the counter or
-silently authorize round four.
-
-For architectural early exit, preserve unresolved findings truthfully; never
-resolve a real unfixed flaw merely to satisfy a clean-thread count.
-
-Before moving on (to the next PR, to Step 9, or to ending the turn), run the stranded-loop self-audit with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1). Expect 0 for convergence. For architectural early exit, draft the grounded concerns and retain unresolved-thread evidence privately without requesting another round. Otherwise resume within the round cap or preserve the remaining operator exception privately at the cap; never present unresolved concerns as clean.
-
-## Step 8: Summarize the converged net diff
-
-1. `git log --oneline main..pr-iterate/N` — review all commits made during the loop.
-2. Produce a clean diff of the net changes relative to the original PR's base: `git diff main...pr-iterate/N`.
-3. Distinguish meaningful changes from noise (back-and-forth later reverted). If some iterations added code that does not contribute, consider squashing or reverting those specific changes.
-4. Keep only changes that fix genuine issues. The Step 9 suggestions are drawn from this converged net diff — never from raw round-1 Copilot output.
-
-### Fork-to-upstream delta accounting
-
-Before calling the result clean, compare the pinned upstream head with the
-converged fork tree:
-
-```powershell
-git diff --stat <upstream-head>..<converged-fork-head>
-git diff <upstream-head>..<converged-fork-head>
-```
-
-Classify every fork-only hunk:
-
-- **Already upstream** — no action.
-- **Apply-ready localized upstream fix** — draft an inline suggestion only
-  after independent upstream defect and remedy validation.
-- **Required but not safely suggestible** — draft an exact inline prose or
-  companion request and keep the PR pending review approval.
-- **Review-introduced regression / rejected alternative / optional experiment**
-  — keep the reason in the private ledger and remove it with an ordinary commit
-  if retaining that branch. Do not reset shared history or export it as a
-  required upstream change.
-
-The accounting must reach zero unexplained fork-only hunks. A clean
-zero-finding result is allowed only when the validated tree is the exact
-upstream head. Do not claim that upstream has tests, documentation, syntax
-repairs, or behavior that exists only in the fork.
+Use `build-and-test.md` for focused validation and exact suggestion candidates,
+then `drafting-and-posting.md` for the current diff/body format and validators.
+For architectural prose, prove the concern; do not build an invented redesign.
+Return the worker outcome and private receipts; the coordinator publishes.

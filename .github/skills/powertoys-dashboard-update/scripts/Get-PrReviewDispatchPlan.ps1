@@ -5,10 +5,13 @@
     Read-only and offline: does not start agents, access GitHub, or acquire locks.
     Idle workers never occupy slots. The coordinator executes returned actions,
     persists their results, and calls this planner after each completion.
+    Accepts either a stale queue or selected_prs from the dashboard/PR run
+    planners, so normal updates and drains use the same worker transitions.
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Queue')]
 param(
-    [Parameter(Mandatory)][string]$QueueJsonPath,
+    [Parameter(Mandatory, ParameterSetName = 'Queue')][string]$QueueJsonPath,
+    [Parameter(Mandatory, ParameterSetName = 'RunPlan')][string]$RunPlanJsonPath,
     [Parameter(Mandatory)][string]$StateJsonPath,
     [ValidateRange(1, 8)][int]$MaxConcurrency = 6,
     [ValidateRange(0, 2147483647)][int]$BuildOwnerNumber = 0,
@@ -18,7 +21,28 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$queue = Get-Content -LiteralPath $QueueJsonPath -Raw | ConvertFrom-Json
+if ($PSCmdlet.ParameterSetName -eq 'RunPlan') {
+    $runPlan = Get-Content -LiteralPath $RunPlanJsonPath -Raw | ConvertFrom-Json
+    if ($null -eq $runPlan.selected_prs) {
+        throw 'Expected selected_prs in the saved run plan, including an empty array.'
+    }
+    if (-not $PSBoundParameters.ContainsKey('MaxConcurrency') -and
+        $null -ne $runPlan.policy.max_concurrency) {
+        $MaxConcurrency = [int]$runPlan.policy.max_concurrency
+    }
+    $queue = [pscustomobject]@{
+        stale_prs = @($runPlan.selected_prs | ForEach-Object {
+            [pscustomobject]@{
+                number = $_.number
+                live_head_sha = $_.live_head_sha
+                updated_at = if ($_.live_updated_at) { $_.live_updated_at } else { $_.updated_at }
+                work_type = if ($_.classification) { $_.classification } else { $_.work_type }
+            }
+        })
+    }
+} else {
+    $queue = Get-Content -LiteralPath $QueueJsonPath -Raw | ConvertFrom-Json
+}
 $ledger = Get-Content -LiteralPath $StateJsonPath -Raw | ConvertFrom-Json
 if ($null -eq $queue.stale_prs -or $null -eq $ledger.prs) {
     throw 'Expected stale_prs in queue and prs in private ledger, including empty arrays.'
@@ -118,7 +142,11 @@ $seen = @{}
                     $due = if ($row.review.checked_at) {
                         ([datetimeoffset]$row.review.checked_at).AddSeconds($PollSeconds)
                     } else { $Now }
-                    if ($due -gt $Now -and
+                    $alreadyDiagnosed = $row.review.diagnosed_request_at -and
+                        [datetimeoffset]$row.review.diagnosed_request_at -eq
+                            [datetimeoffset]$row.request.requested_at
+                    if ($due -gt $Now -and $row.review.request_pending -eq $true -and
+                        -not $alreadyDiagnosed -and
                         [datetimeoffset]$row.request.requested_at -le $Now.AddMinutes(-10)) {
                         $action = 'diagnose_cloud_wait'
                         $rank = 2

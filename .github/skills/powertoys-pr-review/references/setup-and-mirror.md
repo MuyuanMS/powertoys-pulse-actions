@@ -25,7 +25,7 @@ For a saved outstanding request, also run `Get-CopilotReviewStatus.ps1` with its
 fork PR, fork `HeadSha`, original `RequestedAt` and optional `AfterReviewId`.
 This read-only check traverses all review pages. Consume an arrived result
 before changing the branch or requesting again; an empty assignment is not
-proof of absence. See [the review loop](./copilot-review-loop.md#step-4-request-copilot-review).
+proof of absence. See [the review loop](./copilot-review-loop.md#resume-or-request).
 
 **0a. Detect prior artifacts** for PR `N`:
 
@@ -40,7 +40,7 @@ gh api "repos/<FORK_REPO>/git/ref/heads/pr-iterate/N" --jq '.ref' 2>$null
 git -C <CLONE_PATH> worktree list | Select-String "pr-iterate/N"
 ```
 
-If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) to count all unresolved Copilot threads. Zero is necessary but insufficient: require a fresh submitted review on the exact fork head, inspect that review's findings, and validate the build.
+If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) to count all unresolved Copilot threads. Zero is necessary but insufficient for a clean result: require a fresh submitted review on the exact fork head, inspect that review's findings, and validate the build. Cap/architectural drafts follow the worker outcome contract instead.
 
 **0b. Classify the prior state and jump** (state it to the user first, e.g. "Found an existing fork PR 123 for PR N with 2 unresolved Copilot threads — resuming the review loop"):
 
@@ -50,6 +50,7 @@ If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/G
 | **Branch pushed, no fork PR** | `pr-iterate/N` ref exists, no `[PR N]` PR | Step 1 (create the fork PR from the existing branch) |
 | **Fork PR exists, no local worktree** | `[PR N]` PR exists, `git worktree list` has no `pr-iterate/N` | Step 2 (create worktree), then re-sync per Step 2b and verify scope |
 | **Worktree exists, no validation plan** | Worktree is present but the checkpoint has no saved focused commands | Step 2b (re-sync) → Step 2c (verify scope) → Step 3 (derive and save the plan) |
+| **Request cap or grounded design exit** | Consumed allowance or current-head `architecture.changes_required` | Consume saved results, validate and draft supported findings; no further cloud requests |
 | **Review request pending or loop unfinished** | A saved Copilot request is pending, there are unresolved threads, or newest commit post-dates newest Copilot review | Step 4 (resume/check the saved request) or Step 5/6 (continue the loop); do not build while waiting |
 | **Loop clean, not yet built** | Fresh zero-comment review, zero unresolved threads, no passing build for the converged head | Step 7 (run the saved plan under the build lock) |
 | **Loop clean and built** | Fresh zero-comment review, zero unresolved threads, passing build for the exact converged head | Step 8–9 (summarize + draft the review) |
@@ -61,7 +62,12 @@ Do not build an obsolete pre-review head just to populate the checkpoint.
 Preserve the validation plan and code/review traces, then regenerate
 schema-version-2 `review-data.json` from the current head.
 
-**0c. Re-sync before continuing.** Whenever you resume onto an existing branch/worktree, first bring the fork's `main` and the PR branch up to date (Step 2 sync + Step 2b rebase) so you do not build or review against stale `main`. If a rebase conflicts and you are not confident, stop and ask rather than guessing.
+**0c. Verify scope before changing the branch.** Check the pinned upstream head
+and saved base/scope. Reuse an unchanged valid lane; a resume alone is not a
+reason to rebase, invalidate a pending request or rebuild. If the actual
+upstream head/base requires mirror recovery, preserve history and use Step 2's
+sync/rebase/scope checks. The coordinator syncs shared fork main once, not each
+worker independently. Do not guess through unresolved rebase conflicts.
 
 For teammates migrating from an older skill version, follow [migration-and-resume.md](./migration-and-resume.md). Never publish an old decisions file; regenerate and reapprove the validated public payload.
 
@@ -108,7 +114,7 @@ Given PR number `N` from `microsoft/PowerToys`:
    gh pr create --repo <FORK_REPO> --head pr-iterate/N --base main --title "[PR N] <sanitized title>" --body "<sanitized description>" --label pr-review
    ```
 
-> **Critical Rule 5:** never use `#<number>` in a fork PR title/body — it notifies the upstream thread. Use plain numbers.
+> Never use `#<number>` in a fork PR title/body — it notifies the upstream thread. Use plain numbers.
 
 ## Step 2: Create local worktree
 

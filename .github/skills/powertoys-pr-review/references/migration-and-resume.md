@@ -6,12 +6,21 @@ Teammates using an older skill should stop before it posts malformed or unvalida
 
 Send:
 
-> Please stop the current PR-review session now without posting, deleting, re-mirroring, rebasing, or closing anything. Update to the latest `powertoys-pr-review` skill, start a new Copilot session, and ask it to continue the same upstream PR numbers. The new skill will discover existing `pr-iterate/<number>` branches, review PRs, local worktrees, Copilot review rounds, commits, and unresolved threads, then resume instead of starting over. Old dashboard decisions are not safe to publish; the new session will regenerate schema-version-2 review data and ask for approval again.
+> At a safe checkpoint, preserve current PR state without posting or deleting
+> work. Update/verify the complete suite from canonical actions main and reload
+> the compact coordinator/worker entry points. Continue the same PRs from their
+> actual saved requests, commits and validation receipts, not inherited old
+> procedural prompts. Preserve consumed allowance and regenerate current-head
+> payloads before any newly approved upstream posting.
 
 ## Resume workflow
 
-1. Abort the old Copilot session. Do not delete its branch, worktree, review PR, commits, replies, or resolved threads.
-2. Update the skill from the remote branch.
+1. At a safe checkpoint, preserve the old session's private state and reconcile
+   running workers/processes. Do not abort an owned live build or delete its
+   branch, worktree, review PR, commits, replies, or resolved threads.
+2. Update the complete suite from canonical actions `main`, verify installation,
+   and reload the compact coordinator/worker entry points. Do not carry forward
+   superseded procedural prompts as extra approval/convergence requirements.
 3. Start a new session in the teammate's PowerToys clone.
 4. Run:
    ```powershell
@@ -27,10 +36,14 @@ Send:
 | `reopen-or-create-review-pr` | Reopen the matching review PR or create a new one from its existing branch |
 | `create-worktree` | Step 2 using the existing review branch |
 | `resume-review-loop` | Steps 5–6 using the discovered latest review timestamp and unresolved threads |
-| `rebuild-and-draft` | Rebuild, rerun the final zero-comment check if needed, then regenerate the public payload |
+| `rebuild-and-draft` | Verify exact-input validation receipts, rerun only missing/changed checks, then draft under the worker outcome contract |
 
-6. Rebuild after every cross-session resume. Build success is not treated as durable unless the new session verifies it.
-7. Discard old `review-data.json` and `review-decisions.json` files. Regenerate schema-version-2 data from the current head and run `Test-ReviewData.ps1 -CheckGitHub`.
+6. Verify retained receipts/logs using `build-and-test.md`. Cross-session resume
+   alone does not require recompiling identical inputs. Preserve consumed
+   requests across lanes; at or above three, consume results and finalize
+   supported drafts, not another request.
+7. Preserve old review data as evidence, but regenerate current-head payloads
+   and approvals before any posting. Run `Test-ReviewData.ps1 -CheckGitHub`.
 
 ## What is preserved
 

@@ -80,8 +80,9 @@ try {
     try { & $validator -Dashboard $dashboard -Numbers 123 2>$null } catch { $failure = $_.Exception.Message }
     Assert-True ($failure -match 'validation failed') 'publication gate rejects operational data even if sanitizer was skipped'
     $loop = Get-Content (Join-Path $PSScriptRoot '..\..\powertoys-pr-review\references\copilot-review-loop.md') -Raw
-    Assert-True ($loop -match 'emit `post_review`' -and $loop -match 'ALL accepted findings' -and
-        $loop -match 'does not prohibit\s+drafting validated findings') 'cap contract conserves validated findings instead of publishing blocker substitutes'
+    $worker = Get-Content (Join-Path $PSScriptRoot '..\..\powertoys-pr-review\SKILL.md') -Raw
+    Assert-True ($worker -match '`post_review`' -and $loop -match 'Assess ALL saved findings' -and
+        $loop -match 'cap ends new requests, not the review.s finalization work') 'cap contract conserves validated findings instead of publishing blocker substitutes'
     Write-Host "Public PR boundary tests passed ($script:assertions assertions)."
 } finally {
     Remove-Item -LiteralPath $root -Recurse -Force
