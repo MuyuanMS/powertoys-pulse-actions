@@ -1,20 +1,49 @@
 {
+  "schemaVersion": 5,
   "number": 51205,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Fluent, theme-aware host config for Adaptive Cards",
   "url": "https://github.com/microsoft/PowerToys/pull/51205",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-21T21:50:47.3486921Z",
-  "evaluated_at": "2026-10-21T20:35:21.7243407Z",
+  "generated_at": "2026-10-28T00:03:39.4400202+08:00",
+  "evaluated_at": "2026-10-28T00:03:39.4401141+08:00",
   "source_updated_at": "2026-10-12T17:47:14Z",
   "head_sha": "477afa0b8da02baf050a09a72086202e97547949",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-21T20:35:21.7243407Z",
-    "checkpoint_at": "2026-10-21T21:50:47.3486921Z"
-  }
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51205-preserve-edited-path-on-theme-refresh",
+      "kind": "companion",
+      "title": "Preserve edited file-path inputs across a theme refresh",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "Exact-head tracing connects actual-theme refresh, updater reset, custom-control reconstruction from element.Value, and TextChanged/browse handlers that never update that parsed value. No runtime reproduction is claimed."
+      },
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Preserve edited file-path inputs across a theme refresh\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs` (`RefreshHostConfig`), `src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardUpdater.cs` (`ResetCore`), and `src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/AdaptiveCards/AdaptiveFilePathInputElement.cs` (`AdaptiveFilePathInputControl`).\r\n\r\n**Problem:** An actual light/dark theme change rebuilds an open form from the same parsed card after clearing its rendered root and incremental snapshot. The custom `Input.CommandPalette.FilePath` control initializes its replacement text box from `element.Value`, while editing or browsing changes only the old text box's `Text`. Consequently, an edited path is replaced with the original parsed value. The reference-equality guard avoids unchanged configurations; it does not preserve input state when the theme really changes.\r\n\r\n**Why it matters:** A user can lose an unsaved file-path edit when the form's theme changes, then submit the original path instead of the path they selected. This concerns transient form data, not deletion of a file.\r\n\r\n**Suggested change:**\r\n1. Capture live file-path input values by input ID before replacing the rendered controls, rather than relying on the original parsed `Value`.\r\n2. Coordinate that state transfer with the form refresh and renderer/input lifecycle so the replacement uses the edited value without submitting the form or requiring inputs to pass submit-time validation.\r\n3. Keep the new host configuration and theme colors, preserve the unchanged-config guard, and ensure the restored value is also what a later submit reads.\r\n\r\n**Verification:** Acceptance check to add and run, not an executed test: open a form containing `Input.CommandPalette.FilePath`, edit or browse to a path different from its initial value, switch the control's requested theme between light and dark, and verify that the edited path remains displayed and is submitted unchanged. Include an incomplete/invalid edit to ensure preservation is not gated on successful submit validation. The finding is established by the source-level value/reset/reconstruction path; this theme-switch interaction has not been runtime-reproduced.",
+      "out_of_diff_reason": "coordinated_state_preservation"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51205-input-retention",
+      "type": "post_review",
+      "label": "Post general input-retention review note",
+      "note": "Posts the selected finding as a separate general PR comment; does not approve the pull request.",
+      "review": {
+        "comment_ids": [
+          "51205-preserve-edited-path-on-theme-refresh"
+        ],
+        "head_sha": "477afa0b8da02baf050a09a72086202e97547949",
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {}
 }
