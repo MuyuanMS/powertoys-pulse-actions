@@ -7,282 +7,81 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-21T17:19:45.766173+08:00",
-  "evaluated_at": "2026-10-21T17:19:45.766173+08:00",
-  "source_updated_at": "2026-10-20T21:28:20Z",
+  "generated_at": "2026-10-27T02:30:36.048Z",
+  "evaluated_at": "2026-10-27T02:30:36.048Z",
+  "source_updated_at": "2026-10-26T14:33:09Z",
   "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
   "proposed_comments": [
     {
-      "severity": "high",
-      "body": "### Capture the blur task state (1/2)\n\n**Severity:** `high`\n\nRemoving and re-adding a monitor handle creates a new state while an older blur can still finish. Capture the scheduled state so completion can reject work for the old instance; the existing blur-failure recovery can remain unchanged.\n\n```suggestion\n            _ = Task.Run(() => this.RunBlur(screenInfo, state, screenshotImage));\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-      "line": 191,
-      "title": "Capture the blur task state (1/2)",
+      "id": "blur-state-identity",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Reject blur results belonging to a removed screen state",
       "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
+      "line": 281,
       "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
-      "id": "blur-capture-state",
+      "body": "### Reject blur results belonging to a removed screen state\n\n**Severity:** `medium` - latent library correctness issue; this pipeline is not integrated into the application yet.\n\n**Affected code:** `ScreenshotBlurPipeline.SetScreenshot`, `SetActiveScreens` and `RunBlur` in this file.\n\n**Problem:** A scheduled blur retrieves its completing state using only the monitor handle. If `SetActiveScreens()` removes and re-adds that handle before the old blur finishes, the old task can find the replacement state, overwrite its cached image and clear `BlurInProgress` while a newer blur is still running.\n\n**Why it matters:** Once integrated, this can produce stale placeholders and overlapping or out-of-order work. This is not a demonstrated current shipped-app regression.\n\n**Suggested change:**\n1. Capture the `ScreenshotBlurState` associated with each scheduled blur.\n2. Before updating results or advancing queued work, verify that the dictionary still contains that same state instance. Dispose results belonging to a removed state.\n3. Carry the state identity into subsequent queued tasks, preserving the existing blur-failure recovery.\n\n**Verification:** Block an old blur, remove and re-add the same handle, start a new blur, and then release the old task. Verify that the old completion cannot modify the replacement state's result, busy flag or queued work."
+    },
+    {
+      "id": "telemetry-write-serialization",
       "kind": "inline",
       "in_diff": true,
       "disposition": "proposed",
-      "selection_group": {
-        "id": "blur-state-recovery",
-        "title": "Reject completion for replacement screen state",
-        "position": 1,
-        "total": 2,
-        "atomic": true
-      }
-    },
-    {
-      "severity": "high",
-      "body": "### Identify the completing blur state (2/2)\n\n**Severity:** `high`\n\nFailure cleanup is already present. The remaining handle-only guard accepts an old task after the same handle has been re-added, overwriting the new state and clearing its busy flag. Compare the captured state instance before committing or advancing queued work, and carry that identity into the next task.\n\n```suggestion\n    private void RunBlur(ScreenInfo screenInfo, ScreenshotBlurState expectedState, Bitmap image)\n    {\n        Bitmap? blurredImage = null;\n        try\n        {\n            using (ScreenshotBlurPipeline.CurrentTelemetry.BeginTimer(new { }, \"CreateBlurredCopy\"))\n            using (image)\n            {\n                blurredImage = this.Blur(image);\n            }\n        }\n        catch (Exception ex)\n        {\n            // nothing awaits this background task, so an exception escaping here would be\n            // silently swallowed *and* leave BlurInProgress stuck on - every later screenshot\n            // for this screen would then sit in \"todo\" forever. instead, treat a failed blur as\n            // \"no result\": keep whatever \"done\" already holds, and carry on to the next \"todo\"\n            ScreenshotBlurPipeline.CurrentTelemetry.WriteEvent(new { handle = screenInfo.Handle, error = ex.Message }, \"screenshotBlurFailed\");\n        }\n\n        try\n        {\n            lock (this.sync)\n            {\n                if (!this.screens.TryGetValue(screenInfo.Handle, out var state) ||\n                    !ReferenceEquals(state, expectedState))\n                {\n                    blurredImage?.Dispose();\n                    return;\n                }\n\n                if (blurredImage is not null)\n                {\n                    state.Done?.Dispose();\n                    state.Done = blurredImage;\n                    state.DoneAt = this.TimeProvider.GetUtcNow();\n                }\n\n                state.BlurInProgress = false;\n\n                if (state.Todo is not null)\n                {\n                    var next = state.Todo;\n                    state.Todo = null;\n                    state.BlurInProgress = true;\n                    _ = Task.Run(() => this.RunBlur(screenInfo, state, next));\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-      "line": 300,
-      "title": "Identify the completing blur state (2/2)",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
-      "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
-      "id": "blur-recover-completion",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "start_line": 256,
-      "selection_group": {
-        "id": "blur-state-recovery",
-        "title": "Reject completion for replacement screen state",
-        "position": 2,
-        "total": 2,
-        "atomic": true
-      }
-    },
-    {
-      "severity": "high",
-      "body": "### Hold the gate during writer actions (1/2)\n\n**Severity:** `high`\n\nThe new catch correctly keeps diagnostic writing best-effort. However, releasing writeGate before action() lets PauseWriting return while Write is still in flight. Keep the gate through the action and release it in finally, preserving the current exception policy.\n\n```suggestion\n                try\n                {\n                    action();\n                }\n                catch (Exception ex)\n                {\n                    // telemetry is diagnostic, so a failing writer only loses the record it\n                    // failed on - letting this escape would end the loop for good, after which\n                    // nothing else is written, Flush blocks forever waiting for a signal that\n                    // never runs, and Dispose rethrows the writer's exception into the app\n                    Debug.WriteLine($\"Telemetry writer failed: {ex}\");\n                }\n                finally\n                {\n                    this.writeGate.Release();\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-      "line": 82,
-      "title": "Hold the gate during writer actions (1/2)",
+      "severity": "medium",
+      "title": "Serialize telemetry writes and flushes through the same gate",
       "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
+      "line": 70,
       "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
-      "id": "telemetry-drain-and-serialize",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "start_line": 70,
-      "selection_group": {
-        "id": "telemetry-write-serialization",
-        "title": "Serialize telemetry writes and flushes",
-        "position": 1,
-        "total": 2,
-        "atomic": true
-      }
+      "body": "### Serialize telemetry writes and flushes through the same gate\n\n**Severity:** `medium` - latent diagnostic-output reliability issue; the pause-boundary issue alone is low severity.\n\n**Affected code:** The consumer loop and `Flush()` in `TelemetryAdapter.cs`, and the writer contract implemented by `FileTelemetryWriter`.\n\n**Problem:** The consumer releases `writeGate` before invoking `action()`, so `PauseWriting()` can return while a writer call is still executing. Separately, `Flush()` waits for a FIFO marker and then flushes on the calling thread, while the consumer can already be writing a later record. `FileTelemetryWriter` wraps an unprotected `StreamWriter`.\n\n**Why it matters:** Overlapping writes and flushes can cause exceptions or unreliable diagnostic output. The pause boundary can also contaminate measurements intended to exclude telemetry I/O. These are staged-library consequences, not demonstrated current application failures.\n\n**Suggested change:**\n1. Hold the gate throughout each consumer action and release it in `finally`.\n2. Serialize the caller-side writer flush through the same gate, without holding it while waiting for the FIFO marker.\n3. Preserve the existing best-effort handling of write failures. This correction need not change logging policy or introduce retained-write-error exceptions.\n\n**Verification:** Use a controllable writer to verify that pause does not return until an active write finishes and that `Write()` cannot overlap `Flush()`. Retain coverage for resume and shutdown while paused."
     },
     {
-      "severity": "high",
-      "body": "### Serialize flush with writer actions (2/2)\n\n**Severity:** `high`\n\nThe FIFO marker covers earlier records only; the reader can write a later record while this calling thread flushes the same writer. Acquire the same gate around Flush. This preserves best-effort Write handling and does not introduce retained-write-error exceptions.\n\n```suggestion\n        this.writeGate.Wait();\n        try\n        {\n            this.writer.Flush();\n        }\n        finally\n        {\n            this.writeGate.Release();\n        }\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-      "line": 136,
-      "title": "Serialize flush with writer actions (2/2)",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
-      "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
-      "id": "telemetry-flush-under-gate",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "selection_group": {
-        "id": "telemetry-write-serialization",
-        "title": "Serialize telemetry writes and flushes",
-        "position": 2,
-        "total": 2,
-        "atomic": true
-      }
-    },
-    {
-      "severity": "high",
-      "body": "### Detach the context before disposing\n\n**Severity:** `high`\n\nWrite failures are now handled best-effort, but an ITelemetryWriter.Flush failure still makes Stop throw before clearing adapter. Detach the field first so a later Flush is a no-op and Start can install a replacement; continue propagating the original shutdown failure.\n\n```suggestion\n        var adapter = this.adapter;\n        this.adapter = null;\n        adapter?.Dispose();\n```",
-      "line": 96,
-      "title": "Detach the context before disposing",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
-      "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
       "id": "telemetry-clear-context-before-stop",
       "kind": "inline",
       "in_diff": true,
       "disposition": "proposed",
-      "start_line": 95
+      "severity": "medium",
+      "title": "Clear the telemetry adapter even when shutdown fails",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
+      "start_line": 95,
+      "line": 96,
+      "side": "RIGHT",
+      "body": "### Clear the telemetry adapter even when shutdown fails\n\n**Severity:** `medium` - conditional hang/restart failure in the staged library.\n\n`TelemetryAdapter.Dispose()` completes the channel and drains its consumer before the final writer flush. If that flush throws, `Stop()` retains the already-stopped adapter. A subsequent `Flush()` can wait indefinitely for a signal that cannot be queued into the completed channel; `Start()` also calls `Stop()` again.\n\nDetach the adapter first while continuing to propagate the original shutdown exception. This does not add a broader thread-safety contract to the context.\n\n```suggestion\n        var adapter = this.adapter;\n        this.adapter = null;\n        adapter?.Dispose();\n```\n\nPlease cover a writer whose final flush throws: the initial `Stop()` should report the error, later context `Flush()`/`Stop()` calls should not hang, and a replacement writer should be startable."
     },
     {
-      "severity": "medium",
-      "body": "### Keep a zero SendInput return as failure\n\n**Severity:** `medium`\n\nThe full-count comparison now rejects partial insertion. It also accepts zero when pInputs is empty, although the documented zero return denotes failure and the previous wrapper rejected it. Require both a nonzero return and the complete requested count; preserve the native result and available last error.\n\n```suggestion\n        return result != 0 && result == (uint)pInputs.Length\n            ? new Win32Result<uint>(result, success: true)\n            : new Win32Result<uint>(result, success: false, lastError: Marshal.GetLastPInvokeError());\n```",
-      "line": 57,
-      "title": "Keep a zero SendInput return as failure",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Win32Gen/Functions/User32_SendInput.cs",
-      "side": "RIGHT",
-      "confidence": {
-        "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-        "score": 96
-      },
       "id": "win32-full-input-count",
       "kind": "inline",
       "in_diff": true,
       "disposition": "proposed",
-      "start_line": 55
+      "severity": "low",
+      "title": "Do not classify a zero SendInput result as success",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Win32Gen/Functions/User32_SendInput.cs",
+      "start_line": 55,
+      "line": 57,
+      "side": "RIGHT",
+      "body": "### Do not classify a zero SendInput result as success\n\n**Severity:** `low` - wrapper contract edge case, not a demonstrated input failure.\n\nComparing the native result only with `pInputs.Length` classifies zero as success when the input span is empty, contrary to this wrapper's documented zero-result failure policy. Require both a nonzero result and complete insertion, preserving the native result and available last error.\n\n```suggestion\n        return result != 0 && result == (uint)pInputs.Length\n            ? new Win32Result<uint>(result, success: true)\n            : new Win32Result<uint>(result, success: false, lastError: Marshal.GetLastPInvokeError());\n```\n\nPlease cover zero requested/zero inserted, nonempty requested/zero inserted, partial insertion and complete insertion. No current caller of this new wrapper was found, and an empty request does not itself lose any input."
     }
   ],
   "actions": [
     {
       "id": "post-review-50539",
-      "note": "Reconciled existing review history without a new routine request. These are staged-library contract findings; no shipped application regression or fresh cloud convergence is claimed.",
-      "label": "Post 6 current-head inline suggestions",
-      "source_updated_at": "2026-10-20T21:28:20Z",
+      "type": "post_review",
+      "label": "Post 4 review comments (2 with code suggestions)",
+      "note": "Two coordinated fixes are explained as plain comments; two localized fixes retain short suggestions. Findings concern staged library contracts, not demonstrated shipped-app regressions. No upstream review has been posted.",
+      "source_updated_at": "2026-10-26T14:33:09Z",
+      "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
+      "requires_confirmation": true,
       "review": {
         "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
         "event": "COMMENT",
-        "comments": [
-          {
-            "severity": "high",
-            "body": "### Capture the blur task state (1/2)\n\n**Severity:** `high`\n\nRemoving and re-adding a monitor handle creates a new state while an older blur can still finish. Capture the scheduled state so completion can reject work for the old instance; the existing blur-failure recovery can remain unchanged.\n\n```suggestion\n            _ = Task.Run(() => this.RunBlur(screenInfo, state, screenshotImage));\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-            "line": 191,
-            "title": "Capture the blur task state (1/2)",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "blur-capture-state",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "selection_group": {
-              "id": "blur-state-recovery",
-              "title": "Reject completion for replacement screen state",
-              "position": 1,
-              "total": 2,
-              "atomic": true
-            }
-          },
-          {
-            "severity": "high",
-            "body": "### Identify the completing blur state (2/2)\n\n**Severity:** `high`\n\nFailure cleanup is already present. The remaining handle-only guard accepts an old task after the same handle has been re-added, overwriting the new state and clearing its busy flag. Compare the captured state instance before committing or advancing queued work, and carry that identity into the next task.\n\n```suggestion\n    private void RunBlur(ScreenInfo screenInfo, ScreenshotBlurState expectedState, Bitmap image)\n    {\n        Bitmap? blurredImage = null;\n        try\n        {\n            using (ScreenshotBlurPipeline.CurrentTelemetry.BeginTimer(new { }, \"CreateBlurredCopy\"))\n            using (image)\n            {\n                blurredImage = this.Blur(image);\n            }\n        }\n        catch (Exception ex)\n        {\n            // nothing awaits this background task, so an exception escaping here would be\n            // silently swallowed *and* leave BlurInProgress stuck on - every later screenshot\n            // for this screen would then sit in \"todo\" forever. instead, treat a failed blur as\n            // \"no result\": keep whatever \"done\" already holds, and carry on to the next \"todo\"\n            ScreenshotBlurPipeline.CurrentTelemetry.WriteEvent(new { handle = screenInfo.Handle, error = ex.Message }, \"screenshotBlurFailed\");\n        }\n\n        try\n        {\n            lock (this.sync)\n            {\n                if (!this.screens.TryGetValue(screenInfo.Handle, out var state) ||\n                    !ReferenceEquals(state, expectedState))\n                {\n                    blurredImage?.Dispose();\n                    return;\n                }\n\n                if (blurredImage is not null)\n                {\n                    state.Done?.Dispose();\n                    state.Done = blurredImage;\n                    state.DoneAt = this.TimeProvider.GetUtcNow();\n                }\n\n                state.BlurInProgress = false;\n\n                if (state.Todo is not null)\n                {\n                    var next = state.Todo;\n                    state.Todo = null;\n                    state.BlurInProgress = true;\n                    _ = Task.Run(() => this.RunBlur(screenInfo, state, next));\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-            "line": 300,
-            "title": "Identify the completing blur state (2/2)",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "blur-recover-completion",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "start_line": 256,
-            "selection_group": {
-              "id": "blur-state-recovery",
-              "title": "Reject completion for replacement screen state",
-              "position": 2,
-              "total": 2,
-              "atomic": true
-            }
-          },
-          {
-            "severity": "high",
-            "body": "### Hold the gate during writer actions (1/2)\n\n**Severity:** `high`\n\nThe new catch correctly keeps diagnostic writing best-effort. However, releasing writeGate before action() lets PauseWriting return while Write is still in flight. Keep the gate through the action and release it in finally, preserving the current exception policy.\n\n```suggestion\n                try\n                {\n                    action();\n                }\n                catch (Exception ex)\n                {\n                    // telemetry is diagnostic, so a failing writer only loses the record it\n                    // failed on - letting this escape would end the loop for good, after which\n                    // nothing else is written, Flush blocks forever waiting for a signal that\n                    // never runs, and Dispose rethrows the writer's exception into the app\n                    Debug.WriteLine($\"Telemetry writer failed: {ex}\");\n                }\n                finally\n                {\n                    this.writeGate.Release();\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-            "line": 82,
-            "title": "Hold the gate during writer actions (1/2)",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "telemetry-drain-and-serialize",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "start_line": 70,
-            "selection_group": {
-              "id": "telemetry-write-serialization",
-              "title": "Serialize telemetry writes and flushes",
-              "position": 1,
-              "total": 2,
-              "atomic": true
-            }
-          },
-          {
-            "severity": "high",
-            "body": "### Serialize flush with writer actions (2/2)\n\n**Severity:** `high`\n\nThe FIFO marker covers earlier records only; the reader can write a later record while this calling thread flushes the same writer. Acquire the same gate around Flush. This preserves best-effort Write handling and does not introduce retained-write-error exceptions.\n\n```suggestion\n        this.writeGate.Wait();\n        try\n        {\n            this.writer.Flush();\n        }\n        finally\n        {\n            this.writeGate.Release();\n        }\n```\n\nApply every suggestion in this numbered group together; individual members are not complete fixes.",
-            "line": 136,
-            "title": "Serialize flush with writer actions (2/2)",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "telemetry-flush-under-gate",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "selection_group": {
-              "id": "telemetry-write-serialization",
-              "title": "Serialize telemetry writes and flushes",
-              "position": 2,
-              "total": 2,
-              "atomic": true
-            }
-          },
-          {
-            "severity": "high",
-            "body": "### Detach the context before disposing\n\n**Severity:** `high`\n\nWrite failures are now handled best-effort, but an ITelemetryWriter.Flush failure still makes Stop throw before clearing adapter. Detach the field first so a later Flush is a no-op and Start can install a replacement; continue propagating the original shutdown failure.\n\n```suggestion\n        var adapter = this.adapter;\n        this.adapter = null;\n        adapter?.Dispose();\n```",
-            "line": 96,
-            "title": "Detach the context before disposing",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "telemetry-clear-context-before-stop",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "start_line": 95
-          },
-          {
-            "severity": "medium",
-            "body": "### Keep a zero SendInput return as failure\n\n**Severity:** `medium`\n\nThe full-count comparison now rejects partial insertion. It also accepts zero when pInputs is empty, although the documented zero return denotes failure and the previous wrapper rejected it. Require both a nonzero return and the complete requested count; preserve the native result and available last error.\n\n```suggestion\n        return result != 0 && result == (uint)pInputs.Length\n            ? new Win32Result<uint>(result, success: true)\n            : new Win32Result<uint>(result, success: false, lastError: Marshal.GetLastPInvokeError());\n```",
-            "line": 57,
-            "title": "Keep a zero SendInput return as failure",
-            "path": "src/modules/MouseUtils/MouseJump.Common/Win32Gen/Functions/User32_SendInput.cs",
-            "side": "RIGHT",
-            "confidence": {
-              "rationale": "Grounded in the current pinned library source and author counterevidence; validated by the remaining-only exact-head candidate and focused checks recorded privately.",
-              "score": 96
-            },
-            "id": "win32-full-input-count",
-            "kind": "inline",
-            "in_diff": true,
-            "disposition": "proposed",
-            "start_line": 55
-          }
+        "comment_ids": [
+          "blur-state-identity",
+          "telemetry-write-serialization",
+          "telemetry-clear-context-before-stop",
+          "win32-full-input-count"
         ]
-      },
-      "type": "post_review",
-      "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b"
+      }
     }
   ],
   "validation": {
@@ -295,10 +94,6 @@
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
-        "blur-capture-state",
-        "blur-recover-completion",
-        "telemetry-drain-and-serialize",
-        "telemetry-flush-under-gate",
         "telemetry-clear-context-before-stop",
         "win32-full-input-count"
       ]
@@ -307,24 +102,10 @@
       "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
       "result": "passed",
       "checked_comment_ids": [
-        "blur-capture-state",
-        "blur-recover-completion",
-        "telemetry-drain-and-serialize",
-        "telemetry-flush-under-gate",
         "telemetry-clear-context-before-stop",
         "win32-full-input-count"
       ],
       "files": [
-        {
-          "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
-          "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
         {
           "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
           "result": "passed",
