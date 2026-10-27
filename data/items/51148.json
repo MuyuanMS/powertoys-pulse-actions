@@ -1,22 +1,49 @@
 {
+  "schemaVersion": 5,
   "number": 51148,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[KBM] New editor: suspend the KBM engine while the remap dialog is open",
   "url": "https://github.com/microsoft/PowerToys/pull/51148",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-19T02:09:59.6160098+08:00",
-  "evaluated_at": "2026-10-19T02:09:59.6160098+08:00",
+  "generated_at": "2026-10-27T17:30:17.4669965+08:00",
+  "evaluated_at": "2026-10-27T17:30:17.4705426+08:00",
   "source_updated_at": "2026-10-11T15:41:00Z",
   "head_sha": "ed71df92737593dc5c5d73170b7d48d649360b98",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-12T10:32:30.7957336Z",
-    "checkpoint_at": "2026-10-16T15:17:16.0303208Z"
-  },
+  "proposed_comments": [
+    {
+      "title": "Coordinate suspension ownership across editor processes",
+      "in_diff": false,
+      "severity": "medium",
+      "out_of_diff_reason": "Cross-file ownership correction spans Settings and runner launchers, WinUI startup, helper lifetime, and engine consumption; the user explicitly requests one GENERAL companion. The changed ResetEvent line is an effect, not a safe standalone remedy. No single RIGHT-side anchor represents this coordinated correction, and some launch/consumer sites are outside the diff.",
+      "confidence": {
+        "rationale": "Pinned call paths establish separate process launches, process-local helper state, one shared named manual-reset event and engine polling. A deterministic two-process probe confirmed one process reset clears the other process observed signal. Confidence is limited because the actual PowerToys editor/dialog overlap was not run and an existing Copilot review reported this same root cause.",
+        "score": 78
+      },
+      "id": "engine-event-cross-process-reset",
+      "body": "### Coordinate suspension ownership across editor processes\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/settings-ui/Settings.UI/ViewModels/KeyboardManagerViewModel.cs` (`OpenNewEditor`); `src/modules/keyboardmanager/dll/dllmain.cpp` (`launch_editor`); `src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs` (`OnLaunched`); `src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/EngineSuspendHelper.cs` (`Acquire`/`Release`); and `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp` (the suspension-event checks).\r\n\r\n**Problem:** Settings tracks its own `editor` process and the runner tracks its own `m_hEditorProcess`; those checks do not share ownership, and the WinUI startup path constructs a window without a shared instance guard. Each process's helper independently sets and resets the same named manual-reset event. If dialogs overlap in two such processes, the first `Release` resets that event even while the other process still owns an active dialog. A process-local lock or reference count cannot protect the other process's ownership.\r\n\r\n**Why it matters:** The engine uses that event to bypass remapping, so clearing it early permits remapping during the remaining recording dialog. This is a source-level ownership failure conditional on overlapping processes, not a claim that the actual two-editor UI scenario was reproduced. The existing coverage discussion and single-dialog manual validation do not establish cross-process ownership.\r\n\r\n**Suggested change:**\r\n1. Choose one ownership policy across both launch routes. If only one editor is intended, enforce it in WinUI startup before creating `MainWindow`, with shared single-instance coordination and activation redirection so both Settings and runner reach the same instance.\r\n2. If multiple editors remain supported, use cross-process active-dialog ownership instead: serialize acquisition/release of shared owner state, set the event for the first owner, and reset it only after the last owner releases. Define cleanup for normal dialog/window closure and an owner process exiting; do not simply remove `ResetEvent` or add only an in-process counter.\r\n3. Keep `ShowRemappingDialog` acquisition and `finally` release aligned with the selected policy. The legacy editor's mutex is not a guard for the WinUI executable.\r\n\r\n**Verification:** For a singleton policy, launch through Settings and the runner in both orders and confirm the second route activates the same editor. For a multi-editor policy, hold a dialog in each process, close either one first, and verify suspension stays asserted until the final dialog closes; include cancellation and owner-exit cleanup. In either policy, confirm remaps resume with the editor window still open after its final dialog closes. These are acceptance checks for the ownership correction, not a repeated request to block this PR on the already-discussed UI-test follow-up. Manual-reset event semantics support the failure mechanism, but actual editor overlap and any replacement implementation still need behavioral verification.",
+      "disposition": "proposed",
+      "kind": "companion"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "engine-event-cross-process-reset"
+        ],
+        "head_sha": "ed71df92737593dc5c5d73170b7d48d649360b98"
+      },
+      "note": "Posts one separate general PR companion comment; requires human approval.",
+      "type": "post_review",
+      "id": "review-51148-cross-process-ownership",
+      "label": "Post separate general ownership comment"
+    }
+  ],
   "validation": {}
 }
