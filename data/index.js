@@ -420840,9 +420840,7 @@ window.BOARD_INDEX = {
       "labels": [
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T04:55:04Z",
       "updated_at": "2026-10-27T08:18:27Z",
       "comments": 1,
@@ -420877,9 +420875,7 @@ window.BOARD_INDEX = {
         "Product-Keyboard Manager",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T02:29:11Z",
       "updated_at": "2026-10-27T02:29:30Z",
       "comments": 1,
@@ -420914,9 +420910,7 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Settings"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T07:02:13Z",
       "updated_at": "2026-10-27T07:32:41Z",
       "comments": 1,

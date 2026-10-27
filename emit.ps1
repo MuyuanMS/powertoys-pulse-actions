@@ -1023,7 +1023,7 @@ foreach ($it in $src.items) {
     has_artifact=$hasArtifact; agent_status=$agentStatus; issue_type=$issueType
     proposed_open=$proposedOpen
     primary_action=if ($primary) { [pscustomobject]$primary } else { $null }
-    labels=@($it.labels); assignees=@($it.assignees); created_at=$it.created_at; updated_at=$it.updated_at
+    labels=@($it.labels); assignees=@($it.assignees | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) }); created_at=$it.created_at; updated_at=$it.updated_at
     comments=$it.comments; priority=$it.priority
   }
   if ($it.kind -eq 'pr') {
