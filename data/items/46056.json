@@ -1,35 +1,69 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 46056,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "New Shell Integration PowerToy: Copy as UNC",
   "url": "https://github.com/microsoft/PowerToys/pull/46056",
   "track": "review",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-15T20:20:00Z",
-  "evaluated_at": "2026-09-15T20:20:00Z",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-27T15:43:07.5309465+08:00",
+  "evaluated_at": "2026-10-27T15:43:07.5333911+08:00",
   "source_updated_at": "2026-06-05T18:21:53Z",
   "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
-  "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "author_wait_evidence": {
-    "author": "LegendaryBlair",
-    "url": "https://github.com/microsoft/PowerToys/pull/46056#issuecomment-4470709493",
-    "created_at": "2026-05-17T12:46:25Z",
-    "requested_evidence": "Respond to the proposal to replace the dedicated Copy as UNC sparse package with a shared shell-extension host and address Windows 10 legacy context-menu parity.",
-    "author_activity_after_request": false,
-    "latest_author_commit": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
-    "latest_author_commit_at": "2026-05-15T18:40:30Z"
-  },
-  "freshness": {},
+  "proposed_comments": [
+    {
+      "id": "sparse-package-external-location",
+      "kind": "companion",
+      "title": "Align the sparse-package external location and manifest paths",
+      "severity": "medium",
+      "confidence": {
+        "score": 86,
+        "rationale": "The pinned source passes the module directory as the external location, while the manifest executable and installed executable are in different directory roots; the paths are directly verifiable, though installation behavior has not been run."
+      },
+      "in_diff": false,
+      "body": "### Align the sparse-package external location and manifest paths\n\n**Severity:** `medium`\n\n**Affected code:**\n`src/modules/CopyAsUNC/CopyAsUNCExt/PowerToysModule.cpp` (`enable()`), `src/modules/CopyAsUNC/CopyAsUNCContextMenu/AppxManifest.xml`, and the `CopyAsUNCContextMenu` output/install layout.\n\n**Problem:**\n`enable()` passes `get_module_folderpath(globals::instance)` to `RegisterSparsePackage` as the external location. The manifest's `Executable=\"PowerToys.exe\"` and COM class path are resolved relative to that location. The context-menu binaries are emitted under `WinUI3Apps`, while the installer places `PowerToys.exe` in the parent install directory, so those paths do not describe one consistent external root.\n\n**Why it matters:**\nThe package can resolve its executable or COM server against the wrong directory, preventing the shell command from activating on the installed layout. This is a source-level path mismatch; I have not reproduced an installation or activation failure.\n\n**Suggested change:**\n1. Choose one external root and align every manifest path and output/install rule with it. For the current layout, register the package with the install root as `ExternalLocationUri` and set the COM class path to `WinUI3Apps\\\\PowerToys.CopyAsUNCContextMenu.dll`; alternatively, keep the module-folder root and ensure both the executable and COM server are present at the manifest-relative paths. Keep the package MSIX URI separate from the chosen external root.\n\n**Verification:**\nBuild and install an x64 package, inspect the registered sparse-package external location, confirm that both the executable and COM path resolve to files there, and invoke Copy as UNC for a mapped network drive.",
+      "disposition": "proposed",
+      "out_of_diff_reason": "A complete repair must coordinate the registration root, manifest-relative executable/COM paths, and packaged output layout; a single-file code suggestion would be incomplete."
+    },
+    {
+      "id": "sparse-package-version",
+      "kind": "companion",
+      "title": "Keep the CopyAsUNC package version in step with PowerToys",
+      "severity": "medium",
+      "confidence": {
+        "score": 88,
+        "rationale": "The exact-head helper compares package major/minor/revision with product constants, while the pinned release version script updates peer package manifests but omits CopyAsUNC; the repeated-registration path is source-derived, not runtime-observed."
+      },
+      "in_diff": false,
+      "body": "### Keep the CopyAsUNC package version in step with PowerToys\n\n**Severity:** `medium`\n\n**Affected code:**\n`src/modules/CopyAsUNC/CopyAsUNCContextMenu/AppxManifest.xml`, `.pipelines/versionSetting.ps1`, and the version comparison in `src/common/utils/package.h` called from `src/modules/CopyAsUNC/CopyAsUNCExt/PowerToysModule.cpp`.\n\n**Problem:**\n`IsPackageRegisteredWithPowerToysVersion()` compares the registered package's major, minor, and revision with PowerToys' version constants, and `enable()` uses that check before registration. The CopyAsUNC manifest remains at `1.0.0.0`, but `versionSetting.ps1` updates the PowerRename, ImageResizer, FileLocksmith, and NewPlus context-menu manifests without updating CopyAsUNC.\n\n**Why it matters:**\nFor a normal build whose product version differs from `1.0.0.0`, the package will not satisfy the current-version check, so `enable()` will take the sparse-package registration path again instead of recognizing the package as current. This identifies a version-contract mismatch; it does not establish an observed install failure.\n\n**Suggested change:**\n1. Add `CopyAsUNCContextMenu/AppxManifest.xml` to the version-setting pipeline and set `Package.Identity.Version` from the same generated version used for the other context-menu packages, preserving the expected four-part package version.\n\n**Verification:**\nRun the version-setting step with a representative product version and assert that the CopyAsUNC manifest matches the other context-menu package versions; then verify that the registered package version passes `IsPackageRegisteredWithPowerToysVersion()` for that build.",
+      "disposition": "proposed",
+      "out_of_diff_reason": "The required change belongs in the shared release-version pipeline as well as this newly added manifest, so an isolated manifest or pipeline suggestion would not be a complete coordinated fix."
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "comment_ids": [
+          "sparse-package-external-location",
+          "sparse-package-version"
+        ],
+        "event": "COMMENT",
+        "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3"
+      },
+      "requires_confirmation": true,
+      "type": "post_review",
+      "id": "post-review-46056",
+      "label": "Post two separate general PR comments"
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
-      "result": "not_applicable"
+      "result": "passed"
     }
   }
 }
