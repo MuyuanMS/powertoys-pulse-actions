@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 5,
+  "number": 51467,
+  "kind": "issue",
+  "title": "Search Bar gets out of screen when the prompt is long",
+  "url": "https://github.com/microsoft/PowerToys/issues/51467",
+  "generated_at": "2026-10-27T19:15:11.669596+08:00",
+  "evaluated_at": "2026-10-27T19:15:11.669596+08:00",
+  "source_updated_at": "2026-10-22T05:31:38Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Investigate the shared titlebar content-measure/occlusion boundary, while keeping this report's trigger distinct from the related search-layout report. The existing Narrow minimum override and caption insets are counterevidence to a simplistic missing-minimum or missing-inset claim. Do not request generic logs for a visible layout defect.",
+    "evidence": [
+      "The report supplies the long-query overflow screenshot and is assigned to niels9001.",
+      "An existing automated steps request does not invalidate the already clear visual reproduction.",
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Views/ShellPage.xaml: Search is TitleBar content and overrides TitleBarContentMinWidth to 516.",
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Controls/TitleBar/TitleBar.xaml: Wide mode uses an Auto content column, but Narrow already changes it to star width and sets the content minimum to zero. A permanent 516-DIP constraint is therefore not an established root cause.",
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Controls/TitleBar/TitleBar.WASDK.cs: The template reserves left/right caption-button inset columns. Actual clipping, breakpoint and inset units must be measured before claiming the reservation is absent."
+    ],
+    "recommended_action": "Reproduce Settings titlebar bounds behavior",
+    "evaluated_at": "2026-10-27T19:15:11.669596+08:00",
+    "source_updated_at": "2026-10-22T05:31:38Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Current source exposes the relevant sizing boundary but already includes narrow-state and inset protections; the failing measure/state is unverified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Constrain Settings search to the measured titlebar content region",
+      "root_cause": "Hypothesis: content desired size or a wide/narrow transition can exceed the remaining non-caption region under the reported trigger. The exact state/measure failure has not been reproduced.",
+      "plan": [
+        "Reproduce the exact report trigger and record titlebar visual state, query desired/actual width, title width, DPI and caption inset bounds.",
+        "Identify whether the failure is a stale breakpoint/state, content desired-width growth or incorrect reserved-region calculation.",
+        "Apply an available-width constraint or correct that transition at the identified boundary; preserve title/menu access, keyboard search and caption hit testing."
+      ],
+      "verification": [
+        "The reported resize or long-query trigger never paints or hit-tests over caption buttons.",
+        "Empty/long queries, elevated/non-elevated titles, narrow/wide transitions and representative DPI/RTL layouts retain usable search and window controls."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "Current source exposes the relevant sizing boundary but already includes narrow-state and inset protections; the failing measure/state is unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A long Settings search query can grow toward or across caption buttons.",
+    "known_information": [
+      "The report supplies the long-query overflow screenshot and is assigned to niels9001.",
+      "An existing automated steps request does not invalidate the already clear visual reproduction."
+    ],
+    "inferences": [],
+    "analysis": "Investigate the shared titlebar content-measure/occlusion boundary, while keeping this report's trigger distinct from the related search-layout report. The existing Narrow minimum override and caption insets are counterevidence to a simplistic missing-minimum or missing-inset claim. Do not request generic logs for a visible layout defect.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Views/ShellPage.xaml: Search is TitleBar content and overrides TitleBarContentMinWidth to 516.",
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Controls/TitleBar/TitleBar.xaml: Wide mode uses an Auto content column, but Narrow already changes it to star width and sets the content minimum to zero. A permanent 516-DIP constraint is therefore not an established root cause.",
+      "Upstream main 9e6593c34949: src/settings-ui/Settings.UI/SettingsXAML/Controls/TitleBar/TitleBar.WASDK.cs: The template reserves left/right caption-button inset columns. Actual clipping, breakpoint and inset units must be measured before claiming the reservation is absent."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Settings titlebar bounds behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Settings titlebar bounds report",
+        "module": "Settings titlebar bounds",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Type an increasingly long query in Settings and compare wide/narrow widths, including shrinking and restoring the window.",
+          "Record the current titlebar visual state and search/title/caption rectangles at representative DPI values.",
+          "Verify both search input and minimize/maximize/close hit targets while entering and deleting the long query."
+        ],
+        "expected_result": "Identify the specific state or measure that violates caption bounds; do not assume both reports have an identical root cause."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [
+    "niels9001"
+  ],
+  "comments": 1
+}

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 5,
+  "number": 51494,
+  "kind": "issue",
+  "title": "command pallet - dock - does not load correctly",
+  "url": "https://github.com/microsoft/PowerToys/issues/51494",
+  "generated_at": "2026-10-27T19:12:17.484119+08:00",
+  "evaluated_at": "2026-10-27T19:12:17.484119+08:00",
+  "source_updated_at": "2026-10-23T18:22:03Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The recovery changes both build and Dock configuration, so it does not prove a restart fix or isolate a version regression. Compare the archived old Dock configuration with defaults on the same verified executable version before choosing a content, settings or render fix.",
+    "evidence": [
+      "On the reported 0.102 build, reboot leaves blank reserved top space; module toggles, restarts and process termination do not repair it.",
+      "The author's actual winget reinstall output says 0.101.2362.0, despite a 0.102 What's New page.",
+      "Most settings survived, but Dock was disabled and its customized content/settings were gone. Enabling the default Dock made it visible.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs: DockWindow has AppBar reservation state and separately applies DockSettings and view-model updates; reserved work area does not prove visible content rendered.",
+      "Read the complete reinstall transcript and lost-Dock-customization control. The What's New page is not treated as executable-version evidence."
+    ],
+    "recommended_action": "Reproduce blank Dock configuration behavior",
+    "evaluated_at": "2026-10-27T19:12:17.484119+08:00",
+    "source_updated_at": "2026-10-23T18:22:03Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Defaults becoming visible is useful, but the author's reinstall also downgraded the build and lost Dock state."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover a blank Dock without discarding its configuration",
+      "root_cause": "Persisted Dock content/presentation state may fail to render while AppBar reservation succeeds. Reinstall also changed the executable version, so configuration versus build is not yet isolated.",
+      "plan": [
+        "Inspect the existing report for a redacted copy of the pre-reinstall Dock settings and verify actual installed executable versions.",
+        "On one controlled build, compare archived settings with a fresh default Dock; then compare builds while holding the same configuration.",
+        "Repair the isolated settings/render transition or invalid-item handling while preserving user content and reserved-space cleanup."
+      ],
+      "verification": [
+        "The formerly blank configuration displays after reboot on the repaired build.",
+        "Default Dock, disabled Dock and settings migration do not lose content or leave orphan reserved space."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "Defaults becoming visible is useful, but the author's reinstall also downgraded the build and lost Dock state."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Dock reserves screen space but renders blank until a version/configuration-changing reinstall.",
+    "known_information": [
+      "On the reported 0.102 build, reboot leaves blank reserved top space; module toggles, restarts and process termination do not repair it.",
+      "The author's actual winget reinstall output says 0.101.2362.0, despite a 0.102 What's New page.",
+      "Most settings survived, but Dock was disabled and its customized content/settings were gone. Enabling the default Dock made it visible."
+    ],
+    "inferences": [],
+    "analysis": "The recovery changes both build and Dock configuration, so it does not prove a restart fix or isolate a version regression. Compare the archived old Dock configuration with defaults on the same verified executable version before choosing a content, settings or render fix.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs: DockWindow has AppBar reservation state and separately applies DockSettings and view-model updates; reserved work area does not prove visible content rendered.",
+      "Read the complete reinstall transcript and lost-Dock-customization control. The What's New page is not treated as executable-version evidence."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce blank Dock configuration behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate blank Dock configuration report",
+        "module": "blank Dock configuration",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Review the existing report for pre-reinstall Dock settings; do not ask the author to recreate settings that were lost.",
+          "Use the actual executable version, not What's New, and compare old settings with defaults on the same isolated build.",
+          "Hold configuration constant when comparing reported and current builds; record AppBar reservation separately from visible Dock content."
+        ],
+        "expected_result": "A configuration-versus-version comparison narrows the blank-content failure without resetting a user's Dock."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1
+}

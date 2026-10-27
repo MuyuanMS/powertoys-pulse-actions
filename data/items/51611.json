@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "number": 51611,
+  "kind": "issue",
+  "title": "The numpad asterisk symbol key [* (numpad)] is not in the key list on Keyboard Manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/51611",
+  "generated_at": "2026-10-27T19:16:08.251351+08:00",
+  "evaluated_at": "2026-10-27T19:16:08.251351+08:00",
+  "source_updated_at": "2026-10-27T10:58:37Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The source supports a naming/discoverability ambiguity, not the assertion that VK_MULTIPLY is absent from the engine. First compare the dropdown's '*' entry, physical-key capture and stored VK 106 before adding a distinct numpad label.",
+    "evidence": [
+      "The reporter supplies a dropdown screenshot and ZIP on Windows 10, Store 0.102.2933, and uses the character '*' as a workaround.",
+      "Current LayoutMap enumerates all virtual keys and maps Unicode names; it explicitly renames numpad decimal but not VK_MULTIPLY.",
+      "Upstream main 9e6593c34949: src/common/interop/keyboard_layout.cpp: UpdateLayout uses MapVirtualKeyExW/ToUnicodeEx for all 1..255 keys; GetKeyCodeList retains Unicode keys and '. (Numpad)' has an explicit override.",
+      "Upstream main 9e6593c34949: src/modules/keyboardmanager/KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.cpp: GetKeyboardKeysList exports LayoutMap names and VK codes to the editor.",
+      "The October 27 10:58:37 UTC author reply confirms the problem persists after updating to latest stable and attaches two more screenshots. The reply does not restate an exact executable version or demonstrate the stored/captured virtual-key identity.",
+      "Refreshed only this issue's full body/comments/timeline after the coordinator's live gate detected new activity. The update-confirmation request has now been answered; do not ask the author to repeat it. The source-backed naming hypothesis and VK-identity reproducer remain applicable, with no remapping-engine root cause claimed."
+    ],
+    "recommended_action": "Reproduce Keyboard Manager behavior",
+    "evaluated_at": "2026-10-27T19:16:08.251351+08:00",
+    "source_updated_at": "2026-10-27T10:58:37Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The missing explicit label is visible in source, but actual Windows layout behavior and the screenshot's selected entry have not been independently reproduced."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Disambiguate numpad multiply without changing stored key identity",
+      "root_cause": "Unicode-derived display naming may expose VK_MULTIPLY as '*' rather than the expected numpad-specific label.",
+      "plan": [
+        "Confirm the captured and dropdown VK identities on the reported layout.",
+        "If the ambiguity is confirmed, give VK_MULTIPLY a stable numpad-specific display label and preserve serialized VK identity and reverse-name lookup.",
+        "Add naming/list-entry and remap round-trip coverage."
+      ],
+      "verification": [
+        "VK 106 appears exactly once and survives save/reopen.",
+        "Main-keyboard asterisk/text mapping remains distinct and existing configurations still load."
+      ],
+      "confidence": {
+        "score": 75,
+        "level": "yellow",
+        "rationale": "The missing explicit label is visible in source, but actual Windows layout behavior and the screenshot's selected entry have not been independently reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager does not clearly expose a numpad asterisk choice.",
+    "known_information": [
+      "The reporter supplies a dropdown screenshot and ZIP on Windows 10, Store 0.102.2933, and uses the character '*' as a workaround.",
+      "Current LayoutMap enumerates all virtual keys and maps Unicode names; it explicitly renames numpad decimal but not VK_MULTIPLY.",
+      "The October 27 10:58:37 UTC author reply confirms the problem persists after updating to latest stable and attaches two more screenshots. The reply does not restate an exact executable version or demonstrate the stored/captured virtual-key identity."
+    ],
+    "inferences": [
+      "Persistence after the author's update rules out treating the old-version recommendation as a resolution; it does not select labeling ambiguity versus missing key identity."
+    ],
+    "analysis": "The source supports a naming/discoverability ambiguity, not the assertion that VK_MULTIPLY is absent from the engine. First compare the dropdown's '*' entry, physical-key capture and stored VK 106 before adding a distinct numpad label.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/common/interop/keyboard_layout.cpp: UpdateLayout uses MapVirtualKeyExW/ToUnicodeEx for all 1..255 keys; GetKeyCodeList retains Unicode keys and '. (Numpad)' has an explicit override.",
+      "Upstream main 9e6593c34949: src/modules/keyboardmanager/KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.cpp: GetKeyboardKeysList exports LayoutMap names and VK codes to the editor.",
+      "Refreshed only this issue's full body/comments/timeline after the coordinator's live gate detected new activity. The update-confirmation request has now been answered; do not ask the author to repeat it. The source-backed naming hypothesis and VK-identity reproducer remain applicable, with no remapping-engine root cause claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Keyboard Manager report",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "On Windows 10, compare the dropdown '*' item with physical numpad multiply capture and inspect the saved key code.",
+          "Test trigger and destination mappings with Num Lock on/off and compare a shifted main-keyboard asterisk.",
+          "Verify whether the issue is only a missing disambiguating label or an actual missing mapping."
+        ],
+        "expected_result": "Numpad multiply is selectable and maps as VK_MULTIPLY, with an unambiguous display name."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 2
+}

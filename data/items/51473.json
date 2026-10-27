@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 5,
+  "number": 51473,
+  "kind": "issue",
+  "title": "Always on top: Rounded corners not rounded",
+  "url": "https://github.com/microsoft/PowerToys/issues/51473",
+  "generated_at": "2026-10-27T19:15:11.956966+08:00",
+  "evaluated_at": "2026-10-27T19:15:11.956966+08:00",
+  "source_updated_at": "2026-10-22T11:43:25Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The author's reply answers the old request; do not leave this waiting or blame customization software without a clean control. Compare border transparency and rasterization on the supplied ARM64/build combination before changing the compositor path.",
+    "evidence": [
+      "The report supplies an ARM64 Surface 11 Pro environment, Windows build 26300.9711, screenshots and a ZIP.",
+      "The latest author reply supplies the simple rounded-corners-enabled plus Ctrl+Win+T reproduction; disabling Windhawk did not eliminate it.",
+      "Historical #19296 was closed as fixed, but that does not prove this newer platform/build report resolved.",
+      "Upstream main 9e6593c34949: src/modules/alwaysontop/AlwaysOnTop/WindowBorder.cpp: The separate layered border window uses DWM blur setup and SetLayeredWindowAttributes color-key/alpha calls; the rounded border is not simply the target app's own corner.",
+      "Upstream main 9e6593c34949: src/modules/alwaysontop/AlwaysOnTop/FrameDrawer.cpp: The renderer already clears to transparent black and builds rounded border geometry. A missing transparent clear is not established by this report.",
+      "Read historical #19296 and the latest author answer. Neither independent ARM64 reproduction nor a pixel/composition trace was performed."
+    ],
+    "recommended_action": "Reproduce Always On Top rounded corners behavior",
+    "evaluated_at": "2026-10-27T19:15:11.956966+08:00",
+    "source_updated_at": "2026-10-22T11:43:25Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The artifact and trigger are concrete; source already has transparency and rounded-geometry handling, so the defective boundary still needs attribution."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve transparent rounded-border corners on the affected compositor path",
+      "root_cause": "Hypothesis: the layered-window transparency/alpha and rounded-border composition boundary produces opaque corner pixels on this ARM64/Windows configuration. The actual failing API or raster operation is unmeasured.",
+      "plan": [
+        "Reproduce the supplied pinning sequence with rounded corners on/off on comparable ARM64 hardware and a clean customization control.",
+        "Inspect layered-window attributes, DWM behavior and rendered edge pixels; compare an x64/control build without assuming architecture alone is causal.",
+        "Correct the proven transparency or geometry boundary while preserving border color, opacity, resize and target-window behavior."
+      ],
+      "verification": [
+        "Pinned windows have transparent corner exteriors on the failing platform/build.",
+        "Rounded/square borders, opacity settings, resizing and multiple pinned windows continue to render correctly."
+      ],
+      "confidence": {
+        "score": 53,
+        "level": "yellow",
+        "rationale": "The artifact and trigger are concrete; source already has transparency and rounded-geometry handling, so the defective boundary still needs attribution."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top rounded borders show black corner artifacts on an ARM64 Surface.",
+    "known_information": [
+      "The report supplies an ARM64 Surface 11 Pro environment, Windows build 26300.9711, screenshots and a ZIP.",
+      "The latest author reply supplies the simple rounded-corners-enabled plus Ctrl+Win+T reproduction; disabling Windhawk did not eliminate it.",
+      "Historical #19296 was closed as fixed, but that does not prove this newer platform/build report resolved."
+    ],
+    "inferences": [],
+    "analysis": "The author's reply answers the old request; do not leave this waiting or blame customization software without a clean control. Compare border transparency and rasterization on the supplied ARM64/build combination before changing the compositor path.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/alwaysontop/AlwaysOnTop/WindowBorder.cpp: The separate layered border window uses DWM blur setup and SetLayeredWindowAttributes color-key/alpha calls; the rounded border is not simply the target app's own corner.",
+      "Upstream main 9e6593c34949: src/modules/alwaysontop/AlwaysOnTop/FrameDrawer.cpp: The renderer already clears to transparent black and builds rounded border geometry. A missing transparent clear is not established by this report.",
+      "Read historical #19296 and the latest author answer. Neither independent ARM64 reproduction nor a pixel/composition trace was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Always On Top rounded corners behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Always On Top rounded corners report",
+        "module": "Always On Top rounded corners",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Use the supplied rounded-corners plus Ctrl+Win+T sequence on comparable ARM64/Windows hardware.",
+          "Compare corners on/off, a clean customization control and border opacity while retaining the existing screenshot/ZIP as evidence.",
+          "Inspect rendered edge transparency and layered-window attributes rather than asking for the same reproduction steps again."
+        ],
+        "expected_result": "Demonstrate the current regression and its composition boundary; do not treat a historical closed issue as a current fix."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comments": 2
+}

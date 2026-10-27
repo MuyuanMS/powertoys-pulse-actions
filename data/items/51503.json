@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 5,
+  "number": 51503,
+  "kind": "issue",
+  "title": "CmdPal: Command Bar content moved up after switching from Compact to Full layout",
+  "url": "https://github.com/microsoft/PowerToys/issues/51503",
+  "generated_at": "2026-10-27T19:15:12.106922+08:00",
+  "evaluated_at": "2026-10-27T19:15:12.106922+08:00",
+  "source_updated_at": "2026-10-22T21:57:30Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Use a repeated transition reproduction rather than ask for generic logs or apply arbitrary offsets. The source has both compact expansion/window sizing and centered command-bar content; a stale arrangement is a hypothesis, not a demonstrated missing invalidation.",
+    "evidence": [
+      "The developer report supplies the Compact-to-Full transition and a screenshot of vertically displaced command-bar content.",
+      "The defect is intermittent on a main development build; no deterministic layout timing or exact revision is given.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs: Compact expansion and settings changes are dispatched through HandleExpandCompactOnUiThread and window/layout sizing.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml: The command-bar template contains centered content and nested layout; the screenshot does not isolate a particular margin or parent constraint.",
+      "Read the complete developer report. No covering PR or confirmed defective property is established in the retrieved context."
+    ],
+    "recommended_action": "Reproduce Command Palette mode-switch command bar behavior",
+    "evaluated_at": "2026-10-27T19:15:12.106922+08:00",
+    "source_updated_at": "2026-10-22T21:57:30Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The transition and visual evidence are supplied, but a deterministic trigger and defective layout boundary remain unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Compact-to-Full command-bar arrangement stable",
+      "root_cause": "Hypothesis: command-bar arrange state or parent constraints are inconsistent during the compact/full transition. The report does not identify a specific stale measure or property.",
+      "plan": [
+        "Loop the reported mode switch while capturing command-bar and parent desired/actual bounds and layout completion order.",
+        "Compare first and later transitions with identical content to isolate stale state versus an incorrect full-mode constraint.",
+        "Correct the identified transition/constraint and add a focused layout transition regression instead of a fixed pixel offset."
+      ],
+      "verification": [
+        "Repeated Compact-to-Full and reverse transitions keep content vertically aligned.",
+        "Changing command content, DPI and window size preserves alignment and keyboard access."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The transition and visual evidence are supplied, but a deterministic trigger and defective layout boundary remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette command-bar content intermittently shifts after Compact to Full.",
+    "known_information": [
+      "The developer report supplies the Compact-to-Full transition and a screenshot of vertically displaced command-bar content.",
+      "The defect is intermittent on a main development build; no deterministic layout timing or exact revision is given."
+    ],
+    "inferences": [],
+    "analysis": "Use a repeated transition reproduction rather than ask for generic logs or apply arbitrary offsets. The source has both compact expansion/window sizing and centered command-bar content; a stale arrangement is a hypothesis, not a demonstrated missing invalidation.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs: Compact expansion and settings changes are dispatched through HandleExpandCompactOnUiThread and window/layout sizing.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml: The command-bar template contains centered content and nested layout; the screenshot does not isolate a particular margin or parent constraint.",
+      "Read the complete developer report. No covering PR or confirmed defective property is established in the retrieved context."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette mode-switch command bar behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Command Palette mode-switch command bar report",
+        "module": "Command Palette mode-switch command bar",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "On a recorded current-main revision, repeatedly switch Compact to Full with unchanged command content.",
+          "Capture parent and command-bar bounds after each transition and after layout settles.",
+          "Compare reverse transitions and cold Full startup to distinguish retained Compact state from general Full layout."
+        ],
+        "expected_result": "A reproducible transition/bounds signature identifies the owner without asserting a speculative margin fix."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51478,
+  "kind": "issue",
+  "title": "ColorPicker: Can't scroll through color history swatches using a touchpad",
+  "url": "https://github.com/microsoft/PowerToys/issues/51478",
+  "generated_at": "2026-10-27T19:15:11.820807+08:00",
+  "evaluated_at": "2026-10-27T19:15:11.820807+08:00",
+  "source_updated_at": "2026-10-22T05:30:17Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The mouse-wheel control narrows the defect to gesture routing/native scroll-axis behavior, not a missing wheel handler. Reproduce precision-touchpad manipulations separately before choosing horizontal-mode constraints or gesture translation.",
+    "evidence": [
+      "The report says two-finger touchpad input bobs the horizontal swatch list vertically.",
+      "Mouse wheel vertical and horizontal scrolling work; the report is assigned to niels9001.",
+      "Upstream main 9e6593c34949: src/modules/colorPicker/ColorPickerUI/Views/ColorEditorView.xaml: HistoryColors uses a horizontal ItemsStackPanel and hides the horizontal scrollbar, but this declaration does not explicitly disable vertical scrolling/manipulation.",
+      "Upstream main 9e6593c34949: src/modules/colorPicker/ColorPickerUI/Views/ColorEditorView.xaml.cs: HistoryColors_OnPointerWheelChanged already changes HorizontalOffset using MouseWheelDelta and marks the event handled; precision touchpad manipulation may not take this event path.",
+      "No physical precision-touchpad test was performed; the source distinction supports an input-path investigation rather than proof of a specific gesture fix."
+    ],
+    "recommended_action": "Reproduce Color Picker touchpad history behavior",
+    "evaluated_at": "2026-10-27T19:15:11.820807+08:00",
+    "source_updated_at": "2026-10-22T05:30:17Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The separate wheel handler and reported wheel/touchpad differential are concrete, but native gesture routing has not been measured."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Color Picker history gestures on the horizontal axis",
+      "root_cause": "Hypothesis: precision-touchpad manipulation follows the ListView/ScrollViewer native axis path rather than the explicit mouse-wheel-to-horizontal handler, allowing unwanted vertical movement.",
+      "plan": [
+        "Compare touchpad manipulation/view-change events with PointerWheelChanged on an overflowing history list.",
+        "Inspect actual horizontal/vertical scroll and chaining modes; identify whether gestures bypass translation or leave a vertical viewport enabled.",
+        "Constrain the proven unwanted axis or route the gesture consistently without double-applying native and wheel deltas."
+      ],
+      "verification": [
+        "Two-finger touchpad gestures traverse all history swatches without vertical bobbing.",
+        "Vertical/horizontal mouse wheels, keyboard selection, context menus and selected-item visibility remain correct."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The separate wheel handler and reported wheel/touchpad differential are concrete, but native gesture routing has not been measured."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Color Picker history scrolls vertically instead of horizontally with a precision touchpad.",
+    "known_information": [
+      "The report says two-finger touchpad input bobs the horizontal swatch list vertically.",
+      "Mouse wheel vertical and horizontal scrolling work; the report is assigned to niels9001."
+    ],
+    "inferences": [],
+    "analysis": "The mouse-wheel control narrows the defect to gesture routing/native scroll-axis behavior, not a missing wheel handler. Reproduce precision-touchpad manipulations separately before choosing horizontal-mode constraints or gesture translation.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/colorPicker/ColorPickerUI/Views/ColorEditorView.xaml: HistoryColors uses a horizontal ItemsStackPanel and hides the horizontal scrollbar, but this declaration does not explicitly disable vertical scrolling/manipulation.",
+      "Upstream main 9e6593c34949: src/modules/colorPicker/ColorPickerUI/Views/ColorEditorView.xaml.cs: HistoryColors_OnPointerWheelChanged already changes HorizontalOffset using MouseWheelDelta and marks the event handled; precision touchpad manipulation may not take this event path.",
+      "No physical precision-touchpad test was performed; the source distinction supports an input-path investigation rather than proof of a specific gesture fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Color Picker touchpad history behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Color Picker touchpad history report",
+        "module": "Color Picker touchpad history",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Populate enough history colors to overflow the horizontal strip on a test device with a precision touchpad.",
+          "Compare two-finger vertical/horizontal gestures with vertical/horizontal mouse-wheel events and record actual viewport offsets.",
+          "Measure which routed or native manipulation path handles each gesture before changing scroll modes."
+        ],
+        "expected_result": "The gesture-specific axis failure is demonstrated independently of the already functioning mouse-wheel path."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Color Picker"
+  ],
+  "assignees": [
+    "niels9001"
+  ],
+  "comments": 0
+}

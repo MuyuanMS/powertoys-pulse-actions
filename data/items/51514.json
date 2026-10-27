@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 5,
+  "number": 51514,
+  "kind": "issue",
+  "title": "stl. preview not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/51514",
+  "generated_at": "2026-10-27T19:15:12.374524+08:00",
+  "evaluated_at": "2026-10-27T19:15:12.374524+08:00",
+  "source_updated_at": "2026-10-23T12:24:43Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Separate the two surfaces: PowerToys currently registers an STL thumbnail provider, not an STL Preview Pane handler. Lack of pane rendering alone is not a regression in that feature; missing thumbnails still deserve sample/configuration investigation. Do not dismiss that supported half or design an unsupported preview-handler repair.",
+    "evidence": [
+      "The report supplies 0.102.2933.0 on Windows 11 Pro 26200.9168 and screenshots.",
+      "It reports both missing folder thumbnails and no Preview Pane content; no sample STL or exact thumbnail configuration is supplied.",
+      "Upstream main 9e6593c34949: src/modules/previewpane/powerpreview/powerpreview.cpp: The registered module list has stl-thumbnail-toggle-setting/getStlThumbnailHandlerChangeSet; the Preview Pane handlers listed there cover other formats, not STL.",
+      "Upstream main 9e6593c34949: src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.cs: The thumbnail provider checks policy/size and parses through StLReader; empty models, invalid content and caught exceptions can return null. These are possible paths, not proof the user's file is invalid.",
+      "A known repository sample exists in UnitTests-StlThumbnailProvider/HelperFiles/sample.stl for an internal thumbnail control; it was not rendered in this pass."
+    ],
+    "recommended_action": "Provide one STL thumbnail sample",
+    "evaluated_at": "2026-10-27T19:15:12.374524+08:00",
+    "source_updated_at": "2026-10-23T12:24:43Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Supported thumbnail failure is reported, but neither an input sample nor the active thumbnail configuration is known."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore the failing supported STL thumbnail path",
+      "root_cause": "A missing thumbnail can originate in policy/registration/cache or a provider null result for the input model. The report does not yet distinguish these; an STL Preview Pane handler is not part of this fix scope.",
+      "plan": [
+        "Compare the supplied model with the repository sample in the thumbnail provider test and Explorer Large Icons view with STL thumbnails enabled.",
+        "If both models fail in Explorer but the provider succeeds, inspect registration/policy/cache; if only the supplied model fails, identify its specific parse/render result.",
+        "Repair the proven supported thumbnail path and add a sanitized model regression when applicable; do not treat pane-handler creation as a bug fix."
+      ],
+      "verification": [
+        "A valid affected STL and the known sample produce folder thumbnails on the target build.",
+        "Malformed/empty inputs remain bounded and policy-disabled thumbnails remain disabled.",
+        "Documentation and tests distinguish thumbnail support from Preview Pane support."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "Supported thumbnail failure is reported, but neither an input sample nor the active thumbnail configuration is known."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "STL thumbnails may be failing, but STL Preview Pane rendering is not a provided handler.",
+    "known_information": [
+      "The report supplies 0.102.2933.0 on Windows 11 Pro 26200.9168 and screenshots.",
+      "It reports both missing folder thumbnails and no Preview Pane content; no sample STL or exact thumbnail configuration is supplied."
+    ],
+    "inferences": [],
+    "analysis": "Separate the two surfaces: PowerToys currently registers an STL thumbnail provider, not an STL Preview Pane handler. Lack of pane rendering alone is not a regression in that feature; missing thumbnails still deserve sample/configuration investigation. Do not dismiss that supported half or design an unsupported preview-handler repair.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/previewpane/powerpreview/powerpreview.cpp: The registered module list has stl-thumbnail-toggle-setting/getStlThumbnailHandlerChangeSet; the Preview Pane handlers listed there cover other formats, not STL.",
+      "Upstream main 9e6593c34949: src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.cs: The thumbnail provider checks policy/size and parses through StLReader; empty models, invalid content and caught exceptions can return null. These are possible paths, not proof the user's file is invalid.",
+      "A known repository sample exists in UnitTests-StlThumbnailProvider/HelperFiles/sample.stl for an internal thumbnail control; it was not rendered in this pass."
+    ],
+    "information_gaps": [
+      {
+        "information": "One small non-private failing STL and confirmation of the STL thumbnail option",
+        "why_needed": "Separate a model-specific null result from Explorer/provider configuration on the supported surface.",
+        "how_to_collect": "Attach a minimal sample and state the thumbnail toggle value; no generic diagnostic archive is requested.",
+        "evidence_type": "sample_file"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Provide one STL thumbnail sample",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "PowerToys provides STL folder thumbnails, but not an STL Preview Pane handler, so the empty pane is a separate expectation. For the missing thumbnail, could you attach one small non-private STL that shows the problem and confirm the STL thumbnail option is enabled? We can compare it with the repository's known sample; a generic ZIP is not needed for this first check."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-File Explorer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

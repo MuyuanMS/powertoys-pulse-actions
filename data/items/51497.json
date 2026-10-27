@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 5,
+  "number": 51497,
+  "kind": "issue",
+  "title": "[0.102] Quick Accent often stops responding",
+  "url": "https://github.com/microsoft/PowerToys/issues/51497",
+  "generated_at": "2026-10-27T19:15:11.440928+08:00",
+  "evaluated_at": "2026-10-27T19:15:11.440928+08:00",
+  "source_updated_at": "2026-10-23T12:36:23Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
+    "evidence": [
+      "The report isolates repeated accented input under load on 0.102.2933; Space activation works around the arrow-trigger failure, and 0.100.2 is reported unaffected.",
+      "The existing ZIP was compared by the maintainer with #49150 and #51311; the maintainer reports ucrtbase c0000409 events after Next toolbar position.",
+      "The maintainer assigned moooyo and proposed a symbolized dump plus bounded callback/UI work. The exact escaping call remains a hypothesis.",
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs: RunOnUiThread executes inline when the hook already has UI-thread access; the current selector uses SetSelectedIndex and ScrollSelectedIntoView, so the older literal ListView call description must not be copied as exact current code.",
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs: The NextChar delegate calls ProcessNextChar through the supplied dispatcher action, which can run synchronously.",
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp: OnKeyDown is noexcept, making attribution of an escaping managed/native callback failure important.",
+      "Read the maintainer's full cross-issue comparison and uncertainty distinction between fail-fast and slow-hook removal; no crash dump or stress run was executed."
+    ],
+    "recommended_action": "Reproduce Quick Accent arrow-navigation crash behavior",
+    "evaluated_at": "2026-10-27T19:15:11.440928+08:00",
+    "source_updated_at": "2026-10-23T12:36:23Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/51497#issuecomment-6365020439",
+      "https://github.com/microsoft/PowerToys/issues/49150",
+      "https://github.com/microsoft/PowerToys/issues/51311"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Quick Accent's repeated arrow navigation is already under an assigned crash investigation.",
+    "known_information": [
+      "The report isolates repeated accented input under load on 0.102.2933; Space activation works around the arrow-trigger failure, and 0.100.2 is reported unaffected.",
+      "The existing ZIP was compared by the maintainer with #49150 and #51311; the maintainer reports ucrtbase c0000409 events after Next toolbar position.",
+      "The maintainer assigned moooyo and proposed a symbolized dump plus bounded callback/UI work. The exact escaping call remains a hypothesis."
+    ],
+    "inferences": [],
+    "analysis": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs: RunOnUiThread executes inline when the hook already has UI-thread access; the current selector uses SetSelectedIndex and ScrollSelectedIntoView, so the older literal ListView call description must not be copied as exact current code.",
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs: The NextChar delegate calls ProcessNextChar through the supplied dispatcher action, which can run synchronously.",
+      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp: OnKeyDown is noexcept, making attribution of an escaping managed/native callback failure important.",
+      "Read the maintainer's full cross-issue comparison and uncertainty distinction between fail-fast and slow-hook removal; no crash dump or stress run was executed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Quick Accent arrow-navigation crash behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Quick Accent arrow-navigation crash report",
+        "module": "Quick Accent arrow-navigation crash",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Follow the assigned maintainer's repeated-arrow scenario with mixed normal/accent input and a CPU-heavy target; retain Space as a control.",
+          "Correlate process liveness, last navigation entry and a symbolized crash stack on the controlled test machine.",
+          "Distinguish a fail-fast exception from silent hook removal, then stress repeated arrow navigation and a subsequent fresh activation."
+        ],
+        "expected_result": "Attribute the actual failing callback or hook loss while keeping the existing assigned investigation as owner."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Quick Accent"
+  ],
+  "assignees": [
+    "moooyo"
+  ],
+  "comments": 2
+}

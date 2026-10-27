@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 5,
+  "number": 51567,
+  "kind": "issue",
+  "title": "Mouse Without Borders fails to pair: \"Could not load or update pairing\" (Negotiation → Connecting → Error)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51567",
+  "generated_at": "2026-10-27T19:12:17.20834+08:00",
+  "evaluated_at": "2026-10-27T19:12:17.20834+08:00",
+  "source_updated_at": "2026-10-25T17:15:15Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The visible state sequence does not distinguish an accept/connect timeout from a protocol/key rejection. Request correlated evidence for one attempt on both endpoints, not another firewall checklist or a confident NAT/key diagnosis.",
+    "evidence": [
+      "Both PCs use 0.102.2933. The observed sequence is Negotiation, Connecting, then Error after roughly 24 seconds.",
+      "The author already tested private-subnet addressing, firewall recreation and disabling, matching security keys, IP mappings, elevation, VPN-off and restarts.",
+      "No paired endpoint diagnostic reports are attached; repeating those same setup checks would add little.",
+      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/receive failures update Timeout, Error and InvalidKey through different paths. The UI's generic final Error does not select one of those branches.",
+      "Read all completed network controls and the reported timing. No two-PC reproduction or handshake capture was performed."
+    ],
+    "recommended_action": "Correlate one failed connection attempt on both PCs",
+    "evaluated_at": "2026-10-27T19:12:17.20834+08:00",
+    "source_updated_at": "2026-10-25T17:15:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Error and elapsed time are observed; source has multiple distinct failure branches, and neither endpoint's first failure is known."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve the first attributed MWB connection or handshake failure",
+      "root_cause": "A connection or protocol failure is being collapsed into the final Error state. The supplied timing and completed controls do not establish which SocketStuff failure branch occurs first.",
+      "plan": [
+        "Correlate the single-attempt endpoint reports and identify the first connect/accept, timeout or protocol/key failure before retry noise.",
+        "Reproduce that same failure branch on two controlled current-version PCs and verify its transport versus handshake ownership.",
+        "Correct the identified branch and preserve a distinct user-visible reason if a generic Error obscures recovery; do not change firewall policy or key matching without evidence."
+      ],
+      "verification": [
+        "The isolated failing branch connects successfully or reports a precise actionable reason.",
+        "Normal pairing, reconnection and valid/invalid-key controls retain their intended behavior."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "Error and elapsed time are observed; source has multiple distinct failure branches, and neither endpoint's first failure is known."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders negotiation fails after about 24 seconds despite extensive controls.",
+    "known_information": [
+      "Both PCs use 0.102.2933. The observed sequence is Negotiation, Connecting, then Error after roughly 24 seconds.",
+      "The author already tested private-subnet addressing, firewall recreation and disabling, matching security keys, IP mappings, elevation, VPN-off and restarts.",
+      "No paired endpoint diagnostic reports are attached; repeating those same setup checks would add little."
+    ],
+    "inferences": [],
+    "analysis": "The visible state sequence does not distinguish an accept/connect timeout from a protocol/key rejection. Request correlated evidence for one attempt on both endpoints, not another firewall checklist or a confident NAT/key diagnosis.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/receive failures update Timeout, Error and InvalidKey through different paths. The UI's generic final Error does not select one of those branches.",
+      "Read all completed network controls and the reported timing. No two-PC reproduction or handshake capture was performed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Two endpoint reports from the same failed attempt, with its timestamp",
+        "why_needed": "Separate the first transport failure from protocol rejection and retry fallout.",
+        "how_to_collect": "Submit a comment containing /bugreport immediately after one timed failure and collect reports on both PCs; BugReportTool.exe is the UI-independent fallback.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Correlate one failed connection attempt on both PCs",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "You have already covered the usual firewall, key, IP-mapping and VPN checks, so please do not repeat them. For one new failed attempt, note its time and submit a comment containing /bugreport immediately afterward; attach reports from both PCs using those instructions (BugReportTool.exe if the UI cannot open). Label them only as the two endpoints and review the archives before posting. This distinguishes the first socket failure from a later handshake rejection."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

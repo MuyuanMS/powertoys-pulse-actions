@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 5,
+  "number": 51504,
+  "kind": "issue",
+  "title": "CmdPal: Context menus open below the dock flyout",
+  "url": "https://github.com/microsoft/PowerToys/issues/51504",
+  "generated_at": "2026-10-27T19:15:12.198017+08:00",
+  "evaluated_at": "2026-10-27T19:15:12.198017+08:00",
+  "source_updated_at": "2026-10-22T22:10:36Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Investigate surface ownership and activation ordering, not merely menu placement or a global always-on-top workaround. Current source already resolves an anchor and prepares the popup for its placement target; a missing XamlRoot or deferred-request cancellation must not be assumed.",
+    "evidence": [
+      "The developer report supplies two screenshots showing partial and near-complete occlusion by the parent surface.",
+      "The sequence is intermittent; the report does not say which activation/input ordering creates the hidden menu.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Services/ContextMenuHost.Flyouts.cs: The surface host chooses the explicit/default anchor and opens the reusable flyout with ShowAt.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenuFlyout.xaml.cs: ShowAt calls UIHelper.PreparePopupForShow using the loaded placement target before opening.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Services/ContextMenuHost.cs: Deferred keyboard opens already use request-version invalidation; simple absence of cancellation is not a supported diagnosis."
+    ],
+    "recommended_action": "Reproduce Command Palette menu occlusion behavior",
+    "evaluated_at": "2026-10-27T19:15:12.198017+08:00",
+    "source_updated_at": "2026-10-22T22:10:36Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Occlusion is demonstrated, but current source already contains owner preparation and cancellation safeguards; the failing order is unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep a surface's context menu above its owning Dock/palette surface",
+      "root_cause": "Hypothesis: an activation or host-owner ordering race leaves the menu below its visible owning surface despite valid placement preparation. The actual HWND/XamlRoot or z-order transition has not been captured.",
+      "plan": [
+        "Reproduce mouse and keyboard menu opens from Dock and palette separately while recording the owning surface, placement target, popup/root and activation order.",
+        "Test rapid summon/deactivate/reopen and menu-near-screen-edge cases to separate occlusion from placement.",
+        "Fix the identified owner/activation transition without making every popup globally topmost or weakening light-dismiss behavior."
+      ],
+      "verification": [
+        "Context menus remain above their owning surface, including screen-edge placement and repeated summon transitions.",
+        "Keyboard focus, light dismissal, submenus and other app windows keep their expected ordering."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "Occlusion is demonstrated, but current source already contains owner preparation and cancellation safeguards; the failing order is unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette context menus can be hidden behind the Dock flyout/palette.",
+    "known_information": [
+      "The developer report supplies two screenshots showing partial and near-complete occlusion by the parent surface.",
+      "The sequence is intermittent; the report does not say which activation/input ordering creates the hidden menu."
+    ],
+    "inferences": [],
+    "analysis": "Investigate surface ownership and activation ordering, not merely menu placement or a global always-on-top workaround. Current source already resolves an anchor and prepares the popup for its placement target; a missing XamlRoot or deferred-request cancellation must not be assumed.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Services/ContextMenuHost.Flyouts.cs: The surface host chooses the explicit/default anchor and opens the reusable flyout with ShowAt.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenuFlyout.xaml.cs: ShowAt calls UIHelper.PreparePopupForShow using the loaded placement target before opening.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Services/ContextMenuHost.cs: Deferred keyboard opens already use request-version invalidation; simple absence of cancellation is not a supported diagnosis."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette menu occlusion behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Command Palette menu occlusion report",
+        "module": "Command Palette menu occlusion",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Open equivalent context menus through mouse and keyboard from Dock and palette surfaces, including rapid summon and dismissal.",
+          "Record which surface owns the menu, popup/root, window order and activation events when the menu disappears behind its parent.",
+          "Compare edge placement with center placement to distinguish a menu placed offscreen from one genuinely occluded."
+        ],
+        "expected_result": "Identify an exact ownership/activation sequence for the screenshot symptom without a blanket topmost fix."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0
+}

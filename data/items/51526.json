@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 5,
+  "number": 51526,
+  "kind": "issue",
+  "title": "User scope install upgrade leaves old version info behind",
+  "url": "https://github.com/microsoft/PowerToys/issues/51526",
+  "generated_at": "2026-10-27T19:12:17.392238+08:00",
+  "evaluated_at": "2026-10-27T19:12:17.392238+08:00",
+  "source_updated_at": "2026-10-23T18:23:19Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Distinguish stale bootstrapper/ARP inventory from real side-by-side installation and scope changes. The immediate-predecessor control argues against assuming every current uninstall attempt fails; reproduce the earlier chain and correlate related-product detection before proposing cleanup.",
+    "evidence": [
+      "The report describes silent per-user winget upgrades leaving 0.95, 0.97 and 0.101 entries.",
+      "A manual 0.102 installer removed the immediate 0.101 predecessor but left older entries, confirmed in the installed-app list.",
+      "The report does not establish that all displayed versions still have runnable installations.",
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: Current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
+      "Read the upgrade command history and manual-install control. No registry deletion or installation was performed."
+    ],
+    "recommended_action": "Reproduce installer upgrade inventory behavior",
+    "evaluated_at": "2026-10-27T19:12:17.392238+08:00",
+    "source_updated_at": "2026-10-23T18:23:19Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The old-versus-immediate-predecessor behavior is concrete, but surviving entry ownership has not been inventoried."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reconcile stale related-product registrations across upgrade generations",
+      "root_cause": "Older upgrade generations may leave stale ARP/bootstrapper registrations outside the immediate predecessor detected by the current installer. Actual side-by-side binaries and scope history remain unverified.",
+      "plan": [
+        "On a disposable account, reproduce the reported per-user winget version chain and then the manual-current-installer control.",
+        "Record related MSI/bundle identities, scope, uninstall target and installed executable versions for each surviving entry.",
+        "Fix the proven related-product detection/removal gap; remove only identified obsolete registrations through supported installer ownership, not broad registry deletion."
+      ],
+      "verification": [
+        "Only the expected current product remains after the reproduced chain and repair.",
+        "Per-user and system installations are not conflated, and unrelated products/user settings are preserved.",
+        "Manual installation, upgrade and uninstall continue to work."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The old-versus-immediate-predecessor behavior is concrete, but surviving entry ownership has not been inventoried."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Older PowerToys uninstall entries survive repeated per-user winget upgrades.",
+    "known_information": [
+      "The report describes silent per-user winget upgrades leaving 0.95, 0.97 and 0.101 entries.",
+      "A manual 0.102 installer removed the immediate 0.101 predecessor but left older entries, confirmed in the installed-app list.",
+      "The report does not establish that all displayed versions still have runnable installations."
+    ],
+    "inferences": [],
+    "analysis": "Distinguish stale bootstrapper/ARP inventory from real side-by-side installation and scope changes. The immediate-predecessor control argues against assuming every current uninstall attempt fails; reproduce the earlier chain and correlate related-product detection before proposing cleanup.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: Current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
+      "Read the upgrade command history and manual-install control. No registry deletion or installation was performed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce installer upgrade inventory behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate installer upgrade inventory report",
+        "module": "installer upgrade inventory",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Recreate the reported per-user winget upgrade chain in a disposable account.",
+          "For each remaining app entry, compare bundle/MSI identity, installation scope, uninstall target and live executable version.",
+          "Apply the current manual installer and compare which related entries it removes; do not delete registry entries to manufacture a clean result."
+        ],
+        "expected_result": "Determine whether entries are orphan registrations or real installations and identify the upgrade generation that retains them."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Area-Setup/Install",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1
+}
