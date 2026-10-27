@@ -1392,7 +1392,8 @@ window.BOARD_INDEX = {
     10,
     8,
     4,
-    51603
+    51603,
+    51324
   ],
   "items": [
     {
@@ -3014,21 +3015,21 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": "post_review",
       "labels": [
         "Product-General"
       ],
       "assignees": [],
       "created_at": "2026-10-15T06:52:15Z",
-      "updated_at": "2026-10-15T06:52:39Z",
+      "updated_at": "2026-10-27T05:54:28Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
