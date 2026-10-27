@@ -9,8 +9,8 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-27T15:43:07.5309465+08:00",
-  "evaluated_at": "2026-10-27T15:43:07.5333911+08:00",
+  "generated_at": "2026-10-27T16:08:36.5736234+08:00",
+  "evaluated_at": "2026-10-27T16:08:36.5770844+08:00",
   "source_updated_at": "2026-06-05T18:21:53Z",
   "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
   "needs_revalidation": false,
@@ -42,6 +42,23 @@
       "body": "### Keep the CopyAsUNC package version in step with PowerToys\n\n**Severity:** `medium`\n\n**Affected code:**\n`src/modules/CopyAsUNC/CopyAsUNCContextMenu/AppxManifest.xml`, `.pipelines/versionSetting.ps1`, and the version comparison in `src/common/utils/package.h` called from `src/modules/CopyAsUNC/CopyAsUNCExt/PowerToysModule.cpp`.\n\n**Problem:**\n`IsPackageRegisteredWithPowerToysVersion()` compares the registered package's major, minor, and revision with PowerToys' version constants, and `enable()` uses that check before registration. The CopyAsUNC manifest remains at `1.0.0.0`, but `versionSetting.ps1` updates the PowerRename, ImageResizer, FileLocksmith, and NewPlus context-menu manifests without updating CopyAsUNC.\n\n**Why it matters:**\nFor a normal build whose product version differs from `1.0.0.0`, the package will not satisfy the current-version check, so `enable()` will take the sparse-package registration path again instead of recognizing the package as current. This identifies a version-contract mismatch; it does not establish an observed install failure.\n\n**Suggested change:**\n1. Add `CopyAsUNCContextMenu/AppxManifest.xml` to the version-setting pipeline and set `Package.Identity.Version` from the same generated version used for the other context-menu packages, preserving the expected four-part package version.\n\n**Verification:**\nRun the version-setting step with a representative product version and assert that the CopyAsUNC manifest matches the other context-menu package versions; then verify that the registered package version passes `IsPackageRegisteredWithPowerToysVersion()` for that build.",
       "disposition": "proposed",
       "out_of_diff_reason": "The required change belongs in the shared release-version pipeline as well as this newly added manifest, so an isolated manifest or pipeline suggestion would not be a complete coordinated fix."
+    },
+    {
+      "id": "clipboard-handle-on-transfer-failure",
+      "kind": "inline",
+      "title": "Free the clipboard buffer if transfer fails",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The pinned call ignores SetClipboardData failure after allocating and filling hMem; a focused executable test of the literal replacement confirms it frees only on failure and preserves successful ownership transfer."
+      },
+      "path": "src/modules/CopyAsUNC/CopyAsUNCContextMenu/dllmain.cpp",
+      "line": 159,
+      "start_line": 159,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Free the clipboard buffer if transfer fails\n\n**Severity:** `medium`\n\nOnce `GlobalLock` succeeds, the code passes `hMem` to `SetClipboardData` but ignores the return value. If the transfer fails, the clipboard does not take ownership, so this allocation remains caller-owned and is leaked. Please check the result and free `hMem` only on failure; a successful transfer must leave ownership with the system.\n\n```suggestion\n                            if (!SetClipboardData(CF_UNICODETEXT, hMem))\n                            {\n                                GlobalFree(hMem);\n                            }\n```",
+      "disposition": "proposed"
     }
   ],
   "actions": [
@@ -49,7 +66,8 @@
       "review": {
         "comment_ids": [
           "sparse-package-external-location",
-          "sparse-package-version"
+          "sparse-package-version",
+          "clipboard-handle-on-transfer-failure"
         ],
         "event": "COMMENT",
         "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3"
@@ -57,13 +75,36 @@
       "requires_confirmation": true,
       "type": "post_review",
       "id": "post-review-46056",
-      "label": "Post two separate general PR comments"
+      "label": "Review two general comments and one inline suggestion",
+      "note": "The package findings are separate general PR comments; the clipboard cleanup is a localized inline suggestion."
     }
   ],
   "validation": {
     "upstream_head": {
       "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
       "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "clipboard-handle-on-transfer-failure"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+      "result": "passed",
+      "checked_comment_ids": [
+        "clipboard-handle-on-transfer-failure"
+      ],
+      "files": [
+        {
+          "path": "src/modules/CopyAsUNC/CopyAsUNCContextMenu/dllmain.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   }
 }
