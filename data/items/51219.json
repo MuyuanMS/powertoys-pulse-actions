@@ -1,20 +1,57 @@
 {
+  "schemaVersion": 5,
   "number": 51219,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Render Adaptive Cards gauge, donut, and pie charts natively",
   "url": "https://github.com/microsoft/PowerToys/pull/51219",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-22T03:05:45.6783302Z",
-  "evaluated_at": "2026-10-22T00:17:34.7325983Z",
+  "generated_at": "2026-10-27T19:32:51.5602803+08:00",
+  "evaluated_at": "2026-10-27T19:32:51.563728+08:00",
   "source_updated_at": "2026-10-15T11:16:21Z",
   "head_sha": "aca3fc53f63d8d4bb853d5fd6927f0c218f522c9",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-22T00:17:34.7325983Z",
-    "checkpoint_at": "2026-10-22T03:05:45.6783302Z"
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "severity": "medium",
+      "id": "51219-culture-percent",
+      "kind": "companion",
+      "confidence": {
+        "score": 94,
+        "rationale": "Exact upstream culture-aware callers and three hard-coded percent sites verified; formatting expressions reproduce symbol/position differences, and the coordinated three-file remedy builds with 21 focused tests passing. Donut UI interaction is not claimed."
+      },
+      "body": "### Honor the culture's percentage format across gauge and donut output\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.Polyfills/GaugeChartModel.cs` (`FormatValue`), `src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.Polyfills/DonutChartControl.cs` (`CreateChart` and `CreateSummary`), and `src/modules/cmdpal/Tests/Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests/GaugeChartModelTests.cs`.\r\n\r\n**Problem:** These three percentage paths format a number with the supplied/current culture, then append a literal `%`. That localizes the number but not the percentage symbol, spacing, or position. For example, a 25% share still becomes `25%` for Turkish rather than `%25`, and Arabic uses a different percent symbol. The donut's accessible summary uses the same incomplete formatting.\r\n\r\n**Why it matters:** These are user-facing, culture-aware display paths, so the percentage should follow the same culture as the rest of the value. Changing to the standard percent format also changes invariant-culture output from `70%` to `70 %`; the current gauge assertions therefore need a deliberate, coordinated update rather than leaving the production-only change with failing tests.\r\n\r\n**Suggested change:**\r\n1. In `GaugeChartModel.FormatValue`, leave the fraction (`value/max`) branch unchanged and format `Fraction` directly with `ToString(\"P0\", culture)`. Do not multiply by 100 first: the percent format already scales the fraction.\r\n2. In both donut paths, replace the hard-coded-percent expression with `shares[i].ToString(\"P0\", CultureInfo.CurrentCulture)`, retaining the existing label and separator behavior.\r\n3. Update the two gauge invariant-culture percentage expectations to `70 %` and `100 %`. Add coverage for `en-US`, `fr-FR`, `tr-TR`, and `ar-SA`; also clone a culture with a custom percent symbol and prefix pattern to assert explicit outputs, including clamping below zero and above the maximum. Keep a French fractional-value test to ensure the separate `value/max` branch retains decimal-comma formatting without percent scaling.\r\n\r\n**Verification:** Build `Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests.csproj` and run the gauge and donut model tests. Check that the custom prefix cases produce `pct25`, `pct0`, and `pct100`, and that the fractional case remains `12,5/50,5`. Also verify the donut legend and accessible summary in a localized chart UI; the model tests alone do not exercise that UI interaction.",
+      "title": "Honor culture-specific percentage formatting and its test contract",
+      "in_diff": false,
+      "out_of_diff_reason": "Explicit user preference for one general companion covering the coordinated production and test/culture contract. Production sites have diff anchors, but the new culture regression cases have no existing source range; this is not a claim that production lacks an inline anchor.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_review",
+      "label": "Post general culture-formatting comment",
+      "review": {
+        "comment_ids": [
+          "51219-culture-percent"
+        ],
+        "head_sha": "aca3fc53f63d8d4bb853d5fd6927f0c218f522c9",
+        "event": "COMMENT"
+      },
+      "note": "Posts one separate general PR companion comment; requires human approval.",
+      "id": "review-51219-culture-formatting"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "aca3fc53f63d8d4bb853d5fd6927f0c218f522c9",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "result": "expanded_candidate_passed"
+    }
   }
 }
