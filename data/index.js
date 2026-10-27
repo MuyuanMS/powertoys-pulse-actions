@@ -1394,7 +1394,8 @@ window.BOARD_INDEX = {
     4,
     51603,
     51324,
-    51602
+    51602,
+    51605
   ],
   "items": [
     {
@@ -420881,6 +420882,43 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2026-10-27T02:29:11Z",
       "updated_at": "2026-10-27T02:29:30Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null
+    },
+    {
+      "id": "pr-51605",
+      "kind": "pr",
+      "number": 51605,
+      "url": "https://github.com/microsoft/PowerToys/pull/51605",
+      "title": "[Settings] Run update checks from the General page button",
+      "author": "LegendaryBlair",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-Settings"
+      ],
+      "assignees": [
+        null
+      ],
+      "created_at": "2026-10-27T07:02:13Z",
+      "updated_at": "2026-10-27T07:32:41Z",
       "comments": 1,
       "priority": null,
       "review_decision": null,
