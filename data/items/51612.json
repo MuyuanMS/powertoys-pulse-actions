@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 5,
+  "number": 51612,
+  "kind": "issue",
+  "title": "PowerToys Run issue with calulator",
+  "url": "https://github.com/microsoft/PowerToys/issues/51612",
+  "generated_at": "2026-10-27T15:51:06.000717+00:00",
+  "evaluated_at": "2026-10-27T15:51:06.000717+00:00",
+  "source_updated_at": "2026-10-27T11:34:02Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Do not attribute the delay to decimal arithmetic merely because the expression contains a dot. The available log gives a concrete competing slow-plugin explanation; isolate Calculator-only queries from global fan-out and culture conversion. Keep percentage behavior separate so a latency fix does not silently redefine the expression language.",
+    "evidence": [
+      "The author supplies 999*1.3, a roughly six-second result delay on 0.102.3001, and a diagnostic ZIP; 999+30% is described as the desired calculator-style percentage operation.",
+      "The supplied 0.102.3001 Run log records Windows Indexer query costs of 6522, 6572 and 5352 ms near the reported session. These are Indexer timings, not evidence that Calculator itself took six seconds.",
+      "The report contains no dedicated Calculator-keyword versus global-query timing comparison.",
+      "Source inspected at main 9227a8497750: src/modules/launcher/PowerLauncher/Plugin/PluginManager.cs: QueryForPlugin logs elapsed time per plugin, enabling attribution of the supplied Windows Indexer warnings. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/PowerLauncher/Plugin/PluginManager.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs: Current query orchestration has non-delayed phase completion and concurrency gates; global-query scheduling can differ from keyword-scoped execution. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs: Calculator chooses an input culture and normalizes numbers before the shared interpreter. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs: A trailing percent is rejected as incomplete input; Windows Calculator's contextual percentage semantics are not established by this parser. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+      "Downloaded/inventoried the supplied ZIP and read the current-version Run timing excerpts, rather than asking for the same report again. No issue-specific fix link was found."
+    ],
+    "recommended_action": "Separate Calculator evaluation time from slow global search plugins",
+    "evaluated_at": "2026-10-27T15:51:06.000717+00:00",
+    "source_updated_at": "2026-10-27T11:34:02Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The archive contains delays matching the user's six seconds, but attributes them to Windows Indexer. No controlled keyword/global comparison or product execution here proves the coupling mechanism."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Attribute and remove slow-plugin coupling from simple Calculator queries",
+      "root_cause": "Hypothesis: global query fan-out or phase completion exposes a multi-second Windows Indexer query as Calculator latency; locale/interpreter cost remains an alternative until keyword isolation is measured.",
+      "plan": [
+        "Use the supplied current-version Indexer timing evidence to compare keyword-scoped Calculator and global result publication.",
+        "If global coupling is confirmed, correct the scheduling/result-publication boundary without cancelling or corrupting unrelated providers; if Calculator alone is slow, investigate culture normalization/interpreter timing instead.",
+        "Add the arithmetic/culture timing regression at the confirmed boundary; track contextual percentage support as a separate intentional feature decision."
+      ],
+      "verification": [
+        "999*1.3 returns 1298.7 (formatted for the chosen output culture) promptly in isolated Calculator and global modes.",
+        "An intentionally slow Indexer provider does not hold a ready Calculator result; query cancellation and stale-result isolation remain correct."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The archive contains delays matching the user's six seconds, but attributes them to Windows Indexer. No controlled keyword/global comparison or product execution here proves the coupling mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Run's six-second decimal-expression delay needs plugin attribution; calculator-style percentage input is a separate semantics request.",
+    "known_information": [
+      "The author supplies 999*1.3, a roughly six-second result delay on 0.102.3001, and a diagnostic ZIP; 999+30% is described as the desired calculator-style percentage operation.",
+      "The supplied 0.102.3001 Run log records Windows Indexer query costs of 6522, 6572 and 5352 ms near the reported session. These are Indexer timings, not evidence that Calculator itself took six seconds.",
+      "The report contains no dedicated Calculator-keyword versus global-query timing comparison."
+    ],
+    "inferences": [],
+    "analysis": "Do not attribute the delay to decimal arithmetic merely because the expression contains a dot. The available log gives a concrete competing slow-plugin explanation; isolate Calculator-only queries from global fan-out and culture conversion. Keep percentage behavior separate so a latency fix does not silently redefine the expression language.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/launcher/PowerLauncher/Plugin/PluginManager.cs: QueryForPlugin logs elapsed time per plugin, enabling attribution of the supplied Windows Indexer warnings. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/PowerLauncher/Plugin/PluginManager.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs: Current query orchestration has non-delayed phase completion and concurrency gates; global-query scheduling can differ from keyword-scoped execution. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs: Calculator chooses an input culture and normalizes numbers before the shared interpreter. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs",
+      "Source inspected at main 9227a8497750: src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs: A trailing percent is rejected as incomplete input; Windows Calculator's contextual percentage semantics are not established by this parser. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+      "Downloaded/inventoried the supplied ZIP and read the current-version Run timing excerpts, rather than asking for the same report again. No issue-specific fix link was found.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Calculator-only versus global-query latency and time-to-first-result under the same input culture",
+        "why_needed": "Distinguish a slow arithmetic interpreter from unrelated plugin/phase latency before editing the wrong module.",
+        "how_to_collect": "Maintainer should run the specified keyword/Indexer/culture matrix and correlate per-plugin durations with first visible Calculator result.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Separate Calculator evaluation time from slow global search plugins",
+      "primary": true,
+      "reproduce": {
+        "title": "Separate Calculator evaluation time from slow global search plugins",
+        "module": "PowerToys Run",
+        "version_requirement": "0.102.3001 versus current stable/main with the supplied Run settings and current locale.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Time 999*1.3 and 999*13 as global queries, then with the configured Calculator activation keyword (default '='); preserve normal plugin settings.",
+          "2. Repeat with Windows Indexer temporarily disabled only in the isolated test profile; compare per-plugin timings and time-to-first Calculator result.",
+          "3. Compare the locale's native decimal separator with English-format input using the existing Calculator option.",
+          "4. Document 999+30% behavior separately from the delay; confirm intended percentage semantics before any language change."
+        ],
+        "expected_result": "Simple Calculator results appear promptly even if another provider is slow; number-culture controls are correct, and unsupported percentage syntax is not misrepresented as a latency fix.",
+        "attachment_urls": []
+      },
+      "id": "issue-51612-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51612-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

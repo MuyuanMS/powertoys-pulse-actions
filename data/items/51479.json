@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 5,
+  "number": 51479,
+  "kind": "issue",
+  "title": "Light Switch: back-to-back toggle performance is degraded compared to previous versions",
+  "url": "https://github.com/microsoft/PowerToys/issues/51479",
+  "generated_at": "2026-10-27T15:51:05.841574+00:00",
+  "evaluated_at": "2026-10-27T15:51:05.841574+00:00",
+  "source_updated_at": "2026-10-23T12:25:20Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The exact five-second broadcast timeouts and shared UI/CLI symptom make blocking theme notification a focused hypothesis, not proof of a particular recipient or thread blockage. Use the complete supplied setup for maintainer reproduction; asking the reporter to repeat elevation tests or provide the existing settings screenshot would be redundant.",
+    "evidence": [
+      "The screenshot shows Schedule Off, System theme enabled, Apps disabled, and no light/dark PowerDisplay profiles selected.",
+      "The author reports the first toggle is immediate, the next stalls about five seconds, and additional toggles queue; changing CLI theme also hangs, while setting the already-current state does not.",
+      "Both elevated and non-elevated operation were already compared; neither changes the behavior.",
+      "Source inspected at main 9227a8497750: src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp: Successful theme writes synchronously broadcast WM_SETTINGCHANGE/WM_THEMECHANGED with 5000-ms SendMessageTimeoutW bounds, plus a system-light colorization broadcast. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp",
+      "Visually inspected the supplied configuration image and compared the current helper with its CLI-change history (#50459). No covering performance fix appeared in the bounded PR search.",
+      "No report ZIP is supplied, but a controlled toggle/broadcast timing comparison can discriminate the hypothesis without blocking triage on a generic diagnostic request."
+    ],
+    "recommended_action": "Time rapid toggles against theme-notification waits",
+    "evaluated_at": "2026-10-27T15:51:05.841574+00:00",
+    "source_updated_at": "2026-10-23T12:25:20Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The precise five-second constant and no-op versus write distinction are corroborating source evidence; no measured broadcast or thread trace proves the blocking branch yet."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound theme-notification work without queuing stale toggles",
+      "root_cause": "Hypothesis: synchronous broadcast waits on the state-changing path serialize subsequent toggles and CLI completion; the observed duration matches a configured timeout, but recipient/thread timing is not captured.",
+      "plan": [
+        "Measure write-versus-notification latency under the reported System-only configuration and attribute the first long wait.",
+        "If confirmed, separate/bound notification delivery while preserving required shell/app refresh and orderly state ownership.",
+        "Define burst semantics so superseded state changes do not accumulate; retain immediate no-op handling and report only confirmed applied state."
+      ],
+      "verification": [
+        "Back-to-back UI and CLI toggles do not wait for a full hung-recipient timeout on the command/UI path.",
+        "The shell updates correctly, already-current commands remain fast, and rapid sequences settle to the intended final theme."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The precise five-second constant and no-op versus write distinction are corroborating source evidence; no measured broadcast or thread trace proves the blocking branch yet."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Rapid Light Switch toggles and state-changing CLI commands stall for roughly five seconds.",
+    "known_information": [
+      "The screenshot shows Schedule Off, System theme enabled, Apps disabled, and no light/dark PowerDisplay profiles selected.",
+      "The author reports the first toggle is immediate, the next stalls about five seconds, and additional toggles queue; changing CLI theme also hangs, while setting the already-current state does not.",
+      "Both elevated and non-elevated operation were already compared; neither changes the behavior."
+    ],
+    "inferences": [],
+    "analysis": "The exact five-second broadcast timeouts and shared UI/CLI symptom make blocking theme notification a focused hypothesis, not proof of a particular recipient or thread blockage. Use the complete supplied setup for maintainer reproduction; asking the reporter to repeat elevation tests or provide the existing settings screenshot would be redundant.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp: Successful theme writes synchronously broadcast WM_SETTINGCHANGE/WM_THEMECHANGED with 5000-ms SendMessageTimeoutW bounds, plus a system-light colorization broadcast. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp",
+      "Visually inspected the supplied configuration image and compared the current helper with its CLI-change history (#50459). No covering performance fix appeared in the bounded PR search.",
+      "No report ZIP is supplied, but a controlled toggle/broadcast timing comparison can discriminate the hypothesis without blocking triage on a generic diagnostic request.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Per-operation timings for registry write and each theme broadcast during the second toggle",
+        "why_needed": "Confirm the shared synchronous notification boundary rather than a scheduler or PowerDisplay delay.",
+        "how_to_collect": "Maintainer should run the specified System-only timing matrix and instrument broadcast entry/exit in a controlled diagnostic session.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Time rapid toggles against theme-notification waits",
+      "primary": true,
+      "reproduce": {
+        "title": "Time rapid toggles against theme-notification waits",
+        "module": "Light Switch",
+        "version_requirement": "0.102.2933 versus current stable/main; compare 0.100.x only in an isolated baseline.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Set Schedule Off, apply theme to System only, leave Apps and both PowerDisplay profile options off.",
+          "2. Toggle twice rapidly from the UI/hotkey and record state changes and completion times; repeat with a short burst.",
+          "3. Compare CLI set-to-current, set-to-opposite, and toggle commands under the same setup.",
+          "4. In a maintainer diagnostic build/session, time registry writes and each notification separately; repeat with normal recipients and a controlled unresponsive theme-message recipient."
+        ],
+        "expected_result": "Theme state changes and command completion remain bounded and responsive; input bursts do not leave an obsolete queue of theme writes.",
+        "attachment_urls": []
+      },
+      "id": "issue-51479-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51479-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-LightSwitch"
+  ],
+  "assignees": [],
+  "comments": 0
+}

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 5,
+  "number": 51486,
+  "kind": "issue",
+  "title": "[CmdPal] Dock apps configured in the centre position do not render after system restart until hovered/edited",
+  "url": "https://github.com/microsoft/PowerToys/issues/51486",
+  "generated_at": "2026-10-27T15:56:40.590020+00:00",
+  "evaluated_at": "2026-10-27T15:56:40.590020+00:00",
+  "source_updated_at": "2026-10-23T12:25:09Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Track the concrete existing visibility fix rather than propose the same Loaded callback again. Do not mark the report resolved: absent provider commands and present-but-hidden center items are different branches, and the archive contains evidence of the former. Reproduce the reported sequence while checking which branch applies, then coordinate a regression/follow-up through the existing dock owner.",
+    "evidence": [
+      "The report gives a complete Top dock / center apps / reboot / hover-or-edit recovery sequence on 0.102.2933 and supplies a diagnostic ZIP.",
+      "The supplied CmdPal log records SetupBands failing to find the pinned Discord and Spotify commands from AllApps, both at startup and again about ten minutes later.",
+      "Merged PR #50755 already adds UpdateCenterVisibility on DockControl.Loaded for the missed-collection-notification race; that call is present in current main.",
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs: Loaded subscribes CenterItems.CollectionChanged and immediately calls UpdateCenterVisibility; edit-mode changes also call it. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs",
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs: SetupBands omits a configured band when LookupDockBand returns null and emits the same DockDrop warning found in the report. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+      "Downloaded the report and inspected its complete small current CmdPal log. Read #50755's body, merge state and exact four-line patch; the issue-specific search found no new covering PR."
+    ],
+    "recommended_action": "Separate hidden center items from unresolved startup app bands",
+    "evaluated_at": "2026-10-27T15:56:40.590020+00:00",
+    "source_updated_at": "2026-10-23T12:25:09Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Track the concrete existing visibility fix rather than propose the same Loaded callback again. Do not mark the report resolved: absent provider commands and present-but-hidden center items are different branches, and the archive contains evidence of the former. Reproduce the reported sequence while checking which branch applies, then coordinate a regression/follow-up through the existing dock owner.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50755"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "CmdPal's top-center dock startup symptom overlaps an existing visibility fix, but its report also records unresolved app-band IDs.",
+    "known_information": [
+      "The report gives a complete Top dock / center apps / reboot / hover-or-edit recovery sequence on 0.102.2933 and supplies a diagnostic ZIP.",
+      "The supplied CmdPal log records SetupBands failing to find the pinned Discord and Spotify commands from AllApps, both at startup and again about ten minutes later.",
+      "Merged PR #50755 already adds UpdateCenterVisibility on DockControl.Loaded for the missed-collection-notification race; that call is present in current main."
+    ],
+    "inferences": [
+      "The DockDrop warnings are a concrete alternative to pure rendering, not proof that they cause every missing center icon in the report."
+    ],
+    "analysis": "Track the concrete existing visibility fix rather than propose the same Loaded callback again. Do not mark the report resolved: absent provider commands and present-but-hidden center items are different branches, and the archive contains evidence of the former. Reproduce the reported sequence while checking which branch applies, then coordinate a regression/follow-up through the existing dock owner.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs: Loaded subscribes CenterItems.CollectionChanged and immediately calls UpdateCenterVisibility; edit-mode changes also call it. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs",
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs: SetupBands omits a configured band when LookupDockBand returns null and emits the same DockDrop warning found in the report. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+      "Downloaded the report and inspected its complete small current CmdPal log. Read #50755's body, merge state and exact four-line patch; the issue-specific search found no new covering PR.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "At-failure center-item count/visibility and app-band resolution before hover/edit",
+        "why_needed": "Determine whether the already-fixed Loaded visibility race regressed or the saved app IDs never resolve.",
+        "how_to_collect": "Maintainer should use the existing report/settings and record CenterItems, IsCenterVisible and LookupDockBand results before and after the documented hover/edit recovery.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Separate hidden center items from unresolved startup app bands",
+      "primary": true,
+      "reproduce": {
+        "title": "Separate hidden center items from unresolved startup app bands",
+        "module": "Command Palette Dock",
+        "version_requirement": "Reported 0.102.2933 and a build containing merged #50755/current main.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Using the supplied dock settings, configure Top with the reported center app entries; reboot or reproduce a controlled cold sign-in.",
+          "2. Before hover/edit, record CenterItems count, ContentGrid.IsCenterVisible and whether each saved command resolves from AllApps.",
+          "3. Hover and enter/exit edit mode; compare visibility and band-resolution state without deleting or re-pinning the entries.",
+          "4. Repeat with a stable built-in center band and with deliberately delayed app-provider discovery, then a monitor rebuild."
+        ],
+        "expected_result": "Existing center bands render immediately; unresolved providers are distinguished from hidden existing items and recover when legitimately available without requiring an edit interaction.",
+        "attachment_urls": []
+      },
+      "id": "issue-51486-reproduce-1"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0
+}

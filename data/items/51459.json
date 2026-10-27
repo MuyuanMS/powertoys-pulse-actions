@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 5,
+  "number": 51459,
+  "kind": "issue",
+  "title": "Color Picker Selection crosshair fails to appear after several hours of runtime",
+  "url": "https://github.com/microsoft/PowerToys/issues/51459",
+  "generated_at": "2026-10-27T15:56:40.739592+00:00",
+  "evaluated_at": "2026-10-27T15:56:40.739592+00:00",
+  "source_updated_at": "2026-10-23T12:25:41Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Use the existing fix URL and validate its exact build coverage rather than proposing a competing broad lifecycle rewrite. The source change addresses the concrete invalid-desktop-handle failure evidenced by this archive, but the report's hours-later symptom is not proven fully resolved or shipped in the author's installed binary. Treat a remaining failure on a build containing the guard as a distinct follow-up with activation/process state, not grounds to discard the supplied stack.",
+    "evidence": [
+      "The author reports intermittent missing selection UI after hours of runtime, with other modules working and a PowerToys restart restoring Color Picker.",
+      "The supplied 0.101.2362 report contains WPF/MEF composition failure constructing MouseInfoProvider; its root message is 'Controlador no válido' (invalid handle). This is more specific than an unproven generic long-running event-loop leak.",
+      "Current main has a TryGetPixelColor guard for Win32Exception/ExternalException during construction and sampling, introduced with merged #49174, and no longer uses the old MEF composition path.",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs: Both constructor and update sampling use TryGetPixelColor; invalid-handle/GDI failures return false instead of throwing through object construction. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Helpers/NativeEventWaiter.cs: Current activation uses a captured DispatcherQueue and named-event worker; this differs from the WPF assembly in the report. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Helpers/NativeEventWaiter.cs",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Helpers/AppStateHandler.cs: Session/overlay visibility is a separate state boundary to inspect if a guarded current build still fails to show. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Helpers/AppStateHandler.cs",
+      "Downloaded the report and read the full October 20–21 Color Picker stack. Inspected #49174's merged commit patch for the exact guard; no full uptime run or installed-version coverage was claimed."
+    ],
+    "recommended_action": "Validate the existing invalid-handle guard before a lifecycle rewrite",
+    "evaluated_at": "2026-10-27T15:56:40.739592+00:00",
+    "source_updated_at": "2026-10-23T12:25:41Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Use the existing fix URL and validate its exact build coverage rather than proposing a competing broad lifecycle rewrite. The source change addresses the concrete invalid-desktop-handle failure evidenced by this archive, but the report's hours-later symptom is not proven fully resolved or shipped in the author's installed binary. Treat a remaining failure on a build containing the guard as a distinct follow-up with activation/process state, not grounds to discard the supplied stack.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49174"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The existing Color Picker report contains an invalid-handle construction failure covered by a concrete newer sampling guard; uptime-related recovery still needs validation.",
+    "known_information": [
+      "The author reports intermittent missing selection UI after hours of runtime, with other modules working and a PowerToys restart restoring Color Picker.",
+      "The supplied 0.101.2362 report contains WPF/MEF composition failure constructing MouseInfoProvider; its root message is 'Controlador no válido' (invalid handle). This is more specific than an unproven generic long-running event-loop leak.",
+      "Current main has a TryGetPixelColor guard for Win32Exception/ExternalException during construction and sampling, introduced with merged #49174, and no longer uses the old MEF composition path."
+    ],
+    "inferences": [],
+    "analysis": "Use the existing fix URL and validate its exact build coverage rather than proposing a competing broad lifecycle rewrite. The source change addresses the concrete invalid-desktop-handle failure evidenced by this archive, but the report's hours-later symptom is not proven fully resolved or shipped in the author's installed binary. Treat a remaining failure on a build containing the guard as a distinct follow-up with activation/process state, not grounds to discard the supplied stack.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs: Both constructor and update sampling use TryGetPixelColor; invalid-handle/GDI failures return false instead of throwing through object construction. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Helpers/NativeEventWaiter.cs: Current activation uses a captured DispatcherQueue and named-event worker; this differs from the WPF assembly in the report. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Helpers/NativeEventWaiter.cs",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Helpers/AppStateHandler.cs: Session/overlay visibility is a separate state boundary to inspect if a guarded current build still fails to show. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Helpers/AppStateHandler.cs",
+      "Downloaded the report and read the full October 20–21 Color Picker stack. Inspected #49174's merged commit patch for the exact guard; no full uptime run or installed-version coverage was claimed.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Exact loaded-binary coverage and recovery result for the existing guard",
+        "why_needed": "The old WPF/MEF stack and current guarded WinUI source cannot be assumed to be the same shipped implementation or complete uptime fix.",
+        "how_to_collect": "Maintainer should confirm the tested binary contains #49174 and run the transient-desktop plus uptime controls, separating process liveness, event delivery and overlay state.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Validate the existing invalid-handle guard before a lifecycle rewrite",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate the existing invalid-handle guard before a lifecycle rewrite",
+        "module": "Color Picker",
+        "version_requirement": "A signed/test build confirmed to contain merged #49174, compared with the supplied 0.101.2362 WPF stack.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Verify the actual loaded Color Picker binary/UI implementation rather than assume a PowerToys version alone contains the guard.",
+          "2. On a controlled account, exercise startup and activation around lock/unlock or a disconnected/reconnected desktop, then return to an interactive desktop.",
+          "3. Confirm transient pixel-capture failure does not terminate construction/process and that subsequent sampling recovers.",
+          "4. Run an uptime/activation control; if the UI is still absent, distinguish process exit, undelivered activation and stale overlay-visible state while preserving the original stack as a separate matched signature."
+        ],
+        "expected_result": "The known invalid-handle branch is non-fatal and sampling recovers; any residual hours-later activation defect is recorded with its own first failure rather than a duplicate patch.",
+        "attachment_urls": []
+      },
+      "id": "issue-51459-reproduce-1"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Color Picker"
+  ],
+  "assignees": [],
+  "comments": 0
+}

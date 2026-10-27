@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 5,
+  "number": 51481,
+  "kind": "issue",
+  "title": "ZoomIt: Jittery zoom in with Ctrl + 1",
+  "url": "https://github.com/microsoft/PowerToys/issues/51481",
+  "generated_at": "2026-10-27T15:56:40.631859+00:00",
+  "evaluated_at": "2026-10-27T15:56:40.631859+00:00",
+  "source_updated_at": "2026-10-23T12:25:16Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The input is sufficient for a scoped maintainer performance reproduction. A monotonic interpolation function alone cannot prove a smooth rendered transition, and 'jittery' does not identify a faulty easing curve. Measure timer/render pacing and cursor-centered geometry before choosing an animation change; do not ask for the already-supplied install/elevation metadata.",
+    "evidence": [
+      "The author supplies Ctrl+1 as the trigger, 0.102.2933, Windows 11 Pro, an elevated system install, and a diagnostic ZIP.",
+      "The existing ZoomIt logs show startup/enabling but no frame timings; the archive's monitor report identifies the active display but does not measure rendered frame intervals.",
+      "Merged #50444 introduced smooth zoom animation; it is relevant change history, not an already-verified fix for this later jitter report.",
+      "Source inspected at main 9227a8497750: src/modules/ZoomIt/ZoomIt/ZoomAnimation.cpp: Sample uses elapsed time with logarithmic Hermite interpolation and Retarget preserves bounded directional velocity. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/ZoomIt/ZoomIt/ZoomAnimation.cpp",
+      "Source inspected at main 9227a8497750: src/modules/ZoomIt/ZoomIt/Zoomit.cpp: Zoom transitions sample on elapsed time and schedule Windows timer-driven animation frames; actual scheduling/render latency is separate from the interpolation calculation. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "Downloaded the existing ZIP and inspected ZoomIt module/application logs and monitor inventory. Read #50444's scope/file list; no issue-specific covering PR was found. No frame benchmark or UI run was executed here."
+    ],
+    "recommended_action": "Measure Ctrl+1 frame pacing before changing animation curves",
+    "evaluated_at": "2026-10-27T15:56:40.631859+00:00",
+    "source_updated_at": "2026-10-23T12:25:16Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The release/trigger is concrete and source locates the animation boundary, but diagnostics contain no frame timings or geometry discontinuity to establish a cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Localize ZoomIt jitter to frame pacing or viewport transformation",
+      "root_cause": "Hypothesis only: timer/render cadence or repeated center/target updates produces visible jitter despite time-based interpolation; no frame trace yet demonstrates either boundary.",
+      "plan": [
+        "Capture the fixed Ctrl+1 timing/geometry matrix and compare the reported release with current animation callsites.",
+        "Correct only the measured pacing or viewport/retarget discontinuity; do not retune easing duration based solely on a subjective symptom.",
+        "Extend existing animation/geometry tests for the confirmed invariant and verify rendered behavior separately on the affected display configuration."
+      ],
+      "verification": [
+        "Ctrl+1 is visibly smooth with stationary and moving pointer controls at the chosen display refresh mode.",
+        "Scale remains bounded/monotonic between targets, and reversal, zoom-out and live-zoom controls preserve intended behavior."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The release/trigger is concrete and source locates the animation boundary, but diagnostics contain no frame timings or geometry discontinuity to establish a cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ZoomIt's Ctrl+1 transition is reported jittery after upgrade; animation math and actual frame pacing need separation.",
+    "known_information": [
+      "The author supplies Ctrl+1 as the trigger, 0.102.2933, Windows 11 Pro, an elevated system install, and a diagnostic ZIP.",
+      "The existing ZoomIt logs show startup/enabling but no frame timings; the archive's monitor report identifies the active display but does not measure rendered frame intervals.",
+      "Merged #50444 introduced smooth zoom animation; it is relevant change history, not an already-verified fix for this later jitter report."
+    ],
+    "inferences": [],
+    "analysis": "The input is sufficient for a scoped maintainer performance reproduction. A monotonic interpolation function alone cannot prove a smooth rendered transition, and 'jittery' does not identify a faulty easing curve. Measure timer/render pacing and cursor-centered geometry before choosing an animation change; do not ask for the already-supplied install/elevation metadata.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/ZoomIt/ZoomIt/ZoomAnimation.cpp: Sample uses elapsed time with logarithmic Hermite interpolation and Retarget preserves bounded directional velocity. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/ZoomIt/ZoomIt/ZoomAnimation.cpp",
+      "Source inspected at main 9227a8497750: src/modules/ZoomIt/ZoomIt/Zoomit.cpp: Zoom transitions sample on elapsed time and schedule Windows timer-driven animation frames; actual scheduling/render latency is separate from the interpolation calculation. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "Downloaded the existing ZIP and inspected ZoomIt module/application logs and monitor inventory. Read #50444's scope/file list; no issue-specific covering PR was found. No frame benchmark or UI run was executed here.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Frame timing and zoom/viewport trace for one fixed Ctrl+1 transition",
+        "why_needed": "Separate stalled rendering from interpolation or center/retarget discontinuity before editing the wrong layer.",
+        "how_to_collect": "Maintainer should record timer/render timestamps and frame scale/viewport in the specified controlled display setup; use a recording only as a visual companion.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Measure Ctrl+1 frame pacing before changing animation curves",
+      "primary": true,
+      "reproduce": {
+        "title": "Measure Ctrl+1 frame pacing before changing animation curves",
+        "module": "ZoomIt",
+        "version_requirement": "0.102.2933 versus current stable/main; compare the author's prior release only if its version is known.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Use the supplied elevated/system-install context; keep display scale, refresh mode and initial zoom target constant.",
+          "2. Record repeated Ctrl+1 transitions with the pointer stationary, then with controlled pointer motion and a busy-desktop control.",
+          "3. Measure timer sample times, render durations and frame-to-frame zoom/viewport position; distinguish missed frames from a non-monotonic scale or center jump.",
+          "4. Repeat zoom-out and rapid reversal/retarget without changing unrelated recording or live-zoom settings."
+        ],
+        "expected_result": "Transitions render at a stable cadence with monotonic scale and stable intended center; rapid reversal does not jump or preserve obsolete animation state.",
+        "attachment_urls": []
+      },
+      "id": "issue-51481-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51481-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "comments": 0
+}

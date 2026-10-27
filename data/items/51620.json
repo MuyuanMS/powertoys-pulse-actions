@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 5,
+  "number": 51620,
+  "kind": "issue",
+  "title": "Mouse Without Borders broken on .102 release",
+  "url": "https://github.com/microsoft/PowerToys/issues/51620",
+  "generated_at": "2026-10-27T15:53:57.597213+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.597213+00:00",
+  "source_updated_at": "2026-10-27T15:26:12Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The rollback is useful regression evidence, but key-generation failure points to a local pairing-management boundary before firewall hypotheses. Distinguish the generated-key UI/worker failure from a later network connection failure. Do not prescribe weakening peer checks or regenerating all machines' keys before collecting the first local error.",
+    "evidence": [
+      "The Store-installed report explicitly says both pairing and Generate new key fail on 0.102, and that downgrading to 0.101 restores operation.",
+      "No exact error, failing key-action result, diagnostic archive, or service-mode state is supplied; this is broader than a network-only pairing failure.",
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: CanManagePairing depends on service/elevation/pending/error state, while key refresh and service transitions use asynchronous verified IPC. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Protected-mode key operations are identity/mode-sensitive and can report incompatible stored state. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Read merged #51305's explicit service-mode key-storage and mode-switch migration contract; open #51377 concerns legacy typed-key persistence, not proof of this Generate-new-key failure. The issue has no attachments or replies to inspect."
+    ],
+    "recommended_action": "Capture the failed MWB Generate new key operation",
+    "evaluated_at": "2026-10-27T15:53:57.597213+00:00",
+    "source_updated_at": "2026-10-27T15:26:12Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. A reversible release regression is reported, but there is no precise failing action result, mode or diagnostic exception to choose among local UI/IPC/key branches."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Identify and correct the first local MWB key-generation failure",
+      "root_cause": "Hypothesis only: a service-mode/identity or Settings-to-worker pairing operation fails before successful key generation; the report does not yet distinguish disabled UI, rejected IPC, or key persistence.",
+      "plan": [
+        "Correlate the single Generate-new-key attempt with actual mode/version and the first Settings/worker error.",
+        "Reproduce the attributed state on two physical test PCs with matched versions, comparing normal and service mode without disabling trust checks.",
+        "Coordinate any mode-migration recovery with #51305 and legacy editing with #51377; correct only the confirmed branch and keep network pairing verification separate."
+      ],
+      "verification": [
+        "Generate, display and copy work in the supported elevated/service contexts without exposing keys.",
+        "Pairing/restart persistence works with the same key on both PCs; unsupported contexts show actionable guidance rather than silent failure."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "A reversible release regression is reported, but there is no precise failing action result, mode or diagnostic exception to choose among local UI/IPC/key branches."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "MWB pairing and new-key generation regress in 0.102, with 0.101 reported as a working rollback.",
+    "known_information": [
+      "The Store-installed report explicitly says both pairing and Generate new key fail on 0.102, and that downgrading to 0.101 restores operation.",
+      "No exact error, failing key-action result, diagnostic archive, or service-mode state is supplied; this is broader than a network-only pairing failure."
+    ],
+    "inferences": [],
+    "analysis": "The rollback is useful regression evidence, but key-generation failure points to a local pairing-management boundary before firewall hypotheses. Distinguish the generated-key UI/worker failure from a later network connection failure. Do not prescribe weakening peer checks or regenerating all machines' keys before collecting the first local error.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: CanManagePairing depends on service/elevation/pending/error state, while key refresh and service transitions use asynchronous verified IPC. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Protected-mode key operations are identity/mode-sensitive and can report incompatible stored state. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Read merged #51305's explicit service-mode key-storage and mode-switch migration contract; open #51377 concerns legacy typed-key persistence, not proof of this Generate-new-key failure. The issue has no attachments or replies to inspect.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Result of Generate new key and Use service state on the failing build",
+        "why_needed": "Separate intentionally disabled pairing management from a rejected request or unchanged persisted key.",
+        "how_to_collect": "Perform one Generate-new-key attempt and describe disabled/error/unchanged behavior plus Use service on/off; never post the key.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Current failing-attempt diagnostic report",
+        "why_needed": "Attribute the first local Settings/worker error and establish the exact 0.102 patch version.",
+        "how_to_collect": "Comment /bugreport immediately after the attempt; if Settings/tray is unavailable, run BugReportTool.exe from the installation directory.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Capture the failed MWB Generate new key operation",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "The 0.102 → 0.101 rollback is useful; no need to repeat it. Because Generate new key also fails, this may occur before any network pairing. Could you please:\n- Click Generate new key once on the failing 0.102 installation, say whether it is disabled, shows an error, or leaves the displayed value unchanged, and note whether Use service is on. Do not share the key.\n- Immediately after that attempt, comment /bugreport and attach the resulting report. If Settings or the tray is unavailable, run BugReportTool.exe from the PowerToys installation directory. The report should establish the exact patch version and first local failure without another generic firewall checklist."
+      },
+      "id": "issue-51620-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51620-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

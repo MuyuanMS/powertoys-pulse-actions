@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51490,
+  "kind": "issue",
+  "title": "PowerToys: Windows Hopper won't start",
+  "url": "https://github.com/microsoft/PowerToys/issues/51490",
+  "generated_at": "2026-10-27T15:53:57.687572+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.687572+00:00",
+  "source_updated_at": "2026-10-23T12:25:03Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "A hotkey-registration or state defect remains possible, but Window Hopper intentionally cycles eligible windows of the foreground application, not the general Alt+Tab set. A no-op with fewer than two eligible same-application windows must be ruled out before calling this an Alt+Tab conflict. The missing discriminator is the exact foreground app/window scenario, not the already-provided layout or OS build.",
+    "evidence": [
+      "The edited report corrects the original keyboard assumption: default Alt+Ø and Alt+Shift+Ø do work with Norwegian QWERTY and initially worked after reinstall without restoring the old backup.",
+      "Restarting, toggling the module, multiple alternative shortcuts, reinstalling and deleting the old backup have already been tried. Do not request the same resets or keyboard layout again.",
+      "The supplied report contains AltWindowCycle startup logs and configured Alt+Shift+Left/Right at capture time, but no successful/failed hotkey-to-window enumeration trace.",
+      "Source inspected at main 9227a8497750: src/modules/AltWindowCycle/AltWindowCycle.cpp: GetAppWindows groups windows using the foreground executable; Switcher::OnHotkey returns without showing an overlay when fewer than two are eligible. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "Source inspected at main 9227a8497750: src/modules/AltWindowCycle/dllmain.cpp: Configured shortcut IDs route to next/previous cycle handlers with a modifier mask. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/AltWindowCycle/dllmain.cpp",
+      "Downloaded the existing ZIP and inspected AltWindowCycle settings and October 21–22 module logs. Initialization is recorded, but those logs do not establish whether the failing hotkey reached OnHotkey. No covering PR references this issue."
+    ],
+    "recommended_action": "Confirm Window Hopper's foreground app and two-window case",
+    "evaluated_at": "2026-10-27T15:53:57.687572+00:00",
+    "source_updated_at": "2026-10-23T12:25:03Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. There is a detailed reset history and source-defined same-app no-op boundary, but no reported foreground application/window set or delivered-hotkey trace."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Separate Window Hopper shortcut delivery from eligible-window filtering",
+      "root_cause": "Hypothesis only: the no-op occurs either before shortcut delivery or because the foreground-app filter yields fewer than two eligible windows; the supplied report does not select one.",
+      "plan": [
+        "Obtain the exact foreground app/top-level-window scenario and reproduce a two-window same-app control.",
+        "Trace configured shortcut delivery, UI-thread dispatch and selected window count under Norwegian defaults and the already-configured alternative.",
+        "Correct the demonstrated registration/state or eligibility fault without turning Window Hopper into a general Alt+Tab replacement."
+      ],
+      "verification": [
+        "Two eligible windows of one application cycle in both directions after cold start and ordinary use.",
+        "A single eligible window remains a harmless no-op, and Norwegian defaults/custom shortcuts keep their intended modifier behavior."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "There is a detailed reset history and source-defined same-app no-op boundary, but no reported foreground application/window set or delivered-hotkey trace."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Window Hopper hotkeys are reported inactive after initially working with Norwegian defaults; the eligible window set is unspecified.",
+    "known_information": [
+      "The edited report corrects the original keyboard assumption: default Alt+Ø and Alt+Shift+Ø do work with Norwegian QWERTY and initially worked after reinstall without restoring the old backup.",
+      "Restarting, toggling the module, multiple alternative shortcuts, reinstalling and deleting the old backup have already been tried. Do not request the same resets or keyboard layout again.",
+      "The supplied report contains AltWindowCycle startup logs and configured Alt+Shift+Left/Right at capture time, but no successful/failed hotkey-to-window enumeration trace."
+    ],
+    "inferences": [],
+    "analysis": "A hotkey-registration or state defect remains possible, but Window Hopper intentionally cycles eligible windows of the foreground application, not the general Alt+Tab set. A no-op with fewer than two eligible same-application windows must be ruled out before calling this an Alt+Tab conflict. The missing discriminator is the exact foreground app/window scenario, not the already-provided layout or OS build.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/AltWindowCycle/AltWindowCycle.cpp: GetAppWindows groups windows using the foreground executable; Switcher::OnHotkey returns without showing an overlay when fewer than two are eligible. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "Source inspected at main 9227a8497750: src/modules/AltWindowCycle/dllmain.cpp: Configured shortcut IDs route to next/previous cycle handlers with a modifier mask. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/AltWindowCycle/dllmain.cpp",
+      "Downloaded the existing ZIP and inspected AltWindowCycle settings and October 21–22 module logs. Initialization is recorded, but those logs do not establish whether the failing hotkey reached OnHotkey. No covering PR references this issue.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Foreground application and result with two separate eligible windows of that same app",
+        "why_needed": "Distinguish a real hotkey/enumeration defect from the intentional fewer-than-two-windows return.",
+        "how_to_collect": "Name the app/window count, focus one of two separate desktop-app windows, and report next/previous behavior using the current shortcut.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm Window Hopper's foreground app and two-window case",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for correcting the Norwegian defaults and listing the reinstall/shortcut tests; please do not repeat those resets or send the existing report again. Window Hopper cycles windows of the current application, rather than all applications like Alt+Tab. Could you name the exact foreground application and number of its separate top-level windows when the shortcut does nothing? Please also try two separate windows of one ordinary desktop application, focus one, and use your currently configured next/previous shortcut. Tell us whether that controlled same-application case also does nothing. That separates intentional empty/single-window behavior from a hotkey or enumeration regression."
+      },
+      "id": "issue-51490-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51490-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Window Hopper"
+  ],
+  "assignees": [],
+  "comments": 0
+}

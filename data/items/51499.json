@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 5,
+  "number": 51499,
+  "kind": "issue",
+  "title": "Command Palette reinstalls with every PowerToys update, despite being deactivated and uninstalled",
+  "url": "https://github.com/microsoft/PowerToys/issues/51499",
+  "generated_at": "2026-10-27T15:51:05.956452+00:00",
+  "evaluated_at": "2026-10-27T15:51:05.956452+00:00",
+  "source_updated_at": "2026-10-23T12:24:53Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The reporter's clarification refutes treating this as demonstrated settings loss. The installer has its own CmdPal registration action, so disabled runtime state is not an uninstall preference. First settle whether manual package removal is meant to persist across bundle upgrades; a conditional servicing direction is reasonable, but no settings-reset repair or implementation-ready selective-install design is established.",
+    "evidence": [
+      "The sequence is explicit: disable Command Palette, uninstall its package, then update PowerToys.",
+      "The author already answered the maintainer's /bugreport request with an archive and explicitly said the setting stays disabled. Waiting on the author or requesting the same report again would be wrong.",
+      "The supplied archive's general settings confirm CmdPal=false, supporting the distinction between package installation and module enablement.",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupVNext/Product.wxs: InstallCmdPalPackage runs after InstallFiles when NOT Installed; an incoming major-upgrade product can satisfy this even when an earlier user's module-enabled flag was false. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupVNext/Product.wxs",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp: InstallCmdPalPackageCA locates and registers the bundled CmdPal MSIX separately from runner module enablement. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+      "Downloaded the already-provided ZIP and inspected general settings and relevant runner/installer inventory. Read the full maintainer request and author response; no issue-specific covering PR was found."
+    ],
+    "recommended_action": "Compare package servicing with a disabled CmdPal setting",
+    "evaluated_at": "2026-10-27T15:51:05.956452+00:00",
+    "source_updated_at": "2026-10-23T12:24:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The author's reply, archive flag and installer action align on package-versus-enable separation; the intended product servicing contract and upgrade execution still need confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Separate package-install preference from CmdPal runtime enablement",
+      "root_cause": "Hypothesis: bundle registration runs during the new product's installation independently of the preserved CmdPal=false setting; this is servicing policy, not established settings corruption.",
+      "plan": [
+        "Validate the package registration/disabled-setting sequence with existing diagnostics and a controlled upgrade.",
+        "Obtain installer/module owner agreement on persistent uninstall semantics; if supported, model that preference distinctly rather than suppress all servicing whenever the module is disabled.",
+        "Apply the agreed registration condition and cover upgrade, repair, fresh install, explicit re-enable, and per-user package state."
+      ],
+      "verification": [
+        "A disabled module stays disabled after update.",
+        "The agreed package opt-out survives upgrade/repair as intended, while enabled/new installations still register and launch normally."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The author's reply, archive flag and installer action align on package-versus-enable separation; the intended product servicing contract and upgrade execution still need confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette package returns during PowerToys updates even though its enabled setting remains false.",
+    "known_information": [
+      "The sequence is explicit: disable Command Palette, uninstall its package, then update PowerToys.",
+      "The author already answered the maintainer's /bugreport request with an archive and explicitly said the setting stays disabled. Waiting on the author or requesting the same report again would be wrong.",
+      "The supplied archive's general settings confirm CmdPal=false, supporting the distinction between package installation and module enablement."
+    ],
+    "inferences": [],
+    "analysis": "The reporter's clarification refutes treating this as demonstrated settings loss. The installer has its own CmdPal registration action, so disabled runtime state is not an uninstall preference. First settle whether manual package removal is meant to persist across bundle upgrades; a conditional servicing direction is reasonable, but no settings-reset repair or implementation-ready selective-install design is established.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupVNext/Product.wxs: InstallCmdPalPackage runs after InstallFiles when NOT Installed; an incoming major-upgrade product can satisfy this even when an earlier user's module-enabled flag was false. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupVNext/Product.wxs",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp: InstallCmdPalPackageCA locates and registers the bundled CmdPal MSIX separately from runner module enablement. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+      "Downloaded the already-provided ZIP and inspected general settings and relevant runner/installer inventory. Read the full maintainer request and author response; no issue-specific covering PR was found.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Controlled package-registration trace and owner decision on persistent uninstall semantics",
+        "why_needed": "The proposed behavior changes bundle servicing and must not be inferred solely from a disabled module flag.",
+        "how_to_collect": "Maintainer should run the supplied disable/remove/update sequence and compare the action condition with package state; installer/module owners should record the supported contract.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare package servicing with a disabled CmdPal setting",
+      "primary": true,
+      "reproduce": {
+        "title": "Compare package servicing with a disabled CmdPal setting",
+        "module": "Installer / Command Palette",
+        "version_requirement": "Reproduce the reported 0.102 upgrade path and a current stable-to-stable upgrade on an isolated account.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Disable Command Palette and record the enabled flag, then remove only its registered package using the normal supported uninstall UI.",
+          "2. Upgrade PowerToys using the same GitHub installer channel and record whether the package is registered again while the enabled flag stays false.",
+          "3. Repeat a disabled-but-not-uninstalled control and an enabled control; inspect the incoming product's registration condition.",
+          "4. Have the installer/module owners decide whether separate manual removal is a supported persistent opt-out; do not silently reinterpret disabled as uninstalled."
+        ],
+        "expected_result": "Servicing behavior is documented and consistent; if persistent package opt-out is supported, it survives upgrade without blocking explicit re-enable or normal bundled servicing.",
+        "attachment_urls": []
+      },
+      "id": "issue-51499-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51499-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Command Palette",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 4
+}

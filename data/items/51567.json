@@ -4,66 +4,78 @@
   "kind": "issue",
   "title": "Mouse Without Borders fails to pair: \"Could not load or update pairing\" (Negotiation → Connecting → Error)",
   "url": "https://github.com/microsoft/PowerToys/issues/51567",
-  "generated_at": "2026-10-27T19:12:17.20834+08:00",
-  "evaluated_at": "2026-10-27T19:12:17.20834+08:00",
-  "source_updated_at": "2026-10-25T17:15:15Z",
+  "generated_at": "2026-10-27T15:58:33.735821+00:00",
+  "evaluated_at": "2026-10-27T15:58:33.735821+00:00",
+  "source_updated_at": "2026-10-27T15:54:27Z",
   "stage": "triage_revalidated",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The visible state sequence does not distinguish an accept/connect timeout from a protocol/key rejection. Request correlated evidence for one attempt on both endpoints, not another firewall checklist or a confident NAT/key diagnosis.",
+    "rationale": "Preserve needs_information and the low-confidence branch-attribution direction, but expand the prior transport-only emphasis: the generic pairing message also covers local Settings-to-worker IPC/key operations. A later socket Error does not prove which failure came first. Do not repeat the firewall/elevation checklist, assert a DPAPI cause, or assume the related Connect-page PR fixes this report. The newly refreshed second-user confirmation increases corroboration of persistence only; it does not close the missing correlated endpoint evidence or justify a more confident cause.",
     "evidence": [
-      "Both PCs use 0.102.2933. The observed sequence is Negotiation, Connecting, then Error after roughly 24 seconds.",
-      "The author already tested private-subnet addressing, firewall recreation and disabling, matching security keys, IP mappings, elevation, VPN-off and restarts.",
-      "No paired endpoint diagnostic reports are attached; repeating those same setup checks would add little.",
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/receive failures update Timeout, Error and InvalidKey through different paths. The UI's generic final Error does not select one of those branches.",
-      "Read all completed network controls and the reported timing. No two-PC reproduction or handshake capture was performed."
+      "The original two-PC report uses 0.102.2933 and records Negotiation → Connecting → Error, with the secondary device layout remaining empty.",
+      "Private-subnet networking, firewall recreation/disable, exact matching keys, IP mapping, administrator runs, disconnected VPN, and restarts have already been tried.",
+      "The new October 27 reply confirms 'Pairing could not be loaded or updated' on 0.102.3001; it does not supply paired endpoint reports or a first failing exception.",
+      "A second participant confirmed the same issue on 0.102.3001 at 15:54 UTC on October 27; the new comment contains no diagnostic attachment, first-failure detail or new workaround.",
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Pairing is asynchronous and depends on a SettingsSync endpoint, service mode, and peer identity; socket colors represent distinct states. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Current service-mode key reads can distinguish mode mismatch from corrupt key state. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/handshake errors are not interchangeable with local pairing-management failure. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "Inspected merged #51305 key-storage/mode-change scope and open #50776 credential-preservation/error-presentation scope; neither establishes coverage of this two-PC failure. No attached reports exist to inspect.",
+      "Final freshness audit detected the new 15:54 UTC reply. Re-fetched full body, both comments, complete timeline, labels and PR-reference search; no new attachment or covering fix was added. Preserved the earlier current-run packet unchanged."
     ],
-    "recommended_action": "Correlate one failed connection attempt on both PCs",
-    "evaluated_at": "2026-10-27T19:12:17.20834+08:00",
-    "source_updated_at": "2026-10-25T17:15:15Z"
+    "recommended_action": "Correlate one failed pairing attempt on both PCs",
+    "evaluated_at": "2026-10-27T15:58:33.735821+00:00",
+    "source_updated_at": "2026-10-27T15:54:27Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Error and elapsed time are observed; source has multiple distinct failure branches, and neither endpoint's first failure is known."
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The timing and completed controls are strong symptom evidence, but no first failure from either endpoint is available; local IPC and transport remain live alternatives."
   },
   "proposed_fixes": [
     {
-      "title": "Resolve the first attributed MWB connection or handshake failure",
-      "root_cause": "A connection or protocol failure is being collapsed into the final Error state. The supplied timing and completed controls do not establish which SocketStuff failure branch occurs first.",
+      "title": "Attribute the first local-pairing or network failure before changing MWB",
+      "root_cause": "Hypothesis only: a local SettingsSync/key-mode error or a connect/handshake failure is collapsed into the same final pairing error; the current evidence does not select a branch.",
       "plan": [
-        "Correlate the single-attempt endpoint reports and identify the first connect/accept, timeout or protocol/key failure before retry noise.",
-        "Reproduce that same failure branch on two controlled current-version PCs and verify its transport versus handshake ownership.",
-        "Correct the identified branch and preserve a distinct user-visible reason if a generic Error obscures recovery; do not change firewall policy or key matching without evidence."
+        "Correlate Settings and worker events from the same attempt on both PCs; identify the first failing local IPC, key-load, connect, or handshake operation.",
+        "Reproduce that branch on two controlled matching-version PCs, separately from the already-tested network controls.",
+        "Coordinate any error-presentation/credential preservation change with #50776; change only the attributed underlying failure branch and retain identity/key checks."
       ],
       "verification": [
-        "The isolated failing branch connects successfully or reports a precise actionable reason.",
-        "Normal pairing, reconnection and valid/invalid-key controls retain their intended behavior."
+        "A known-good pair connects; invalid-key and unavailable-peer controls retain distinct outcomes.",
+        "The isolated failing branch either recovers or reports its actual local-versus-network cause without losing entered credentials."
       ],
       "confidence": {
         "score": 32,
         "level": "red",
-        "rationale": "Error and elapsed time are observed; source has multiple distinct failure branches, and neither endpoint's first failure is known."
+        "rationale": "The timing and completed controls are strong symptom evidence, but no first failure from either endpoint is available; local IPC and transport remain live alternatives."
       }
     }
   ],
   "issue_context": {
-    "summary": "Mouse Without Borders negotiation fails after about 24 seconds despite extensive controls.",
+    "summary": "MWB pairing reaches a generic error after about 24 seconds despite an unusually complete set of network controls.",
     "known_information": [
-      "Both PCs use 0.102.2933. The observed sequence is Negotiation, Connecting, then Error after roughly 24 seconds.",
-      "The author already tested private-subnet addressing, firewall recreation and disabling, matching security keys, IP mappings, elevation, VPN-off and restarts.",
-      "No paired endpoint diagnostic reports are attached; repeating those same setup checks would add little."
+      "The original two-PC report uses 0.102.2933 and records Negotiation → Connecting → Error, with the secondary device layout remaining empty.",
+      "Private-subnet networking, firewall recreation/disable, exact matching keys, IP mapping, administrator runs, disconnected VPN, and restarts have already been tried.",
+      "The new October 27 reply confirms 'Pairing could not be loaded or updated' on 0.102.3001; it does not supply paired endpoint reports or a first failing exception.",
+      "A second participant confirmed the same issue on 0.102.3001 at 15:54 UTC on October 27; the new comment contains no diagnostic attachment, first-failure detail or new workaround."
     ],
-    "inferences": [],
-    "analysis": "The visible state sequence does not distinguish an accept/connect timeout from a protocol/key rejection. Request correlated evidence for one attempt on both endpoints, not another firewall checklist or a confident NAT/key diagnosis.",
+    "inferences": [
+      "The new-version confirmation supports persistence, not a particular encryption, firewall, or network root cause."
+    ],
+    "analysis": "Preserve needs_information and the low-confidence branch-attribution direction, but expand the prior transport-only emphasis: the generic pairing message also covers local Settings-to-worker IPC/key operations. A later socket Error does not prove which failure came first. Do not repeat the firewall/elevation checklist, assert a DPAPI cause, or assume the related Connect-page PR fixes this report. The newly refreshed second-user confirmation increases corroboration of persistence only; it does not close the missing correlated endpoint evidence or justify a more confident cause.",
     "initial_investigation": [
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/receive failures update Timeout, Error and InvalidKey through different paths. The UI's generic final Error does not select one of those branches.",
-      "Read all completed network controls and the reported timing. No two-PC reproduction or handshake capture was performed."
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Pairing is asynchronous and depends on a SettingsSync endpoint, service mode, and peer identity; socket colors represent distinct states. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Current service-mode key reads can distinguish mode mismatch from corrupt key state. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: Connect/handshake errors are not interchangeable with local pairing-management failure. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "Inspected merged #51305 key-storage/mode-change scope and open #50776 credential-preservation/error-presentation scope; neither establishes coverage of this two-PC failure. No attached reports exist to inspect.",
+      "Final freshness audit detected the new 15:54 UTC reply. Re-fetched full body, both comments, complete timeline, labels and PR-reference search; no new attachment or covering fix was added. Preserved the earlier current-run packet unchanged.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
     ],
     "information_gaps": [
       {
-        "information": "Two endpoint reports from the same failed attempt, with its timestamp",
-        "why_needed": "Separate the first transport failure from protocol rejection and retry fallout.",
-        "how_to_collect": "Submit a comment containing /bugreport immediately after one timed failure and collect reports on both PCs; BugReportTool.exe is the UI-independent fallback.",
+        "information": "Correlated reports from both endpoints for one timestamped failed attempt",
+        "why_needed": "Select the first local pairing/IPC or network/handshake failure instead of inferring it from the final red device state.",
+        "how_to_collect": "Comment /bugreport after one timed attempt and attach reports from both PCs; use BugReportTool.exe from the install directory if Settings/tray is unavailable.",
         "evidence_type": "bugreport_zip"
       }
     ]
@@ -71,19 +83,21 @@
   "actions": [
     {
       "type": "request_info",
-      "label": "Correlate one failed connection attempt on both PCs",
+      "label": "Correlate one failed pairing attempt on both PCs",
       "primary": true,
       "confirm": true,
       "comment": {
-        "body": "You have already covered the usual firewall, key, IP-mapping and VPN checks, so please do not repeat them. For one new failed attempt, note its time and submit a comment containing /bugreport immediately afterward; attach reports from both PCs using those instructions (BugReportTool.exe if the UI cannot open). Label them only as the two endpoints and review the archives before posting. This distinguishes the first socket failure from a later handshake rejection."
-      }
+        "body": "Thanks for the detailed controls and both 0.102.3001 confirmations. Please do not repeat the firewall, matching-key, IP-mapping, VPN, administrator, or restart tests already recorded. The unresolved point is whether the first failure is local pairing/IPC or the cross-PC connection. Could you make one connection attempt, note its time, then comment /bugreport and attach the resulting reports from both PCs immediately after that same failure? If Settings or the tray is unavailable, run BugReportTool.exe from each PowerToys installation directory. Please do not post the security key itself."
+      },
+      "id": "issue-51567-request_info-1"
     },
     {
       "type": "approve_design",
-      "label": "Review conditional fix direction",
+      "label": "Review conditional investigation direction",
       "primary": false,
       "confirm": true,
-      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51567-approve_design-2"
     }
   ],
   "labels": [
@@ -91,5 +105,5 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0
+  "comments": 2
 }

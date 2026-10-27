@@ -1414,7 +1414,28 @@ window.BOARD_INDEX = {
     16,
     10,
     8,
-    4
+    4,
+    51620,
+    51618,
+    51567,
+    51615,
+    51614,
+    50424,
+    51510,
+    51499,
+    51490,
+    51486,
+    51481,
+    51479,
+    51477,
+    51463,
+    51462,
+    51460,
+    51459,
+    51456,
+    51455,
+    51606,
+    51612
   ],
   "items": [
     {
@@ -24101,20 +24122,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T14:39:20Z",
       "updated_at": "2026-10-27T14:39:20Z",
       "comments": 0,
@@ -24198,20 +24224,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T13:05:06Z",
       "updated_at": "2026-10-27T13:05:06Z",
       "comments": 0,
@@ -24230,20 +24261,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Explain Reconnect and link the existing Quick Access labeling fix"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T12:37:36Z",
       "updated_at": "2026-10-27T12:37:36Z",
       "comments": 0,
@@ -24294,20 +24330,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T11:34:02Z",
       "updated_at": "2026-10-27T11:34:02Z",
       "comments": 0,
@@ -24491,19 +24532,24 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Explain Awake's locked-screen display contract"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T07:37:51Z",
       "updated_at": "2026-10-27T11:30:20Z",
       "comments": 1,
@@ -25513,22 +25559,27 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-25T17:15:15Z",
-      "updated_at": "2026-10-27T14:07:57Z",
-      "comments": 1,
+      "updated_at": "2026-10-27T15:54:27Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -27123,21 +27174,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-23T08:22:39Z",
       "updated_at": "2026-10-23T12:24:46Z",
       "comments": 0,
@@ -27451,15 +27507,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -27467,7 +27526,9 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "Product-General"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T19:04:24Z",
       "updated_at": "2026-10-23T12:24:53Z",
       "comments": 4,
@@ -27746,21 +27807,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Window Hopper"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T14:22:22Z",
       "updated_at": "2026-10-23T12:25:03Z",
       "comments": 0,
@@ -27880,21 +27946,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Separate hidden center items from unresolved startup app bands"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T13:05:19Z",
       "updated_at": "2026-10-23T12:25:09Z",
       "comments": 0,
@@ -28040,21 +28111,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-ZoomIt"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T06:17:48Z",
       "updated_at": "2026-10-23T12:25:16Z",
       "comments": 0,
@@ -28073,21 +28149,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-LightSwitch"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T02:58:05Z",
       "updated_at": "2026-10-23T12:25:20Z",
       "comments": 0,
@@ -28139,21 +28220,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Text Extractor"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-22T02:07:43Z",
       "updated_at": "2026-10-23T12:25:24Z",
       "comments": 0,
@@ -28533,21 +28619,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T16:15:43Z",
       "updated_at": "2026-10-23T12:25:31Z",
       "comments": 0,
@@ -28566,21 +28657,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Color Picker"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T15:30:17Z",
       "updated_at": "2026-10-23T12:25:35Z",
       "comments": 0,
@@ -28628,21 +28724,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T13:19:41Z",
       "updated_at": "2026-10-23T12:25:38Z",
       "comments": 0,
@@ -28661,21 +28762,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Validate the existing invalid-handle guard before a lifecycle rewrite"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Color Picker"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T12:13:57Z",
       "updated_at": "2026-10-23T12:25:41Z",
       "comments": 0,
@@ -28761,22 +28867,27 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Settings",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T09:47:41Z",
       "updated_at": "2026-10-23T12:25:48Z",
       "comments": 2,
@@ -55675,11 +55786,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -55688,7 +55799,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Utilities"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-09-06T17:29:27Z",
       "updated_at": "2026-10-27T11:45:37Z",
       "comments": 8,
@@ -178205,21 +178318,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-21T11:12:57Z",
       "updated_at": "2026-10-23T12:25:45Z",
       "comments": 0,
@@ -193734,20 +193852,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
-      "owes": "us",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T15:26:12Z",
       "updated_at": "2026-10-27T15:26:12Z",
       "comments": 0,

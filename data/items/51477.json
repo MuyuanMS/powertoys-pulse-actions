@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 5,
+  "number": 51477,
+  "kind": "issue",
+  "title": "TextExtractor",
+  "url": "https://github.com/microsoft/PowerToys/issues/51477",
+  "generated_at": "2026-10-27T15:53:57.716670+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.716670+00:00",
+  "source_updated_at": "2026-10-23T12:25:24Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "This is an accuracy-regression claim, not yet a reproducible engine defect. A single lossless input paired with expected/actual text is the smallest useful discriminator. Do not request a generic diagnostic ZIP or design a replacement OCR engine before separating capture/scaling from recognition behavior.",
+    "evidence": [
+      "The report is for 0.102.2933 after auto-update and compares small-text capture unfavorably with an unnamed previous version.",
+      "No screenshot/sample, expected text, actual OCR result, language, or selection example accompanies the report; no current discussion or attachments add those.",
+      "Source inspected at main 9227a8497750: src/modules/PowerOCR/PowerOCR.Core/Imaging/BitmapPreprocessor.cs: Current preprocessing scales with high-quality bicubic interpolation and pads small dimensions. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/PowerOCR/PowerOCR.Core/Imaging/BitmapPreprocessor.cs",
+      "Source inspected at main 9227a8497750: src/modules/PowerOCR/PowerOCR.Core/Services/TextExtractorService.cs: Current non-word capture normally uses an enhanced scale when within OCR limits; language/mode and geometry affect the recognizer input. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/PowerOCR/PowerOCR.Core/Services/TextExtractorService.cs",
+      "Inspected the current preprocessing/recognition boundary, refreshed the full body/timeline and searched issue-number PR coverage. No source change can be confidently selected without a constant input/output example."
+    ],
+    "recommended_action": "Provide one lossless small-text sample with expected and actual OCR text",
+    "evaluated_at": "2026-10-27T15:53:57.716670+00:00",
+    "source_updated_at": "2026-10-23T12:25:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. There is no actual input/output pair or working-version baseline; a scaling hypothesis is supported only as an investigation boundary, not a confirmed regression cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Compare capture preprocessing against a fixed small-text OCR fixture",
+      "root_cause": "Hypothesis only: capture scaling/padding or OCR-language/mode handling changes the small-glyph input; the report does not distinguish preprocessing from Windows OCR recognition variability.",
+      "plan": [
+        "Use the supplied lossless sample and expected/actual output as a fixed fixture at the reported display scale and language.",
+        "Compare captured pixels and preprocessing dimensions before recognition across the known-good and affected versions.",
+        "Change only the confirmed preprocessing/language boundary, coordinating existing scale-limit behavior; retain the fixture as a non-sensitive accuracy regression."
+      ],
+      "verification": [
+        "The fixed small-text example returns the expected characters under the same language/selection and DPI.",
+        "Tiny/large selections stay within OCR limits and ordinary/word/table modes retain intended geometry."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "There is no actual input/output pair or working-version baseline; a scaling hypothesis is supported only as an investigation boundary, not a confirmed regression cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor small-text accuracy is reported worse, but no fixed input or actual/expected OCR output is supplied.",
+    "known_information": [
+      "The report is for 0.102.2933 after auto-update and compares small-text capture unfavorably with an unnamed previous version.",
+      "No screenshot/sample, expected text, actual OCR result, language, or selection example accompanies the report; no current discussion or attachments add those."
+    ],
+    "inferences": [],
+    "analysis": "This is an accuracy-regression claim, not yet a reproducible engine defect. A single lossless input paired with expected/actual text is the smallest useful discriminator. Do not request a generic diagnostic ZIP or design a replacement OCR engine before separating capture/scaling from recognition behavior.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/PowerOCR/PowerOCR.Core/Imaging/BitmapPreprocessor.cs: Current preprocessing scales with high-quality bicubic interpolation and pads small dimensions. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/PowerOCR/PowerOCR.Core/Imaging/BitmapPreprocessor.cs",
+      "Source inspected at main 9227a8497750: src/modules/PowerOCR/PowerOCR.Core/Services/TextExtractorService.cs: Current non-word capture normally uses an enhanced scale when within OCR limits; language/mode and geometry affect the recognizer input. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/PowerOCR/PowerOCR.Core/Services/TextExtractorService.cs",
+      "Inspected the current preprocessing/recognition boundary, refreshed the full body/timeline and searched issue-number PR coverage. No source change can be confidently selected without a constant input/output example.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Lossless original-pixel sample with expected/actual OCR text and its language/mode/DPI",
+        "why_needed": "Make the accuracy claim falsifiable and separate pixel preprocessing from recognition or language selection.",
+        "how_to_collect": "Attach a non-sensitive lossless screenshot/crop without resizing, paste exact expected and recognized text, and state OCR language, selection mode and display scaling; name a known working version only if already known.",
+        "evidence_type": "sample_file"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Provide one lossless small-text sample with expected and actual OCR text",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "The small-text regression on 0.102.2933 is worth checking, but we need one constant input to distinguish capture scaling from recognition. Could you please attach one lossless screenshot or a small non-sensitive crop at its original pixel size, and paste the exact expected text alongside Text Extractor's actual output for that same selection? Include the selected OCR language, selection mode, and display scaling used for the sample. If you know the previous working PowerToys version, please name it; do not reinstall older versions just to obtain it. An environment-only report is not a substitute for this accuracy example."
+      },
+      "id": "issue-51477-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51477-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
+  "comments": 0
+}

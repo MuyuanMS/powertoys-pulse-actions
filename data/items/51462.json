@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 5,
+  "number": 51462,
+  "kind": "issue",
+  "title": "Error with Color Picker in CAD Sfotware",
+  "url": "https://github.com/microsoft/PowerToys/issues/51462",
+  "generated_at": "2026-10-27T15:56:40.667379+00:00",
+  "evaluated_at": "2026-10-27T15:56:40.667379+00:00",
+  "source_updated_at": "2026-10-23T12:25:35Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The workspace/menu split is a focused capture-path regression candidate, not an activation or color-format settings problem. Compare the sampled desktop surface against the visible CAD viewport before blaming ZWCAD's renderer or replacing the capture backend. Existing screenshot and software/version details are enough for a maintainer test; do not request them again.",
+    "evidence": [
+      "The author supplies ZWCAD 2026 on Windows 10 22H2, PowerToys 0.102.2933, an example screenshot and a diagnostic ZIP.",
+      "Both Model Space and Paper Space are affected; menus are a working control. The author says a prior PowerToys version sampled the workspace correctly.",
+      "The screenshot was visually inspected: the picker displays 50,50,50 over visibly different drawing content. The Color Picker module log records activations, not a graphics-capture failure stack.",
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs: Current sampling uses a cached one-pixel GDI surface and Graphics.CopyFromScreen with SourceCopy, then reads that pixel; capture failure can preserve the previous color. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs",
+      "Downloaded and visually inspected the CAD screenshot; downloaded the report and read Color Picker module/application excerpts. No supplied trace proves a GPU-overlay, DPI, or cached-color mechanism.",
+      "Reviewed the current sampling implementation and bounded Color Picker PR/history results; #49174 migrated the UI/sampling implementation but does not establish a ZWCAD workspace fix."
+    ],
+    "recommended_action": "Compare ZWCAD viewport pixels with the GDI sample",
+    "evaluated_at": "2026-10-27T15:56:40.667379+00:00",
+    "source_updated_at": "2026-10-23T12:25:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The screenshot and menu/workspace control isolate the symptom well, but no raw capture outcome or rendering comparison identifies surface mismatch versus failed/stale sample."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve the CAD viewport's captured-surface or stale-sample mismatch",
+      "root_cause": "Hypothesis only: the GDI sample sees a different composited surface or retains a previous color after failure; the screenshot proves the wrong result, not which mechanism caused it.",
+      "plan": [
+        "Reproduce the existing Model/Paper/menu control matrix and compare visible desktop pixels with successful/raw capture and cached-color state.",
+        "If capture fails, correct/report the recoverable sample state; if the desktop surface differs, evaluate a bounded compatible capture fallback rather than changing output format.",
+        "Retain the non-sensitive drawing/color fixture and test coordinate, DPI, menu, multi-monitor and ordinary-app controls."
+      ],
+      "verification": [
+        "Differently colored CAD workspace pixels no longer all return 50,50,50.",
+        "Menus and ordinary applications remain correct, capture failure does not silently masquerade as a valid stale color, and sampling stays responsive."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The screenshot and menu/workspace control isolate the symptom well, but no raw capture outcome or rendering comparison identifies surface mismatch versus failed/stale sample."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Color Picker samples constant RGB 50,50,50 inside ZWCAD workspaces while menu colors remain readable.",
+    "known_information": [
+      "The author supplies ZWCAD 2026 on Windows 10 22H2, PowerToys 0.102.2933, an example screenshot and a diagnostic ZIP.",
+      "Both Model Space and Paper Space are affected; menus are a working control. The author says a prior PowerToys version sampled the workspace correctly.",
+      "The screenshot was visually inspected: the picker displays 50,50,50 over visibly different drawing content. The Color Picker module log records activations, not a graphics-capture failure stack."
+    ],
+    "inferences": [],
+    "analysis": "The workspace/menu split is a focused capture-path regression candidate, not an activation or color-format settings problem. Compare the sampled desktop surface against the visible CAD viewport before blaming ZWCAD's renderer or replacing the capture backend. Existing screenshot and software/version details are enough for a maintainer test; do not request them again.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs: Current sampling uses a cached one-pixel GDI surface and Graphics.CopyFromScreen with SourceCopy, then reads that pixel; capture failure can preserve the previous color. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/colorPicker/ColorPickerUI/Mouse/MouseInfoProvider.cs",
+      "Downloaded and visually inspected the CAD screenshot; downloaded the report and read Color Picker module/application excerpts. No supplied trace proves a GPU-overlay, DPI, or cached-color mechanism.",
+      "Reviewed the current sampling implementation and bounded Color Picker PR/history results; #49174 migrated the UI/sampling implementation but does not establish a ZWCAD workspace fix.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Raw sampled pixel/capture outcome versus visible workspace and cached color",
+        "why_needed": "Distinguish a graphics-surface mismatch from recoverable capture failure or stale state.",
+        "how_to_collect": "Maintainer should run the supplied ZWCAD setup and compare raw GDI result/exception, cached color and same-coordinate desktop screenshot before selecting a backend change.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare ZWCAD viewport pixels with the GDI sample",
+      "primary": true,
+      "reproduce": {
+        "title": "Compare ZWCAD viewport pixels with the GDI sample",
+        "module": "Color Picker / ZWCAD",
+        "version_requirement": "PowerToys 0.102.2933 versus current stable/main; ZWCAD 2026 on Windows 10 22H2.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Open a non-sensitive drawing with several clearly different solid colors in Model Space and Paper Space; keep menus as a working control.",
+          "2. Activate the picker and compare expected visible pixel colors with sampled values at the same screen coordinates.",
+          "3. Capture a desktop screenshot of the same pixels and, in a maintainer diagnostic session, compare raw CopyFromScreen return/color, exception outcome, and last cached color.",
+          "4. Only if the workspace differs at that capture boundary, compare a supported alternate desktop-capture path or controlled CAD rendering option; preserve coordinate/DPI mapping."
+        ],
+        "expected_result": "Workspace and menu pixels match their visible colors, or the failing graphics boundary is specifically identified without changing the app's drawing data.",
+        "attachment_urls": [
+          "https://github.com/user-attachments/assets/da2d1ee8-d6d1-4e31-8c28-6818cd4c2b5d"
+        ]
+      },
+      "id": "issue-51462-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51462-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Color Picker"
+  ],
+  "assignees": [],
+  "comments": 0
+}

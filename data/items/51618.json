@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "number": 51618,
+  "kind": "issue",
+  "title": "Image Resizer fails with COMException",
+  "url": "https://github.com/microsoft/PowerToys/issues/51618",
+  "generated_at": "2026-10-27T15:51:05.891731+00:00",
+  "evaluated_at": "2026-10-27T15:51:05.891731+00:00",
+  "source_updated_at": "2026-10-27T14:39:20Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "There is enough input and a version/control matrix for maintainer reproduction. Treat the embedded image as an available first test sample rather than ask for evidence already supplied; if GitHub transformed the upload, request the byte-original only after a concrete inability to reproduce. The metadata/encoder path is a hypothesis, and merged #51359 is relevant prior work, not demonstrated coverage of this newly reported ON1 failure.",
+    "evidence": [
+      "The report supplies an embedded ON1 JPEG, the exact error-dialog screenshot, and a diagnostic ZIP, plus Windows 11 26H2 build 26300.9711 and a system-wide non-elevated install.",
+      "The author confirmed failure on 0.102.2933 and 0.102.3001, success after downgrading to 0.100.2, and renewed failure after reinstalling 0.102.3001.",
+      "The visually inspected error dialog identifies COMException HRESULT 0x88982F8E; failures leave an output under one kilobyte. Nikon/Canon camera JPEGs are already supplied as working controls.",
+      "Source inspected at main 9227a8497750: src/modules/imageresizer/ui/Models/ResizeOperation.cs: Resized JPEGs use a fresh encoder; pixel data and native/known metadata are copied before FlushAsync. Output is created before encoding, so an encoding failure can leave a partial file. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
+      "Downloaded the ON1 image, inspected the error image, and inventoried the supplied report. There is no Image Resizer application-log stack in that archive's matching entries; the screenshot supplies the exception code, not the failed codec call.",
+      "Read merged #51359's metadata-preservation scope and patches and the current shared encode path. No PR specifically referencing #51618 was found."
+    ],
+    "recommended_action": "Localize the ON1 JPEG codec failure using the supplied image",
+    "evaluated_at": "2026-10-27T15:51:05.891731+00:00",
+    "source_updated_at": "2026-10-27T14:39:20Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The reversible version comparison and exact HRESULT support a regression; no executed codec trace identifies metadata versus pixel conversion, and the supplied image has not been run through PowerToys here."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate the ON1 encoder/metadata incompatibility and clean up failed outputs",
+      "root_cause": "Hypothesis only: a JPEG-specific fresh-encoding or metadata-commit incompatibility affects ON1 exports; the current evidence does not distinguish metadata handling from decoded pixel/encoder state.",
+      "plan": [
+        "Reproduce with the supplied bytes and compare retained/removed metadata while identifying the exact failing codec API.",
+        "Coordinate with the #51359 encoding path; add a targeted fallback only for the confirmed unsupported operation, without globally discarding EXIF/ICC data.",
+        "Ensure failure removes newly created partial output without touching the source, then add a small distributable fixture or synthetic equivalent after confirming licensing/privacy."
+      ],
+      "verification": [
+        "The failing ON1 sample and working camera JPEG controls resize successfully at requested dimensions and quality.",
+        "Metadata-retention/removal behavior remains intentional, and an injected encoder failure leaves neither a corrupt replacement nor a stray partial result."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The reversible version comparison and exact HRESULT support a regression; no executed codec trace identifies metadata versus pixel conversion, and the supplied image has not been run through PowerToys here."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ON1 Photo RAW JPEG resizing regresses with COMException 0x88982F8E while camera-generated JPEGs work.",
+    "known_information": [
+      "The report supplies an embedded ON1 JPEG, the exact error-dialog screenshot, and a diagnostic ZIP, plus Windows 11 26H2 build 26300.9711 and a system-wide non-elevated install.",
+      "The author confirmed failure on 0.102.2933 and 0.102.3001, success after downgrading to 0.100.2, and renewed failure after reinstalling 0.102.3001.",
+      "The visually inspected error dialog identifies COMException HRESULT 0x88982F8E; failures leave an output under one kilobyte. Nikon/Canon camera JPEGs are already supplied as working controls."
+    ],
+    "inferences": [
+      "The unusually short output is consistent with an already-created stream failing before successful flush; this does not establish the failure's metadata root cause."
+    ],
+    "analysis": "There is enough input and a version/control matrix for maintainer reproduction. Treat the embedded image as an available first test sample rather than ask for evidence already supplied; if GitHub transformed the upload, request the byte-original only after a concrete inability to reproduce. The metadata/encoder path is a hypothesis, and merged #51359 is relevant prior work, not demonstrated coverage of this newly reported ON1 failure.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/imageresizer/ui/Models/ResizeOperation.cs: Resized JPEGs use a fresh encoder; pixel data and native/known metadata are copied before FlushAsync. Output is created before encoding, so an encoding failure can leave a partial file. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
+      "Downloaded the ON1 image, inspected the error image, and inventoried the supplied report. There is no Image Resizer application-log stack in that archive's matching entries; the screenshot supplies the exception code, not the failed codec call.",
+      "Read merged #51359's metadata-preservation scope and patches and the current shared encode path. No PR specifically referencing #51618 was found.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "First failing codec call on the supplied JPEG, with metadata-retention versus removal comparison",
+        "why_needed": "A COMException code alone does not justify choosing a metadata workaround or a decoder change.",
+        "how_to_collect": "Maintainer should use the existing attachment and scoped version matrix, collecting API-stage/HRESULT evidence in a diagnostic session.",
+        "evidence_type": "module_trace"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Localize the ON1 JPEG codec failure using the supplied image",
+      "primary": true,
+      "reproduce": {
+        "title": "Localize the ON1 JPEG codec failure using the supplied image",
+        "module": "Image Resizer",
+        "version_requirement": "Compare 0.100.2, 0.102.3001, and current main on a controlled Windows 11 test machine.",
+        "prerequisites": [
+          "Use an isolated test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Download the supplied ON1 JPEG without re-saving it; preserve its bytes and use a camera JPEG as the already-described control.",
+          "2. Use the same resize preset/settings and compare normal metadata retention with Remove metadata enabled.",
+          "3. Record whether failure occurs on decode, GetPixelDataAsync, native/known metadata assignment, or FlushAsync; retain HRESULT 0x88982F8E.",
+          "4. Check partial-file cleanup and that a failed resize never replaces the source image."
+        ],
+        "expected_result": "The original sample produces a valid resized image with retained supported metadata, or the exact unsupported operation is isolated before changing codec behavior.",
+        "attachment_urls": [
+          "https://github.com/user-attachments/assets/9a6649b7-7863-446a-b16f-829ac4d75a0e",
+          "https://github.com/user-attachments/assets/9ac963f6-5cb7-4115-a886-875e65c16ec9"
+        ]
+      },
+      "id": "issue-51618-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51618-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

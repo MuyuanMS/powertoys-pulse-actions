@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51456,
+  "kind": "issue",
+  "title": "[CmdPal] Microsoft.CmdPal.UI.exe crashes ~40s after launch in RPCRT4.dll (0xc0020043); hotkey never works",
+  "url": "https://github.com/microsoft/PowerToys/issues/51456",
+  "generated_at": "2026-10-27T15:53:57.744215+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.744215+00:00",
+  "source_updated_at": "2026-10-23T12:25:45Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The native RPC fault needs the failing exception/thread stack; Click to Do resource warnings and a similarly timed redirect timeout are not enough to assign causality. Do not ask for another reset, extension purge, exact WER code, or the already-supplied diagnostic ZIP. Obtain one exception-time dump via a private diagnostic route, then choose the responsible activation/RPC boundary.",
+    "evidence": [
+      "The report supplies RPCRT4.dll 0xc0020043, fault offset, multiple WER report IDs, repeatable 35–45-second startup timing, and a diagnostic ZIP.",
+      "The author already removed third-party extensions, disabled Dock, reset LocalState, verified non-elevation/GPO, and compared 0.100.2 with 0.101.2362. None eliminated the crash.",
+      "The archive's CmdPal log has startup plus Click to Do resource lookup errors, then no managed crash stack. An earlier run reports a 32-second activation redirect timeout.",
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs: RedirectActivationTo has a 32-second cancellation timeout and catches/logs cancellation and ordinary exceptions; this path is relevant context but does not prove the native RPCRT4 fault. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs",
+      "Downloaded the supplied report and inspected current CmdPal startup excerpts and its application event evidence. Those do not contain a native exception stack sufficient to tie the fault to resource loading.",
+      "Reviewed current Program.cs history and existing activation work; no retrieved issue-reference PR proves coverage of this signature. Product startup was not executed here."
+    ],
+    "recommended_action": "Capture one exception-time CmdPal crash dump privately",
+    "evaluated_at": "2026-10-27T15:53:57.744215+00:00",
+    "source_updated_at": "2026-10-23T12:25:45Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The recurring signature and control matrix establish a serious crash, but no dump or native stack connects it to a specific source branch."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Attribute the native CmdPal RPC crash before changing activation logic",
+      "root_cause": "Hypothesis only: an activation/RPC lifetime or cancellation boundary fails during startup; matching timing does not prove the 32-second redirect path or Click to Do resource warnings caused the native exception.",
+      "plan": [
+        "Inspect one exception-time dump with matching module versions and identify the crashing RPC call/thread and ownership chain.",
+        "Reproduce the identified operation on a controlled same-build machine, keeping the already-cleared extensions/dock controls fixed.",
+        "Correct the confirmed lifetime/cancellation/error boundary and coordinate with existing activation changes rather than suppressing arbitrary resource errors."
+      ],
+      "verification": [
+        "CmdPal survives repeated cold starts beyond the prior 45-second window and responds to its hotkey.",
+        "Single-instance redirects, timeout recovery and ordinary extension/resource failures do not terminate the owning process."
+      ],
+      "confidence": {
+        "score": 31,
+        "level": "red",
+        "rationale": "The recurring signature and control matrix establish a serious crash, but no dump or native stack connects it to a specific source branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CmdPal repeatedly crashes in RPCRT4.dll around 40 seconds after launch despite extension/dock/reset controls.",
+    "known_information": [
+      "The report supplies RPCRT4.dll 0xc0020043, fault offset, multiple WER report IDs, repeatable 35–45-second startup timing, and a diagnostic ZIP.",
+      "The author already removed third-party extensions, disabled Dock, reset LocalState, verified non-elevation/GPO, and compared 0.100.2 with 0.101.2362. None eliminated the crash.",
+      "The archive's CmdPal log has startup plus Click to Do resource lookup errors, then no managed crash stack. An earlier run reports a 32-second activation redirect timeout."
+    ],
+    "inferences": [],
+    "analysis": "The native RPC fault needs the failing exception/thread stack; Click to Do resource warnings and a similarly timed redirect timeout are not enough to assign causality. Do not ask for another reset, extension purge, exact WER code, or the already-supplied diagnostic ZIP. Obtain one exception-time dump via a private diagnostic route, then choose the responsible activation/RPC boundary.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs: RedirectActivationTo has a 32-second cancellation timeout and catches/logs cancellation and ordinary exceptions; this path is relevant context but does not prove the native RPCRT4 fault. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs",
+      "Downloaded the supplied report and inspected current CmdPal startup excerpts and its application event evidence. Those do not contain a native exception stack sufficient to tie the fault to resource loading.",
+      "Reviewed current Program.cs history and existing activation work; no retrieved issue-reference PR proves coverage of this signature. Product startup was not executed here.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "One exception-time full user-mode dump for the supplied RPCRT4.dll crash",
+        "why_needed": "Identify the actual crashing RPC call/thread instead of treating neighboring resource warnings or elapsed time as causality.",
+        "how_to_collect": "Use per-executable WER LocalDumps for Microsoft.CmdPal.UI.exe with DumpType 2, reproduce once, share through a maintainer-approved private channel, then remove the per-app dump configuration.",
+        "evidence_type": "crash_dump"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Capture one exception-time CmdPal crash dump privately",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "The exact RPC signature, WER IDs, timing and extensive controls are already useful—please do not repeat the reset, dock, extension, elevation or GPO tests, or re-upload the same ZIP. The missing evidence is the exception-time native thread stack. Could you capture one Microsoft.CmdPal.UI.exe crash with Windows Error Reporting LocalDumps configured for that executable (full user-mode dump / DumpType 2), then reproduce the existing 35–45-second crash once? Collection instructions: https://learn.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps . Dumps may contain private data: arrange a maintainer-approved private upload instead of attaching one publicly, and remove the per-app dump configuration afterward. That should distinguish activation redirection from an unrelated RPC client failure."
+      },
+      "id": "issue-51456-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51456-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0
+}

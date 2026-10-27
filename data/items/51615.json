@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 5,
+  "number": 51615,
+  "kind": "issue",
+  "title": "Cant Uninstall Application - Doesn't appear in Apps or Store. Manual Uninstall Fails",
+  "url": "https://github.com/microsoft/PowerToys/issues/51615",
+  "generated_at": "2026-10-27T15:53:57.628403+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.628403+00:00",
+  "source_updated_at": "2026-10-27T13:05:06Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "This is a potentially actionable registration/servicing fault, not evidence that deleting installation folders or registry keys is safe. The Start-menu route is not an uninstaller failure by itself. Identify the owning bundle/product and exact supported manual-uninstall error before choosing registration repair, scope correction, or installer recovery.",
+    "evidence": [
+      "The author reports 0.102.2933 via auto-update; a shortcut's Uninstall action opens Windows Installed apps, where PowerToys is missing.",
+      "The title says manual uninstall fails, but the body gives no manual command, installer error, scope, or diagnostic attachment.",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupVNext/Product.wxs: The package has explicit scope, major-upgrade handling, ARPINSTALLLOCATION, and bundle install-location custom-action data. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupVNext/Product.wxs",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp: Installer custom actions service the registered bundle/package; this source alone cannot establish what registration remains on the reporter's computer. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+      "Refreshed the complete current body/timeline and searched PR references. No attachment, error code, or covering fix link exists in the retrieved report; no local registry/package changes were attempted."
+    ],
+    "recommended_action": "Identify the missing uninstall registration and exact manual failure",
+    "evaluated_at": "2026-10-27T15:53:57.628403+00:00",
+    "source_updated_at": "2026-10-27T13:05:06Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The missing entry is described, but manual command/error, scope and registration evidence are absent; several materially different servicing paths remain possible."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover uninstallability using the actual owning installer registration",
+      "root_cause": "Hypothesis only: an upgrade leaves bundle/product registration absent or mismatched for the current user/scope; no registry or installer evidence yet selects that over an unsupported manual command.",
+      "plan": [
+        "Match the existing executable/install scope to the bundle/product registration and inspect the supplied exact uninstall failure.",
+        "Reproduce the relevant auto-update transition in an isolated matching-scope installation; distinguish missing ARP entry from a failed registered uninstall.",
+        "Use the supported matching-installer recovery path and fix the attributed registration transition; do not advise blind ProductCode, cache, or registry deletion."
+      ],
+      "verification": [
+        "Upgraded per-user and machine-wide installs appear in Installed apps and uninstall through the supported owning installer.",
+        "Recovery preserves user data and unrelated module/package registrations until explicit uninstall."
+      ],
+      "confidence": {
+        "score": 24,
+        "level": "red",
+        "rationale": "The missing entry is described, but manual command/error, scope and registration evidence are absent; several materially different servicing paths remain possible."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys is absent from Installed apps after auto-update, but the stated manual-uninstall failure is not described.",
+    "known_information": [
+      "The author reports 0.102.2933 via auto-update; a shortcut's Uninstall action opens Windows Installed apps, where PowerToys is missing.",
+      "The title says manual uninstall fails, but the body gives no manual command, installer error, scope, or diagnostic attachment."
+    ],
+    "inferences": [],
+    "analysis": "This is a potentially actionable registration/servicing fault, not evidence that deleting installation folders or registry keys is safe. The Start-menu route is not an uninstaller failure by itself. Identify the owning bundle/product and exact supported manual-uninstall error before choosing registration repair, scope correction, or installer recovery.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupVNext/Product.wxs: The package has explicit scope, major-upgrade handling, ARPINSTALLLOCATION, and bundle install-location custom-action data. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupVNext/Product.wxs",
+      "Source inspected at main 9227a8497750: installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp: Installer custom actions service the registered bundle/package; this source alone cannot establish what registration remains on the reporter's computer. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+      "Refreshed the complete current body/timeline and searched PR references. No attachment, error code, or covering fix link exists in the retrieved report; no local registry/package changes were attempted.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Exact manual uninstall action/error and known original install scope",
+        "why_needed": "Choose the owning bundle/product recovery path instead of speculative destructive cleanup.",
+        "how_to_collect": "Copy the attempted command/action and full error code, redacting personal paths; state per-user/all-users if known.",
+        "evidence_type": "installer_log"
+      },
+      {
+        "information": "Existing installation's diagnostic report",
+        "why_needed": "Correlate installed version and remaining registration with the reported update.",
+        "how_to_collect": "Comment /bugreport; if Settings/tray is unavailable, run BugReportTool.exe from the installation directory.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Identify the missing uninstall registration and exact manual failure",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks—the Installed apps entry being absent after 0.102.2933 is clear. The title also mentions a manual-uninstall failure, which the body does not show. Could you please:\n- Paste the exact manual uninstall command or installer action you tried and its complete error/code (redact personal folder names); also say whether the original install was for your user or all users, if known. Please do not delete folders or registry keys as a workaround.\n- Comment /bugreport and attach the resulting report so the installation/registration context can be matched to that failure. If Settings or the tray cannot be opened, run BugReportTool.exe from the existing PowerToys installation directory."
+      },
+      "id": "issue-51615-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51615-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

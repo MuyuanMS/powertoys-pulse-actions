@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 5,
+  "number": 51510,
+  "kind": "issue",
+  "title": "Bug in Encryption key - Not Function as Administrator",
+  "url": "https://github.com/microsoft/PowerToys/issues/51510",
+  "generated_at": "2026-10-27T15:53:57.660454+00:00",
+  "evaluated_at": "2026-10-27T15:53:57.660454+00:00",
+  "source_updated_at": "2026-10-23T12:24:46Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Elevation alone does not identify a key-encryption defect. Current service-mode pairing intentionally has a different identity/storage contract, and an incompatible mode requires explicit re-pairing guidance. First identify the actual failing key operation; do not send a competing legacy-key-edit fix when #51377 already owns that specific path.",
+    "evidence": [
+      "The report is for 0.102.2933 after auto-update and says only that the security key no longer functions in administrator mode.",
+      "There is no error text, service-mode setting, distinction between display/generate/edit/connect, or attached diagnostic report.",
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Service-mode pairing management requires elevation and uses a verified settings endpoint; ordinary administrator mode is not itself the service-mode setting. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: The codec is created for the current identity; incompatible stored-mode state is distinguishable from ordinary empty configuration. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Read merged #51305's service-mode key/identity contract and open #51377's legacy UpdateKey persistence scope. Neither can be declared a fix for an unspecified administrator-mode symptom. No attachment/discussion is present."
+    ],
+    "recommended_action": "Identify the failing administrator-mode MWB key action",
+    "evaluated_at": "2026-10-27T15:53:57.660454+00:00",
+    "source_updated_at": "2026-10-23T12:24:46Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The single-line symptom lacks even the failing operation, so an encryption diagnosis or concrete implementation would be speculative."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Attribute the administrator/service-mode key failure before changing storage",
+      "root_cause": "Hypothesis only: a mode/identity mismatch or a rejected pairing operation explains the elevation-specific symptom; a legacy typed-key persistence problem remains a separately owned alternative.",
+      "plan": [
+        "Map the described action to Settings or original MWB UI, mode, and first failing event.",
+        "If it is the original UI's typed-key persistence, validate/cooperate with #51377 rather than duplicate it.",
+        "Otherwise reproduce the exact supported identity/mode operation and improve only its confirmed failure/recovery boundary while preserving encrypted service-mode storage and peer verification."
+      ],
+      "verification": [
+        "Display/copy/generate/connect operate in supported contexts, and a mode switch gives correct recovery guidance.",
+        "A key edit persists across reload without changing the configured key or weakening identity validation."
+      ],
+      "confidence": {
+        "score": 22,
+        "level": "red",
+        "rationale": "The single-line symptom lacks even the failing operation, so an encryption diagnosis or concrete implementation would be speculative."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The MWB report identifies administrator mode but not which security-key operation stopped working.",
+    "known_information": [
+      "The report is for 0.102.2933 after auto-update and says only that the security key no longer functions in administrator mode.",
+      "There is no error text, service-mode setting, distinction between display/generate/edit/connect, or attached diagnostic report."
+    ],
+    "inferences": [],
+    "analysis": "Elevation alone does not identify a key-encryption defect. Current service-mode pairing intentionally has a different identity/storage contract, and an incompatible mode requires explicit re-pairing guidance. First identify the actual failing key operation; do not send a competing legacy-key-edit fix when #51377 already owns that specific path.",
+    "initial_investigation": [
+      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Service-mode pairing management requires elevation and uses a verified settings endpoint; ordinary administrator mode is not itself the service-mode setting. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: The codec is created for the current identity; incompatible stored-mode state is distinguishable from ordinary empty configuration. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Read merged #51305's service-mode key/identity contract and open #51377's legacy UpdateKey persistence scope. Neither can be declared a fix for an unspecified administrator-mode symptom. No attachment/discussion is present.",
+      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
+      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Failed key operation, exact non-secret error, UI surface, and Use service state",
+        "why_needed": "Select among intentionally restricted management, local IPC/mode failure, and the already-owned legacy edit path.",
+        "how_to_collect": "Describe one failing display/copy/generate/edit/connect action, quote its non-secret error, name Settings/original UI and service on/off.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "One failing-operation diagnostic report",
+        "why_needed": "Connect the UI description to the first worker/Settings failure before recommending storage changes.",
+        "how_to_collect": "Comment /bugreport after that operation; run BugReportTool.exe from the install directory if Settings/tray is unavailable.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Identify the failing administrator-mode MWB key action",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "The administrator-mode detail on 0.102.2933 is useful, but it does not yet identify a failing key operation. Could you please:\n- Say whether the failure is displaying, copying, generating, editing, or connecting with the key; quote the exact error (without the key), and say whether Use service is enabled. If it is specifically editing the key in the original MWB UI, please name that UI.\n- After that one failing operation, comment /bugreport and attach the report. If Settings or the tray is unavailable, run BugReportTool.exe from the PowerToys install directory. No need to publish the security key or reset the configuration first."
+      },
+      "id": "issue-51510-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
+      "id": "issue-51510-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0
+}
