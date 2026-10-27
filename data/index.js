@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-27T19:02:50.6373601+08:00",
+  "generated_at": "2026-10-27T23:56:50.5910684+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 201,
-    "open_issues": 11007,
-    "community": 10133,
-    "artifacts": 1294
+    "open_issues": 11014,
+    "community": 10140,
+    "artifacts": 1317
   },
   "impact": {
-    "as_of": "2026-10-27T19:02:50.6373601+08:00",
+    "as_of": "2026-10-27T23:56:50.5910684+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -281,6 +281,7 @@ window.BOARD_INDEX = {
     16499,
     34014,
     31762,
+    51448,
     51445,
     16395,
     51426,
@@ -299,11 +300,15 @@ window.BOARD_INDEX = {
     51411,
     51409,
     51408,
+    51406,
     51400,
     51391,
     51388,
+    51387,
+    51385,
     50138,
     51368,
+    51366,
     51364,
     33843,
     51352,
@@ -314,28 +319,43 @@ window.BOARD_INDEX = {
     51311,
     51303,
     51294,
+    51293,
     33769,
     33758,
     22486,
     16231,
     51237,
     51187,
+    51175,
     51160,
+    51154,
+    51140,
     51132,
     51129,
+    51120,
     51113,
     51095,
     51089,
+    51086,
     51083,
     51082,
+    51071,
     33548,
+    51058,
     16018,
+    51054,
+    51053,
+    51032,
     15990,
     33508,
     33499,
     51016,
     51015,
     51014,
+    51004,
+    50986,
+    50978,
+    50966,
     50959,
     50949,
     50946,
@@ -351,6 +371,7 @@ window.BOARD_INDEX = {
     33346,
     50858,
     50855,
+    50848,
     50845,
     50841,
     50828,
@@ -425,6 +446,7 @@ window.BOARD_INDEX = {
     50438,
     24882,
     49785,
+    50404,
     32857,
     50371,
     50368,
@@ -456,7 +478,6 @@ window.BOARD_INDEX = {
     50243,
     50242,
     50241,
-    50240,
     50239,
     50237,
     50235,
@@ -1086,6 +1107,7 @@ window.BOARD_INDEX = {
     48692,
     21877,
     8969,
+    51611,
     43887,
     49549,
     26296,
@@ -1324,6 +1346,7 @@ window.BOARD_INDEX = {
     49139,
     15476,
     36945,
+    50340,
     49543,
     48107,
     48421,
@@ -1391,84 +1414,82 @@ window.BOARD_INDEX = {
     16,
     10,
     8,
-    4,
-    51610,
-    51609,
-    51430,
-    51607,
-    50424,
-    51606,
-    51601,
-    51502,
-    51580,
-    51578,
-    51572,
-    51561,
-    51553,
-    51576,
-    51573,
-    51570,
-    51498,
-    51545,
-    51559,
-    51551,
-    51448,
-    51542,
-    51534,
-    51054,
-    51517,
-    50404,
-    51522,
-    51506,
-    51337,
-    51516,
-    50966,
-    50978,
-    50986,
-    50989,
-    51004,
-    51032,
-    51053,
-    51058,
-    51071,
-    51086,
-    51140,
-    51154,
-    51159,
-    51175,
-    51293,
-    51316,
-    51366,
-    51385,
-    51387,
-    51406,
-    50839,
-    50848,
-    50340,
-    51488,
-    51491,
-    51120,
-    51611,
-    51567,
-    51557,
-    51544,
-    51540,
-    51526,
-    51494,
-    51518,
-    51497,
-    51451,
-    51478,
-    51467,
-    51473,
-    51500,
-    51503,
-    51504,
-    51508,
-    51428,
-    51514
+    4
   ],
   "items": [
+    {
+      "id": "pr-51621",
+      "kind": "pr",
+      "number": 51621,
+      "url": "https://github.com/microsoft/PowerToys/pull/51621",
+      "title": "meta: update the other modules for CA1860",
+      "author": "zadjii-msft",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-PowerToys Run",
+        "Product-FancyZones",
+        "Product-Environment Variables",
+        "Product-Workspaces",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T15:39:35Z",
+      "updated_at": "2026-10-27T15:40:00Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51619",
+      "kind": "pr",
+      "number": 51619,
+      "url": "https://github.com/microsoft/PowerToys/pull/51619",
+      "title": "cmdpal: fix CA1860",
+      "author": "zadjii-msft",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T15:16:52Z",
+      "updated_at": "2026-10-27T15:17:15Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "UNKNOWN"
+    },
     {
       "id": "pr-51605",
       "kind": "pr",
@@ -1502,7 +1523,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51604",
@@ -1534,7 +1555,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51602",
@@ -1703,56 +1724,19 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Command Palette",
-        "Ready for review"
+        "Needs-Author-Feedback",
+        "Product-Command Palette"
       ],
       "assignees": [
         "jiripolasek"
       ],
       "created_at": "2026-10-26T02:09:30Z",
-      "updated_at": "2026-10-26T02:16:16Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": null,
-      "ci_state": null,
-      "merge_state": "CLEAN"
-    },
-    {
-      "id": "pr-51575",
-      "kind": "pr",
-      "number": 51575,
-      "url": "https://github.com/microsoft/PowerToys/pull/51575",
-      "title": "CmdPal: Remove the live host log mesages view",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-10-26T00:30:58Z",
-      "updated_at": "2026-10-26T01:37:10Z",
-      "comments": 0,
+      "updated_at": "2026-10-27T15:35:02Z",
+      "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51569",
@@ -1777,57 +1761,20 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Command Palette",
-        "CmdPal - Dock",
-        "Ready for review"
+        "CmdPal - Dock"
       ],
       "assignees": [
         "jiripolasek"
       ],
       "created_at": "2026-10-25T18:24:33Z",
-      "updated_at": "2026-10-25T18:25:07Z",
-      "comments": 0,
-      "priority": null,
-      "review_decision": null,
-      "ci_state": null,
-      "merge_state": "CLEAN"
-    },
-    {
-      "id": "pr-51556",
-      "kind": "pr",
-      "number": 51556,
-      "url": "https://github.com/microsoft/PowerToys/pull/51556",
-      "title": "CmdPal: Bringing dock to the front should not reveal the auto-hidden dock",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-10-25T11:15:52Z",
-      "updated_at": "2026-10-25T11:18:53Z",
+      "updated_at": "2026-10-27T15:28:21Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51555",
@@ -1931,7 +1878,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51537",
@@ -1966,7 +1913,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51531",
@@ -2000,7 +1947,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51525",
@@ -2176,7 +2123,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51495",
@@ -2363,7 +2310,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51466",
@@ -2599,8 +2546,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-19T16:49:23Z",
-      "updated_at": "2026-10-23T15:35:32Z",
-      "comments": 5,
+      "updated_at": "2026-10-27T11:15:01Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2865,7 +2812,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51370",
@@ -3142,10 +3089,10 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T06:52:15Z",
-      "updated_at": "2026-10-27T05:54:28Z",
+      "updated_at": "2026-10-27T15:41:36Z",
       "comments": 2,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED"
     },
@@ -3595,8 +3542,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "label": "Post general culture-formatting comment",
-        "type": "post_review"
+        "type": "post_review",
+        "label": "Post general culture-formatting comment"
       },
       "labels": [
         "Product-Command Palette",
@@ -3939,8 +3886,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "label": "Post selected inline suggestion",
-        "type": "post_review"
+        "type": "post_review",
+        "label": "Post selected inline suggestion"
       },
       "labels": [
         "Product-Command Palette",
@@ -4099,7 +4046,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51195",
@@ -4461,7 +4408,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51127",
@@ -4685,7 +4632,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51097",
@@ -4720,7 +4667,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51080",
@@ -4793,7 +4740,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51051",
@@ -6861,7 +6808,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50253",
@@ -7691,7 +7638,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49625",
@@ -24142,6 +24089,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51618",
+      "kind": "issue",
+      "number": 51618,
+      "url": "https://github.com/microsoft/PowerToys/issues/51618",
+      "title": "Image Resizer fails with COMException",
+      "author": "ChrisJohnTaylor",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T14:39:20Z",
+      "updated_at": "2026-10-27T14:39:20Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-34098",
       "kind": "issue",
       "number": 34098,
@@ -24172,6 +24151,165 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2024-07-31T23:59:52Z",
       "updated_at": "2024-10-10T17:45:22Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51616",
+      "kind": "issue",
+      "number": 51616,
+      "url": "https://github.com/microsoft/PowerToys/issues/51616",
+      "title": "please functionale any key board",
+      "author": "Lamesegen",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T13:29:10Z",
+      "updated_at": "2026-10-27T14:33:13Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51615",
+      "kind": "issue",
+      "number": 51615,
+      "url": "https://github.com/microsoft/PowerToys/issues/51615",
+      "title": "Cant Uninstall Application - Doesn't appear in Apps or Store. Manual Uninstall Fails",
+      "author": "kstrickerconsitora",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T13:05:06Z",
+      "updated_at": "2026-10-27T13:05:06Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51614",
+      "kind": "issue",
+      "number": 51614,
+      "url": "https://github.com/microsoft/PowerToys/issues/51614",
+      "title": "Clicking on Shortcut Doesnt open tool",
+      "author": "kstrickerconsitora",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T12:37:36Z",
+      "updated_at": "2026-10-27T12:37:36Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51613",
+      "kind": "issue",
+      "number": 51613,
+      "url": "https://github.com/microsoft/PowerToys/issues/51613",
+      "title": "Mouse Button Lock secondary button cancel action",
+      "author": "3DDinosaur",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Mouse Button Lock"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T12:17:24Z",
+      "updated_at": "2026-10-27T12:22:52Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51612",
+      "kind": "issue",
+      "number": 51612,
+      "url": "https://github.com/microsoft/PowerToys/issues/51612",
+      "title": "PowerToys Run issue with calulator",
+      "author": "alexfbeltrao",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-27T11:34:02Z",
+      "updated_at": "2026-10-27T11:34:02Z",
       "comments": 0,
       "priority": null
     },
@@ -24224,24 +24362,19 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Reproduce PowerToys Run behavior",
-        "type": "reproduce"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T10:17:11Z",
       "updated_at": "2026-10-27T10:17:11Z",
       "comments": 0,
@@ -24261,11 +24394,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -24273,9 +24406,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T08:46:14Z",
       "updated_at": "2026-10-27T08:46:14Z",
       "comments": 0,
@@ -24326,26 +24457,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-Peek"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T07:57:10Z",
       "updated_at": "2026-10-27T08:02:57Z",
       "comments": 1,
@@ -24365,11 +24491,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -24377,12 +24503,10 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T07:37:51Z",
-      "updated_at": "2026-10-27T07:37:51Z",
-      "comments": 0,
+      "updated_at": "2026-10-27T11:30:20Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -24433,11 +24557,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -24445,9 +24569,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T02:07:53Z",
       "updated_at": "2026-10-27T02:07:53Z",
       "comments": 0,
@@ -24964,25 +25086,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Utilities"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-26T05:55:32Z",
       "updated_at": "2026-10-26T06:01:07Z",
       "comments": 1,
@@ -25035,24 +25152,19 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Command Palette"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
+      "assignees": [],
       "created_at": "2026-10-26T02:08:24Z",
       "updated_at": "2026-10-26T02:08:24Z",
       "comments": 0,
@@ -25105,25 +25217,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": true,
-      "waiting_since": "2026-10-26T00:47:26Z",
-      "has_artifact": true,
-      "agent_status": null,
+      "waiting_since": "10/26/2026 00:47:26",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Color Picker"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-26T00:42:41Z",
       "updated_at": "2026-10-26T00:54:39Z",
       "comments": 1,
@@ -25210,24 +25317,19 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T22:54:23Z",
       "updated_at": "2026-10-25T23:00:01Z",
       "comments": 0,
@@ -25247,11 +25349,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -25260,9 +25362,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal - Performance monitor"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T21:33:52Z",
       "updated_at": "2026-10-26T01:38:34Z",
       "comments": 5,
@@ -25314,25 +25414,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Settings",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T18:38:43Z",
       "updated_at": "2026-10-25T18:46:39Z",
       "comments": 1,
@@ -25418,27 +25513,22 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T17:15:15Z",
-      "updated_at": "2026-10-25T17:15:15Z",
-      "comments": 0,
+      "updated_at": "2026-10-27T14:07:57Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -25615,25 +25705,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Reproduce Command Palette hotkeys behavior",
-        "type": "reproduce"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Command Palette",
         "CmdPal-Keyboard"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T14:27:41Z",
       "updated_at": "2026-10-26T01:34:27Z",
       "comments": 1,
@@ -25687,11 +25772,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -25700,9 +25785,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal - Dock"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T13:40:42Z",
       "updated_at": "2026-10-25T13:40:42Z",
       "comments": 0,
@@ -25753,24 +25836,19 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T12:44:57Z",
       "updated_at": "2026-10-25T12:44:57Z",
       "comments": 0,
@@ -25849,18 +25927,18 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51553",
       "title": "[CmdPal Dock] Auto-hidden dock reveals whenever the desktop gets focus (e.g. a click on the desktop)",
       "author": "ArneBouten",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -25869,11 +25947,9 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal - Dock"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T03:21:27Z",
-      "updated_at": "2026-10-26T00:59:38Z",
+      "updated_at": "2026-10-27T15:27:56Z",
       "comments": 1,
       "priority": null
     },
@@ -25924,11 +26000,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -25937,9 +26013,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal - Search"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T01:44:52Z",
       "updated_at": "2026-10-25T13:37:13Z",
       "comments": 1,
@@ -26088,25 +26162,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-24T18:48:08Z",
       "updated_at": "2026-10-25T15:29:46Z",
       "comments": 2,
@@ -26126,26 +26195,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-24T18:12:55Z",
       "updated_at": "2026-10-24T18:17:56Z",
       "comments": 1,
@@ -26197,11 +26261,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -26210,9 +26274,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-24T15:53:15Z",
       "updated_at": "2026-10-24T18:43:12Z",
       "comments": 0,
@@ -26266,24 +26328,19 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-24T13:51:12Z",
       "updated_at": "2026-10-24T13:51:12Z",
       "comments": 0,
@@ -26436,25 +26493,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Workspaces"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-24T09:24:45Z",
       "updated_at": "2026-10-24T09:29:29Z",
       "comments": 1,
@@ -26771,26 +26823,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-Environment Variables"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T15:08:43Z",
       "updated_at": "2026-10-23T15:14:26Z",
       "comments": 1,
@@ -26909,11 +26956,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": true,
-      "waiting_since": "2026-10-23T14:51:51Z",
-      "has_artifact": true,
-      "agent_status": null,
+      "waiting_since": "10/23/2026 14:51:51",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -26923,9 +26970,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T14:45:52Z",
       "updated_at": "2026-10-23T14:51:53Z",
       "comments": 1,
@@ -26945,11 +26990,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -26958,9 +27003,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal - Settings"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T12:22:26Z",
       "updated_at": "2026-10-23T17:49:04Z",
       "comments": 1,
@@ -26980,11 +27023,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -26993,9 +27036,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T12:03:36Z",
       "updated_at": "2026-10-23T12:32:41Z",
       "comments": 1,
@@ -27050,25 +27091,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-File Explorer",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T11:13:19Z",
       "updated_at": "2026-10-23T12:24:43Z",
       "comments": 0,
@@ -27154,11 +27190,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": true,
-      "waiting_since": "2026-10-23T04:06:26Z",
-      "has_artifact": true,
-      "agent_status": null,
+      "waiting_since": "10/23/2026 04:06:26",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27167,9 +27203,7 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T04:01:37Z",
       "updated_at": "2026-10-23T04:07:26Z",
       "comments": 2,
@@ -27253,25 +27287,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T22:05:56Z",
       "updated_at": "2026-10-22T22:10:36Z",
       "comments": 0,
@@ -27291,25 +27320,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T21:57:30Z",
       "updated_at": "2026-10-22T21:57:30Z",
       "comments": 0,
@@ -27329,11 +27353,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27343,9 +27367,7 @@ window.BOARD_INDEX = {
         "Needs-Team-Response",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T21:51:26Z",
       "updated_at": "2026-10-26T09:20:59Z",
       "comments": 3,
@@ -27396,11 +27418,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": true,
-      "waiting_since": "2026-10-22T21:51:25Z",
-      "has_artifact": true,
-      "agent_status": null,
+      "waiting_since": "10/22/2026 21:51:25",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27410,9 +27432,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T21:44:49Z",
       "updated_at": "2026-10-22T21:51:27Z",
       "comments": 1,
@@ -27467,11 +27487,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27480,9 +27500,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T18:28:23Z",
       "updated_at": "2026-10-25T15:42:02Z",
       "comments": 2,
@@ -27502,25 +27520,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce Quick Accent arrow-navigation crash behavior"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Quick Accent"
       ],
-      "assignees": [
-        "moooyo"
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T18:01:49Z",
       "updated_at": "2026-10-23T12:36:23Z",
       "comments": 2,
@@ -27604,25 +27617,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T16:26:51Z",
       "updated_at": "2026-10-23T18:22:03Z",
       "comments": 1,
@@ -27688,8 +27696,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T15:44:04Z",
-      "updated_at": "2026-10-27T10:22:44Z",
-      "comments": 63,
+      "updated_at": "2026-10-27T15:32:36Z",
+      "comments": 70,
       "priority": null
     },
     {
@@ -27706,11 +27714,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27719,9 +27727,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T14:47:05Z",
       "updated_at": "2026-10-23T09:34:18Z",
       "comments": 3,
@@ -27808,26 +27814,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette",
         "CmdPal - Search"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T13:35:34Z",
       "updated_at": "2026-10-22T14:48:51Z",
       "comments": 2,
@@ -28106,25 +28107,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Color Picker"
       ],
-      "assignees": [
-        "niels9001"
-      ],
+      "assignees": [],
       "created_at": "2026-10-22T02:10:34Z",
       "updated_at": "2026-10-22T05:30:17Z",
       "comments": 0,
@@ -28244,26 +28240,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Always On Top",
         "Needs-Triage",
         "Needs-Team-Response"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-21T21:13:46Z",
       "updated_at": "2026-10-22T11:43:25Z",
       "comments": 2,
@@ -28411,26 +28402,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Settings",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        "niels9001"
-      ],
+      "assignees": [],
       "created_at": "2026-10-21T17:28:56Z",
       "updated_at": "2026-10-22T05:31:38Z",
       "comments": 1,
@@ -28906,25 +28892,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-21T07:31:46Z",
       "updated_at": "2026-10-23T12:25:52Z",
       "comments": 0,
@@ -29013,25 +28994,23 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-21T06:10:00Z",
       "updated_at": "2026-10-25T01:03:52Z",
       "comments": 3,
@@ -29500,17 +29479,14 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -29518,9 +29494,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal-Keyboard"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-20T08:33:34Z",
       "updated_at": "2026-10-27T08:18:55Z",
       "comments": 5,
@@ -29573,26 +29547,21 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Needs-Team-Response",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-20T08:10:05Z",
       "updated_at": "2026-10-23T06:04:54Z",
       "comments": 3,
@@ -30373,17 +30342,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-19T18:34:48Z",
       "updated_at": "2026-10-23T12:25:58Z",
       "comments": 0,
@@ -30872,7 +30839,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -30880,17 +30847,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reproduce Power Display cold-login timeout",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Reproduce Power Display cold-login timeout"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-PowerDisplay"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-18T08:22:54Z",
       "updated_at": "2026-10-23T12:26:08Z",
       "comments": 0,
@@ -30943,7 +30908,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -30951,17 +30916,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-18T07:09:53Z",
       "updated_at": "2026-10-23T12:26:11Z",
       "comments": 0,
@@ -31388,17 +31351,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-16T14:38:37Z",
       "updated_at": "2026-10-23T12:26:17Z",
       "comments": 0,
@@ -31982,11 +31943,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -31995,9 +31956,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-15T15:28:02Z",
       "updated_at": "2026-10-23T12:33:37Z",
       "comments": 7,
@@ -32616,17 +32575,14 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Reproduce Explorer context menus behavior",
-        "type": "reproduce"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-PowerRename",
@@ -32634,9 +32590,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-File Locksmith"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-15T06:17:16Z",
       "updated_at": "2026-10-23T12:26:30Z",
       "comments": 2,
@@ -33312,7 +33266,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -33320,17 +33274,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Product-PowerRename",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-14T06:15:38Z",
       "updated_at": "2026-10-23T12:26:42Z",
       "comments": 0,
@@ -35815,8 +35767,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -35824,9 +35776,7 @@ window.BOARD_INDEX = {
         "Product-Mouse Without Borders",
         "Product-Mouse Highlighter"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-10T18:01:30Z",
       "updated_at": "2026-10-23T12:27:04Z",
       "comments": 1,
@@ -36295,11 +36245,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -36308,9 +36258,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-09T19:59:08Z",
       "updated_at": "2026-10-23T12:27:16Z",
       "comments": 2,
@@ -36470,17 +36418,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Advanced Paste"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-09T15:02:36Z",
       "updated_at": "2026-10-23T12:27:19Z",
       "comments": 0,
@@ -36795,17 +36741,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-09T09:01:45Z",
       "updated_at": "2026-10-23T12:27:26Z",
       "comments": 0,
@@ -37424,7 +37368,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "triage",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -37432,17 +37376,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-08T09:46:57Z",
       "updated_at": "2026-10-23T10:01:37Z",
       "comments": 4,
@@ -38149,7 +38091,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "triage",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -38157,8 +38099,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Link Personal.xlsb symptom to #29580",
-        "type": "post_comment"
+        "type": "post_comment",
+        "label": "Link Personal.xlsb symptom to #29580"
       },
       "labels": [
         "Issue-Bug",
@@ -38166,9 +38108,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Peek"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-07T17:35:32Z",
       "updated_at": "2026-10-23T12:27:39Z",
       "comments": 0,
@@ -38526,7 +38466,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "triage",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -38534,17 +38474,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-07T06:37:56Z",
       "updated_at": "2026-10-23T12:27:43Z",
       "comments": 0,
@@ -38808,17 +38746,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-07T01:46:48Z",
       "updated_at": "2026-10-23T12:27:49Z",
       "comments": 0,
@@ -38938,11 +38874,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -38951,9 +38887,7 @@ window.BOARD_INDEX = {
         "Product-FancyZones",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-06T17:29:51Z",
       "updated_at": "2026-10-23T23:06:17Z",
       "comments": 3,
@@ -38981,17 +38915,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Advanced Paste"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-06T15:42:10Z",
       "updated_at": "2026-10-23T12:27:55Z",
       "comments": 0,
@@ -39520,9 +39452,7 @@ window.BOARD_INDEX = {
         "Product-FancyZones",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-05T18:48:19Z",
       "updated_at": "2026-10-23T12:28:01Z",
       "comments": 0,
@@ -40307,9 +40237,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-05T10:24:27Z",
       "updated_at": "2026-10-23T12:28:07Z",
       "comments": 3,
@@ -40660,11 +40588,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -40673,9 +40601,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-PowerDisplay"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-04T10:09:26Z",
       "updated_at": "2026-10-23T12:28:14Z",
       "comments": 3,
@@ -40735,17 +40661,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Product-Shortcut Guide",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-04T07:30:24Z",
       "updated_at": "2026-10-23T12:28:17Z",
       "comments": 0,
@@ -40974,17 +40898,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-03T18:26:42Z",
       "updated_at": "2026-10-23T12:28:20Z",
       "comments": 0,
@@ -41306,17 +41228,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-03T03:29:32Z",
       "updated_at": "2026-10-23T12:28:27Z",
       "comments": 0,
@@ -44293,8 +44213,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -44302,9 +44222,7 @@ window.BOARD_INDEX = {
         "Needs-Team-Response",
         "Product-Mouse Utilities"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-28T17:57:29Z",
       "updated_at": "2026-10-21T13:51:30Z",
       "comments": 5,
@@ -44593,11 +44511,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -44605,9 +44523,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-28T09:20:54Z",
       "updated_at": "2026-10-21T11:31:55Z",
       "comments": 4,
@@ -46715,11 +46631,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -46729,9 +46645,7 @@ window.BOARD_INDEX = {
         "Product-Mouse Pointer Crosshairs",
         "Product-CursorHide"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T01:37:59Z",
       "updated_at": "2026-10-23T12:33:47Z",
       "comments": 1,
@@ -55761,11 +55675,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -55774,12 +55688,10 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Utilities"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-06T17:29:27Z",
-      "updated_at": "2026-10-27T07:40:03Z",
-      "comments": 6,
+      "updated_at": "2026-10-27T11:45:37Z",
+      "comments": 8,
       "priority": null
     },
     {
@@ -56322,11 +56234,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -56335,9 +56247,7 @@ window.BOARD_INDEX = {
         "Product-FancyZones",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-05T12:50:45Z",
       "updated_at": "2026-10-23T16:52:16Z",
       "comments": 7,
@@ -61277,14 +61187,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -61293,8 +61200,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-29T20:21:43Z",
-      "updated_at": "2026-09-01T22:26:14Z",
-      "comments": 4,
+      "updated_at": "2026-10-27T13:39:39Z",
+      "comments": 5,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -149544,8 +149451,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-04-16T19:52:20Z",
-      "updated_at": "2026-04-18T13:50:20Z",
-      "comments": 0,
+      "updated_at": "2026-10-27T14:33:15Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -193815,13 +193722,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-44876",
+      "id": "issue-51620",
       "kind": "issue",
-      "number": 44876,
-      "url": "https://github.com/microsoft/PowerToys/issues/44876",
-      "title": "PowerToysRun bug report",
-      "author": "DT-HYUNJUN",
-      "state": "closed",
+      "number": 51620,
+      "url": "https://github.com/microsoft/PowerToys/issues/51620",
+      "title": "Mouse Without Borders broken on .102 release",
+      "author": "DL-Ohio",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -193838,13 +193745,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-PowerToys Run"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-01-21T08:21:46Z",
-      "updated_at": "2026-08-05T17:34:39Z",
-      "comments": 2,
+      "created_at": "2026-10-27T15:26:12Z",
+      "updated_at": "2026-10-27T15:26:12Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -199540,12 +199446,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-27051",
+      "id": "issue-51617",
       "kind": "issue",
-      "number": 27051,
-      "url": "https://github.com/microsoft/PowerToys/issues/27051",
-      "title": "No further instruction regarding \"Results order tuning\" setting in PT Run",
-      "author": "Undeniablybad",
+      "number": 51617,
+      "url": "https://github.com/microsoft/PowerToys/issues/51617",
+      "title": "[Mouse without borders] - Auto apply",
+      "author": "buggsdummy",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -199562,13 +199468,11 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-PowerToys Run",
-        "Issue-Docs",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2023-06-26T16:50:34Z",
-      "updated_at": "2026-04-18T13:56:03Z",
+      "created_at": "2026-10-27T14:13:09Z",
+      "updated_at": "2026-10-27T14:13:09Z",
       "comments": 0,
       "priority": null
     },
@@ -211549,11 +211453,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -211565,9 +211469,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-27T10:18:06Z",
       "updated_at": "2026-10-27T10:58:37Z",
       "comments": 2,
@@ -212275,12 +212177,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-87",
+      "id": "issue-27051",
       "kind": "issue",
-      "number": 87,
-      "url": "https://github.com/microsoft/PowerToys/issues/87",
-      "title": "Configure windows borders size, scroll bars, ... in Windows",
-      "author": "smz",
+      "number": 27051,
+      "url": "https://github.com/microsoft/PowerToys/issues/27051",
+      "title": "No further instruction regarding \"Results order tuning\" setting in PT Run",
+      "author": "Undeniablybad",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -212293,18 +212195,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Idea-New PowerToy",
-        "Product-Tweak UI Design"
+        "Product-PowerToys Run",
+        "Issue-Docs",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2019-05-12T15:01:13Z",
-      "updated_at": "2026-04-18T14:05:37Z",
-      "comments": 4,
+      "created_at": "2023-06-26T16:50:34Z",
+      "updated_at": "2026-04-18T13:56:03Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -219559,39 +219461,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41817",
-      "kind": "issue",
-      "number": 41817,
-      "url": "https://github.com/microsoft/PowerToys/issues/41817",
-      "title": "powertoys settings window crashes on search",
-      "author": "mo1234123123",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Product-Settings",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2025-09-14T18:58:55Z",
-      "updated_at": "2026-04-18T14:06:22Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-8458",
       "kind": "issue",
       "number": 8458,
@@ -221349,6 +221218,39 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2022-03-28T13:19:45Z",
       "updated_at": "2025-08-25T12:32:58Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-24298",
+      "kind": "issue",
+      "number": 24298,
+      "url": "https://github.com/microsoft/PowerToys/issues/24298",
+      "title": "File Locksmith问题反馈",
+      "author": "AisinGioroKiIoi",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Priority-2",
+        "Product-File Locksmith"
+      ],
+      "assignees": [],
+      "created_at": "2023-02-24T04:30:26Z",
+      "updated_at": "2024-12-11T21:41:08Z",
       "comments": 2,
       "priority": null
     },
@@ -249383,12 +249285,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24298",
+      "id": "issue-41817",
       "kind": "issue",
-      "number": 24298,
-      "url": "https://github.com/microsoft/PowerToys/issues/24298",
-      "title": "File Locksmith问题反馈",
-      "author": "AisinGioroKiIoi",
+      "number": 41817,
+      "url": "https://github.com/microsoft/PowerToys/issues/41817",
+      "title": "powertoys settings window crashes on search",
+      "author": "mo1234123123",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -249406,13 +249308,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Priority-2",
-        "Product-File Locksmith"
+        "Product-Settings",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2023-02-24T04:30:26Z",
-      "updated_at": "2024-12-11T21:41:08Z",
-      "comments": 2,
+      "created_at": "2025-09-14T18:58:55Z",
+      "updated_at": "2026-04-18T14:06:22Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -270544,8 +270446,8 @@ window.BOARD_INDEX = {
         "masaru-iritani"
       ],
       "created_at": "2020-08-05T20:11:33Z",
-      "updated_at": "2026-10-11T16:49:57Z",
-      "comments": 25,
+      "updated_at": "2026-10-27T13:02:37Z",
+      "comments": 26,
       "priority": null
     },
     {
@@ -280146,12 +280048,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-9153",
+      "id": "issue-44876",
       "kind": "issue",
-      "number": 9153,
-      "url": "https://github.com/microsoft/PowerToys/issues/9153",
-      "title": "[KBM] Add logger",
-      "author": "enricogior",
+      "number": 44876,
+      "url": "https://github.com/microsoft/PowerToys/issues/44876",
+      "title": "PowerToysRun bug report",
+      "author": "DT-HYUNJUN",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -280164,21 +280066,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Area-Quality",
-        "Resolution-Fix Committed",
-        "Cost-Small",
-        "Product-Keyboard Manager"
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-PowerToys Run"
       ],
-      "assignees": [
-        "mykhailopylyp"
-      ],
-      "created_at": "2021-01-18T10:03:50Z",
-      "updated_at": "2026-10-11T16:26:31Z",
-      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-01-21T08:21:46Z",
+      "updated_at": "2026-08-05T17:34:39Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -293481,40 +293380,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-05-16T09:59:21Z",
       "updated_at": "2026-04-16T15:38:57Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-39495",
-      "kind": "issue",
-      "number": 39495,
-      "url": "https://github.com/microsoft/PowerToys/issues/39495",
-      "title": "CmdPal: After 0.91, CmdPal fails to open with \"Get an app to open this `x-cmdpal` link\"",
-      "author": "tttkkk1234",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Tracker",
-        "Product-Command Palette"
-      ],
-      "assignees": [],
-      "created_at": "2025-05-16T09:46:59Z",
-      "updated_at": "2026-04-30T11:24:34Z",
-      "comments": 17,
       "priority": null
     },
     {
@@ -327269,8 +327134,8 @@ window.BOARD_INDEX = {
         "vanzue"
       ],
       "created_at": "2025-02-25T20:21:12Z",
-      "updated_at": "2026-09-25T15:48:32Z",
-      "comments": 8,
+      "updated_at": "2026-10-27T12:49:15Z",
+      "comments": 9,
       "priority": null
     },
     {
@@ -333664,7 +333529,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51546",
       "title": "Command Palette: extension log messages are retained forever (unbounded `LogMessages`) — multi-GB memory growth with a chatty extension",
       "author": "JujuAxiom",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -333682,9 +333547,11 @@ window.BOARD_INDEX = {
       "labels": [
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-10-24T22:11:42Z",
-      "updated_at": "2026-10-25T18:27:29Z",
+      "updated_at": "2026-10-27T15:30:13Z",
       "comments": 1,
       "priority": null
     },
@@ -341358,7 +341225,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -341366,17 +341233,15 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Window Hopper"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-02T17:16:11Z",
       "updated_at": "2026-10-22T12:20:45Z",
       "comments": 2,
@@ -354405,6 +354270,42 @@ window.BOARD_INDEX = {
       "created_at": "2024-12-03T14:10:27Z",
       "updated_at": "2026-10-11T16:47:54Z",
       "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-9153",
+      "kind": "issue",
+      "number": 9153,
+      "url": "https://github.com/microsoft/PowerToys/issues/9153",
+      "title": "[KBM] Add logger",
+      "author": "enricogior",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Area-Quality",
+        "Resolution-Fix Committed",
+        "Cost-Small",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [
+        "mykhailopylyp"
+      ],
+      "created_at": "2021-01-18T10:03:50Z",
+      "updated_at": "2026-10-11T16:26:31Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -370780,25 +370681,20 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Area-Setup/Install",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-23T17:53:25Z",
       "updated_at": "2026-10-23T18:23:19Z",
       "comments": 1,
@@ -372885,6 +372781,39 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2019-06-26T08:56:39Z",
       "updated_at": "2022-01-03T20:29:59Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-87",
+      "kind": "issue",
+      "number": 87,
+      "url": "https://github.com/microsoft/PowerToys/issues/87",
+      "title": "Configure windows borders size, scroll bars, ... in Windows",
+      "author": "smz",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Idea-New PowerToy",
+        "Product-Tweak UI Design"
+      ],
+      "assignees": [],
+      "created_at": "2019-05-12T15:01:13Z",
+      "updated_at": "2026-04-18T14:05:37Z",
       "comments": 4,
       "priority": null
     },
