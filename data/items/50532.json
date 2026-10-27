@@ -2,124 +2,47 @@
   "schemaVersion": 5,
   "number": 50532,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[Settings] Defer shortcut editor construction until first open",
   "url": "https://github.com/microsoft/PowerToys/pull/50532",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-17T06:39:59.67209Z",
-  "evaluated_at": "2026-09-17T06:39:59.67209Z",
+  "generated_at": "2026-10-27T02:49:46.117Z",
+  "evaluated_at": "2026-10-27T02:49:46.117Z",
   "source_updated_at": "2026-09-14T15:40:17Z",
   "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
-  "confidence": "High",
-  "needs_revalidation": true,
   "proposed_comments": [
     {
-      "id": "shortcut-control-unload-state-before-hide",
+      "id": "shortcut-tests-shared-repository-isolation",
       "kind": "inline",
-      "severity": "medium",
-      "title": "Clear active state before hiding the shortcut dialog",
-      "body": "### Clear active state before hiding the shortcut dialog\r\n\r\n**Severity:** `medium`\n\nHiding the dialog can synchronously raise its closing path. The active-state flag must be cleared before that call so a lifecycle transition cannot observe the control as active while its editor is already being torn down. Clear the flag first, then hide the dialog.\n\n```suggestion\n               _isActive = false;\n               shortcutDialog?.Hide();\n```",
-      "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
-      "start_line": 351,
-      "line": 352,
-      "side": "RIGHT",
       "in_diff": true,
       "disposition": "proposed",
-      "confidence": {
-        "score": 88,
-        "rationale": "The current teardown hides the dialog before clearing active state; the exact candidate reverses those operations."
-      }
-    },
-    {
-      "id": "shortcut-tests-settings-config-field",
-      "kind": "inline",
       "severity": "medium",
-      "title": "Capture the shared repository configuration field",
-      "body": "### Capture the shared repository configuration field\r\n\r\n**Severity:** `medium`\r\n\r\nThe fixture needs to isolate only the configuration held by the repository shared with `HotkeyConflictIgnoreHelper`; replacing the process-wide static repository makes the helper retain a different instance. Add a handle for that existing instance configuration so it can be replaced and restored without changing the shared repository identity.\r\n\r\n```suggestion\r\n           private static readonly FieldInfo RepositoryField = typeof(SettingsRepository<GeneralSettings>).GetField(\"settingsRepository\", BindingFlags.Static | BindingFlags.NonPublic);\r\n           private static readonly FieldInfo SettingsConfigField = typeof(SettingsRepository<GeneralSettings>).GetField(\"settingsConfig\", BindingFlags.Instance | BindingFlags.NonPublic);\r\n```",
+      "title": "Preserve the shared repository identity and restore fixture state",
       "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
-      "start_line": 30,
-      "line": 30,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 87,
-        "rationale": "The validated candidate adds a configuration field handle while preserving the helper shared repository identity."
-      }
-    },
-    {
-      "id": "shortcut-tests-preserve-shared-repository",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Reuse the helper shared repository during fixture setup",
-      "body": "### Reuse the helper shared repository during fixture setup\r\n\r\n**Severity:** `medium`\n\nHotkeyConflictIgnoreHelper captures the shared settings repository during type initialization. Creating and publishing a replacement static repository after that point splits the test fixture from the helper, producing order-dependent behavior and leaking global test state. Initialize the helper first, retain its repository, and temporarily replace only its settings configuration.\n\n```suggestion\n           private static SettingsRepository<GeneralSettings> repository;\n           private static GeneralSettings previousSettingsConfig;\n```",
-      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
-      "start_line": 33,
       "line": 43,
       "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 88,
-        "rationale": "The candidate reuses the helper repository and swaps only its configuration, removing the process-wide repository replacement."
-      }
-    },
-    {
-      "id": "shortcut-tests-capture-dispatcher-before-application",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Capture the dispatcher before constructing the test application",
-      "body": "### Capture the dispatcher before constructing the test application\r\n\r\n**Severity:** `medium`\n\nThe fixture signals readiness from the test application constructor. Capture the thread dispatcher before constructing that application so initialization cannot complete while dispatcher is still unset. This keeps cleanup deterministic if the test app immediately signals its ready task.\n\n```suggestion\n                               dispatcher = DispatcherQueue.GetForCurrentThread();\n                               _ = new ShortcutTestApplication(ready);\n```",
-      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
-      "start_line": 57,
-      "line": 58,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 87,
-        "rationale": "The exact candidate captures DispatcherQueue before the constructor can signal readiness."
-      }
-    },
-    {
-      "id": "shortcut-tests-restore-settings-config-finally",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Restore shared settings configuration in finally",
-      "body": "### Restore shared settings configuration in finally\r\n\r\n**Severity:** `medium`\r\n\r\nCleanup currently restores shared process state only after the UI-thread assertions succeed. A timeout or enqueue failure would leave the replacement settings configuration installed for later tests. Keep the UI shutdown assertions, but restore the shared configuration in `finally`.\r\n\r\n```suggestion\r\n               try\r\n               {\r\n                   if (dispatcher != null)\r\n                   {\r\n                       Assert.IsTrue(dispatcher.TryEnqueue(() => Application.Current.Exit()));\r\n                       Assert.IsTrue(uiThread.Join(Timeout), \"The test XAML thread did not exit.\");\r\n                   }\r\n               }\r\n               finally\r\n               {\r\n                   SettingsConfigField.SetValue(repository, previousSettingsConfig);\r\n               }\r\n```",
-      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
-      "start_line": 80,
-      "line": 86,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 89,
-        "rationale": "The candidate moves restoration into finally so failed shutdown assertions cannot leak process-wide test configuration."
-      }
+      "body": "### Preserve the shared repository identity and restore fixture state\n\n**Severity:** `medium` - test isolation and order dependence, not a demonstrated production shortcut-editor failure.\n\n**Affected code:** `ShortcutControlTests.Initialize` and `Cleanup`, together with the static repository captured by `HotkeyConflictIgnoreHelper`.\n\n**Problem:** This fixture replaces `SettingsRepository<GeneralSettings>.settingsRepository`, but `HotkeyConflictIgnoreHelper` retains its own readonly reference to the instance obtained during type initialization. If the helper was initialized earlier, it does not observe the fixture's replacement. If it initializes during this fixture, restoring the static field afterward does not restore the helper's captured reference. Cleanup also restores global state only after shutdown assertions succeed.\n\n**Why it matters:** Test behavior can depend on initialization order, and later tests can observe a different repository through the helper than through `GetInstance()`. A failed cleanup assertion can leave fixture state installed. This undermines test isolation even if the shortcut-editor implementation itself is correct.\n\n**Suggested change:**\n1. Keep the singleton identity consistent with the instance held by `HotkeyConflictIgnoreHelper`; explicitly account for both already-initialized and first-initialization cases.\n2. Capture and temporarily replace only that shared instance's configuration, or use an equivalent isolated test seam. Preserve the existing in-memory/no-settings-file intent rather than accidentally initializing a real settings watcher or reading user configuration.\n3. Restore the exact previous configuration in `finally`, including when UI-thread shutdown assertions fail. Keep the initializer's method structure and existing UI setup intact.\n\n**Verification:** Exercise initialization with the helper already initialized and with it first initialized by this fixture. Verify both access paths observe the test configuration, the original configuration is restored afterward, and restoration still occurs when shutdown fails. Run the fixture with other settings tests in both orders."
     }
   ],
   "actions": [
     {
-      "id": "request-changes-50532",
-      "type": "request_changes",
-      "label": "Request five validated Settings lifecycle fixes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Draft only. Revalidate the upstream head and activity snapshot before any publication; no upstream public action has occurred.",
+      "id": "post-review-50532",
+      "type": "post_review",
+      "label": "Post one test-isolation review comment",
+      "requires_confirmation": true,
+      "note": "One coordinated plain comment replaces the incomplete fixture patch. Unsupported unload-order and constructor-readiness claims are omitted. No upstream review has been posted.",
       "review": {
-        "repository": "microsoft/PowerToys",
-        "pr": 50532,
-        "pullRequest": 50532,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f"
+        "event": "COMMENT",
+        "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
+        "comment_ids": [
+          "shortcut-tests-shared-repository-isolation"
+        ]
       }
     }
   ],
-  "freshness": {},
   "validation": {
     "upstream_head": {
       "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
@@ -127,38 +50,15 @@
     },
     "suggestion_patch": {
       "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
-      "result": "passed",
+      "result": "not_applicable",
       "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "shortcut-control-unload-state-before-hide",
-        "shortcut-tests-settings-config-field",
-        "shortcut-tests-preserve-shared-repository",
-        "shortcut-tests-capture-dispatcher-before-application",
-        "shortcut-tests-restore-settings-config-finally"
-      ]
+      "applied_comment_ids": []
     },
     "line_ending_safety": {
       "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
-      "result": "passed",
-      "checked_comment_ids": [
-        "shortcut-control-unload-state-before-hide",
-        "shortcut-tests-settings-config-field",
-        "shortcut-tests-preserve-shared-repository",
-        "shortcut-tests-capture-dispatcher-before-application",
-        "shortcut-tests-restore-settings-config-finally"
-      ],
-      "files": [
-        {
-          "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
-          "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
+      "result": "not_applicable",
+      "checked_comment_ids": [],
+      "files": []
     }
   }
 }

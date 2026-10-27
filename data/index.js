@@ -6304,8 +6304,11 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 5,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post one test-isolation review comment"
+      },
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -6491,8 +6494,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 2,
       "primary_action": {
-        "type": "request_changes",
-        "label": "Request the haptic input routing and lifecycle corrections"
+        "type": "post_review",
+        "label": "Review 2 haptic-routing comments (draft PR)"
       },
       "labels": [
         "Product-Cursor Wrap"

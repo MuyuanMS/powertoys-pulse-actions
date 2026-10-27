@@ -9,63 +9,51 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-18T04:10:00Z",
-  "evaluated_at": "2026-09-28T06:20:00Z",
-  "source_updated_at": "2026-09-09T18:03:05Z",
+  "generated_at": "2026-10-27T02:49:46.117Z",
+  "evaluated_at": "2026-10-27T02:49:46.117Z",
+  "source_updated_at": "2026-10-01T11:08:53Z",
   "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
-  "confidence": "high",
   "proposed_comments": [
     {
       "id": "haptic-edge-window-lifecycle",
       "kind": "inline",
       "in_diff": true,
       "disposition": "proposed",
-      "severity": "high",
+      "severity": "medium",
       "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
-      "line": 432,
+      "line": 515,
       "side": "RIGHT",
-      "title": "Keep the haptic input window hidden until a wrap is pending",
-      "body": "### Keep the haptic input window hidden until a wrap is pending\n\n**Severity:** `high`\n\nThe new haptic route creates four topmost layered windows covering every virtual-screen edge and leaves them visible for the entire mouse-hook lifetime. Ordinary pointer movement at those edges can therefore hit the CursorWrap overlay instead of the underlying application or shell, even when no wrap is pending. Use a hidden, transient input window that is shown only at the actual wrap point, and hide it again as soon as the pending wrap completes or is cancelled.",
-      "confidence": {
-        "score": 96,
-        "rationale": "The exact upstream head registers and shows all four WS_EX_TOPMOST edge windows at hook startup. The converged fork replaces them with a transient hidden window and the final fresh Copilot review returned zero new comments."
-      }
+      "title": "Avoid intercepting edge input when no wrap is pending",
+      "body": "### Avoid intercepting edge input when no wrap is pending\n\n**Severity:** `medium` - potential interference with ordinary edge input when a haptic device is present.\n\n`RegisterHapticEdgeWindows()` shows four topmost layered popup windows spanning the virtual-screen edges for the entire hook lifetime. Their alpha is 1 rather than zero, and they have no input-transparent style or hit-test handling. They can therefore become the input target instead of the application or shell below, including while modifier-gated wrapping is inactive.\n\nPlease ensure that the haptic input windows cannot intercept ordinary non-wrap input. A window shown only while completing an actual wrap is one option, but the behavioral requirement does not mandate that particular redesign. Any temporary input window should be hidden or removed when the wrap completes, is cancelled, or the hook stops.\n\nVerify ordinary movement and clicks along each edge reach the underlying application or shell while no wrap is requested, especially with Ctrl/Shift activation configured but not held. Then verify actual wrapping still produces haptic feedback on supported hardware."
     },
     {
       "id": "haptic-monitor-device-routing",
       "kind": "companion",
       "in_diff": false,
       "disposition": "proposed",
-      "severity": "high",
-      "title": "Refresh haptic routing and preserve pending wraps across topology and device changes",
-      "out_of_diff_reason": "The complete correction coordinates haptic device refresh, display-change handling, transient window creation, timeout fallback, pending-state cancellation, and hook cleanup across several methods; no single current RIGHT-side range can safely implement it.",
-      "body": "### Refresh haptic routing and preserve pending wraps across topology and device changes\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/MouseUtils/CursorWrap/dllmain.cpp`, especially `InitializeHaptics`, `OnDisplayChange`, `TryDeferWrapToHapticEdgeWindow`, `RegisterHapticEdgeWindows`, `CompletePendingHapticWrap`, and hook shutdown.\n\n**Problem:** Haptic availability is sampled only when the listener starts, while the edge windows are built from the virtual-screen rectangle and the deferred wrap completes only if a later `WM_MOUSEMOVE` reaches one of those windows. Device hot-plug, display-layout changes, staggered monitor edges, window creation failure, or a missed mouse message can leave stale routing, skip haptic behavior, or leave `m_hasPendingWrap` set without completing the cursor move.\n\n**Why it matters:** Cursor Wrap must preserve the configured cursor transition regardless of optional haptic support. A stale or missed haptic route can make wrapping stop working at valid monitor edges, intercept unrelated edge input, or leave the pending transition stuck after topology or device changes.\n\n**Suggested change:**\n1. Replace startup-only haptic initialization with a refresh routine that clears stale state, re-queries API/device availability, and cancels any pending wrap when haptics are unavailable.\n2. Invoke that refresh from the existing display/device notification path after cancelling pending state and updating monitor topology.\n3. Create one reusable hidden layered input window, move and show it only at the actual wrap point, and verify it owns the hit test before deferring the wrap.\n4. Start a short timeout whenever a wrap is deferred; complete the pending cursor move from either `WM_MOUSEMOVE` or the timeout so optional haptic routing can never drop the wrap.\n5. Centralize cancellation so it clears `m_hasPendingWrap`, kills the timeout, hides the input window, and is called during refresh and hook teardown.\n\n**Verification:** Build the Debug x64 runner/settings essentials and `CursorWrap.vcxproj`. On staggered and indented multi-monitor layouts, verify wrapping completes at each real external edge while ordinary non-wrap edge movement reaches the underlying app or shell. Disconnect and reconnect the haptic device and change display topology while CursorWrap is active; verify availability refreshes, no stale overlay remains, and a missed input-window message still completes the pending cursor move through the timeout.",
-      "confidence": {
-        "score": 95,
-        "rationale": "The exact upstream head samples haptic state once, constructs persistent windows from virtual-screen bounds, and has no timeout or centralized cancellation. The coordinated fork correction builds and converged with zero unresolved Copilot threads and zero new comments in the final review."
-      }
+      "severity": "medium",
+      "title": "Preserve deferred-wrap completion and refresh stale haptic routing",
+      "out_of_diff_reason": "This coordinates the deferred completion, display/device notification and hook-lifecycle paths in the same file; a single inline replacement would not express the complete behavioral correction.",
+      "body": "### Preserve deferred-wrap completion and refresh stale haptic routing\n\n**Severity:** `medium` - deferred completion risk; startup-only haptic availability is a lower-impact optional-feedback limitation.\n\n**Affected code:** `src/modules/MouseUtils/CursorWrap/dllmain.cpp`: `InitializeHaptics`, `OnDisplayChange`, `RegisterHapticEdgeWindows`, `TryDeferWrapToHapticEdgeWindow`, `CompletePendingHapticWrap` and hook shutdown.\n\n**Problem:** Haptic availability is sampled only when the listener starts, and `OnDisplayChange()` updates monitor information without refreshing the existing edge windows. Separately, once `TryDeferWrapToHapticEdgeWindow()` accepts a wrap, completion relies exclusively on a later `WM_MOUSEMOVE` reaching an edge window; there is no alternate completion path if that delivery does not occur.\n\n**Why it matters:** Device or topology changes can leave optional haptic feedback unavailable or windows positioned at old virtual-screen edges. If an accepted deferred message is not delivered, that particular cursor transition has no guaranteed completion. The latter is a code-path risk, not a reproduced permanent hang. A failed hit test or unavailable haptic route already falls back to direct `SetCursorPos`, so those cases do not by themselves establish that wrapping stops. `m_hasPendingWrap` also does not globally block later hook processing.\n\n**Suggested change:**\n1. Refresh or invalidate haptic availability and window geometry through the existing device/display lifecycle, preserving the direct-wrap fallback when haptics cannot be used.\n2. Give every accepted deferred wrap a bounded completion or safe cancellation path if its expected message never arrives; a timeout is one option rather than a required architecture.\n3. Clear stale pending destinations and temporary input-window state on topology changes and hook teardown. Keep this coordinated with the non-wrap input-interception correction.\n\n**Verification:** On supported hardware, change display topology and reconnect the haptic device while active; verify optional feedback recovers or safely falls back. Exercise staggered monitor layouts and window-creation failure to confirm direct wrapping still works. Suppress the expected deferred mouse message in a controlled check and verify a deferred transition cannot remain pending indefinitely."
     }
   ],
   "actions": [
     {
-      "id": "request-changes-50488",
-      "type": "request_changes",
-      "label": "Request the haptic input routing and lifecycle corrections",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "id": "post-review-50488",
+      "type": "post_review",
+      "label": "Review 2 haptic-routing comments (draft PR)",
+      "requires_confirmation": true,
+      "note": "PR is currently draft; retain these as review drafts and recheck readiness/head before posting. No upstream review has been posted.",
       "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50488,
-        "pr": 50488,
-        "event": "REQUEST_CHANGES",
+        "event": "COMMENT",
         "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
-        "body": "Please address the haptic input-window lifecycle and device/topology fallback issues described in the selected comments before merge."
-      },
-      "note": "Posts one current RIGHT-side inline comment and one separate general PR comment. No write has been made to microsoft/PowerToys."
+        "comment_ids": [
+          "haptic-edge-window-lifecycle",
+          "haptic-monitor-device-routing"
+        ]
+      }
     }
   ],
-  "freshness": {},
   "validation": {
     "suggestion_patch": {
       "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
