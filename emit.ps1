@@ -278,7 +278,7 @@ function Test-CurrentOpenBugArtifact {
       [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'summary')) -or
       [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'analysis')) -or
       @((Get-PropertyValue $context 'known_information')).Count -eq 0 -or
-      $null -eq (Get-PropertyValue $context 'inferences') -or
+      $null -eq $context.inferences -or
       @((Get-PropertyValue $context 'initial_investigation')).Count -eq 0) {
     return $false
   }
