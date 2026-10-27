@@ -1,20 +1,78 @@
 {
+  "schemaVersion": 5,
   "number": 51208,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Add an Adaptive Cards polyfills library with native Chart.Line",
   "url": "https://github.com/microsoft/PowerToys/pull/51208",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-21T22:19:02.8831282Z",
-  "evaluated_at": "2026-10-21T15:45:47.4019782Z",
+  "generated_at": "2026-10-27T19:19:40.7593206+08:00",
+  "evaluated_at": "2026-10-27T19:19:40.7624639+08:00",
   "source_updated_at": "2026-10-15T11:16:26Z",
   "head_sha": "ee920eaf110c2f1b16f14b05c6a0bcd0254c5d05",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-21T15:45:47.4019782Z",
-    "checkpoint_at": "2026-10-21T22:19:02.8831282Z"
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "c-51208-large-fixed-ticks",
+      "kind": "inline",
+      "severity": "low",
+      "disposition": "proposed",
+      "in_diff": true,
+      "title": "Avoid duplicate ticks for large fixed ranges",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.Polyfills/ChartAxisRange.cs",
+      "start_line": 26,
+      "line": 28,
+      "start_side": "RIGHT",
+      "side": "RIGHT",
+      "body": "### Avoid duplicate ticks for large fixed ranges\n\n**Severity:** `low`\n\nFor valid `Chart.Line` JSON with `yMin: 9007199254740992` and `yMax: 9007199254740996`, `ChartScale.Compute` chooses `Step = 1`, but the `double` index here cannot advance by one. `GetTicks()` consequently emits 64 copies of the minimum instead of the distinct representable ticks at the minimum, minimum + 2, and maximum. The cap bounds the work, but the grid loses its other positions.\n\nAn integer offset plus duplicate suppression preserves the bound without narrowing the accepted axis values to an integer type. Please also cover positive and negative large fixed JSON ranges in the scale tests.\n\n```suggestion\n        var firstTick = first * Step;\n        for (var offset = 0; offset < 64 && first + offset <= last; offset++)\n        {\n            var tick = Math.Round(firstTick + (offset * Step), 10);\n            if (ticks.Count == 0 || tick != ticks[^1])\n            {\n                ticks.Add(tick);\n            }\n```",
+      "confidence": {
+        "rationale": "Both signs reproduce through the supported JSON-to-scale caller chain in actual C# tests, and the isolated literal fix passes the full affected test suite.",
+        "score": 99
+      }
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "pr": 51208,
+        "event": "COMMENT"
+      },
+      "type": "post_review",
+      "confirm": true,
+      "primary": true,
+      "label": "Post selected inline suggestion",
+      "id": "review-51208-large-fixed-ticks"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "ee920eaf110c2f1b16f14b05c6a0bcd0254c5d05",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "ee920eaf110c2f1b16f14b05c6a0bcd0254c5d05",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "c-51208-large-fixed-ticks"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "ee920eaf110c2f1b16f14b05c6a0bcd0254c5d05",
+      "result": "passed",
+      "checked_comment_ids": [
+        "c-51208-large-fixed-ticks"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.Polyfills/ChartAxisRange.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
   }
 }
