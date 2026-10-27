@@ -4,90 +4,91 @@
   "kind": "issue",
   "title": "command pallet - dock - does not load correctly",
   "url": "https://github.com/microsoft/PowerToys/issues/51494",
-  "generated_at": "2026-10-27T19:12:17.484119+08:00",
-  "evaluated_at": "2026-10-27T19:12:17.484119+08:00",
-  "source_updated_at": "2026-10-23T18:22:03Z",
+  "generated_at": "2026-10-27T20:01:38.350Z",
+  "evaluated_at": "2026-10-27T20:01:38.350Z",
+  "source_updated_at": "2026-10-27T19:36:19Z",
   "stage": "triage_revalidated",
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The recovery changes both build and Dock configuration, so it does not prove a restart fix or isolate a version regression. Compare the archived old Dock configuration with defaults on the same verified executable version before choosing a content, settings or render fix.",
+    "status": "needs_information",
+    "rationale": "The initial report describes an invisible dock that still reserves display space, while replies say reinstalling restored a visible default dock and lost prior layout settings. The attached report contains unresolved pinned-command warnings but does not identify whether DockSettings were lost, provider IDs failed to resolve, or the dock failed to render. Ask for the post-reinstall state and preserved settings, not another generic log upload.",
     "evidence": [
-      "On the reported 0.102 build, reboot leaves blank reserved top space; module toggles, restarts and process termination do not repair it.",
-      "The author's actual winget reinstall output says 0.101.2362.0, despite a 0.102 What's New page.",
-      "Most settings survived, but Dock was disabled and its customized content/settings were gone. Enabling the default Dock made it visible.",
-      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs: DockWindow has AppBar reservation state and separately applies DockSettings and view-model updates; reserved work area does not prove visible content rendered.",
-      "Read the complete reinstall transcript and lost-Dock-customization control. The What's New page is not treated as executable-version evidence."
+      "The initial report describes PowerToys 0.102.2933 after reboot: dock invisible although windows are displaced; restart and Dock/Command Palette toggles did not fix it.",
+      "The attached 0.102.2933 CmdPal log has repeated DockViewModel.SetupBands warnings that pinned provider/command IDs could not be found; these establish unresolved bands, not the cause of the invisible window or settings loss.",
+      "The first reply says reinstall restored Command Palette but left Dock disabled; re-enabling showed defaults and prior Dock settings were missing. A second commenter reports the dock returned with defaults after reinstall.",
+      "At upstream main 9227a8497750, DockSettings stores global/per-monitor bands by provider/command IDs; SetupBands warns and skips unresolved commands. This makes settings and command resolution relevant but does not establish which failed: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs#L239-L259"
     ],
-    "recommended_action": "Reproduce blank Dock configuration behavior",
-    "evaluated_at": "2026-10-27T19:12:17.484119+08:00",
-    "source_updated_at": "2026-10-23T18:22:03Z"
+    "recommended_action": "Confirm whether the issue persists and preserve relevant Dock settings before any further reset",
+    "evaluated_at": "2026-10-27T20:01:38.350Z",
+    "source_updated_at": "2026-10-27T19:36:19Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Defaults becoming visible is useful, but the author's reinstall also downgraded the build and lost Dock state."
+    "rationale": "The replies show a visible default dock after reinstall, not whether the original invisible dock was caused by configuration loss or rendering/provider resolution. Keep the fix direction conditional."
   },
   "proposed_fixes": [
     {
-      "title": "Recover a blank Dock without discarding its configuration",
-      "root_cause": "Persisted Dock content/presentation state may fail to render while AppBar reservation succeeds. Reinstall also changed the executable version, so configuration versus build is not yet isolated.",
+      "title": "Preserve or reconcile Dock settings across the confirmed update path",
+      "root_cause": "Hypothesis only: an update/reinstall path may fail to restore saved Dock settings or resolve pinned provider/command IDs; the warnings and default-layout reports do not select between these causes.",
       "plan": [
-        "Inspect the existing report for a redacted copy of the pre-reinstall Dock settings and verify actual installed executable versions.",
-        "On one controlled build, compare archived settings with a fresh default Dock; then compare builds while holding the same configuration.",
-        "Repair the isolated settings/render transition or invalid-item handling while preserving user content and reserved-space cleanup."
+        "Compare only relevant DockSettings fields before/after update if prior configuration is available, preserving any backup before further changes.",
+        "If settings remain present, trace the unresolved IDs through SetupBands; if settings disappeared, trace persistence/migration instead of adding a provider workaround.",
+        "Track dock-window visibility and saved band layout as separate outcomes."
       ],
       "verification": [
-        "The formerly blank configuration displays after reboot on the repaired build.",
-        "Default Dock, disabled Dock and settings migration do not lose content or leave orphan reserved space."
+        "After the same update/restart sequence, the dock is visible and pre-existing enabled state, band layout, and per-monitor choices remain intact; unavailable bands are identified rather than silently replaced by defaults."
       ],
       "confidence": {
-        "score": 48,
+        "score": 36,
         "level": "red",
-        "rationale": "Defaults becoming visible is useful, but the author's reinstall also downgraded the build and lost Dock state."
+        "rationale": "The logs and replies show missing band resolution/default settings but do not establish which persistence or rendering branch caused the original symptom."
       }
     }
   ],
   "issue_context": {
-    "summary": "Dock reserves screen space but renders blank until a version/configuration-changing reinstall.",
+    "summary": "The dock was invisible while reserving display space, then returned with defaults after reinstall according to the reporter and a second user.",
     "known_information": [
-      "On the reported 0.102 build, reboot leaves blank reserved top space; module toggles, restarts and process termination do not repair it.",
-      "The author's actual winget reinstall output says 0.101.2362.0, despite a 0.102 What's New page.",
-      "Most settings survived, but Dock was disabled and its customized content/settings were gone. Enabling the default Dock made it visible."
+      "The initial report identifies PowerToys 0.102.2933 and includes a diagnostic report ZIP captured before reinstall.",
+      "That report's CmdPal log contains repeated SetupBands warnings for pinned commands that could not be found.",
+      "The reporter says reinstall restored Command Palette, left Dock disabled, and re-enabling displayed defaults; another commenter also says reinstall restored a default dock.",
+      "The issue does not provide pre/post DockSettings data or confirm whether the dock still fails after defaults were restored."
     ],
-    "inferences": [],
-    "analysis": "The recovery changes both build and Dock configuration, so it does not prove a restart fix or isolate a version regression. Compare the archived old Dock configuration with defaults on the same verified executable version before choosing a content, settings or render fix.",
+    "inferences": [
+      "Unresolved pinned commands may explain missing dock contents, but cannot alone explain the invisible reserved window or prove settings were deleted.",
+      "The default layout may reflect reset/migration or a new settings profile; the evidence does not distinguish these."
+    ],
+    "analysis": "The attached report was reviewed rather than requesting duplicate generic logs. Its unresolved-band warnings and the source's provider/command-ID settings model make the exact post-install state discriminating evidence. Preserve the invisible window and lost layout as separate observations.",
     "initial_investigation": [
-      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs: DockWindow has AppBar reservation state and separately applies DockSettings and view-model updates; reserved work area does not prove visible content rendered.",
-      "Read the complete reinstall transcript and lost-Dock-customization control. The What's New page is not treated as executable-version evidence."
+      "Reviewed the complete body and both comments plus PowerToysReport_2026-10-22-10-19-22.zip. CmdPal log has SetupBands unresolved-ID warnings but no post-reinstall settings snapshot.",
+      "Inspected DockViewModel.SetupBands and DockSettings at upstream main 9227a8497750: unresolved commands are skipped; global and per-monitor bands are serialized by provider/command IDs: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/DockSettings.cs#L20-L116",
+      "Focused CmdPal Dock/settings issue search and local source history surfaced no exact duplicate or source change establishing coverage of this upgrade/reinstall report."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Whether the invisible-dock problem remains after reinstall and whether the customized layout was absent from saved settings or present but not rendered/resolved.",
+        "why_needed": "This separates rendering/command-resolution failure from settings migration/loss and determines whether the original bug still reproduces.",
+        "how_to_collect": "Confirm the current Dock state. If available, compare only Dock enabled/band/provider/command fields before and after reinstall, redacting account-specific paths and unrelated pins; if invisibility recurs before reset, comment /bugreport first and preserve settings.",
+        "evidence_type": "configuration_export"
+      }
+    ]
   },
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce blank Dock configuration behavior",
+      "type": "request_info",
+      "label": "Confirm current Dock state and saved layout",
       "primary": true,
-      "reproduce": {
-        "title": "Validate blank Dock configuration report",
-        "module": "blank Dock configuration",
-        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
-        "prerequisites": [
-          "Use a disposable test account or controlled test machine; preserve existing user data."
-        ],
-        "setup": [],
-        "steps": [
-          "Review the existing report for pre-reinstall Dock settings; do not ask the author to recreate settings that were lost.",
-          "Use the actual executable version, not What's New, and compare old settings with defaults on the same isolated build.",
-          "Hold configuration constant when comparing reported and current builds; record AppBar reservation separately from visible Dock content."
-        ],
-        "expected_result": "A configuration-versus-version comparison narrows the blank-content failure without resetting a user's Dock."
-      }
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for confirming that reinstalling brought back a visible Dock with default settings, and for the second report of the same default-layout result. I reviewed the attached 0.102.2933 report: its CmdPal log already contains warnings that saved dock band commands could not be resolved, so another generic log upload is not needed. Could you confirm whether the Dock still fails now, and whether the old custom layout was absent from saved Dock settings or present but not rendered? If available, share only relevant enabled/band/provider/command fields with account-specific paths and unrelated pins redacted. If invisibility recurs before reinstall/reset, comment /bugreport first and preserve the settings."
+      },
+      "id": "issue-51494-request_info-1"
     },
     {
       "type": "approve_design",
-      "label": "Review conditional fix direction",
+      "label": "Review the conditional Dock investigation direction",
       "primary": false,
       "confirm": true,
-      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+      "note": "Routing gate only; distinguish settings persistence from rendering/provider resolution first.",
+      "id": "issue-51494-approve_design-2"
     }
   ],
   "labels": [
@@ -96,5 +97,5 @@
     "Product-Command Palette"
   ],
   "assignees": [],
-  "comments": 1
+  "comments": 2
 }

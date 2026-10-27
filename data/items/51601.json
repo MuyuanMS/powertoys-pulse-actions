@@ -4,50 +4,93 @@
   "kind": "issue",
   "title": "Cursorhide issue",
   "url": "https://github.com/microsoft/PowerToys/issues/51601",
-  "generated_at": "2026-10-27T18:57:06.939055+08:00",
-  "evaluated_at": "2026-10-27T18:57:06.939055+08:00",
-  "source_updated_at": "2026-10-27T02:07:53Z",
+  "generated_at": "2026-10-27T20:01:38.266Z",
+  "evaluated_at": "2026-10-27T20:01:38.266Z",
+  "source_updated_at": "2026-10-27T18:17:37Z",
   "stage": "triage_revalidated",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Secure-desktop cursor recovery is already in scope of open draft PR #51547. Windows Hello must remain a separate validation scenario, not an asserted exact duplicate of every elevated-window report.",
+    "status": "needs_information",
+    "rationale": "The lock-screen/Windows Hello trigger is specific and a commenter confirms typing can make the cursor disappear, but neither report says whether moving the mouse after unlocking or disabling CursorHide restores it. Source behavior makes a stuck hidden cursor plausible; restoration failure and a secure-desktop cause are not established.",
     "evidence": [
-      "The report names 0.102.2933 and cursor loss on the lock screen and a website Windows Hello prompt.",
-      "No diagnostic archive or further discussion is supplied.",
-      "Upstream main 9e6593c34949: src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp: GetCursorPosition ignores GetCursorPos failure; timer polling and WH_MOUSE_LL input drive visibility.",
-      "Read draft PR #51547 at db70f546ec94: its worker patch treats failed cursor-position reads as unavailable and restores the cursor scheme. The PR is open and unmerged, not a released fix."
+      "The report identifies PowerToys 0.102.2933 and cursor disappearance on the lock screen and some Windows Hello pages.",
+      "A commenter confirms typing a character on the lock screen makes the cursor disappear; they also recall rare Firefox/touchpad incidents without a reproducible sequence. No diagnostic attachment is provided.",
+      "At upstream main 9227a8497750, CursorHide hides on non-injected non-modifier keydown and restores after qualifying mouse movement; this matches the trigger but does not prove why it stays hidden: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h#L83-L109"
     ],
-    "recommended_action": "Use the linked existing owner/fix; do not start a competing change.",
-    "evaluated_at": "2026-10-27T18:57:06.939055+08:00",
-    "source_updated_at": "2026-10-27T02:07:53Z"
+    "recommended_action": "Confirm post-unlock restoration behavior and exact CursorHide trigger setting",
+    "evaluated_at": "2026-10-27T20:01:38.266Z",
+    "source_updated_at": "2026-10-27T18:17:37Z"
   },
   "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "Secure-desktop cursor recovery is already in scope of open draft PR #51547. Windows Hello must remain a separate validation scenario, not an asserted exact duplicate of every elevated-window report.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/51547"
+    "status": "proposed",
+    "rationale": "A restoration problem is reported but its failing state transition is unknown. Ensure restoration after the reported sequence only if the behavior and setting are confirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore the cursor after the confirmed lock-screen/Windows Hello trigger",
+      "root_cause": "Hypothesis only: CursorHide may enter its hidden state on keyboard input and fail to receive or act on a restoring pointer event across the lock/sign-in transition; no report confirms whether pointer movement or stopping the module restores it.",
+      "plan": [
+        "Confirm the enabled hide-on-typing/idle option, exact sequence, and whether a deliberate pointer move or disabling CursorHide restores the cursor after unlock.",
+        "If the hidden state persists, trace the hide/restore transition across that desktop change and make restoration reliable without changing unrelated cursor settings."
+      ],
+      "verification": [
+        "After the reported lock-screen/Windows Hello sequence, the cursor is visible again after unlock and normal pointer movement; disabling CursorHide restores the configured system cursor."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The source path fits the keypress trigger, but the exact restoration sequence and failing state are missing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CursorHide can leave the pointer invisible after lock-screen keyboard input or Windows Hello activity, according to the report and one confirmation.",
+    "known_information": [
+      "The original report identifies PowerToys 0.102.2933, lock screen, and some Windows Hello sign-in pages.",
+      "A commenter says a keypress on lock screen makes the cursor disappear and mentions rare Firefox/touchpad observations without a reproducible sequence.",
+      "No bug-report attachment is present."
+    ],
+    "inferences": [
+      "The lock-screen keypress is consistent with the source hide-on-typing path but does not demonstrate a secure-desktop-specific defect.",
+      "The Firefox/touchpad observation may be a separate or intermittent trigger."
+    ],
+    "analysis": "The source hides on non-modifier keydown and restores on eligible mouse input, supporting investigation of the trigger. The missing discriminating fact is whether the hidden state survives unlock and ordinary pointer movement or whether ‘no return’ is limited to the secure desktop.",
+    "initial_investigation": [
+      "Inspected AutoHideCursorState.h and AutoHideCursorWorker.cpp at upstream main 9227a8497750: keyboard and mouse hooks drive the transitions and pointer restoration uses a movement threshold: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp#L269-L307",
+      "Refreshed full issue body and only comment; no attachment. Focused lock-screen/CursorHide duplicate search did not surface a separate matching report."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the cursor returns after unlocking and moving the mouse, whether disabling CursorHide restores it, and which hide-on-typing/idle option and pointing device were involved.",
+        "why_needed": "This distinguishes a hidden state persisting across desktop transition from expected hide-on-typing behavior or a different intermittent touchpad/Firefox trigger.",
+        "how_to_collect": "On the next occurrence, note the enabled option, press a key on the lock screen, then after unlocking try a deliberate mouse move and disable CursorHide; report which step restores the cursor and whether it happens with a touchpad, external mouse, or both.",
+        "evidence_type": "repro_steps"
+      }
     ]
   },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "CursorHide fails to restore on lock screen and Windows Hello.",
-    "known_information": [
-      "The report names 0.102.2933 and cursor loss on the lock screen and a website Windows Hello prompt.",
-      "No diagnostic archive or further discussion is supplied."
-    ],
-    "inferences": [],
-    "analysis": "Secure-desktop cursor recovery is already in scope of open draft PR #51547. Windows Hello must remain a separate validation scenario, not an asserted exact duplicate of every elevated-window report.",
-    "initial_investigation": [
-      "Upstream main 9e6593c34949: src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp: GetCursorPosition ignores GetCursorPos failure; timer polling and WH_MOUSE_LL input drive visibility.",
-      "Read draft PR #51547 at db70f546ec94: its worker patch treats failed cursor-position reads as unavailable and restores the cursor scheme. The PR is open and unmerged, not a released fix."
-    ],
-    "information_gaps": []
-  },
-  "actions": [],
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm cursor restoration after unlock",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for confirming that a lock-screen keypress can make the cursor disappear, and for mentioning the separate rare Firefox/touchpad observation. After unlocking, does a deliberate mouse move bring the cursor back, and does turning CursorHide off restore it immediately? Please also say whether hide-on-typing, hide-on-idle, or both are enabled and whether the trigger occurs with a touchpad, external mouse, or both. Those details will show whether the hidden state persists across unlock or whether the reports have a different trigger."
+      },
+      "id": "issue-51601-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review the conditional restoration direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Routing gate only; first confirm whether the hidden state persists after unlocking.",
+      "id": "issue-51601-approve_design-2"
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0
+  "comments": 1
 }

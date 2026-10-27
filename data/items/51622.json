@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 5,
+  "number": 51622,
+  "kind": "issue",
+  "title": "Roblox error with *mouse hider* (i am forget real name)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51622",
+  "generated_at": "2026-10-27T20:01:38.119Z",
+  "evaluated_at": "2026-10-27T20:01:38.119Z",
+  "source_updated_at": "2026-10-27T16:46:21Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report ties Roblox lag to enabling CursorHide, but does not say whether the symptom is game frame-rate/input delay or cursor behavior, which option was enabled, or whether disabling the module reverses it. Do not prescribe an exclusion list the reporter already declined.",
+    "evidence": [
+      "The report states PowerToys 0.102 on Windows 10 Pro 22H2 x64, Roblox installed via Xbox, and lag when ‘Cursor hider’ is enabled; no precise repro or measurement is provided.",
+      "There are no comments or attached diagnostic reports.",
+      "At upstream main 9227a8497750, AutoHideCursorState.h defaults hide-on-typing to true; keyboard input hides and qualifying pointer movement restores. This makes cursor interaction plausible but does not establish a Roblox performance cause: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h#L83-L109"
+    ],
+    "recommended_action": "Clarify the exact CursorHide option and compare the same Roblox activity with the module off and on",
+    "evaluated_at": "2026-10-27T20:01:38.119Z",
+    "source_updated_at": "2026-10-27T16:46:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Only a diagnostic direction is justified. The report does not distinguish game stutter from cursor suppression or another app-specific effect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate CursorHide's effect on Roblox before changing input behavior",
+      "root_cause": "Hypothesis only: enabling CursorHide may coincide with game or input stutter, but the report does not distinguish game-performance regression from cursor suppression or another effect.",
+      "plan": [
+        "Compare the same Roblox activity with CursorHide disabled and enabled; record the exact option and whether frame rate, input response, or cursor visibility is affected.",
+        "Identify the Xbox-installed Roblox process/package and decide whether the evidence implicates a CursorHide event path.",
+        "Consider an exclusion or input-behavior change only if the comparison attributes the effect to CursorHide."
+      ],
+      "verification": [
+        "The reported activity has comparable responsiveness with CursorHide on/off, or a reproduced difference is tied to a specific CursorHide path without affecting unrelated apps."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The feature is implicated, but the type and timing of ‘lag’ and a controlled off/on comparison are missing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter says Roblox lags with the feature called Cursor hider enabled and expects it to affect Notepad only.",
+    "known_information": [
+      "PowerToys 0.102, Windows 10 Pro 22H2 x64, and the Xbox-installed Roblox version are reported.",
+      "The issue has no comments or attachment; the reporter says they do not want to add Roblox to an exclusion list."
+    ],
+    "inferences": [
+      "The feature likely refers to Auto Hide Cursor/CursorHide, but the exact toggle is unconfirmed.",
+      "‘Lagging’ may describe frame rate, input response, or cursor movement; evidence does not distinguish them."
+    ],
+    "analysis": "Source behavior confirms keyboard-triggered cursor hiding and pointer-based restoration, but nothing connects it to Roblox frame timing. A controlled off/on reproduction is needed before selecting a code path.",
+    "initial_investigation": [
+      "Inspected AutoHideCursorState.h and AutoHideCursorWorker.cpp at upstream main 9227a8497750: low-level input events drive hide/restore; no Roblox-specific behavior is established: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp#L269-L307",
+      "Refreshed the complete issue body/comments/attachment field and searched for Roblox/CursorHide duplicates; no separate matching report surfaced."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which CursorHide option is enabled, whether ‘lag’ means frame rate/input delay/cursor movement, and whether the same Roblox activity is normal with CursorHide off.",
+        "why_needed": "These observations distinguish a game/input regression attributable to CursorHide from normal cursor suppression or unrelated Roblox behavior.",
+        "how_to_collect": "Repeat the same short Roblox activity once with CursorHide off and once on; note the exact setting, observable lag, and Roblox package/process shown in Task Manager. A brief side-by-side recording is optional; do not share account details.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Clarify the Roblox lag symptom",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for reporting the Roblox issue and Xbox-installed version. You do not need to add the game to an exclusion list for this first check. Which CursorHide option is enabled, and does lag mean lower game frame rate, delayed controls, or the cursor moving/vanishing? Could you compare the same short Roblox activity once with CursorHide off and once on, and note whether disabling it immediately restores normal behavior and which Roblox process/package is running? That comparison will distinguish a CursorHide interaction from an unrelated game-performance issue."
+      },
+      "id": "issue-51622-request_info-1"
+    },
+    {
+      "type": "approve_design",
+      "label": "Review the conditional investigation direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Routing gate only; attribute the symptom before selecting an implementation.",
+      "id": "issue-51622-approve_design-2"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}
