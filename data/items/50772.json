@@ -6,24 +6,152 @@
   "title": "[Peek] Add preview support for EML and MSG email files",
   "url": "https://github.com/microsoft/PowerToys/pull/50772",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "reviewer",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-26T13:55:45.8017325+08:00",
-  "evaluated_at": "2026-10-26T13:55:45.8017325+08:00",
+  "generated_at": "2026-10-27T15:52:14.9449761+08:00",
+  "evaluated_at": "2026-10-27T15:52:14.9470848+08:00",
   "source_updated_at": "2026-10-26T05:53:26Z",
   "head_sha": "9a056252598d760e84699d5fa9f10ba49979c833",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-09-25T07:46:19Z",
-    "checkpoint_at": "2026-10-26T13:55:45.8017325+08:00"
-  },
+  "proposed_comments": [
+    {
+      "id": "email-lifetime-fields",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Keep pending email HTML owned until publication",
+      "severity": "P2",
+      "disposition": "proposed",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmailPreviewer.cs",
+      "start_line": 26,
+      "line": 26,
+      "side": "RIGHT",
+      "start_side": "RIGHT",
+      "body": "**[P2] Keep pending email HTML owned until publication (1/3)**\n\nAn item change cancels the old load and calls `Dispose`, but this load does not assign `_tempFile` until after the asynchronous write. Disposing while the write is pending can therefore see no owned file; the continuation can then assign a file after disposal. The write token is not a cleanup guarantee. Add shared lifetime state for the coordinated ownership fix below.\n\n```suggestion\n        private readonly DispatcherQueue _dispatcher;\n        private readonly object _lifetimeLock = new();\n        private bool _disposed;\n```",
+      "selection_group": {
+        "title": "Keep email HTML lifetime owned across cancellation and disposal",
+        "atomic": true,
+        "position": 1,
+        "total": 3,
+        "id": "email-pending-html-lifetime"
+      },
+      "confidence": {
+        "rationale": "Exact upstream product adapter observed Dispose while the generated path was unowned and retained HTML after the load; the same actual-product test retained no file for the literal cancellation-only and combined candidates. All candidate dependency-chain builds passed. The adapter bypasses dispatcher acquisition and does not claim visual or UI-publication coverage.",
+        "score": 92
+      }
+    },
+    {
+      "id": "email-load-ownership-transfer",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Clean unpublished email HTML on every exit",
+      "severity": "P2",
+      "disposition": "proposed",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmailPreviewer.cs",
+      "start_line": 57,
+      "line": 78,
+      "side": "RIGHT",
+      "start_side": "RIGHT",
+      "body": "**[P2] Clean unpublished email HTML on every exit (2/3)**\n\nKeep the generated path locally owned until cancellation/disposal have been checked inside publication. A `finally` must delete the local path when writing, cancellation, or publication fails before ownership transfers. This also covers a partial file left by a cancelled write. Apply all three parts together.\n\n```suggestion\n            string? pendingTempFile = null;\n\n            try\n            {\n                EmailMessage message = await Task.Run(\n                    () => _file.Extension.Equals(\".eml\", StringComparison.OrdinalIgnoreCase) ? EmlReader.Read(_file.Path) : MsgReader.Read(_file.Path),\n                    cancellationToken);\n                cancellationToken.ThrowIfCancellationRequested();\n\n                Directory.CreateDirectory(TempFolderPath.Path);\n                string tempFile = Path.Combine(TempFolderPath.Path, $\"{Guid.NewGuid():N}.html\");\n                pendingTempFile = tempFile;\n                await File.WriteAllTextAsync(tempFile, EmailHtmlRenderer.Render(message), cancellationToken);\n\n                await _dispatcher.RunOnUiThread(() =>\n                {\n                    lock (_lifetimeLock)\n                    {\n                        cancellationToken.ThrowIfCancellationRequested();\n                        ObjectDisposedException.ThrowIf(_disposed, this);\n                        _tempFile = tempFile;\n                        Preview = new Uri(tempFile);\n                        pendingTempFile = null;\n                    }\n                });\n            }\n            catch (OperationCanceledException)\n            {\n                throw;\n            }\n            catch (Exception)\n            {\n                State = PreviewState.Error;\n            }\n            finally\n            {\n                if (pendingTempFile != null)\n                {\n                    DeleteTempFile(pendingTempFile);\n                }\n```",
+      "selection_group": {
+        "title": "Keep email HTML lifetime owned across cancellation and disposal",
+        "atomic": true,
+        "position": 2,
+        "total": 3,
+        "id": "email-pending-html-lifetime"
+      },
+      "confidence": {
+        "rationale": "Exact upstream product adapter observed Dispose while the generated path was unowned and retained HTML after the load; the same actual-product test retained no file for the literal cancellation-only and combined candidates. All candidate dependency-chain builds passed. The adapter bypasses dispatcher acquisition and does not claim visual or UI-publication coverage.",
+        "score": 92
+      }
+    },
+    {
+      "id": "email-dispose-ownership-transfer",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Prevent ownership transfer after disposal",
+      "severity": "P2",
+      "disposition": "proposed",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmailPreviewer.cs",
+      "start_line": 93,
+      "line": 109,
+      "side": "RIGHT",
+      "start_side": "RIGHT",
+      "body": "**[P2] Prevent ownership transfer after disposal (3/3)**\n\nUse the same lock for disposal and publication so an earlier `Dispose` cannot be followed by a new ownership transfer. Capture and clear the owned path before best-effort deletion. Verify cancellation/navigation during an email HTML write leaves no abandoned file, while an ordinary successful preview remains available until disposal. Apply all three parts together.\n\n```suggestion\n            string? tempFile;\n            lock (_lifetimeLock)\n            {\n                _disposed = true;\n                tempFile = _tempFile;\n                _tempFile = null;\n            }\n\n            if (tempFile != null)\n            {\n                DeleteTempFile(tempFile);\n            }\n\n            GC.SuppressFinalize(this);\n        }\n\n        private static void DeleteTempFile(string tempFile)\n        {\n            try\n            {\n                File.Delete(tempFile);\n            }\n            catch (IOException)\n            {\n            }\n            catch (UnauthorizedAccessException)\n            {\n            }\n```",
+      "selection_group": {
+        "title": "Keep email HTML lifetime owned across cancellation and disposal",
+        "atomic": true,
+        "position": 3,
+        "total": 3,
+        "id": "email-pending-html-lifetime"
+      },
+      "confidence": {
+        "rationale": "Exact upstream product adapter observed Dispose while the generated path was unowned and retained HTML after the load; the same actual-product test retained no file for the literal cancellation-only and combined candidates. All candidate dependency-chain builds passed. The adapter bypasses dispatcher acquisition and does not claim visual or UI-publication coverage.",
+        "score": 92
+      }
+    },
+    {
+      "id": "email-error-fallback-disposal",
+      "kind": "companion",
+      "in_diff": false,
+      "title": "Dispose the outgoing email previewer on error fallback",
+      "severity": "P2",
+      "disposition": "proposed",
+      "out_of_diff_reason": "The required disposal belongs in the existing FilePreview.Previewer_PropertyChanged error-fallback owner, which has no current RIGHT-side diff anchor. Adding disposal only inside the new EmailPreviewer does not make that existing owner invoke it.",
+      "body": "**[P2] Dispose the outgoing email previewer on error fallback**\n\n**Affected code:** `src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs`, `Previewer_PropertyChanged`, together with `PreviewBrowser_NavigationCompleted` and `EmailPreviewer.Dispose`.\n\n**Problem:** A failed browser navigation after the email HTML has been created sets the previewer state to `Error`. The fallback handler replaces `Previewer` with the default previewer without disposing the outgoing instance. `OnPreviewerChanging` clears sources and removes handlers, but does not call `Dispose`. Consequently this path bypasses the new email previewer's `_tempFile` cleanup. This is specifically the post-file-creation failure path, not every email parsing error.\n\n**Why it matters:** The new email previewer relies on disposal to remove its generated HTML. Normal item-change disposal does not cover this replacement, and a later unrelated browser previewer's directory cleanup is not guaranteed to run.\n\n**Suggested change:**\n1. Capture the outgoing previewer before assigning the default.\n2. Assign the replacement first, so `OnPreviewerChanging` clears the browser source and detaches the old handlers.\n3. Dispose the captured instance before awaiting the replacement load:\n\n```csharp\nvar previousPreviewer = Previewer;\nPreviewer = previewerFactory.CreateDefaultPreviewer(Item);\n(previousPreviewer as IDisposable)?.Dispose();\nawait UpdatePreviewAsync(_cancellationTokenSource.Token);\n```\n\n**Verification:** Force a navigation failure after the email HTML has been created and check that the outgoing previewer is disposed after its browser source is cleared. Also verify successful email-to-email navigation and early parse failures. Keep deletion's existing IO/access-error handling; source clearing is not a claim that WebView file handles are synchronously released.",
+      "confidence": {
+        "rationale": "Pinned upstream control-flow proves the post-navigation-error replacement bypasses IDisposable while normal item changes call it. The exact owner replacement built independently and combined with the email-lifetime correction, preserving the original BOM. This is source/control-flow and compile validation; actual WebView failure/handle-release timing was not exercised without UI.",
+        "score": 85
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_review",
+      "label": "Review email HTML ownership corrections",
+      "note": "Three coordinated inline suggestions form one atomic fix; the separate general PR comment covers the unchanged fallback owner.",
+      "review": {
+        "comment_ids": [
+          "email-lifetime-fields",
+          "email-load-ownership-transfer",
+          "email-dispose-ownership-transfer",
+          "email-error-fallback-disposal"
+        ],
+        "event": "COMMENT"
+      },
+      "id": "post-review-50772-email-ownership"
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "9a056252598d760e84699d5fa9f10ba49979c833",
-      "result": "failed"
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "9a056252598d760e84699d5fa9f10ba49979c833",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "email-lifetime-fields",
+        "email-load-ownership-transfer",
+        "email-dispose-ownership-transfer"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "9a056252598d760e84699d5fa9f10ba49979c833",
+      "result": "passed",
+      "checked_comment_ids": [
+        "email-lifetime-fields",
+        "email-load-ownership-transfer",
+        "email-dispose-ownership-transfer"
+      ],
+      "files": [
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/EmailPreviewer/EmailPreviewer.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   }
 }
