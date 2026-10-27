@@ -1,20 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 51212,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Redesign the Performance Monitor Memory card",
   "url": "https://github.com/microsoft/PowerToys/pull/51212",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-21T21:50:47.549366Z",
-  "evaluated_at": "2026-10-21T21:50:47.549366Z",
-  "source_updated_at": "2026-10-12T17:18:05Z",
+  "generated_at": "2026-10-28T00:26:12.5025615+08:00",
+  "evaluated_at": "2026-10-28T00:26:12.5054739+08:00",
+  "source_updated_at": "2026-10-15T11:16:21Z",
   "head_sha": "f6f2f64924da67eef74bb1da9176f9d60a133458",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-10-21T21:50:47.549366Z",
-    "checkpoint_at": "2026-10-21T21:50:47.549366Z"
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51212-headline-label",
+      "kind": "inline",
+      "title": "Distinguish the headline from the composition label",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The pinned template binds the headline to UsedMem; the composition uses MemInUse, and UsedMemory is an existing localized label for the former."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Templates/SystemMemoryTemplate.json",
+      "line": 32,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Distinguish the headline from the composition label\n\n**Severity:** `medium`\n\nThe headline displays `UsedMem`, which includes modified pages, while the composition’s “In use” segment displays `MemInUse`, which excludes them. When modified pages are present, users see two different amounts under the same label; use the existing “In use (compressed)” resource for the headline.\n\n```suggestion\n                  \"text\": \"%Memory_Widget_Template/UsedMemory%\"\n```",
+      "body_sha256": "2c491e436006663decd1915073ab54c484869c0021fc1ad0c7a14105be00ba7b"
+    },
+    {
+      "id": "51212-speed-format-localization",
+      "kind": "companion",
+      "title": "Localize the memory-speed format",
+      "severity": "low",
+      "confidence": {
+        "score": 92,
+        "rationale": "The exact producer embeds the format while nearby widget values use resource-based formatting; the numeric speed remains correctly supplied."
+      },
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Localize the memory-speed format\n\n**Severity:** `low`\n\n**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs` (the `memSpeed` producer) and `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/Strings/en-US/Resources.resw` (the Memory widget resources).\n\n**Problem:** The producer embeds the English `{0} MT/s` format in code. The number already uses current-culture formatting, but translators cannot change the unit’s placement or spacing through a resource.\n\n**Why it matters:** The numeric speed remains correct and the `MT/s` unit is present; this is a low-severity presentation/localization limitation, not data loss or a functional reading error. Some locales may prefer different spacing or ordering.\n\n**Suggested change:**\n1. Add a `Memory_Widget_Template.Speed_Value` format resource with `{0} MT/s` and a translator comment explaining the placeholder and unit.\n2. In `PerformanceWidgetsPage.cs`, format `modules.SpeedMegaTransfers` using `CultureInfo.CurrentCulture` and `Resources.GetResource(\"Memory_Widget_Template/Speed_Value\")` instead of embedding the literal.\n\n**Verification:** Build the Performance Monitor unit-test project with the new producer/resource pairing. Verify the English value still renders as, for example, `5600 MT/s`, and validate localized resource entries retain one numeric placeholder while permitting locale-appropriate spacing/order. The paired implementation was compiled in the pinned literal candidate; no separate localized runtime rendering test is claimed.",
+      "out_of_diff_reason": "coordinated_localized_format",
+      "body_sha256": "17f6cbbe4a22d3f88d4bc89ba2ac0cc7799e832b912d14ab4a65bc14d9b5e743"
+    },
+    {
+      "id": "51212-meminuse-saturation",
+      "kind": "inline",
+      "title": "Saturate the in-use remainder when samples disagree",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The separately sampled UsedMem and MemModified values feed separate composition segments, and the pinned fallback can count UsedMem twice when the modified counter is at least as large."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/MemoryStats.cs",
+      "line": 85,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Saturate the in-use remainder when samples disagree\n\n**Severity:** `medium`\n\n`UsedMem` and `MemModified` come from separate samples, so a transient skew can make `MemModified` equal or exceed `UsedMem`. In that case the fallback counts all of `UsedMem` as in-use while the composition also adds `MemModified`, so the displayed composition can double-count bytes and overstate its total. Clamp the remainder to zero in that branch.\n\n```suggestion\n    public ulong MemInUse => UsedMem > MemModified ? UsedMem - MemModified : 0;\n```",
+      "body_sha256": "a659abf426267dd1ba3812ccbc52ae47bdb6993da341f4aa42b3ad2e151f1e57"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51212-memory-findings",
+      "type": "post_review",
+      "label": "Post two inline findings and one general localization note",
+      "note": "Posts two inline suggestions and one coordinated localization note as a COMMENT review; does not approve the pull request.",
+      "review": {
+        "comment_ids": [
+          "51212-headline-label",
+          "51212-speed-format-localization",
+          "51212-meminuse-saturation"
+        ],
+        "head_sha": "f6f2f64924da67eef74bb1da9176f9d60a133458",
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "f6f2f64924da67eef74bb1da9176f9d60a133458",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "f6f2f64924da67eef74bb1da9176f9d60a133458",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51212-headline-label",
+        "51212-meminuse-saturation"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "f6f2f64924da67eef74bb1da9176f9d60a133458",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51212-headline-label",
+        "51212-meminuse-saturation"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/MemoryStats.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Templates/SystemMemoryTemplate.json",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
   }
 }
