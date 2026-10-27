@@ -4616,7 +4616,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
