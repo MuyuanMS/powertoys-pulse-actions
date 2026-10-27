@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 5,
+  "number": 51607,
+  "kind": "issue",
+  "title": "[Peek] Black, click-through rectangle stays on screen after closing the preview",
+  "url": "https://github.com/microsoft/PowerToys/issues/51607",
+  "generated_at": "2026-10-27T18:57:07.137008+08:00",
+  "evaluated_at": "2026-10-27T18:57:07.137008+08:00",
+  "source_updated_at": "2026-10-27T08:02:57Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The strongest lead is a preview child visibility/lifetime mismatch, not a proven driver or DWM defect. Reproduce the close path before approving a repair; do not repeat the bot's generic ZIP request.",
+    "evidence": [
+      "The report gives Esc/X close steps and native-window observations: hidden main window, visible DesktopChildSiteBridge and layered PeekShellPreviewHandlerContainer matching the artifact.",
+      "The problem happened twice near dwm.exe restarts; causation is not established. NVIDIA and a virtual display driver are listed.",
+      "Killing Peek UI removes the rectangle. Existing screenshots and detailed window evidence are sufficient for an initial maintainer reproduction.",
+      "Upstream main 9e6593c34949: src/modules/peek/Peek.FilePreviewer/Controls/ShellPreviewHandlerControl.xaml.cs: The control owns an IPreviewHandler, HandlerVisibility, and a native PeekShellPreviewHandlerContainer; inspect their close/visibility sequencing together."
+    ],
+    "recommended_action": "Reproduce Peek behavior",
+    "evaluated_at": "2026-10-27T18:57:07.137008+08:00",
+    "source_updated_at": "2026-10-27T08:02:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. Native-window evidence points to the container; no maintainer reproduction or failing call is established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve preview-child visibility on close",
+      "root_cause": "A shell preview child may remain composited after its parent is hidden; the report localizes the surface but does not identify the failing close transition.",
+      "plan": [
+        "Reproduce and record parent/child visibility at the reported close transition.",
+        "If the container survives, make hide/unload idempotent at the owning preview lifecycle boundary rather than changing graphics drivers.",
+        "Add close/reopen coverage for shell-handler and non-shell previews."
+      ],
+      "verification": [
+        "No black surface after Esc/X, repeated previews or a recoverable compositor reset.",
+        "Preview reopen and keyboard focus continue to work."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "Native-window evidence points to the container; no maintainer reproduction or failing call is established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Peek leaves a black click-through preview rectangle after closing.",
+    "known_information": [
+      "The report gives Esc/X close steps and native-window observations: hidden main window, visible DesktopChildSiteBridge and layered PeekShellPreviewHandlerContainer matching the artifact.",
+      "The problem happened twice near dwm.exe restarts; causation is not established. NVIDIA and a virtual display driver are listed.",
+      "Killing Peek UI removes the rectangle. Existing screenshots and detailed window evidence are sufficient for an initial maintainer reproduction."
+    ],
+    "inferences": [],
+    "analysis": "The strongest lead is a preview child visibility/lifetime mismatch, not a proven driver or DWM defect. Reproduce the close path before approving a repair; do not repeat the bot's generic ZIP request.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/peek/Peek.FilePreviewer/Controls/ShellPreviewHandlerControl.xaml.cs: The control owns an IPreviewHandler, HandlerVisibility, and a native PeekShellPreviewHandlerContainer; inspect their close/visibility sequencing together."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Peek behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Peek report",
+        "module": "Peek",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Open and close the same shell-handler preview with Esc and X repeatedly; include switching file types.",
+          "After each close inspect main, bridge and PeekShellPreviewHandlerContainer visibility and bounds.",
+          "If the issue appears, preserve window-state evidence before ending Peek; compare with and without the optional virtual-display driver in a controlled environment."
+        ],
+        "expected_result": "All preview descendants disappear when preview closes; any survivor is attributed to the actual handler and lifecycle transition."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "assignees": [],
+  "comments": 1
+}

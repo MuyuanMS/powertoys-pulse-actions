@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 5,
+  "number": 51488,
+  "kind": "issue",
+  "title": "[CmdPal] Two-character queries no longer find apps by substring (regression since #49249)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51488",
+  "generated_at": "2026-10-27T19:04:51.24992+08:00",
+  "evaluated_at": "2026-10-27T19:04:51.24992+08:00",
+  "source_updated_at": "2026-10-22T14:48:51Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The live source supports investigating the short-query gate independently of the reporter's PR attribution. Preserve relevance/noise protections and use exact suffix fixtures before choosing between boundary classification and contiguous-substring policy.",
+    "evidence": [
+      "PROD04, TEST04, DEV04 and DEMO04 fail to appear for 04 while prefixes and D04 work.",
+      "The reporter attributes this to #49249, but that historical PR is closed unmerged; the exact attribution is not established.",
+      "Current MainListPage nevertheless contains an explicit ultra-short-query app filter with AcronymWordBoundary minimum tier.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs: Render results pass through FilterAppsForShortQueries; ShortQueryAppFilterMinTier is AcronymWordBoundary.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListRanker.cs: Hard match tiers constrain ordering before frecency; boundary/acronym classification determines eligibility."
+    ],
+    "recommended_action": "Reproduce Command Palette short queries behavior",
+    "evaluated_at": "2026-10-27T19:04:51.24992+08:00",
+    "source_updated_at": "2026-10-22T14:48:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The gate is in current source and the reproducer is precise; the intended ranking policy and best bounded alternative still need maintainer agreement."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Refine short-query eligibility for contiguous suffixes",
+      "root_cause": "Contiguous numeric suffixes can fall below the filter's boundary/acronym tier and be withheld despite useful exact substring intent.",
+      "plan": [
+        "Capture match tiers and filter decisions for the supplied four-shortcut fixture.",
+        "Choose a bounded contiguous-substring or letter/digit-boundary rule only after comparing noise and ranking controls.",
+        "Add exact suffix, scattered-fuzzy, prefix and one-character regression cases."
+      ],
+      "verification": [
+        "04 finds all four intended shortcuts under the approved policy.",
+        "Weak scattered one/two-character matches remain controlled."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The gate is in current source and the reproducer is precise; the intended ranking policy and best bounded alternative still need maintainer agreement."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Two-character suffix queries lose related application shortcuts.",
+    "known_information": [
+      "PROD04, TEST04, DEV04 and DEMO04 fail to appear for 04 while prefixes and D04 work.",
+      "The reporter attributes this to #49249, but that historical PR is closed unmerged; the exact attribution is not established.",
+      "Current MainListPage nevertheless contains an explicit ultra-short-query app filter with AcronymWordBoundary minimum tier."
+    ],
+    "inferences": [],
+    "analysis": "The live source supports investigating the short-query gate independently of the reporter's PR attribution. Preserve relevance/noise protections and use exact suffix fixtures before choosing between boundary classification and contiguous-substring policy.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs: Render results pass through FilterAppsForShortQueries; ShortQueryAppFilterMinTier is AcronymWordBoundary.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListRanker.cs: Hard match tiers constrain ordering before frecency; boundary/acronym classification determines eligibility."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette short queries behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Command Palette short queries report",
+        "module": "Command Palette short queries",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Create the four named Start Menu shortcuts in a disposable account.",
+          "Compare 04, D04 and prefix queries with one- and two-character noise controls.",
+          "Inspect raw match tier versus rendered filtering and compare the reported older version only in isolation."
+        ],
+        "expected_result": "Useful contiguous suffix matches are evaluated explicitly without reintroducing an unbounded fuzzy tail."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Search"
+  ],
+  "assignees": [],
+  "comments": 2
+}

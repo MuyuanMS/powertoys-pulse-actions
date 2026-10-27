@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 5,
+  "number": 51580,
+  "kind": "issue",
+  "title": "[Mouse Highlighter] Yellow highlight circle stays on screen and does not disappear",
+  "url": "https://github.com/microsoft/PowerToys/issues/51580",
+  "generated_at": "2026-10-27T18:57:07.23851+08:00",
+  "evaluated_at": "2026-10-27T18:57:07.23851+08:00",
+  "source_updated_at": "2026-10-26T06:01:07Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Compare tray versus keyboard activation and observe button-up/fade state. A stale input/visual lifecycle is a hypothesis; another ZIP request would not resolve it.",
+    "evidence": [
+      "On 0.102.2933, enabling through the tray leaves a yellow circle at the click position that never fades.",
+      "Settings screenshots and a bug-report ZIP already exist; the automated archive rejection does not erase the supplied reproduction.",
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.cpp: Mouse events are queued; button down/up and fade animation are separate transitions, with explicit zero-duration normalization."
+    ],
+    "recommended_action": "Reproduce Mouse Highlighter behavior",
+    "evaluated_at": "2026-10-27T18:57:07.23851+08:00",
+    "source_updated_at": "2026-10-26T06:01:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The screenshot/repro localizes a persistent visual, but does not prove which transition is missing."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clear stale activation-click visuals",
+      "root_cause": "Tray activation may leave a pressed-button visual without its matching release/fade transition; this has not been reproduced.",
+      "plan": [
+        "Compare activation paths and identify the first unmatched input/visual state.",
+        "If confirmed, initialize or reconcile button visual state at activation without dropping genuine held drags.",
+        "Add tray-enable, shortcut-enable and disable/re-enable regressions."
+      ],
+      "verification": [
+        "Released clicks always fade; held clicks remain visible only while intended.",
+        "Zero and nonzero fade settings both work."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The screenshot/repro localizes a persistent visual, but does not prove which transition is missing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Tray activation leaves a Mouse Highlighter circle behind.",
+    "known_information": [
+      "On 0.102.2933, enabling through the tray leaves a yellow circle at the click position that never fades.",
+      "Settings screenshots and a bug-report ZIP already exist; the automated archive rejection does not erase the supplied reproduction."
+    ],
+    "inferences": [],
+    "analysis": "Compare tray versus keyboard activation and observe button-up/fade state. A stale input/visual lifecycle is a hypothesis; another ZIP request would not resolve it.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.cpp: Mouse events are queued; button down/up and fade animation are separate transitions, with explicit zero-duration normalization."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Mouse Highlighter behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Mouse Highlighter report",
+        "module": "Mouse Highlighter",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Set click-only highlighting to the reporter's shown settings.",
+          "Enable through the tray, release the click, and move away; compare shortcut activation.",
+          "Record down/up delivery and whether the retained circle is a held-click or persistent visual."
+        ],
+        "expected_result": "No permanent circle remains after button release; the configured fade completes."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 1
+}

@@ -2,272 +2,57 @@
   "schemaVersion": 5,
   "number": 50424,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T01:05:56.9111698Z",
-  "evaluated_at": "2026-09-07T01:05:56.9111698Z",
-  "source_updated_at": "2026-09-06T22:57:39Z",
   "title": "Mouse Jump crashes when pressing Windows key+Shift+D",
   "url": "https://github.com/microsoft/PowerToys/issues/50424",
-  "author": "CompactProducer",
-  "authorAssociation": "NONE",
+  "generated_at": "2026-10-27T18:57:07.18479+08:00",
+  "evaluated_at": "2026-10-27T18:57:07.18479+08:00",
+  "source_updated_at": "2026-10-27T07:40:03Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Existing contributor coordination now owns the next fix attempt. The September unowned-design artifact must not spawn a competing implementation. Validate a forthcoming patch for safe thread-input detach and failure handling; do not present the IL workaround as a merged fix.",
+    "evidence": [
+      "The contributor traced the throwing SetForegroundWindow path and event-loop rethrow.",
+      "An October 27 commenter reports a local AttachThreadInput/retry experiment: 14 of 28 activations needed retry; this is reporter testing, not validated source coverage.",
+      "The original contributor has asked that commenter to submit a PR and offered to implement otherwise.",
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs: Foreground acquisition is part of preview activation.",
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseJump.WinUI3/Helpers/MouseJumpEventLoop.cs: Activation callback error propagation is the second observed failure boundary.",
+      "Read the full October 27 discussion; no covering PR is linked in the retrieved timeline."
+    ],
+    "recommended_action": "Use the linked existing owner/fix; do not start a competing change.",
+    "evaluated_at": "2026-10-27T18:57:07.18479+08:00",
+    "source_updated_at": "2026-10-27T07:40:03Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Existing contributor coordination now owns the next fix attempt. The September unowned-design artifact must not spawn a competing implementation. Validate a forthcoming patch for safe thread-input detach and failure handling; do not present the IL workaround as a merged fix.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/50424"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Mouse Jump crashes when foreground activation fails.",
+    "known_information": [
+      "The contributor traced the throwing SetForegroundWindow path and event-loop rethrow.",
+      "An October 27 commenter reports a local AttachThreadInput/retry experiment: 14 of 28 activations needed retry; this is reporter testing, not validated source coverage.",
+      "The original contributor has asked that commenter to submit a PR and offered to implement otherwise."
+    ],
+    "inferences": [],
+    "analysis": "Existing contributor coordination now owns the next fix attempt. The September unowned-design artifact must not spawn a competing implementation. Validate a forthcoming patch for safe thread-input detach and failure handling; do not present the IL workaround as a merged fix.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs: Foreground acquisition is part of preview activation.",
+      "Upstream main 9e6593c34949: src/modules/MouseUtils/MouseJump.WinUI3/Helpers/MouseJumpEventLoop.cs: Activation callback error propagation is the second observed failure boundary.",
+      "Read the full October 27 discussion; no covering PR is linked in the retrieved timeline."
+    ],
+    "information_gaps": []
+  },
+  "actions": [],
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Utilities"
   ],
   "assignees": [],
-  "comments": 3,
-  "confidence": "high",
-  "status": {
-    "glyph": "!",
-    "label": "Confirmed foreground-activation crash",
-    "detail": "The new diagnostic comments identify the exact exception: SetForegroundWindow returns false in the WinUI preview path, generic result handling throws, and MouseJumpEventLoop terminates the process."
-  },
-  "summary": "On PowerToys 0.101.2362 and Windows 11 Pro 26H2, invoking Mouse Jump with Win+Shift+D closes the preview process. New public log analysis confirms that both the runner-side foreground handoff and the preview's foreground request fail; the preview converts its expected zero result into a terminating Win32Exception.",
-  "next_action": "Approve a focused design that makes foreground denial recoverable, preserves diagnostics, and verifies that the process survives failed and successful activations.",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The latest comments replace the earlier low-confidence display-topology hypothesis with a complete exception stack and the preceding module-interface warning. The source exactly matches that sequence: the runner logs but tolerates its failed SetForegroundWindow call, the WinUI preview calls SetForegroundWindow again and passes false to ResultHandler.HandleResult, and MouseJumpEventLoop rethrows the resulting exception. A narrow recovery change can prevent process termination without masking unrelated preview failures.",
-    "evidence": [
-      "The reporter supplies a direct Win+Shift+D reproduction on PowerToys 0.101.2362 and Windows 11 Pro 26H2.",
-      "The public Mouse Jump log shows System.ComponentModel.Win32Exception: 'SetForegroundWindow failed with result 0' from PreviewWindow.ShowWindowAsync through ShowPreviewAsync and MouseJumpEventLoop.RunAsyncEventHandler.",
-      "The public module-interface log records the hotkey followed by 'SetForegroundWindow on WinUI3 window failed with result 0' approximately 95 milliseconds before the preview exception.",
-      "src/modules/MouseUtils/MouseJump/dllmain.cpp logs the runner-side SetForegroundWindow failure as a warning and then signals the preview event.",
-      "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs calls ShowWindow and then treats a false SetForegroundWindow result as an exception through ResultHandler.HandleResult.",
-      "src/modules/MouseUtils/MouseJump.WinUI3/Helpers/MouseJumpEventLoop.cs deliberately rethrows callback exceptions because the process may be unstable, which explains the observed process exit.",
-      "SetForegroundWindow returning zero does not provide a useful last-error value; the reported 'operation completed successfully' text confirms that the generic exception wrapper is inappropriate for this expected foreground-policy denial.",
-      "The foreground activation code was introduced by merged PR #48393 as part of the WinUI3 port and has no later path-specific commit or covering pull request.",
-      "The live issue timeline contains no linked pull request, assigned owner, or duplicate."
-    ],
-    "recommended_action": "Approve the implementation-grade recovery design: handle foreground denial explicitly in PreviewWindow, hide the unusable preview without throwing, retain strict failure behavior for unexpected errors, and add process-survival regression coverage.",
-    "evaluated_at": "2026-09-07T01:05:56.9111698Z",
-    "source_updated_at": "2026-09-06T22:57:39Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No open or merged fix covers issue #50424. The exact crash-producing statement and upstream handoff failure are now identified, so a focused repository change is applicable without a competing proposal.",
-    "existing_fix_urls": []
-  },
-  "proposed_fixes": [
-    {
-      "title": "Make Mouse Jump foreground denial nonfatal",
-      "root_cause": "The runner's foreground handoff to the pre-launched WinUI process can be denied. PreviewWindow.ShowWindowAsync then makes a second SetForegroundWindow call and sends its false result to ResultHandler.HandleResult, which throws a Win32Exception even though foreground denial is an expected policy outcome and SetForegroundWindow does not supply a meaningful last-error code. MouseJumpEventLoop rethrows that exception and terminates the Mouse Jump process.",
-      "plan": [
-        "Replace generic exception handling for PreviewWindow.ShowWindowAsync's SetForegroundWindow call with an explicit success/failure branch.",
-        "When foreground acquisition fails, log a bounded warning, hide and clear the preview, skip SetFocus and SetActiveWindow, and return normally so MouseJumpEventLoop keeps the process alive for a later activation.",
-        "Keep unexpected rendering, dispatch, and Win32 failures on the existing exception path so genuine corruption is not silently swallowed.",
-        "Add regression coverage that triggers preview activation without foreground eligibility, verifies that PowerToys.MouseJump.WinUI3 remains alive, and then verifies that a later normal hotkey activation can still show and dismiss the preview."
-      ],
-      "verification": [
-        "Reproduce the original Win+Shift+D sequence on Windows 11 26H2 and confirm a denied foreground handoff no longer terminates PowerToys.MouseJump.WinUI3.",
-        "Confirm the failure log identifies foreground denial without reporting a misleading 'operation completed successfully' Win32Exception.",
-        "After a denied activation, invoke Win+Shift+D again under normal foreground conditions and confirm the preview appears, receives keyboard/pointer interaction, and dismisses on focus loss.",
-        "Run the focused MouseUtils.UITests.Next MouseJumpTests cases for shortcut activation, process lifetime, pointer movement, and focus-loss dismissal."
-      ],
-      "confidence": {
-        "score": 92,
-        "level": "green",
-        "rationale": "The issue now contains the exact exception stack, the preceding runner-side warning, and source lines that deterministically convert the false result into the terminating exception. The proposed branch directly removes that crash while preserving strict handling for unrelated failures."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Mouse Jump's WinUI process terminates when foreground transfer is denied during activation. The newest comments identify both failed SetForegroundWindow calls and the exact throw/rethrow path, eliminating the earlier uncertainty about display discovery, capture, or image conversion.",
-    "known_information": [
-      "The reporter uses PowerToys 0.101.2362 Stable installed through WinGet.",
-      "The operating system is Windows 11 Pro 26H2, UK English, using a per-user non-admin installation.",
-      "The crash occurs after invoking Mouse Jump with Win+Shift+D while leaving the pointer stationary.",
-      "A public PowerToys bug report archive is attached.",
-      "The first automated triage pass did not find a crash signature in its bounded diagnostic subset.",
-      "A contributor subsequently found the complete Mouse Jump exception stack in the supplied logs.",
-      "The runner-side module log records SetForegroundWindow returning zero before signaling the Mouse Jump preview event.",
-      "The preview log records a Win32Exception from the second SetForegroundWindow call in PreviewWindow.ShowWindowAsync.",
-      "MouseJumpEventLoop logs and rethrows callback exceptions, terminating the background process by design.",
-      "The current foreground activation path came from the WinUI3 port in merged PR #48393."
-    ],
-    "inferences": [
-      "The runner's failed foreground handoff leaves the WinUI process without the foreground privilege that PreviewWindow.ShowWindowAsync expects.",
-      "The false return from SetForegroundWindow is a recoverable activation-policy outcome, not evidence that the Mouse Jump process is otherwise corrupted.",
-      "Continuing to show a preview that never became foreground could leave focus-loss dismissal unreliable, so hiding that activation is safer than merely ignoring the result.",
-      "Display discovery, desktop capture, and image conversion are no longer plausible primary causes for this report because the captured stack reaches ShowWindowAsync and names the failing call."
-    ],
-    "analysis": "The latest public comments supply exactly the diagnostic evidence requested by the prior artifact, so retaining a request_info action would be stale and redundant. Source review confirms a two-stage foreground handoff: the runner attempts to foreground the hidden WinUI window and then signals the activation event; the preview renders, shows the window, and attempts foreground activation again. The first failure is logged and tolerated, while the second is routed through a generic throwing helper. Because the event loop deliberately terminates on callback exceptions, that single policy-denial result becomes the reported crash. The narrow safe fix is to classify only this result as recoverable, hide the non-interactive preview, and leave all unexpected exceptions unchanged.",
-    "initial_investigation": [
-      "Read the complete live issue body, all three public comments, labels, assignees, and timeline activity; no linked issue or pull request is present.",
-      "Reviewed the exact source revision linked by the contributor and confirmed PreviewWindow.ShowWindowAsync calls ResultHandler.HandleResult when SetForegroundWindow returns false.",
-      "Reviewed src/modules/MouseUtils/MouseJump/dllmain.cpp and confirmed the runner-side call logs the same false result as a warning before SetEvent activates the preview.",
-      "Reviewed MouseJumpEventLoop.RunAsyncEventHandler and confirmed callback exceptions are logged and rethrown, intentionally ending the process.",
-      "Reviewed PreviewWindow activation and dismissal handlers: focus loss hides the preview, so a failed foreground transition should not leave a visible topmost window waiting for a Deactivated event that may never arrive.",
-      "Reviewed MouseUtils.UITests.Next/MouseJumpTests.cs, which already covers process startup, shortcut activation, pointer interaction, and focus-loss dismissal and can be extended with a foreground-denial process-survival case.",
-      "Reviewed merged WinUI3 port PR #48393 and tracking issue #48290; the activation sequence was introduced in that port and no subsequent commit changes the relevant PreviewWindow path.",
-      "Searched public issues and pull requests for the exact SetForegroundWindow failure and broader Mouse Jump crash reports; no separate duplicate or covering fix was found."
-    ],
-    "information_gaps": []
-  },
-  "linked_work": {
-    "duplicates": [],
-    "related_issues": [
-      {
-        "number": 48290,
-        "url": "https://github.com/microsoft/PowerToys/issues/48290",
-        "state": "CLOSED",
-        "title": "[Mouse Jump] - port to WInUI3 (from FancyMouse WinUI3 version)",
-        "relationship": "tracking issue for the WinUI3 port that introduced the current activation path"
-      }
-    ],
-    "related_prs": [
-      {
-        "number": 48393,
-        "url": "https://github.com/microsoft/PowerToys/pull/48393",
-        "state": "MERGED",
-        "title": "Ready for Review - [Mouse Jump] - port upstream WinUI3 code to Mouse Jump (microsoft#48290)",
-        "relationship": "introduced the current runner-to-WinUI foreground activation sequence"
-      }
-    ],
-    "covering_prs": []
-  },
-  "design": {
-    "root_cause": "Mouse Jump's runner-side SetForegroundWindow call can be denied before it signals the WinUI preview. The preview then calls SetForegroundWindow itself and treats a false result as fatal through ResultHandler.HandleResult. That Win32Exception escapes ShowPreviewAsync, and MouseJumpEventLoop rethrows it, terminating the process. The crash is therefore caused by classifying a recoverable foreground-policy denial as process corruption.",
-    "evidence": [
-      "The public module-interface log records the hotkey and a failed runner-side SetForegroundWindow call.",
-      "The public exception stack names PreviewWindow.ShowWindowAsync and SetForegroundWindow as the failure.",
-      "PreviewWindow.xaml.cs passes the false result directly to ResultHandler.HandleResult with getLastError disabled.",
-      "MouseJumpEventLoop.cs rethrows callback exceptions and documents that the main module will restart the process on the next hotkey.",
-      "PreviewWindow's Deactivated handler is responsible for hiding the preview, so leaving a never-foregrounded topmost preview visible is unsafe.",
-      "The exact code was introduced by the WinUI3 port in PR #48393 and has no later covering fix."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
-        "purpose": "Owns preview display, foreground activation, focus setup, and focus-loss dismissal.",
-        "symbols": [
-          "PreviewWindow.ShowPreviewAsync",
-          "PreviewWindow.ShowWindowAsync",
-          "PreviewWindow.HideWindow",
-          "PreviewWindow.PreviewWindow_Activated"
-        ]
-      },
-      {
-        "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
-        "purpose": "Provides end-to-end Mouse Jump process-lifetime, shortcut activation, pointer interaction, and focus-loss coverage.",
-        "symbols": [
-          "MouseJumpTests.SettingsPageLoadsAndProcessRuns",
-          "MouseJumpTests.FocusLossDismissesPreview",
-          "MouseJumpTests.ShowPreview",
-          "MouseJumpTests.WaitForProcess"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
-        "symbols": [
-          "PreviewWindow.ShowWindowAsync"
-        ],
-        "current_behavior": "After showing the topmost preview, the method passes a false SetForegroundWindow result to ResultHandler.HandleResult. The helper throws even though SetForegroundWindow can be denied by foreground policy without a meaningful last-error value.",
-        "change": "Handle SetForegroundWindow explicitly. On success, continue with the existing focus and active-window calls. On failure, emit one warning that identifies foreground denial, hide and clear the preview, skip the remaining focus calls, and return normally from the UI-thread callback.",
-        "code_block": "_ = PInvoke.ShowWindow(hWnd, SHOW_WINDOW_CMD.SW_SHOW);\n\nif (!PInvoke.SetForegroundWindow(hWnd))\n{\n    Logger.LogWarning(\"Mouse Jump preview could not acquire the foreground window; dismissing this activation.\");\n    this.HideWindow();\n    return;\n}\n\n// Only set focus/active state after foreground transfer succeeds.\nTrySetFocusAndActiveWindow(hWnd);",
-        "edge_cases": [
-          "Do not use GetLastError to invent a cause for SetForegroundWindow returning zero.",
-          "Do not leave the WS_EX_TOPMOST preview visible when it did not become foreground.",
-          "Clear the rendered preview when hiding so a later activation does not reuse stale desktop imagery.",
-          "Do not swallow exceptions from rendering, dispatcher failure, invalid handles, or other operations that can indicate a corrupted UI state."
-        ],
-        "tests": [
-          "Exercise activation without foreground eligibility and verify the preview is dismissed without terminating PowerToys.MouseJump.WinUI3.",
-          "Verify normal foreground acquisition still runs SetFocus and SetActiveWindow and supports Escape, pointer selection, and focus-loss dismissal."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
-        "symbols": [
-          "MouseJumpTests",
-          "MouseJumpTests.WaitForProcess",
-          "MouseJumpTests.WaitForPreviewReady"
-        ],
-        "current_behavior": "The suite verifies successful shortcut activation and dismissal but does not assert survival after a foreground-denied activation.",
-        "change": "Add a focused regression case that keeps another application in the foreground, signals the Mouse Jump preview event without the runner's hotkey foreground entitlement, waits for the denied activation to settle, asserts that the Mouse Jump process remains alive, and then uses the normal shortcut to prove the same process can activate successfully.",
-        "code_block": "using var foregroundApp = NotepadFixture.Start();\nAssert.IsTrue(WindowControl.WaitForForeground(new IntPtr(foregroundApp.Window.WindowHandle), 5_000, 2));\nAssert.IsTrue(NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseJumpShowPreview, 10_000));\nAssert.IsTrue(WaitForProcess(expected: true), \"Foreground denial terminated Mouse Jump.\");\nKeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.D);\nAssert.IsTrue(new WindowShowWatcher(previewClass, previewHwnd).Wait(10_000));",
-        "edge_cases": [
-          "Wait for the denied activation to finish before sending the normal shortcut.",
-          "Assert process identity or uninterrupted lifetime so an automatic restart cannot falsely satisfy the test.",
-          "Clean up the foreground helper window and dismiss any preview in test teardown.",
-          "Keep the test independent of monitor count, DPI, and fixed screen coordinates."
-        ],
-        "tests": [
-          "Run the new foreground-denial survival case repeatedly to catch process exits and restart masking.",
-          "Run existing SettingsPageLoadsAndProcessRuns, PreviewClickMovesCursorAndDisableStopsActivation, and FocusLossDismissesPreview cases."
-        ]
-      }
-    ],
-    "verify": [
-      "Build the affected configuration with tools\\build\\build.ps1 -Platform x64 -Configuration Debug.",
-      "Run the focused MouseUtils.UITests.Next MouseJumpTests cases through Visual Studio Test Explorer or vstest.console.exe.",
-      "On Windows 11 26H2, reproduce the original Win+Shift+D sequence and confirm PowerToys.MouseJump.WinUI3 remains running when foreground acquisition is denied.",
-      "After a denied activation, invoke the shortcut again and confirm a successful preview can receive pointer and keyboard input and dismiss on focus loss.",
-      "Inspect public-safe logs and confirm foreground denial is a warning rather than a Win32Exception with a misleading success message."
-    ],
-    "risks": [
-      "Dismissing a foreground-denied preview avoids the crash but may turn the affected activation into a visible no-op; the warning must make that outcome diagnosable.",
-      "If the preview is not hidden after failed foreground transfer, its topmost style could leave a stale overlay that never receives the expected Deactivated event.",
-      "Over-broad exception handling could conceal unrelated rendering or dispatcher defects; only the explicit SetForegroundWindow false result should become nonfatal.",
-      "An automated denial test can be timing-sensitive unless it verifies uninterrupted process identity and waits for foreground ownership before signaling."
-    ],
-    "alternatives": [
-      "Ignore the SetForegroundWindow result and continue showing the preview. Rejected because a never-foregrounded topmost window may not receive keyboard input or the Deactivated event used for dismissal.",
-      "Suppress all exceptions in MouseJumpEventLoop. Rejected because the event loop intentionally terminates on unexpected UI corruption and broad suppression would hide unrelated failures.",
-      "Retry SetForegroundWindow indefinitely or use AttachThreadInput. Rejected because it can block the hotkey path, manipulate unrelated input queues, and still cannot guarantee foreground permission.",
-      "Retain the previous empty-display guard as the primary fix. Rejected because the new stack proves display discovery completed and the crash occurred later in ShowWindowAsync."
-    ]
-  },
-  "actions": [
-    {
-      "id": "reproduce-mouse-jump-foreground-denial-50424",
-      "type": "reproduce",
-      "label": "Reproduce Mouse Jump foreground-denial crash",
-      "primary": false,
-      "note": "Use the known activation sequence to verify both the current crash and the proposed recovery behavior.",
-      "reproduce": {
-        "title": "Verify Mouse Jump survives a denied foreground handoff",
-        "module": "Mouse Jump",
-        "version_requirement": "PowerToys 0.101.2362 on Windows 11 26H2, then a development build containing the proposed recovery",
-        "prerequisites": [
-          "Mouse Jump enabled",
-          "Default Win+Shift+D activation shortcut",
-          "PowerToys running as a per-user non-admin installation",
-          "A process monitor where PowerToys.MouseJump.WinUI3 can be observed"
-        ],
-        "setup": [
-          "Leave the mouse pointer stationary on the active display.",
-          "Keep another normal application available to take foreground focus between activation attempts."
-        ],
-        "steps": [
-          "Press Win+Shift+D and observe whether the preview appears and whether PowerToys.MouseJump.WinUI3 remains running.",
-          "If the current build exits, confirm the Mouse Jump log names SetForegroundWindow in PreviewWindow.ShowWindowAsync and the module-interface log contains the preceding SetForegroundWindow warning.",
-          "On the development build, arrange for another application to retain foreground focus and invoke Mouse Jump once.",
-          "Confirm the denied activation is dismissed without terminating the Mouse Jump process.",
-          "Return to a normal foreground state, press Win+Shift+D again, and verify the preview appears and can be dismissed."
-        ],
-        "expected_result": "Foreground denial produces a warning and a dismissed activation, not a process crash; a later eligible activation shows an interactive preview in the same Mouse Jump process."
-      }
-    },
-    {
-      "id": "approve-mouse-jump-foreground-recovery-50424",
-      "type": "approve_design",
-      "label": "Approve Mouse Jump foreground recovery design",
-      "primary": true,
-      "confirm": true,
-      "note": "Start the fork-side implementation only after reviewing the confirmed root cause, narrow recovery boundary, and no-stale-overlay behavior."
-    }
-  ],
-  "verify": [
-    "Confirm foreground denial no longer terminates PowerToys.MouseJump.WinUI3.",
-    "Confirm a denied activation leaves no visible stale preview and a later normal activation still works.",
-    "Confirm unexpected rendering or dispatcher exceptions retain the existing terminating behavior."
-  ]
+  "comments": 6
 }

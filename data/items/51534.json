@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 5,
+  "number": 51534,
+  "kind": "issue",
+  "title": "[Workspaces] Cannot uncheck \"Launch as administrator\" for a captured Win32 app when the checkbox is disabled",
+  "url": "https://github.com/microsoft/PowerToys/issues/51534",
+  "generated_at": "2026-10-27T19:04:51.01135+08:00",
+  "evaluated_at": "2026-10-27T19:04:51.01135+08:00",
+  "source_updated_at": "2026-10-24T09:29:29Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The binding explains the checked-but-disabled state. A narrow allow-clear transition is plausible, but must preserve restrictions on enabling unsupported elevation and avoid changing token/UAC policy.",
+    "evidence": [
+      "The report supplies is-elevated:true/can-launch-elevated:false, a screenshot, an asInvoker Win32 app and a missing AppsFolder entry.",
+      "WorkspacesEditorPage binds IsChecked to IsElevated and IsEnabled solely to CanLaunchElevated.",
+      "Upstream main 9e6593c34949: src/modules/Workspaces/WorkspacesEditor/WorkspacesEditorPage.xaml: Launch-as-admin checkbox IsEnabled is CanLaunchElevated while IsChecked is the independently captured IsElevated.",
+      "Upstream main 9e6593c34949: src/modules/Workspaces/WorkspacesEditor/Models/Application.cs: IsElevated and CanLaunchElevated are distinct model properties."
+    ],
+    "recommended_action": "Reproduce Workspaces behavior",
+    "evaluated_at": "2026-10-27T19:04:51.01135+08:00",
+    "source_updated_at": "2026-10-24T09:29:29Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The problematic binding is explicit, but the complete editor/model notification and launcher behavior need focused validation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Allow clearing an existing elevation request",
+      "root_cause": "A capability-only IsEnabled binding conflates permission to enable elevation with the ability to remove an already captured request.",
+      "plan": [
+        "Confirm the true/false model combination in the editor.",
+        "Define a state transition that permits clearing IsElevated even when CanLaunchElevated is false, while blocking a new unsupported true value.",
+        "Test all four state combinations and persisted normal-launch behavior."
+      ],
+      "verification": [
+        "Checked/unsupported can be cleared; unchecked/unsupported cannot be newly enabled.",
+        "No UAC/signature policy or supported elevation behavior is bypassed."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The problematic binding is explicit, but the complete editor/model notification and launcher behavior need focused validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces cannot clear captured elevation when capability is false.",
+    "known_information": [
+      "The report supplies is-elevated:true/can-launch-elevated:false, a screenshot, an asInvoker Win32 app and a missing AppsFolder entry.",
+      "WorkspacesEditorPage binds IsChecked to IsElevated and IsEnabled solely to CanLaunchElevated."
+    ],
+    "inferences": [],
+    "analysis": "The binding explains the checked-but-disabled state. A narrow allow-clear transition is plausible, but must preserve restrictions on enabling unsupported elevation and avoid changing token/UAC policy.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/Workspaces/WorkspacesEditor/WorkspacesEditorPage.xaml: Launch-as-admin checkbox IsEnabled is CanLaunchElevated while IsChecked is the independently captured IsElevated.",
+      "Upstream main 9e6593c34949: src/modules/Workspaces/WorkspacesEditor/Models/Application.cs: IsElevated and CanLaunchElevated are distinct model properties."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Workspaces behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Workspaces report",
+        "module": "Workspaces",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Capture an elevated ordinary asInvoker app absent from AppsFolder on an isolated test account.",
+          "Confirm the saved true/false combination and disabled checked checkbox.",
+          "Validate a proposed allow-clear state across save/reopen and normal launch without allowing unsupported elevation to be turned on."
+        ],
+        "expected_result": "A captured elevation request can be removed, while capability restrictions still govern new elevation requests."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
+  "comments": 1
+}

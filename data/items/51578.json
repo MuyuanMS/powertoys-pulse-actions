@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 5,
+  "number": 51578,
+  "kind": "issue",
+  "title": "CmdPal: Check UT CompletionRacingEnqueueDoesNotLoseAcceptedWork for flakiness",
+  "url": "https://github.com/microsoft/PowerToys/issues/51578",
+  "generated_at": "2026-10-27T19:04:50.93151+08:00",
+  "evaluated_at": "2026-10-27T19:04:50.93151+08:00",
+  "source_updated_at": "2026-10-26T02:08:24Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Reproduce the exact test and distinguish a scheduling timeout from lost accepted work before changing queue semantics. The source has explicit publisher/completion coordination, so deleting the race assertion or increasing timeouts blindly is not a justified fix.",
+    "evidence": [
+      "The developer filed a local failure reminder and owns the issue, but supplies no failing assertion/timeout output.",
+      "The named test exists on current main: ten rounds, eight producers, four workers, a ten-second overall timeout and SpinWait before Complete.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadQueueTests.cs: CompletionRacingEnqueueDoesNotLoseAcceptedWork waits for producers, workers and queue completion, then compares accepted/executed counters.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadQueue.cs: TryEnqueue, Complete and TryPublishCompletion have explicit coordination; cause of the reported failure is not established."
+    ],
+    "recommended_action": "Reproduce Command Palette icon queue behavior",
+    "evaluated_at": "2026-10-27T19:04:50.93151+08:00",
+    "source_updated_at": "2026-10-26T02:08:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. A named source/test is available, but no failure output or reproduction distinguishes test flakiness from a queue defect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make the completion race test deterministic only after identifying the failure",
+      "root_cause": "Wall-clock timeout or uncontrolled producer/completion scheduling may cause flakiness; an actual queue race remains a competing explanation.",
+      "plan": [
+        "Capture the precise failed assertion or timeout under repeated focused runs.",
+        "If test scheduling is responsible, use explicit interleaving gates without weakening accepted-work checks; if production ordering fails, repair its publisher/completion boundary instead.",
+        "Retain both deterministic boundary coverage and repeated race stress."
+      ],
+      "verification": [
+        "No lost-work assertions or hangs across repeated loaded runs.",
+        "Completion cannot overtake an accepted publisher."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "A named source/test is available, but no failure output or reproduction distinguishes test flakiness from a queue defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "IconLoadQueue completion/enqueue race test reportedly flakes.",
+    "known_information": [
+      "The developer filed a local failure reminder and owns the issue, but supplies no failing assertion/timeout output.",
+      "The named test exists on current main: ten rounds, eight producers, four workers, a ten-second overall timeout and SpinWait before Complete."
+    ],
+    "inferences": [],
+    "analysis": "Reproduce the exact test and distinguish a scheduling timeout from lost accepted work before changing queue semantics. The source has explicit publisher/completion coordination, so deleting the race assertion or increasing timeouts blindly is not a justified fix.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadQueueTests.cs: CompletionRacingEnqueueDoesNotLoseAcceptedWork waits for producers, workers and queue completion, then compares accepted/executed counters.",
+      "Upstream main 9e6593c34949: src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadQueue.cs: TryEnqueue, Complete and TryPublishCompletion have explicit coordination; cause of the reported failure is not established."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette icon queue behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Command Palette icon queue report",
+        "module": "Command Palette icon queue",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Build the relevant unit-test project with repository scripts, then run only CompletionRacingEnqueueDoesNotLoseAcceptedWork repeatedly through vstest.",
+          "Retain exact timeout versus assertion failure and round/accepted/executed counts.",
+          "Compare ordinary and constrained/loaded scheduling; preserve accepted-work invariants."
+        ],
+        "expected_result": "Either repeated runs remain stable or a bounded interleaving explains the failure; no accepted work is lost."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [
+    "jiripolasek"
+  ],
+  "comments": 0
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 5,
+  "number": 51573,
+  "kind": "issue",
+  "title": "[PowerRename] Previous settings do not get restored after using \"Time used for replacement\" = \"Modification Time\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/51573",
+  "generated_at": "2026-10-27T19:04:51.095922+08:00",
+  "evaluated_at": "2026-10-27T19:04:51.095922+08:00",
+  "source_updated_at": "2026-10-25T23:00:01Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Separate serialized flag preservation from the independent text history. Reproduce the reported time-source transition and compare flags before write and after read; a bitmask/persistence defect is a hypothesis, not a confirmed root cause.",
+    "evidence": [
+      "The author supplies before/after screenshots and a control where leaving the time option unchanged restores settings correctly.",
+      "The problem affects regex, target scope, subfolders and time-source settings, while search/replace text survives.",
+      "Bug-report generation itself fails; that is not a reason to require another generic archive.",
+      "Upstream main 9e6593c34949: src/modules/powerrename/PowerRenameUILib/PowerRenameXAML/MainWindow.xaml.cpp: ReadSettings reads CSettingsInstance.GetFlags and separate LastRunSettings text; WriteSettings writes manager flags separately from text."
+    ],
+    "recommended_action": "Reproduce PowerRename behavior",
+    "evaluated_at": "2026-10-27T19:04:51.095922+08:00",
+    "source_updated_at": "2026-10-25T23:00:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The differential report and separate source persistence paths support the boundary, but no failing flag value has been captured."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve rename flags across time-source persistence",
+      "root_cause": "A time-source transition may corrupt or normalize the persisted option mask while text history remains independent.",
+      "plan": [
+        "Locate the first divergence in manager, saved and restored flags.",
+        "Repair only the proven mask/state conversion while retaining mutually exclusive option validation.",
+        "Add round-trip tests across time choices and regex/scope/subfolder combinations."
+      ],
+      "verification": [
+        "All selected options survive rename/close/reopen.",
+        "Other time sources and mutually exclusive flags remain valid."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The differential report and separate source persistence paths support the boundary, but no failing flag value has been captured."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerRename restores text but resets flags after Modification Time.",
+    "known_information": [
+      "The author supplies before/after screenshots and a control where leaving the time option unchanged restores settings correctly.",
+      "The problem affects regex, target scope, subfolders and time-source settings, while search/replace text survives.",
+      "Bug-report generation itself fails; that is not a reason to require another generic archive."
+    ],
+    "inferences": [],
+    "analysis": "Separate serialized flag preservation from the independent text history. Reproduce the reported time-source transition and compare flags before write and after read; a bitmask/persistence defect is a hypothesis, not a confirmed root cause.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/powerrename/PowerRenameUILib/PowerRenameXAML/MainWindow.xaml.cpp: ReadSettings reads CSettingsInstance.GetFlags and separate LastRunSettings text; WriteSettings writes manager flags separately from text."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce PowerRename behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate PowerRename report",
+        "module": "PowerRename",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Use disposable files and the screenshot settings; rename with Modification Time, close and reopen.",
+          "Repeat without changing the time source as a control.",
+          "Compare manager flags before save, persisted flags and restored controls; do not rename valuable files."
+        ],
+        "expected_result": "All persisted options and text restore consistently across each time-source choice."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

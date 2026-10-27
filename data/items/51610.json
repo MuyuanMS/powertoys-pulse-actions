@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 5,
+  "number": 51610,
+  "kind": "issue",
+  "title": "Error PowerToys Run",
+  "url": "https://github.com/microsoft/PowerToys/issues/51610",
+  "generated_at": "2026-10-27T19:04:50.785422+08:00",
+  "evaluated_at": "2026-10-27T19:04:50.785422+08:00",
+  "source_updated_at": "2026-10-27T10:17:11Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Reuse the existing recovery path and reproduce on a current build before designing a new WPF fix. The historical stack alone does not establish a current unhandled route, and a general catch/swallow change is not justified.",
+    "evidence": [
+      "The supplied 0.94.2 stack has COMException 0x80263001 through DwmExtendFrameIntoClientArea and WPF theme/backdrop handling.",
+      "Current main has an explicit DWM_E_COMPOSITIONDISABLED classifier and bounded asynchronous theme retries; this is newer source coverage, not proof this old installation is repaired.",
+      "Upstream main 9e6593c34949: src/modules/launcher/PowerLauncher/Helper/ExceptionHelper.cs: IsRecoverableDwmCompositionException explicitly recognizes HRESULT 0x80263001.",
+      "Upstream main 9e6593c34949: src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs: UpdateThemeWithRetryAsync catches that classified COMException and retries theme application with cancellation."
+    ],
+    "recommended_action": "Reproduce PowerToys Run behavior",
+    "evaluated_at": "2026-10-27T19:04:50.785422+08:00",
+    "source_updated_at": "2026-10-27T10:17:11Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Reuse the existing recovery path and reproduce on a current build before designing a new WPF fix. The historical stack alone does not establish a current unhandled route, and a general catch/swallow change is not justified.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/blob/9e6593c34949d33fff03ba360846eca4be284f59/src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs",
+      "https://github.com/microsoft/PowerToys/blob/9e6593c34949d33fff03ba360846eca4be284f59/src/modules/launcher/PowerLauncher/Helper/ExceptionHelper.cs"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Old PowerToys Run hits a recoverable DWM composition exception.",
+    "known_information": [
+      "The supplied 0.94.2 stack has COMException 0x80263001 through DwmExtendFrameIntoClientArea and WPF theme/backdrop handling.",
+      "Current main has an explicit DWM_E_COMPOSITIONDISABLED classifier and bounded asynchronous theme retries; this is newer source coverage, not proof this old installation is repaired."
+    ],
+    "inferences": [],
+    "analysis": "Reuse the existing recovery path and reproduce on a current build before designing a new WPF fix. The historical stack alone does not establish a current unhandled route, and a general catch/swallow change is not justified.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/launcher/PowerLauncher/Helper/ExceptionHelper.cs: IsRecoverableDwmCompositionException explicitly recognizes HRESULT 0x80263001.",
+      "Upstream main 9e6593c34949: src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs: UpdateThemeWithRetryAsync catches that classified COMException and retries theme application with cancellation."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce PowerToys Run behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate PowerToys Run report",
+        "module": "PowerToys Run",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "On a controlled current-build machine, exercise system theme changes and session/display transitions.",
+          "Confirm Run remains alive when composition is temporarily unavailable and inspect whether the existing retry/classifier is reached.",
+          "If the exact reported WPF callback still escapes, preserve its current-build stack rather than changing unrelated exception handling."
+        ],
+        "expected_result": "Recoverable composition loss does not terminate Run; unrelated failures are not suppressed."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
+}

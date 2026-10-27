@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51545,
+  "kind": "issue",
+  "title": "FancyZones: \"Move newly created windows to the current active monitor\" re-shows a window the owning app has already hidden",
+  "url": "https://github.com/microsoft/PowerToys/issues/51545",
+  "generated_at": "2026-10-27T19:04:51.175922+08:00",
+  "evaluated_at": "2026-10-27T19:04:51.175922+08:00",
+  "source_updated_at": "2026-10-25T15:29:46Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Reproduce event timing around asynchronous placement and the second SetWindowPlacement call. The reported visibility race remains credible, but the existing guard is counterevidence to a simplistic fix.",
+    "evidence": [
+      "The report supplies a small AllocConsole/SW_HIDE harness, window-event order and option/exclusion/single-monitor controls.",
+      "The latest author reply confirms reproduction after upgrading.",
+      "Current SizeWindowToRect already checks IsWindowVisible and chooses SW_HIDE for an invisible window; a simple missing visibility check is therefore not an accurate diagnosis.",
+      "Upstream main 9e6593c34949: src/modules/fancyzones/FancyZonesLib/FancyZonesWindowProcessing.cpp: DefineWindowType rejects non-visible windows.",
+      "Upstream main 9e6593c34949: src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp: SizeWindowToRect snapshots visibility, may choose SW_RESTORE, sets WPF_ASYNCWINDOWPLACEMENT and calls SetWindowPlacement twice.",
+      "The public harness is https://github.com/Kjm520/google-drive-fs-terminal-bug/tree/main/for-powertoys; Google Drive is not required."
+    ],
+    "recommended_action": "Reproduce FancyZones automatic relocation behavior",
+    "evaluated_at": "2026-10-27T19:04:51.175922+08:00",
+    "source_updated_at": "2026-10-25T15:29:46Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The source already checks visibility; the asynchronous/repeated placement timing, rather than a missing guard, needs confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve visibility across deferred automatic relocation",
+      "root_cause": "Visibility can change after the existing check but before asynchronous placement applies a previously selected show command.",
+      "plan": [
+        "Confirm the show/hide/placement race with the supplied harness.",
+        "If confirmed, make automatic relocation preserve current visibility without replaying stale show semantics; keep intentional manual snapping separate.",
+        "Add a delayed-hide regression and normal visible/maximized-window controls."
+      ],
+      "verification": [
+        "The harness remains hidden in all relocation timings.",
+        "Visible and maximized windows still relocate correctly across DPI boundaries."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The source already checks visibility; the asynchronous/repeated placement timing, rather than a missing guard, needs confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones automatic relocation can re-show an app-hidden console.",
+    "known_information": [
+      "The report supplies a small AllocConsole/SW_HIDE harness, window-event order and option/exclusion/single-monitor controls.",
+      "The latest author reply confirms reproduction after upgrading.",
+      "Current SizeWindowToRect already checks IsWindowVisible and chooses SW_HIDE for an invisible window; a simple missing visibility check is therefore not an accurate diagnosis."
+    ],
+    "inferences": [],
+    "analysis": "Reproduce event timing around asynchronous placement and the second SetWindowPlacement call. The reported visibility race remains credible, but the existing guard is counterevidence to a simplistic fix.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: src/modules/fancyzones/FancyZonesLib/FancyZonesWindowProcessing.cpp: DefineWindowType rejects non-visible windows.",
+      "Upstream main 9e6593c34949: src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp: SizeWindowToRect snapshots visibility, may choose SW_RESTORE, sets WPF_ASYNCWINDOWPLACEMENT and calls SetWindowPlacement twice.",
+      "The public harness is https://github.com/Kjm520/google-drive-fs-terminal-bug/tree/main/for-powertoys; Google Drive is not required."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce FancyZones automatic relocation behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate FancyZones automatic relocation report",
+        "module": "FancyZones automatic relocation",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Build/run the linked small harness after reviewing it, on two monitors with the cursor on the secondary.",
+          "Compare option on/off, exclusion, single-monitor and delayed-hide controls.",
+          "Record visibility at classification, placement construction and both asynchronous placement applications."
+        ],
+        "expected_result": "Automatic relocation never undoes an owning application's hide; the precise timing boundary is captured."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2
+}

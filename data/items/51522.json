@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "number": 51522,
+  "kind": "issue",
+  "title": "Trailing quote in PowerToys DSCModules PATH entry breaks Ollama startup",
+  "url": "https://github.com/microsoft/PowerToys/issues/51522",
+  "generated_at": "2026-10-27T19:08:11.850823+08:00",
+  "evaluated_at": "2026-10-27T19:08:11.850823+08:00",
+  "source_updated_at": "2026-10-23T15:14:26Z",
+  "stage": "triage_revalidated",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The cross-project confirmation establishes a concrete input condition worth reproducing. Current installer authoring appends DSCModules through WiX Environment entries without a literal quote, so the exact historical writer/expansion remains unproven. Trace the installer-produced value and avoid trimming every user's PATH entry or blaming the editor.",
+    "evidence": [
+      "The report identifies a trailing double quote in the system PATH DSCModules entry after a 0.100.2 system install.",
+      "The linked Ollama #18061 discussion identifies PATH explicitly, and its author confirms removing that specific trailing quote restored server startup.",
+      "This is evidence for a malformed inherited environment value, not evidence that the Environment Variables editor authored it.",
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Core.wxs: AddPowerToysToUserPath and AddPowerToysToMachinePath append [DSCModulesReferenceFolder] with Part=last and the appropriate system scope; no literal quote is authored there.",
+      "Retrieved the full linked Ollama issue and comments; the system PATH diagnosis and successful targeted correction are explicit.",
+      "EnvironmentVariables.wxs packages the editor assets, so its filename is not evidence that it is the environment writer."
+    ],
+    "recommended_action": "Reproduce DSCModules PATH authoring behavior",
+    "evaluated_at": "2026-10-27T19:08:11.850823+08:00",
+    "source_updated_at": "2026-10-23T15:14:26Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The downstream cause is confirmed by the linked discussion; current source does not identify the historical quote writer."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent or safely migrate malformed DSCModules PATH values",
+      "root_cause": "A trailing unmatched quote in the DSCModules PATH entry disrupts the downstream process environment. The producing historical installer value or subsequent mutation is not yet isolated.",
+      "plan": [
+        "On a disposable machine, compare before/after system and user PATH around the reported installer version and an upgrade to current stable.",
+        "Inspect the generated MSI Environment table and expanded DSCModules directory value; identify whether the quote is authored, expanded or introduced by a different writer.",
+        "If the installer is responsible, fix that value and add a narrowly matched migration for the proven malformed PowerToys entry while preserving unrelated entries and scope."
+      ],
+      "verification": [
+        "Install, upgrade, repair and uninstall preserve well-formed system/user PATH entries.",
+        "An Ollama desktop startup test with the controlled malformed entry fails as reported and the targeted correction restores it.",
+        "No blanket quote stripping or unrelated environment mutation occurs."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The downstream cause is confirmed by the linked discussion; current source does not identify the historical quote writer."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A malformed PowerToys DSCModules PATH entry prevents Ollama's desktop server startup.",
+    "known_information": [
+      "The report identifies a trailing double quote in the system PATH DSCModules entry after a 0.100.2 system install.",
+      "The linked Ollama #18061 discussion identifies PATH explicitly, and its author confirms removing that specific trailing quote restored server startup.",
+      "This is evidence for a malformed inherited environment value, not evidence that the Environment Variables editor authored it."
+    ],
+    "inferences": [],
+    "analysis": "The cross-project confirmation establishes a concrete input condition worth reproducing. Current installer authoring appends DSCModules through WiX Environment entries without a literal quote, so the exact historical writer/expansion remains unproven. Trace the installer-produced value and avoid trimming every user's PATH entry or blaming the editor.",
+    "initial_investigation": [
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Core.wxs: AddPowerToysToUserPath and AddPowerToysToMachinePath append [DSCModulesReferenceFolder] with Part=last and the appropriate system scope; no literal quote is authored there.",
+      "Retrieved the full linked Ollama issue and comments; the system PATH diagnosis and successful targeted correction are explicit.",
+      "EnvironmentVariables.wxs packages the editor assets, so its filename is not evidence that it is the environment writer."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce DSCModules PATH authoring behavior",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate DSCModules PATH authoring report",
+        "module": "DSCModules PATH authoring",
+        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "prerequisites": [
+          "Use a disposable test account or controlled test machine; preserve existing user data."
+        ],
+        "setup": [],
+        "steps": [
+          "Capture only the PowerToys DSCModules PATH element and its scope before and after the reported installer on a disposable machine.",
+          "Compare generated MSI Environment values and current installer behavior; preserve unrelated PATH elements.",
+          "Check downstream Ollama desktop startup with a controlled malformed element and with the exact element corrected."
+        ],
+        "expected_result": "Determine whether PowerToys installation creates the unmatched quote and identify the responsible version/value without exposing a complete environment."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional fix direction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Environment Variables"
+  ],
+  "assignees": [],
+  "comments": 1
+}
