@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 5,
+  "number": 51635,
+  "kind": "issue",
+  "track": "fix",
+  "title": "PoweToys  Performance Monitor error! Network monitor doesn't appear in the dock",
+  "url": "https://github.com/microsoft/PowerToys/issues/51635",
+  "generated_at": "2026-10-28T00:10:14.156317Z",
+  "evaluated_at": "2026-10-28T00:10:14.156317Z",
+  "source_updated_at": "2026-10-27T22:45:27Z",
+  "stage": "triage_revalidated",
+  "pending_author": false,
+  "summary": "The supplied report narrows the missing network Dock item to unresolved pinned command IDs, not an absent bug-report attachment.",
+  "next_action": "Reproduce the two pin configurations, then repair only the confirmed Dock ID-resolution path.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Concrete diagnostic evidence exists, but configuration provenance and a controlled current-band comparison remain unverified. A confidence-scored pin-resolution plan is appropriate; network-counter rewrites are not justified.",
+    "evidence": [
+      "Reported on Microsoft Store PowerToys 0.102.3001 with Performance Monitor enabled and no network item in the Dock.",
+      "The attached ZIP was inspected selectively: its CmdPal log repeatedly says the pinned com.microsoft.cmdpal.network_widget command cannot be found through ICommandProvider4 and will not be shown as a Dock band. The GPU widget ID also fails.",
+      "The automated triage bot rejected an oversized archive entry. The attachment is present; bounded relevant log entries are readable without extracting the oversized entry.",
+      "Read the complete issue and bot comment, indexed the ZIP and inspected six bounded CmdPal-related entries; skipped the one oversized entry and did not execute archive content.",
+      "The release provider explicitly returns Network and Network Speed bands from GetDockBands: https://github.com/microsoft/PowerToys/blob/v0.102.3001/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs#L198-L228",
+      "Release GetBandId constructs com.microsoft.cmdpal.performanceWidget.network/networkSpeed, whereas network_widget is the detailed widget-page ID: https://github.com/microsoft/PowerToys/blob/v0.102.3001/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs#L388-L414",
+      "DockViewModel.SetupBands looks up the configured command ID and logs failed resolution when it is absent: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs#L250-L270",
+      "Reviewed #49674's merged network-band split and focused history/searches. Open #51218 and #51221 redesign the card/overview; closed-unmerged #49513 is a separate redesign, not established coverage of invalid pinned IDs."
+    ],
+    "recommended_action": "Reproduce the two pin configurations, then repair only the confirmed Dock ID-resolution path.",
+    "evaluated_at": "2026-10-28T00:10:14.156317Z",
+    "source_updated_at": "2026-10-27T22:45:27Z"
+  },
+  "issue_context": {
+    "summary": "The supplied report narrows the missing network Dock item to unresolved pinned command IDs, not an absent bug-report attachment.",
+    "known_information": [
+      "Reported on Microsoft Store PowerToys 0.102.3001 with Performance Monitor enabled and no network item in the Dock.",
+      "The attached ZIP was inspected selectively: its CmdPal log repeatedly says the pinned com.microsoft.cmdpal.network_widget command cannot be found through ICommandProvider4 and will not be shown as a Dock band. The GPU widget ID also fails.",
+      "The automated triage bot rejected an oversized archive entry. The attachment is present; bounded relevant log entries are readable without extracting the oversized entry."
+    ],
+    "inferences": [
+      "A stale or unsupported widget-page pin is a stronger hypothesis than a broken network counter: the provider advertises performanceWidget.network and performanceWidget.networkSpeed as band IDs, not network_widget.",
+      "The report does not yet prove how the invalid pins were created or whether re-adding a currently advertised Network band resolves the problem."
+    ],
+    "analysis": "Do not repeat the bot's generic repro/log request. The next discriminator belongs to maintainers: compare a seeded unresolved pin with a band added through the current Dock UI. Only then decide whether a compatibility migration, pin validation or provider-load correction is appropriate.",
+    "initial_investigation": [
+      "Read the complete issue and bot comment, indexed the ZIP and inspected six bounded CmdPal-related entries; skipped the one oversized entry and did not execute archive content.",
+      "The release provider explicitly returns Network and Network Speed bands from GetDockBands: https://github.com/microsoft/PowerToys/blob/v0.102.3001/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs#L198-L228",
+      "Release GetBandId constructs com.microsoft.cmdpal.performanceWidget.network/networkSpeed, whereas network_widget is the detailed widget-page ID: https://github.com/microsoft/PowerToys/blob/v0.102.3001/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs#L388-L414",
+      "DockViewModel.SetupBands looks up the configured command ID and logs failed resolution when it is absent: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs#L250-L270",
+      "Reviewed #49674's merged network-band split and focused history/searches. Open #51218 and #51221 redesign the card/overview; closed-unmerged #49513 is a separate redesign, not established coverage of invalid pinned IDs."
+    ],
+    "information_gaps": [
+      {
+        "information": "Maintainer comparison of the unresolved network_widget pin and a newly added Network band",
+        "why_needed": "Determines whether an ID migration/pin-validation fix is needed or current provider loading itself fails.",
+        "how_to_collect": "Use isolated Dock settings: first add Network through the released UI, then separately seed the reporter's known unresolved command ID and compare lookup/visible bands after restart.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "proposed_fixes": [
+    {
+      "title": "Validate and recover unresolved network Dock pins",
+      "root_cause": "Likely mismatch between persisted widget-page IDs and the provider's advertised Dock-band IDs. This is supported by repeated lookup failures, but the origin of the pin and the necessity of a legacy alias are not yet established.",
+      "plan": [
+        "Reproduce current Network and Network Speed bands on 0.102.3001, then seed network_widget and gpu_widget pins in an isolated profile.",
+        "Trace pin creation/restoration through provider band enumeration and DockViewModel.SetupBands; verify whether any supported older build wrote these exact IDs.",
+        "If a supported legacy alias is confirmed, migrate it to the equivalent advertised band ID while preserving position and avoiding duplicate bands. Do not silently map Network utilization to Network Speed.",
+        "If the IDs were never supported as bands, reject invalid pin creation and expose an explicit repair/re-add path rather than silently dropping the item.",
+        "Add focused pin-restore/restart tests for current, legacy/invalid and duplicate pins; leave network sampling unchanged."
+      ],
+      "verification": [
+        "A newly added Network or Network Speed band appears after restart.",
+        "The confirmed affected pin is either safely migrated once or visibly repairable; repeated startups do not duplicate or silently remove unrelated bands.",
+        "No unsupported-command warnings remain for a successfully repaired network pin; disabled-provider placeholders still behave correctly."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The reporter's actual lookup errors match released ID definitions exactly; pin provenance and a controlled reproduction have not been established."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve plan: Validate and recover unresolved network Dock pins",
+      "note": "Approve this bounded follow-up scope, not an already implemented or runtime-validated fix."
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare current Network band with unresolved widget pin",
+      "note": "Maintainer-owned follow-up; this packet does not claim that these checks were executed.",
+      "reproduce": {
+        "title": "Compare current Network band with unresolved widget pin",
+        "module": "Command Palette",
+        "version_requirement": "PowerToys 0.102.3001, then current main if needed",
+        "prerequisites": [
+          "Windows 11",
+          "Command Palette enabled",
+          "Use disposable test data; preserve existing user configuration"
+        ],
+        "setup": [
+          "Use an isolated Dock profile, not the reporter's full settings.",
+          "Record an ordinary working Network/Network Speed pin before changing test configuration."
+        ],
+        "steps": [
+          "1. Enable Performance Monitor and add its advertised Network band through Dock customization; restart Command Palette and record visibility.",
+          "2. In a separate disposable profile, configure provider PerformanceMonitor with command com.microsoft.cmdpal.network_widget; restart and compare resolution.",
+          "3. Repeat with the advertised performanceWidget.network and performanceWidget.networkSpeed IDs and check for duplicate pins and startup ordering.",
+          "4. Establish whether a supported upgrade path creates the unresolved ID; choose migration only if that provenance is confirmed."
+        ],
+        "expected_result": "Current advertised bands resolve and display. An invalid or legacy pin has a deterministic repair path rather than disappearing without explanation.",
+        "setup_prompt": "Prepare separate disposable Dock profiles for an advertised Network band and the known unresolved widget-page ID. Do not alter live Dock settings or request another full report."
+      }
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A focused Dock pin-resolution correction is plausible. Existing performance-card redesigns do not establish coverage of the specific unresolved pin; no competing implementation of this precise path was found.",
+    "existing_fix_urls": []
+  }
+}
