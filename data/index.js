@@ -1481,7 +1481,8 @@ window.BOARD_INDEX = {
     51615,
     51618,
     51620,
-    51622
+    51622,
+    51629
   ],
   "items": [
     {
@@ -24231,21 +24232,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Start fixing",
+        "type": "approve_design"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T20:12:37Z",
       "updated_at": "2026-10-27T20:12:37Z",
       "comments": 0,
