@@ -46,6 +46,28 @@ Repository-level use is also supported: copy the four directories from
 
 No token or account-specific local configuration is stored in this repository.
 
+## Download a PR CI installer only
+
+The public Azure build service supports individual-file downloads. This helper
+downloads the chosen installer and its SHA256 file, **not** the roughly 20 GB
+architecture artifact. No Azure or GitHub token is required:
+
+```powershell
+.\Get-PrCiInstaller.ps1 -PrNumber 51599 -Architecture x64 -Scope User -Destination C:\Temp\pr51599
+```
+
+It resolves the current PR head, selects a successful matching merge build, obtains
+the exact filename from that build's staging logs, and verifies the downloaded
+hash. `-Scope Machine` selects the all-users installer; `-Architecture ARM64`
+selects ARM64. Existing files are never overwritten. For an explicitly pinned
+historical build, supply both `-BuildId` and `-ExpectedHead`.
+
+The JSON receipt records the source head, synthetic merge SHA, build URL, file
+size, hash and signature status. Integrity is **not** E2E readiness: unsigned CI
+packages can fail authenticated Settings IPC and MSIX registration. The helper
+does not install, add certificates, or change the dashboard's source-build E2E
+workflow.
+
 ## Dashboard update prompt
 
 The same prompt is available as
