@@ -9,25 +9,25 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-28T04:10:23.95642+08:00",
-  "evaluated_at": "2026-10-28T04:10:23.9595149+08:00",
-  "source_updated_at": "2026-10-27T17:14:37Z",
-  "head_sha": "41a6f715806dbaaf60eb16369a802c7b2f611c6e",
+  "generated_at": "2026-10-28T08:20:50.5058193+08:00",
+  "evaluated_at": "2026-10-28T08:20:50.5058421+08:00",
+  "source_updated_at": "2026-10-27T20:44:12Z",
+  "head_sha": "d58bd98d424481a791a1ede9deed990fa5a66cd3",
   "needs_revalidation": false,
   "proposed_comments": [
     {
-      "id": "transitive-native-restore-boundary",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep transitive managed consumers restore-safe during the migration",
-      "body": "### Keep transitive managed consumers restore-safe during the migration\r\n\r\n**Severity:** `high`\r\n\r\n**Affected code:** `src/common/SettingsAPI/SettingsAPI.vcxproj`, `src/common/logger/logger.vcxproj`, `src/common/interop/PowerToys.Interop.vcxproj`, `src/modules/launcher/PowerLauncher/PowerLauncher.csproj`, and the managed-consumer guard in `tools/build/convert-packages-config.ps1`.\r\n\r\n**Problem:** Deferring PowerToys.Interop itself does not isolate its dependencies from managed restore. PowerLauncher retains a normal output `ProjectReference` to PowerToys.Interop, which references SettingsAPI; SettingsAPI references logger. Migrating those shared libraries exposes their native PackageReference targets through the existing managed graph. The converter records only immediate `.vcxproj` references from `.csproj` files, so its exclusion does not cover this transitive path.\r\n\r\n**Why it matters:** At commit `41a6f715`, both x64 and ARM64 CI fail restore with NU1201 for SettingsAPI in managed consumers; x64 also reports logger. The History plugin is one concrete affected consumer: it targets `net10.0-windows10.0.26100`, while SettingsAPI advertises `native,Version=v0.0`. Native-only builds therefore do not establish that the migration remains compatible with the solution's managed projects.\r\n\r\n**Suggested change:**\r\n1. Either defer SettingsAPI/logger until their managed projection boundary is restore-safe, or update the affected managed output references and their explicit CsWinRT metadata inputs together with this migration.\r\n2. Extend conversion eligibility to walk native `ProjectReference` dependencies reachable from managed output references, excluding candidate libraries anywhere on those paths until the boundary is handled.\r\n3. Add a regression case for `managed -> unconverted interop -> candidate native dependency`; checking only a direct managed-to-native reference misses this case.\r\n\r\n**Verification:** Restore the complete solution for x64 and ARM64 with `/p:RestorePackagesConfig=true`, including PowerLauncher and its plugins, and confirm the NU1201 errors disappear. Then build the migrated projects, verify the managed WinRT projections are still generated, and run the common native tests. The current CI failures establish the defect; a corrective integration change still needs those checks.",
-      "confidence": {
-        "score": 99,
-        "rationale": "Fresh exact-head x64/ARM64 CI proves NU1201, and pinned source still contains the managed-to-interop-to-SettingsAPI/logger path plus direct-only conversion guard. The separate WIL upgrade changes neither graph edge nor eligibility traversal."
-      },
-      "in_diff": false,
+      "body": "### Keep transitive managed consumers restore-safe during the migration\r\n\r\n**Severity:** `high`\r\n\r\n**Affected code:** `src/common/SettingsAPI/SettingsAPI.vcxproj`, `src/common/logger/logger.vcxproj`, `src/common/interop/PowerToys.Interop.vcxproj`, and `src/modules/launcher/PowerLauncher/PowerLauncher.csproj`.\r\n\r\n**Problem:** Moving the conversion script out of this PR does not change the existing managed/native restore boundary. PowerLauncher retains a normal output `ProjectReference` to PowerToys.Interop, which references SettingsAPI; SettingsAPI references logger. Migrating those shared libraries exposes their native PackageReference targets through that existing managed graph, even though PowerToys.Interop itself remains unconverted.\r\n\r\n**Why it matters:** At commit `d58bd98d`, both x64 and ARM64 CI still fail restore with NU1201 for SettingsAPI in managed projects. NuGet reports that these consumers target `net10.0-windows10.0.26100`, while SettingsAPI supports `native,Version=v0.0`. Deferring the direct interop migration to the tracking issue does not make this slice independently restore-compatible; native-only builds do not cover the failing managed graph.\r\n\r\n**Suggested change:**\r\n1. Either defer SettingsAPI/logger from this slice until their managed projection boundary is restore-safe, or update the affected managed output references and their explicit CsWinRT metadata inputs together with this migration.\r\n2. Audit the transitive native dependencies reachable from existing managed output references, not only the immediately referenced interop projects, before choosing which common libraries can migrate independently.\r\n3. Add a restore regression case covering `managed -> unconverted interop -> migrated native dependency`, including PowerLauncher and its plugin consumers.\r\n\r\n**Verification:** Restore the complete solution for x64 and ARM64 with `/p:RestorePackagesConfig=true` and confirm the NU1201 failures disappear. Then build the migrated projects, verify the managed WinRT projections are still generated, and run the common native tests. The current CI failures establish the remaining defect; the corrective integration change still needs those checks.",
       "disposition": "proposed",
-      "out_of_diff_reason": "nonlocal_managed_native_restore_boundary"
+      "severity": "high",
+      "in_diff": false,
+      "out_of_diff_reason": "nonlocal_managed_native_restore_boundary",
+      "kind": "companion",
+      "title": "Keep transitive managed consumers restore-safe during the migration",
+      "confidence": {
+        "rationale": "The sole new-head code change deletes the conversion tool; all relevant project-reference blobs are unchanged. Fresh exact-head x64/ARM64 CI independently reproduces NU1201 for SettingsAPI.",
+        "score": 99
+      },
+      "id": "transitive-native-restore-boundary"
     }
   ],
   "actions": [
@@ -38,7 +38,7 @@
       "label": "Post general integration review note",
       "review": {
         "event": "COMMENT",
-        "head_sha": "41a6f715806dbaaf60eb16369a802c7b2f611c6e",
+        "head_sha": "d58bd98d424481a791a1ede9deed990fa5a66cd3",
         "comment_ids": [
           "transitive-native-restore-boundary"
         ]
