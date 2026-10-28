@@ -1496,7 +1496,8 @@ window.BOARD_INDEX = {
     51666,
     51680,
     50793,
-    51647
+    51647,
+    51653
   ],
   "items": [
     {
@@ -1828,12 +1829,12 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
+      "stage": "review_assessed",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1843,7 +1844,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-28T06:03:40Z",
-      "updated_at": "2026-10-28T13:04:42Z",
+      "updated_at": "2026-10-28T16:39:15Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
