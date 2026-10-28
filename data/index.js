@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-28T16:38:22.1504064+08:00",
+  "generated_at": "2026-10-28T20:36:21.9050327+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 209,
     "open_issues": 11023,
     "community": 10148,
-    "artifacts": 1323
+    "artifacts": 1329
   },
   "impact": {
-    "as_of": "2026-10-28T16:38:22.1504064+08:00",
+    "as_of": "2026-10-28T20:36:21.9050327+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1183,6 +1183,7 @@ window.BOARD_INDEX = {
     50493,
     50496,
     50513,
+    50515,
     50516,
     50528,
     50531,
@@ -1480,18 +1481,17 @@ window.BOARD_INDEX = {
     51622,
     51625,
     51629,
+    51630,
     51635,
     51636,
     51637,
     51638,
     51640,
-    51630,
-    51642,
-    51652,
-    51658,
-    50515,
     51641,
-    51644
+    51642,
+    51644,
+    51652,
+    51658
   ],
   "items": [
     {
@@ -1608,7 +1608,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1649,7 +1649,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1684,7 +1684,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1719,7 +1719,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1754,7 +1754,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1789,7 +1789,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1824,7 +1824,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1854,7 +1854,7 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
+      "track": "review",
       "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
@@ -1990,7 +1990,7 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
+      "track": "review",
       "stage": "review_assessed",
       "owes": "us",
       "pending_author": false,
@@ -23734,7 +23734,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -23742,8 +23742,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -23751,9 +23751,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-ZoomIt"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T07:07:24Z",
       "updated_at": "2026-10-28T07:15:29Z",
       "comments": 1,
@@ -23871,7 +23869,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -23879,16 +23877,14 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T06:02:24Z",
       "updated_at": "2026-10-28T06:02:24Z",
       "comments": 0,
@@ -24179,7 +24175,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "duplicate_or_handled",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -24191,13 +24187,12 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T04:14:45Z",
       "updated_at": "2026-10-28T04:14:45Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "needs_revalidation": false
     },
     {
       "id": "issue-51641",
@@ -24213,7 +24208,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "duplicate_or_handled",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -24225,9 +24220,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T03:44:28Z",
       "updated_at": "2026-10-28T08:26:55Z",
       "comments": 3,
@@ -54400,7 +54393,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage",
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -54408,16 +54401,14 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-11T09:20:02Z",
       "updated_at": "2026-10-28T07:37:06Z",
       "comments": 3,
