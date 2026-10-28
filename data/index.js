@@ -1487,7 +1487,11 @@ window.BOARD_INDEX = {
     51636,
     51637,
     51638,
-    51493
+    51493,
+    51635,
+    51120,
+    50795,
+    51640
   ],
   "items": [
     {
@@ -24725,21 +24729,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-28T03:27:01Z",
       "updated_at": "2026-10-28T03:27:49Z",
       "comments": 1,
@@ -24827,7 +24836,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -24842,7 +24851,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T23:36:25Z",
       "updated_at": "2026-10-28T02:19:48Z",
       "comments": 0,
@@ -24898,21 +24909,26 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": "fix",
       "stage": "triage_revalidated",
-      "owes": "us",
-      "pending_author": false,
+      "owes": null,
+      "pending_author": true,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T22:41:04Z",
       "updated_at": "2026-10-28T00:30:49Z",
       "comments": 2,
@@ -38791,11 +38807,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "triage",
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -38804,7 +38820,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-General"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-08T09:46:57Z",
       "updated_at": "2026-10-28T01:05:37Z",
       "comments": 5,
@@ -47081,19 +47099,24 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-09-26T05:38:39Z",
       "updated_at": "2026-10-28T02:45:00Z",
       "comments": 3,
