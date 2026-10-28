@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 5,
+  "number": 51656,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[CI] Don't rerun MSBuild-tested assemblies in the VSTest step",
+  "url": "https://github.com/microsoft/PowerToys/pull/51656",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-29T05:07:45.4952991+08:00",
+  "evaluated_at": "2026-10-29T05:07:45.4977139+08:00",
+  "source_updated_at": "2026-10-28T11:37:37Z",
+  "head_sha": "db9930bd3a379762e1bd0b3cac780d98cfa07fc9",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "trx-exclusion-preserves-assembly-identity",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve the TRX assembly path and extension",
+      "out_of_diff_reason": "The complete correction spans the changed TRX extraction/exclusion code and VSTest@2 inputs.searchFolder; searchFolder is an unchanged task input outside the current diff, so this coordinated change is not safely expressible as a single localized apply-suggestion.",
+      "confidence": {
+        "score": 93,
+        "rationale": "Exact upstream code drops the storage path and extension. A synthetic TRX fixture reproduces the emitted recursive pattern excluding a same-named DLL not recorded in TRX, and an .exe storage path turning into an unrelated .dll exclusion."
+      },
+      "body": "### Preserve the TRX assembly path and extension\n\n**Severity:** `medium`\n\n**Affected code:**\n- `.pipelines/v2/templates/job-build-project.yml` — TRX `storage` extraction and the `VSTest@2` `searchFolder`/`testAssemblyVer2` inputs.\n\n**Problem:** The extraction reduces each TRX `storage` value to a basename and unconditionally emits a recursive `!**\\<name>.dll` exclusion. If two test assemblies share a basename, or a TRX records an `.exe` while another candidate is a `.dll` with that basename, VSTest excludes assemblies that MSBuild did not run.\n\n**Why it matters:** Those assemblies’ tests are silently skipped by the VSTest step, defeating this change’s goal of running tests not already executed during MSBuild.\n\n**Suggested change:**\n1. Resolve each TRX `storage` value against `$(Build.SourcesDirectory)` and keep only paths contained under that root.\n2. Convert each retained path to a source-root-relative path, preserving its original filename and extension; emit an exclusion for that exact path rather than a recursive basename wildcard.\n3. Set `VSTest@2` `inputs.searchFolder` to `$(Build.SourcesDirectory)` so the relative exclusions use the same root.\n\n**Verification:** Use synthetic TRX entries for one of two same-named `*UnitTest*.dll` files in different directories and for an `.exe` storage path alongside a same-basename `.dll`. Confirm the exclusion matches only the recorded in-root assembly, preserves the `.exe` extension, and omits out-of-root storage.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-trx-exclusion-identity",
+      "type": "post_review",
+      "label": "Review the TRX exclusion finding",
+      "note": "Posts a general PR review comment with the cross-location implementation guidance.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "db9930bd3a379762e1bd0b3cac780d98cfa07fc9",
+        "comment_ids": [
+          "trx-exclusion-preserves-assembly-identity"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "db9930bd3a379762e1bd0b3cac780d98cfa07fc9",
+      "result": "passed"
+    }
+  }
+}
