@@ -7542,12 +7542,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 1,
       "primary_action": {
         "type": "post_review",
-        "label": "Post inline review comment"
+        "label": "Post selected general review comment"
       },
       "labels": [
         "Product-Command Palette",

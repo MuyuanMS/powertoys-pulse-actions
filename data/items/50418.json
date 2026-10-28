@@ -2,49 +2,54 @@
   "schemaVersion": 5,
   "number": 50418,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Add prototype for actionable sections",
   "url": "https://github.com/microsoft/PowerToys/pull/50418",
+  "track": "review",
   "stage": "awaiting_review_approval",
-  "generated_at": "2026-10-21T22:26:23.0073243+08:00",
-  "evaluated_at": "2026-10-21T22:18:26.383599+08:00",
-  "source_updated_at": "2026-10-15T22:41:51Z",
-  "head_sha": "fdc2f5e09f9696de0a1dcc8309f8055589d4d443",
-  "proposed_comments": [],
-  "actions": [
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-28T12:30:27.0340475+08:00",
+  "evaluated_at": "2026-10-28T12:30:27.0340769+08:00",
+  "source_updated_at": "2026-10-28T00:26:13Z",
+  "head_sha": "d59bff2c7c163213a79e8a09ae501a7e6e5fb8f0",
+  "needs_revalidation": false,
+  "proposed_comments": [
     {
-      "type": "post_review",
-      "head_sha": "fdc2f5e09f9696de0a1dcc8309f8055589d4d443",
-      "review": {
-        "head_sha": "fdc2f5e09f9696de0a1dcc8309f8055589d4d443",
-        "event": "COMMENT",
-        "comments": [
-          {
-            "id": "separator-property-bag-consistency",
-            "kind": "inline",
-            "in_diff": true,
-            "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Separator.cs",
-            "start_line": 33,
-            "line": 33,
-            "side": "RIGHT",
-            "severity": "medium",
-            "title": "Keep SectionCommand consistent with the exposed property bag",
-            "body": "### Keep SectionCommand consistent with the exposed property bag\n\n**Severity:** `medium`\n\n`GetProperties()` returns the writable dictionary that the host reads, but this getter and the setter's equality guard use a separate cached command. For example, construct a separator with command A, replace the `SectionCommand` entry in `GetProperties()` with command B, and read `SectionCommand`: it still returns A. Assigning A again then returns early and leaves B in the host-facing dictionary. Removing the entry similarly prevents assigning A from restoring it.\n\nPlease use the property bag as the single source of truth in `src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Separator.cs`:\n\n1. Remove the `_sectionCommand` field.\n2. Replace the `SectionCommand` getter with:\n\n```csharp\n        get => _extendedAttributes.TryGetValue(WellKnownExtensionAttributes.SectionCommand, out var value) ? value as ICommand : null;\n```\n\n3. Compare the setter value with `SectionCommand`, rather than `_sectionCommand`, in the existing equality guard:\n\n```csharp\n            if (EqualityComparer<ICommand?>.Default.Equals(value, SectionCommand))\n```\n\n4. Remove `_sectionCommand = value;`, keeping the dictionary update/removal before `OnPropertyChanged()`. Apply these four edits together; removing only the cache would leave references to it.\n\n**Verification:** Add a regression in `src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/SeparatorTests.cs`: start with A, directly replace the bag entry with B and assert the getter returns B, assign A and assert the bag returns to A, remove the entry and assert the getter is null, then assign A again and assert the entry is restored. The two typed assignments should raise two `SectionCommand` notifications. Retain the existing null `Command`, stable dictionary identity, and update-before-notification checks.",
-            "confidence": {
-              "score": 90,
-              "rationale": "Exact pinned upstream product builds; the same regression fails at the getter assertion on upstream and all six cases pass on the literal four-edit candidate. Setter restoration is also supported by the explicit cached-equality early-return trace. No UI/runtime focus claim is made."
-            }
-          }
-        ]
-      },
-      "source_updated_at": "2026-10-15T22:41:51Z",
-      "label": "Post inline review comment",
-      "id": "post-review-50418"
+      "id": "separator-property-bag-consistency",
+      "kind": "companion",
+      "in_diff": false,
+      "title": "Keep SectionCommand consistent with the exposed property bag",
+      "severity": "medium",
+      "disposition": "proposed",
+      "out_of_diff_reason": "The correction coordinates field removal, getter and equality-guard changes, removal of a cached assignment, and regression coverage in a second file. No one inline location represents the complete correction; this overall general comment intentionally has no apply-ready suggestion or inline anchor.",
+      "body": "### Keep SectionCommand consistent with the exposed property bag\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Separator.cs` — `_sectionCommand`, `SectionCommand`, and `GetProperties()`; regression coverage in `src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/SeparatorTests.cs`.\r\n\r\n**Problem:** `GetProperties()` exposes the writable dictionary that carries the section command to the host, while the typed getter and setter equality guard use a separate cached command. Construct a separator with command A, replace the `SectionCommand` dictionary entry with command B, and the typed getter still returns A. Assigning A then returns early and leaves B in the host-facing dictionary. Removing the entry similarly prevents assigning A from restoring it.\r\n\r\n**Why it matters:** An extension that updates the exposed property bag can observe one command through `SectionCommand` while the host reads another, and a subsequent typed assignment can silently fail to restore the requested command. This is an edge-case consistency defect, not a claim that ordinary setter-only updates fail.\r\n\r\n**Suggested change:**\r\n1. In `Separator.cs`, remove the `_sectionCommand` field so the dictionary is the single source of truth.\r\n2. Replace the `SectionCommand` getter with:\r\n\r\n```csharp\r\nget => _extendedAttributes.TryGetValue(WellKnownExtensionAttributes.SectionCommand, out var value) ? value as ICommand : null;\r\n```\r\n\r\n3. Change the setter's equality guard to compare against the getter:\r\n\r\n```csharp\r\nif (EqualityComparer<ICommand?>.Default.Equals(value, SectionCommand))\r\n```\r\n\r\n4. Remove `_sectionCommand = value;`. Keep the existing dictionary update/removal before `OnPropertyChanged()`. Apply these edits together; deleting only the field would leave references to it. Keep `Command` null so existing separator detection is unchanged, and continue returning the same dictionary instance.\r\n5. In `SeparatorTests.cs`, add a regression that starts with command A, directly replaces the bag entry with B, asserts the getter returns B, assigns A and asserts the bag returns to A, removes the entry and asserts the getter is null, then assigns A again and asserts the entry is restored. Assert that the two typed assignments raise exactly two `SectionCommand` notifications.\r\n\r\n**Verification:** Build the affected Toolkit and its unit-test project, then run `SeparatorTests`, including the new direct-bag-mutation regression. Retain the existing null `Command`, stable dictionary identity, ordinary update/clear, duplicate-assignment suppression, and update-before-notification checks. The new mutation regression should fail on the current cached implementation and pass after the coordinated changes. No fresh current-head build or runtime interaction is claimed here.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact-head cached getter and equality guard deterministically preserve stale state after direct dictionary mutation. Existing tests do not cover that mutation/restore sequence. This finding is source-grounded; no fresh current-head build or runtime validation is claimed."
+      }
     }
   ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "fdc2f5e09f9696de0a1dcc8309f8055589d4d443",
-      "result": "passed"
+  "actions": [
+    {
+      "id": "post-review-50418",
+      "type": "post_review",
+      "label": "Post selected general review comment",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "head_sha": "d59bff2c7c163213a79e8a09ae501a7e6e5fb8f0",
+      "source_updated_at": "2026-10-28T00:26:13Z",
+      "review": {
+        "event": "COMMENT",
+        "pr": 50418,
+        "repository": "microsoft/PowerToys",
+        "body": "### Keep SectionCommand consistent with the exposed property bag\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Separator.cs` — `_sectionCommand`, `SectionCommand`, and `GetProperties()`; regression coverage in `src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/SeparatorTests.cs`.\r\n\r\n**Problem:** `GetProperties()` exposes the writable dictionary that carries the section command to the host, while the typed getter and setter equality guard use a separate cached command. Construct a separator with command A, replace the `SectionCommand` dictionary entry with command B, and the typed getter still returns A. Assigning A then returns early and leaves B in the host-facing dictionary. Removing the entry similarly prevents assigning A from restoring it.\r\n\r\n**Why it matters:** An extension that updates the exposed property bag can observe one command through `SectionCommand` while the host reads another, and a subsequent typed assignment can silently fail to restore the requested command. This is an edge-case consistency defect, not a claim that ordinary setter-only updates fail.\r\n\r\n**Suggested change:**\r\n1. In `Separator.cs`, remove the `_sectionCommand` field so the dictionary is the single source of truth.\r\n2. Replace the `SectionCommand` getter with:\r\n\r\n```csharp\r\nget => _extendedAttributes.TryGetValue(WellKnownExtensionAttributes.SectionCommand, out var value) ? value as ICommand : null;\r\n```\r\n\r\n3. Change the setter's equality guard to compare against the getter:\r\n\r\n```csharp\r\nif (EqualityComparer<ICommand?>.Default.Equals(value, SectionCommand))\r\n```\r\n\r\n4. Remove `_sectionCommand = value;`. Keep the existing dictionary update/removal before `OnPropertyChanged()`. Apply these edits together; deleting only the field would leave references to it. Keep `Command` null so existing separator detection is unchanged, and continue returning the same dictionary instance.\r\n5. In `SeparatorTests.cs`, add a regression that starts with command A, directly replaces the bag entry with B, asserts the getter returns B, assigns A and asserts the bag returns to A, removes the entry and asserts the getter is null, then assigns A again and asserts the entry is restored. Assert that the two typed assignments raise exactly two `SectionCommand` notifications.\r\n\r\n**Verification:** Build the affected Toolkit and its unit-test project, then run `SeparatorTests`, including the new direct-bag-mutation regression. Retain the existing null `Command`, stable dictionary identity, ordinary update/clear, duplicate-assignment suppression, and update-before-notification checks. The new mutation regression should fail on the current cached implementation and pass after the coordinated changes. No fresh current-head build or runtime interaction is claimed here.",
+        "head_sha": "d59bff2c7c163213a79e8a09ae501a7e6e5fb8f0",
+        "comments": []
+      },
+      "note": "One overall implementation-ready general comment selected from proposed_comments; no inline coordinates or suggestion blocks."
     }
-  }
+  ],
+  "validation": {}
 }
