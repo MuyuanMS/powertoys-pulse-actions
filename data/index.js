@@ -2463,18 +2463,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-10-27T23:47:13Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 14,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post 14 coordinated inline suggestions"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-General",
         "Ready for review"
