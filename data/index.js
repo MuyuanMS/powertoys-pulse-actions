@@ -1493,7 +1493,8 @@ window.BOARD_INDEX = {
     50795,
     51640,
     51641,
-    51525
+    51525,
+    51596
   ],
   "items": [
     {
@@ -1971,12 +1972,12 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
+      "stage": "review_assessed",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
