@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 5,
+  "number": 51679,
+  "kind": "issue",
+  "title": "# [Power Display] External DDC/CI monitor disappears after another PC reboots.",
+  "url": "https://github.com/microsoft/PowerToys/issues/51679",
+  "generated_at": "2026-10-28T16:44:51Z",
+  "evaluated_at": "2026-10-28T16:44:51Z",
+  "source_updated_at": "2026-10-28T15:48:41Z",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "The supplied transition and report justify a focused recovery reproduction; active-path loss must be separated from cached discovery.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [
+    null
+  ],
+  "judgment": {
+    "evidence": [
+      "The laptop uses HDMI to a Lenovo P27q-30; another PC uses DisplayPort, with monitor input selection set to Auto. Rebooting that PC repeatedly removes the Lenovo from Power Display CLI output until PowerToys restarts.",
+      "The reporter already supplies monitor/GPU identity, VCP 0x60 input values, unsuccessful DisplaySwitch/PnP/graphics-reset attempts, and a diagnostic ZIP. PnP presence is not proof of an active display path.",
+      "The report records rescans with no external target after some transitions and successful Lenovo discovery after restart; it also records successful device-change recovery earlier in the session.",
+      "Read the full issue, attachment and related #48977/#47623 descriptions. Those concern duplicate/first-monitor enumeration and do not establish this input-switch transition as the same bug.",
+      "Inspected Power Display classification/discovery logs around missing-target and successful rediscovery states; a blanket claim that discovery never ran would contradict the report.",
+      "DisplayConfigInventory.cs queries only active display paths; MonitorManager rebuilds its collection from that inventory. DeviceWatcher ignores property-only updates, while add/remove and display-on events schedule rescans.",
+      "The current CLI request handler serves the app monitor snapshot rather than forcing fresh hardware enumeration on list. A stale snapshot and a temporarily inactive HDMI path are competing explanations.",
+      "History includes #47876 display-wake rescan support; no exact covering fix or fork implementation appeared in the fetched links/searches."
+    ],
+    "status": "reproducible",
+    "source_updated_at": "2026-10-28T15:48:41Z",
+    "evaluated_at": "2026-10-28T16:44:51Z",
+    "recommended_action": "Route a bounded full-design investigation after manual-refresh versus restart reproduction; use the existing report first.",
+    "rationale": "Detailed topology, repeated steps, recovery control and diagnostics make another generic evidence request unnecessary. A precise recovery boundary remains unconfirmed."
+  },
+  "fix_assessment": {
+    "existing_fix_urls": [],
+    "rationale": "A conditional recovery correction is justified for investigation; the cited related issues do not provide concrete coverage.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "root_cause": "Hypothesis: a rescan observes an inactive HDMI path and the cached CLI inventory is not refreshed after that path returns. The supplied report shows actual rescans with zero external targets, so a generic stale-handle claim is not established.",
+      "title": "Power Display input-transition recovery investigation",
+      "verification": [
+        "Repeat the reported HDMI/DisplayPort transition, including repeated remote reboots and delayed HDMI recovery.",
+        "Verify CLI list and input switching recover without restarting PowerToys once the monitor is controllable.",
+        "Check genuine unplug, sleep/wake and failed DDC probes do not leave stale writable entries or unbounded retries."
+      ],
+      "confidence": {
+        "score": 77,
+        "rationale": "The source identifies a plausible boundary, but this pass did not reproduce the failing transition. The accompanying diagnostic action distinguishes competing explanations.",
+        "level": "yellow"
+      },
+      "plan": [
+        "Reproduce the input-auto/remote-reboot sequence and correlate active display paths, watcher events and CLI snapshot contents.",
+        "Compare manual refresh with full process restart after HDMI is active.",
+        "If recovery is missed, design a bounded settled-path rescan/invalidation mechanism; if discovery still omits an active target, investigate that inventory boundary instead.",
+        "Preserve inactive/removed-monitor semantics and safe hardware-handle lifetime; do not simply retain unavailable monitors as connected."
+      ]
+    }
+  ],
+  "issue_context": {
+    "initial_investigation": [
+      "Read the full issue, attachment and related #48977/#47623 descriptions. Those concern duplicate/first-monitor enumeration and do not establish this input-switch transition as the same bug.",
+      "Inspected Power Display classification/discovery logs around missing-target and successful rediscovery states; a blanket claim that discovery never ran would contradict the report.",
+      "DisplayConfigInventory.cs queries only active display paths; MonitorManager rebuilds its collection from that inventory. DeviceWatcher ignores property-only updates, while add/remove and display-on events schedule rescans.",
+      "The current CLI request handler serves the app monitor snapshot rather than forcing fresh hardware enumeration on list. A stale snapshot and a temporarily inactive HDMI path are competing explanations.",
+      "History includes #47876 display-wake rescan support; no exact covering fix or fork implementation appeared in the fetched links/searches."
+    ],
+    "inferences": [
+      "A recovery notification or snapshot invalidation gap is plausible, but the report does not prove a stale physical handle or an always-missed rescan."
+    ],
+    "summary": "The supplied transition and report justify a focused recovery reproduction; active-path loss must be separated from cached discovery.",
+    "known_information": [
+      "The laptop uses HDMI to a Lenovo P27q-30; another PC uses DisplayPort, with monitor input selection set to Auto. Rebooting that PC repeatedly removes the Lenovo from Power Display CLI output until PowerToys restarts.",
+      "The reporter already supplies monitor/GPU identity, VCP 0x60 input values, unsuccessful DisplaySwitch/PnP/graphics-reset attempts, and a diagnostic ZIP. PnP presence is not proof of an active display path.",
+      "The report records rescans with no external target after some transitions and successful Lenovo discovery after restart; it also records successful device-change recovery earlier in the session."
+    ],
+    "information_gaps": [
+      {
+        "how_to_collect": "Maintainer reproduction: keep the reported dual-input topology, capture CLI list before/after the other PC reboot, return the monitor to HDMI, invoke Power Display refresh and compare with Windows active-display state.",
+        "evidence_type": "behavior_confirmation",
+        "why_needed": "Separates missed recovery notification/cached inventory from persistent discovery failure or an actually inactive path.",
+        "information": "Whether a manual Power Display refresh after HDMI becomes active restores the missing Lenovo without restarting PowerToys."
+      }
+    ],
+    "analysis": "PnP OK and process restart recovery do not by themselves establish where active-path visibility changed. Preserve that distinction when choosing a fix."
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve conditional Power Display input-transition recovery investigation plan"
+    },
+    {
+      "label": "Reproduce Power Display failure",
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Once HDMI is active and DDC/CI is available, Power Display rediscovers the monitor and input switching works without a process restart.",
+        "version_requirement": "PowerToys 0.102.3001 on the reporting topology; compare current source separately.",
+        "setup": [
+          "Use a laptop over HDMI and another PC over DisplayPort to the same DDC/CI monitor with input Auto; enable Power Display.",
+          "Use Lenovo P27q-30 if available, or record the model/firmware and input auto-switch behavior for an equivalent setup."
+        ],
+        "prerequisites": [
+          "Use non-sensitive test data and preserve the original configuration before changing it."
+        ],
+        "steps": [
+          "1. Confirm both laptop displays in PowerToys.PowerDisplay.Cli.exe list.",
+          "2. Leave the laptop running while the other PC uses DisplayPort, then reboot that PC.",
+          "3. Record CLI list and Windows active-display state, not just PnP presence.",
+          "4. Return the monitor to HDMI, invoke Power Display refresh, and compare CLI output before restarting PowerToys.",
+          "5. If still missing, restart PowerToys as the reporter control and compare discovery classification and watcher events."
+        ],
+        "module": "Power Display",
+        "title": "Verify the reported Power Display transition"
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 5,
+  "number": 51676,
+  "kind": "issue",
+  "title": "PowerToys Runs at Startup but Doesn't Create Tray Icons",
+  "url": "https://github.com/microsoft/PowerToys/issues/51676",
+  "generated_at": "2026-10-28T16:44:51Z",
+  "evaluated_at": "2026-10-28T16:44:51Z",
+  "source_updated_at": "2026-10-28T14:28:19Z",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Working modules with a missing startup tray icon fit a shell-registration race, but elevation and overflow state are unconfirmed.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [
+    null
+  ],
+  "judgment": {
+    "evidence": [
+      "PowerToys 0.102.3001 starts at Windows 11 login; Command Palette hotkeys still work while the main tray icon is absent.",
+      "Launching PowerToys again makes the icon appear. No diagnostic attachment, elevation state or tray-overflow comparison is supplied.",
+      "Read the complete issue and empty discussion/timeline; searched upstream startup/tray reports and matching fork traces.",
+      "runner/tray_icon.cpp tracks NIM_ADD success, registers TaskbarCreated and retries after WM_WINDOWPOSCHANGING; the code explicitly recognizes an Explorer-not-ready startup race.",
+      "Open #51463 describes the elevated-startup delay/reset issue and the same running-modules/missing-icon symptom. Older #41796, #35823 and #35475 contain related reports but are closed; none establishes this new report as fixed.",
+      "Focused tray-icon history concerns session shutdown, icon badges and telemetry rather than a demonstrated correction for this startup report."
+    ],
+    "status": "needs_information",
+    "source_updated_at": "2026-10-28T14:28:19Z",
+    "evaluated_at": "2026-10-28T16:44:51Z",
+    "recommended_action": "Capture the missing-icon state before relaunch and compare with #51463; avoid another installation or configuration reset.",
+    "rationale": "This is not evidence that PowerToys failed to start. Existing related reports narrow the investigation, but do not prove an exact duplicate or shipped fix."
+  },
+  "fix_assessment": {
+    "existing_fix_urls": [],
+    "rationale": "A recovery correction is conditional on confirming failed shell registration; no covering implementation was found in the bounded issue/fork records.",
+    "status": "proposed"
+  },
+  "proposed_fixes": [
+    {
+      "root_cause": "Hypothesis: initial Shell_NotifyIcon registration loses a startup race with Explorer. An overflow-hidden icon or another lifecycle path remains possible; elevation and the first registration result are unknown.",
+      "title": "tray-registration recovery investigation",
+      "verification": [
+        "Reboot with ordinary and elevated startup and delayed Explorer readiness.",
+        "Check both visible tray and overflow, ensuring one icon eventually appears without a second PowerToys launch."
+      ],
+      "confidence": {
+        "score": 64,
+        "rationale": "The source identifies a plausible boundary, but this pass did not reproduce the failing transition. The accompanying diagnostic action distinguishes competing explanations.",
+        "level": "yellow"
+      },
+      "plan": [
+        "Reproduce the login timing with a working module and confirm whether NIM_ADD failed.",
+        "Compare the elevated startup path with #51463 before opening separate implementation work.",
+        "If registration failure is confirmed, design bounded recovery independent of an incidental window-position message; preserve single-icon and Explorer-restart behavior."
+      ]
+    }
+  ],
+  "issue_context": {
+    "initial_investigation": [
+      "Read the complete issue and empty discussion/timeline; searched upstream startup/tray reports and matching fork traces.",
+      "runner/tray_icon.cpp tracks NIM_ADD success, registers TaskbarCreated and retries after WM_WINDOWPOSCHANGING; the code explicitly recognizes an Explorer-not-ready startup race.",
+      "Open #51463 describes the elevated-startup delay/reset issue and the same running-modules/missing-icon symptom. Older #41796, #35823 and #35475 contain related reports but are closed; none establishes this new report as fixed.",
+      "Focused tray-icon history concerns session shutdown, icon badges and telemetry rather than a demonstrated correction for this startup report."
+    ],
+    "inferences": [
+      "A delayed shell registration is plausible because a second launch restores the icon, but this does not exclude overflow state."
+    ],
+    "summary": "Working modules with a missing startup tray icon fit a shell-registration race, but elevation and overflow state are unconfirmed.",
+    "known_information": [
+      "PowerToys 0.102.3001 starts at Windows 11 login; Command Palette hotkeys still work while the main tray icon is absent.",
+      "Launching PowerToys again makes the icon appear. No diagnostic attachment, elevation state or tray-overflow comparison is supplied."
+    ],
+    "information_gaps": [
+      {
+        "how_to_collect": "After a login with the icon missing, check the tray overflow and administrator setting without restarting PowerToys, then comment /bugreport. If Settings/tray cannot open, run BugReportTool.exe from the PowerToys installation directory before relaunch.",
+        "evidence_type": "bugreport_zip",
+        "why_needed": "Distinguishes hidden-icon configuration from failed shell registration and determines whether the elevated-startup precedent applies.",
+        "information": "A startup report captured before relaunch, whether the icon is absent from tray overflow too, and whether Always run as administrator is enabled."
+      }
+    ],
+    "analysis": "Use the existing tray-registration and startup ownership path; do not promise a delay-only fix or classify a closed historical report as a shipped correction."
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve conditional tray-registration recovery investigation plan"
+    },
+    {
+      "label": "Capture missing startup icon before relaunch",
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for confirming that Command Palette still responds and a second launch restores the icon; that narrows this away from a total startup failure. After the next affected login, please confirm whether the icon is also absent from the tray overflow and whether Always run as administrator is enabled, then comment `/bugreport` before relaunching PowerToys. If neither Settings nor the tray can open, run BugReportTool.exe from the installation directory first. This distinguishes hidden-icon state from shell-registration failure and the elevated-startup case in #51463."
+      }
+    }
+  ]
+}

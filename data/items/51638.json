@@ -2,145 +2,122 @@
   "schemaVersion": 5,
   "number": 51638,
   "kind": "issue",
-  "track": "fix",
   "title": "“Rename with PowerRename” Will Not Replace the U+2014 (—) EM DASH with the Two-Character Substring U+A789 (꞉) MODIFIER LETTER COLON Just Before a U+0020 ( ) SPACE (That Is, “꞉ ”) in File or Folder Names",
   "url": "https://github.com/microsoft/PowerToys/issues/51638",
-  "generated_at": "2026-10-28T00:20:38.998829Z",
-  "evaluated_at": "2026-10-28T00:20:38.998829Z",
-  "source_updated_at": "2026-10-28T00:18:40Z",
-  "stage": "triage_revalidated",
+  "generated_at": "2026-10-28T16:44:51Z",
+  "evaluated_at": "2026-10-28T16:44:51Z",
+  "source_updated_at": "2026-10-28T13:19:00Z",
+  "stage": "triaged",
   "pending_author": false,
-  "summary": "Distinguish a PowerRename shell-apply failure from a saved regex/state mismatch; the supplied report already contains useful settings.",
-  "next_action": "Run synthetic literal/regex cases and clarify the one saved-state discrepancy before choosing a Unicode or apply-result correction.",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "There is enough evidence for a targeted maintainer reproduction and an apply-result follow-up, but neither a Unicode-specific root cause nor exact reproduction is established. Keep the candidate plan conditional and avoid claiming a fix is implemented. Reassessment of the 00:18:40 UTC edit finds no new discriminating failure evidence: notation and wording changed, while the literal-versus-saved-regex gap and unknown shell result remain. The needs_information judgment and 58/yellow conditional proposal are unchanged.",
-    "evidence": [
-      "Reporter provides seven steps on PowerToys 0.102.2933 Stable: replace U+2014 with U+A789 followed by U+0020, Filename only, and reports preview success but few/no actual names changed.",
-      "The supplied archive saves SearchText '(\\\\d)—([A-Za-z])' and ReplaceText '$1꞉ $2', rather than the literal-only search described in the body.",
-      "The saved UI flags are 207 (0xCF). The source enum decodes that as CaseSensitive, MatchAllOccurrences, UseRegularExpressions, EnumerateItems, ExcludeSubfolders and NameOnly. Regex was therefore enabled in the archived state.",
-      "The inspected PowerRename logs contain operation-completion traces but no explicit failure/HRESULT messages; they do not prove a successful filesystem rename.",
-      "The new automated comment at 2026-10-28 00:07:31 UTC already recommends updating to 0.102.3001 and confirming persistence; no reporter response is present.",
-      "Read the full body and inspected all nine bounded PowerRename-related archive entries, including last-run search/replacement, persisted flags and report-day logs.",
-      "Traced _PerformFileOperation: RenameItem queues the operation, item names/paths may be updated before execution when the window stays open, and PerformOperations has no checked return result: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/powerrename/lib/PowerRenameManager.cpp#L790-L860",
-      "Decoded the actual archived flags against PowerRenameFlags instead of assuming regex was off: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/powerrename/lib/PowerRenameInterfaces.h#L9-L25",
-      "Focused history shows no recent manager fix. Reviewed related #47060 and its implementation scope: it is closed and unmerged, targets mixed shell failures/connected-folder cases, and is not proof of a shipped fix for this Unicode report: https://github.com/microsoft/PowerToys/pull/47060",
-      "Direct issue/fork and Unicode searches found no established duplicate or covering implementation. Current investigation is source/report based; no rename was executed.",
-      "Refreshed and read the edited body and newly arrived automated comment before sealing. Its limited sanitized subset did not include the PowerRename entries inspected here; do not infer from that subset that the original ZIP lacks those entries.",
-      "The 2026-10-28 00:18:40 UTC body edit replaces the textual concatenation marker ^ with ∥ and rephrases the same preview-versus-File-Explorer result. The intended replacement remains exactly U+A789 followed by U+0020, not a literal ∥ character. No new comment, attachment, before/after filename, current-release result or settings clarification was supplied."
-    ],
-    "recommended_action": "Run synthetic literal/regex cases and clarify the one saved-state discrepancy before choosing a Unicode or apply-result correction.",
-    "evaluated_at": "2026-10-28T00:20:38.998829Z",
-    "source_updated_at": "2026-10-28T00:18:40Z"
-  },
-  "issue_context": {
-    "summary": "Distinguish a PowerRename shell-apply failure from a saved regex/state mismatch; the supplied report already contains useful settings.",
-    "known_information": [
-      "Reporter provides seven steps on PowerToys 0.102.2933 Stable: replace U+2014 with U+A789 followed by U+0020, Filename only, and reports preview success but few/no actual names changed.",
-      "The supplied archive saves SearchText '(\\\\d)—([A-Za-z])' and ReplaceText '$1꞉ $2', rather than the literal-only search described in the body.",
-      "The saved UI flags are 207 (0xCF). The source enum decodes that as CaseSensitive, MatchAllOccurrences, UseRegularExpressions, EnumerateItems, ExcludeSubfolders and NameOnly. Regex was therefore enabled in the archived state.",
-      "The inspected PowerRename logs contain operation-completion traces but no explicit failure/HRESULT messages; they do not prove a successful filesystem rename.",
-      "The new automated comment at 2026-10-28 00:07:31 UTC already recommends updating to 0.102.3001 and confirming persistence; no reporter response is present.",
-      "The 2026-10-28 00:18:40 UTC body edit replaces the textual concatenation marker ^ with ∥ and rephrases the same preview-versus-File-Explorer result. The intended replacement remains exactly U+A789 followed by U+0020, not a literal ∥ character. No new comment, attachment, before/after filename, current-release result or settings clarification was supplied."
-    ],
-    "inferences": [
-      "The discrepancy between described literal replacement and persisted regex may indicate different attempts, not an incorrect report.",
-      "The apply/UI reconciliation path is a plausible contributor: current code updates displayed item names before PerformOperations and ignores its result. That does not establish that U+A789 itself is rejected."
-    ],
-    "analysis": "Do not replace U+A789 with ASCII ':' (which is a different, invalid filename character), invent a Unicode normalization bug, or treat a correct preview as proof of disk success. Reproduce the supplied literal and saved-regex variants on synthetic files, then use a minimal before/after example to select the failing path. The bot has already requested a current-release check; the companion draft does not repeat that question or ask for another ZIP. The latest edit clarifies concatenation notation but does not reconcile the saved capture-group regex with the literal-only description or supply a filesystem outcome/HRESULT. Therefore retain the same bounded synthetic reproduction and specific example request; do not ask the reporter to explain the already-explicit two-character replacement.",
-    "initial_investigation": [
-      "Read the full body and inspected all nine bounded PowerRename-related archive entries, including last-run search/replacement, persisted flags and report-day logs.",
-      "Traced _PerformFileOperation: RenameItem queues the operation, item names/paths may be updated before execution when the window stays open, and PerformOperations has no checked return result: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/powerrename/lib/PowerRenameManager.cpp#L790-L860",
-      "Decoded the actual archived flags against PowerRenameFlags instead of assuming regex was off: https://github.com/microsoft/PowerToys/blob/a9fd27873110a8a535ba607bef6470d643cadbc8/src/modules/powerrename/lib/PowerRenameInterfaces.h#L9-L25",
-      "Focused history shows no recent manager fix. Reviewed related #47060 and its implementation scope: it is closed and unmerged, targets mixed shell failures/connected-folder cases, and is not proof of a shipped fix for this Unicode report: https://github.com/microsoft/PowerToys/pull/47060",
-      "Direct issue/fork and Unicode searches found no established duplicate or covering implementation. Current investigation is source/report based; no rename was executed.",
-      "Refreshed and read the edited body and newly arrived automated comment before sealing. Its limited sanitized subset did not include the PowerRename entries inspected here; do not infer from that subset that the original ZIP lacks those entries.",
-      "Compared the complete current body/title and discussion against the previously assessed version. Only explanatory concatenation notation and wording changed; the attachment URL, literal search, replacement code points and seven-step procedure remain the same. The existing bot comment is unchanged."
-    ],
-    "information_gaps": [
-      {
-        "information": "One synthetic failing before/expected/actual filename pair and the settings used for that exact attempt",
-        "why_needed": "The body describes literal replacement, but archived state has a capture-group regex and regex flag; this determines which operation to reproduce.",
-        "how_to_collect": "Upload a screenshot or type a non-sensitive before/expected/actual filename pair, and show search, replacement, regex/occurrence/enumeration toggles and whether Apply left the window open for the same attempt.",
-        "evidence_type": "sample_file"
-      }
-    ]
-  },
+  "summary": "PowerRename preview-versus-disk mismatch needs a literal/regex control, not a presumed Unicode fix.",
   "labels": [
     "Issue-Bug",
     "Product-PowerRename",
     "Needs-Triage"
   ],
-  "assignees": [],
-  "comments": 1,
+  "assignees": [
+    null
+  ],
+  "judgment": {
+    "evidence": [
+      "The current body identifies PowerToys 0.102.3001, Windows 11 build 26300.9711, administrator mode, and a seven-step replacement of U+2014 with U+A789 followed by U+0020. Preview changes but Explorer names reportedly do not.",
+      "The supplied report predates that current version claim: its PowerRename entries are from 0.102.2933 and retain a digit/dash/letter regular expression with capture-group replacement, not the literal-only search in the body.",
+      "The saved flags enable regular expressions as well as enumeration. The inspected PowerRename log entries do not identify a failed shell-operation result.",
+      "Read the complete current body, automation comment and attached report; checked the persisted pattern, replacement, flags and PowerRename logs rather than relying on the automation subset.",
+      "PowerRenameManager.cpp::_PerformFileOperation queues RenameItem, may update the in-memory name before execution when the window stays open, and does not check the PerformOperations result.",
+      "Focused manager history contains no recent apply-result correction. Related PR #51297 addresses linguistically equal names and a disabled preview/Apply state, unlike this report of successful preview followed by failed filesystem change; it is not established coverage.",
+      "The issue timeline and bounded upstream/fork searches identify no covering implementation or assigned owner. The existing conditional investigation is retained, not replaced by a claimed Unicode root cause."
+    ],
+    "status": "needs_information",
+    "source_updated_at": "2026-10-28T13:19:00Z",
+    "evaluated_at": "2026-10-28T16:44:51Z",
+    "recommended_action": "Run the supplied synthetic controls and resolve the one saved-state discrepancy before selecting an apply-result fix.",
+    "rationale": "The detailed steps support maintainer reproduction, but the archived mode differs from the body and no failed shell result is established."
+  },
+  "fix_assessment": {
+    "existing_fix_urls": [],
+    "rationale": "A conditional apply-result correction remains plausible; no concrete PR is established as covering this behavior.",
+    "status": "proposed"
+  },
   "proposed_fixes": [
     {
-      "title": "Verify Unicode apply results before advancing displayed names",
-      "root_cause": "A shell-apply failure may be hidden by optimistic item-state updates and unchecked execution results. Saved regex state differs from the literal report, so the exact trigger remains unconfirmed and U+A789 handling is not proven faulty.",
-      "plan": [
-        "Reproduce literal U+2014 to U+A789+space replacement and the archived capture-group regex on unique synthetic files/folders; compare actual directory names by code point, not just preview.",
-        "Use the captured reproduction to inspect RenameItem/PerformOperations and operation-aborted/per-item outcomes; preserve native shell undo, collision and nested-folder behavior.",
-        "If disk apply fails while preview succeeds, update item names/paths only from confirmed successful outcomes and retain failed rows with a useful error instead of assuming the planned name is real.",
-        "Reuse applicable failure-handling ideas/tests from closed-unmerged #47060 after maintainer review; do not reopen or duplicate its implementation blindly.",
-        "If only the regex/settings combination fails, fix that confirmed matching/state path instead of adding a Unicode-specific workaround."
-      ],
+      "root_cause": "Hypothesis: shell execution may fail after preview and optimistic in-memory updates. The report does not yet distinguish that path from the saved regex-state discrepancy; U+A789 is not established as the cause.",
+      "title": "PowerRename apply-result investigation",
       "verification": [
-        "For files and folders containing an interior em dash, both preview and disk names contain the exact intended U+A789 then U+0020 sequence.",
-        "Test literal and saved-regex modes separately, with and without enumeration, and keep-UI-open versus closing after Apply.",
-        "A forced shell rename failure does not display a nonexistent successful name; unaffected items, undo and nested-folder paths remain correct."
+        "Compare on-disk filenames with preview after literal and regex substitutions, including a cancelled or failed shell rename.",
+        "Verify trailing space is internal to the name and that unchanged files are not reported as renamed."
       ],
       "confidence": {
         "score": 58,
-        "level": "yellow",
-        "rationale": "The apply/state hazard is visible in current source and fits the UI/disk discrepancy, but the actual HRESULT and the exact literal-versus-regex trigger are missing; it is not a confirmed Unicode root cause."
-      }
+        "rationale": "The source identifies a plausible boundary, but this pass did not reproduce the failing transition. The accompanying diagnostic action distinguishes competing explanations.",
+        "level": "yellow"
+      },
+      "plan": [
+        "Reproduce the literal and archived regex cases independently.",
+        "If shell execution fails, trace queue and completion results before designing a success-only UI/state update.",
+        "Preserve partial-success and Undo behavior and add a regression case for the confirmed failure."
+      ]
     }
   ],
+  "issue_context": {
+    "initial_investigation": [
+      "Read the complete current body, automation comment and attached report; checked the persisted pattern, replacement, flags and PowerRename logs rather than relying on the automation subset.",
+      "PowerRenameManager.cpp::_PerformFileOperation queues RenameItem, may update the in-memory name before execution when the window stays open, and does not check the PerformOperations result.",
+      "Focused manager history contains no recent apply-result correction. Related PR #51297 addresses linguistically equal names and a disabled preview/Apply state, unlike this report of successful preview followed by failed filesystem change; it is not established coverage.",
+      "The issue timeline and bounded upstream/fork searches identify no covering implementation or assigned owner. The existing conditional investigation is retained, not replaced by a claimed Unicode root cause."
+    ],
+    "inferences": [
+      "An apply-result/state defect is plausible, but replacement-character validity alone does not explain the evidence."
+    ],
+    "summary": "PowerRename preview-versus-disk mismatch needs a literal/regex control, not a presumed Unicode fix.",
+    "known_information": [
+      "The current body identifies PowerToys 0.102.3001, Windows 11 build 26300.9711, administrator mode, and a seven-step replacement of U+2014 with U+A789 followed by U+0020. Preview changes but Explorer names reportedly do not.",
+      "The supplied report predates that current version claim: its PowerRename entries are from 0.102.2933 and retain a digit/dash/letter regular expression with capture-group replacement, not the literal-only search in the body.",
+      "The saved flags enable regular expressions as well as enumeration. The inspected PowerRename log entries do not identify a failed shell-operation result."
+    ],
+    "information_gaps": [
+      {
+        "how_to_collect": "On 0.102.3001, create a non-sensitive filename containing U+2014; report the exact before/expected/actual names and whether regular expressions is enabled.",
+        "evidence_type": "behavior_confirmation",
+        "why_needed": "Distinguishes an archived regex-state mismatch from a current shell-apply failure.",
+        "information": "One failing synthetic filename, exact literal-versus-regex setting, and whether that same case still fails on 0.102.3001."
+      }
+    ],
+    "analysis": "The current version field is newer than the report. Preserve the prior conditional plan; do not repeat the bot request merely to update when the body already names 0.102.3001."
+  },
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve plan: Verify Unicode apply results before advancing displayed names",
-      "note": "Approve this bounded follow-up scope, not an already implemented or runtime-validated fix."
+      "label": "Approve conditional PowerRename apply-result investigation plan"
     },
     {
+      "label": "Confirm literal versus saved-regex failure",
       "type": "request_info",
-      "label": "Clarify literal versus saved-regex rename example",
       "comment": {
-        "body": "Thanks for the detailed steps and the report ZIP. The saved last-run state in that report uses `(\\d)—([A-Za-z])` with `$1꞉ $2`, and its saved flags include regular expressions, whereas the steps describe searching for the em dash alone. These may simply be different attempts.\n\nCould you share one non-sensitive filename before the failing attempt, its expected name, and its actual name afterward, together with a screenshot of the search/replacement fields and regex, occurrence and enumeration toggles used for that same attempt? Please also indicate whether Apply left the PowerRename window open. You can type a synthetic example or upload through the GitHub web UI with personal content hidden. This distinguishes a matching/settings issue from a shell operation that updates the preview but not the file; the existing ZIP and Windows/version details do not need to be sent again."
+        "body": "Thanks for the precise code points, steps and attached report. The current body says 0.102.3001, while the attached PowerRename state is from 0.102.2933 and saves a regex/capture-group replacement. Please share one non-sensitive failing filename with its expected and actual names on 0.102.3001, and confirm whether regular expressions is enabled for that attempt. This distinguishes the saved-state discrepancy from a shell apply failure; another general log bundle is not needed first."
       }
     },
     {
+      "label": "Reproduce PowerRename failure",
       "type": "reproduce",
-      "label": "Compare literal and saved-regex Unicode rename on disk",
-      "note": "Maintainer-owned follow-up; this packet does not claim that these checks were executed.",
       "reproduce": {
-        "title": "Compare literal and saved-regex Unicode rename on disk",
-        "module": "PowerRename",
-        "version_requirement": "0.102.2933 and current release as a comparison",
-        "prerequisites": [
-          "Windows 11",
-          "PowerRename enabled",
-          "Use disposable test data; preserve existing user configuration"
-        ],
+        "expected_result": "Successful operations produce the previewed names on disk; failed/cancelled operations do not leave optimistic success state.",
+        "version_requirement": "Compare 0.102.2933 with 0.102.3001.",
         "setup": [
-          "Prepare unique disposable files named 1—Alpha.txt and 2—Beta.txt and a folder named 3—Gamma.",
-          "Keep the replacement characters literal: U+A789 followed by U+0020; do not substitute ASCII colon.",
-          "The reporter's ∥ is explanatory concatenation notation, not an additional replacement character."
+          "Create test files named A—B.txt and 1—A.txt in a writable test folder; enable PowerRename."
+        ],
+        "prerequisites": [
+          "Use non-sensitive test data and preserve the original configuration before changing it."
         ],
         "steps": [
-          "1. With regex off, replace U+2014 with U+A789 plus space, Filename only, using the reported include/enumeration controls; record preview and actual names.",
-          "2. Restore the disposable names and repeat with the archived regex (\\d)—([A-Za-z]), replacement $1꞉ $2 and saved flags 0xCF.",
-          "3. Repeat with enumeration off and compare keeping the window open versus closing it after Apply; independently inspect the actual filesystem names/code points.",
-          "4. If preview and disk diverge, capture shell-operation result/aborted state in a maintainer debug session and compare with a deliberately locked target before selecting a patch."
+          "1. Select both files and open PowerRename; choose Filename only.",
+          "2. With regex off, replace U+2014 with U+A789 followed by U+0020; compare preview and disk after Apply.",
+          "3. Reset the names; enable regex and use (\\d)—([A-Za-z]) with replacement $1꞉ $2.",
+          "4. Record per-file shell completion and whether the UI claims success before execution; do not treat a completion trace as proof of a disk rename."
         ],
-        "expected_result": "Matching inputs receive the intended literal Unicode name on disk. Any failed operation remains visibly failed; preview and model state must not claim nonexistent filenames.",
-        "setup_prompt": "Create a disposable test directory with the three synthetic names and record the Unicode code points before and after each separate literal/regex trial. Do not use the reporter's private files."
+        "module": "PowerRename",
+        "title": "Verify the reported PowerRename transition"
       }
     }
-  ],
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A conditional apply-result/state correction is plausible. #47060 is closed/unmerged and not established coverage of this report; no active covering implementation was identified.",
-    "existing_fix_urls": []
-  }
+  ]
 }
