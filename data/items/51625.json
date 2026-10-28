@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 5,
+  "number": 51625,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: Qualify fallback identity and ranking by provider",
+  "url": "https://github.com/microsoft/PowerToys/pull/51625",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-28T10:43:53.3348722+08:00",
+  "evaluated_at": "2026-10-28T10:43:53.3381546+08:00",
+  "source_updated_at": "2026-10-27T19:04:51Z",
+  "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51625-undefined-provider-settings",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Use the existing provider-settings property",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
+      "line": 388,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 100,
+        "rationale": "Exact upstream compilation reports CS0103 at this expression; the constructor assigns the existing ProviderSettings property."
+      },
+      "body": "### Use the existing provider-settings property\n\n**Severity:** `high`\n\n`_providerSettings` is no longer declared on `TopLevelViewModel`, so the new lookup fails compilation with CS0103. The constructor already stores the provider snapshot in the `ProviderSettings` property; use that property when the current settings dictionary has no provider entry.\n\n```suggestion\n            : ProviderSettings;\n```",
+      "in_diff": true
+    },
+    {
+      "id": "51625-disabled-global-fallback",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Keep disabled fallbacks out of global results",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
+      "line": 98,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 99,
+        "rationale": "The old global-selection helper requires both flags. The added four-case regression fails only for disabled/global=true with the original predicate and all twelve focused cases pass after this edit."
+      },
+      "body": "### Keep disabled fallbacks out of global results\n\n**Severity:** `medium`\n\nA fallback can retain `IncludeInGlobalResults = true` while `IsEnabled = false`. The previous `GetGlobalFallbacks()` required both flags, but this predicate checks only global inclusion, and `MainListPage` adds such items to its global sources before the enabled check. The update guard prevents new handler calls but does not exclude a nonempty title from rendering; preserve the enabled condition in the provider-qualified lookup.\n\n```suggestion\n    internal bool IncludeInGlobalResults => GetFallbackSettings() is { IsEnabled: true, IncludeInGlobalResults: true };\n```",
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "51625-post-review",
+      "type": "post_review",
+      "label": "Post two inline correctness suggestions",
+      "status": "awaiting_review_approval",
+      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+      "review": {
+        "event": "COMMENT",
+        "commit_id": "d828f027dfe8201230d483495d3c09adcf03607b",
+        "comment_ids": [
+          "51625-undefined-provider-settings",
+          "51625-disabled-global-fallback"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51625-undefined-provider-settings",
+        "51625-disabled-global-fallback"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51625-undefined-provider-settings",
+        "51625-disabled-global-fallback"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
