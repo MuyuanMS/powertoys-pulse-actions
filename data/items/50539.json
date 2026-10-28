@@ -1,121 +1,25 @@
 {
+  "schemaVersion": 5,
   "number": 50539,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "Ready for Review - [Mouse Jump] - add new (unused) library code as a prerequisite for #50462, #50464",
   "url": "https://github.com/microsoft/PowerToys/pull/50539",
   "track": "review",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-10-27T06:50:49.4473020+00:00",
-  "evaluated_at": "2026-10-27T06:50:49.4473020+00:00",
-  "source_updated_at": "2026-10-27T02:38:36Z",
-  "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
-  "proposed_comments": [
-    {
-      "id": "blur-state-identity",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "posted",
-      "severity": "medium",
-      "title": "Reject blur results belonging to a removed screen state",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
-      "line": 281,
-      "side": "RIGHT",
-      "body": "### Reject blur results belonging to a removed screen state\n\n**Severity:** `medium` - latent library correctness issue; this pipeline is not integrated into the application yet.\n\n**Affected code:** `ScreenshotBlurPipeline.SetScreenshot`, `SetActiveScreens` and `RunBlur` in this file.\n\n**Problem:** A scheduled blur retrieves its completing state using only the monitor handle. If `SetActiveScreens()` removes and re-adds that handle before the old blur finishes, the old task can find the replacement state, overwrite its cached image and clear `BlurInProgress` while a newer blur is still running.\n\n**Why it matters:** Once integrated, this can produce stale placeholders and overlapping or out-of-order work. This is not a demonstrated current shipped-app regression.\n\n**Suggested change:**\n1. Capture the `ScreenshotBlurState` associated with each scheduled blur.\n2. Before updating results or advancing queued work, verify that the dictionary still contains that same state instance. Dispose results belonging to a removed state.\n3. Carry the state identity into subsequent queued tasks, preserving the existing blur-failure recovery.\n\n**Verification:** Block an old blur, remove and re-add the same handle, start a new blur, and then release the old task. Verify that the old completion cannot modify the replacement state's result, busy flag or queued work.",
-      "posted_at": "2026-10-27T02:33:59Z",
-      "posted_comment_id": 4384552735,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/50539#discussion_r4384552735"
-    },
-    {
-      "id": "telemetry-write-serialization",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "posted",
-      "severity": "medium",
-      "title": "Serialize telemetry writes and flushes through the same gate",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
-      "line": 70,
-      "side": "RIGHT",
-      "body": "### Serialize telemetry writes and flushes through the same gate\n\n**Severity:** `medium` - latent diagnostic-output reliability issue; the pause-boundary issue alone is low severity.\n\n**Affected code:** The consumer loop and `Flush()` in `TelemetryAdapter.cs`, and the writer contract implemented by `FileTelemetryWriter`.\n\n**Problem:** The consumer releases `writeGate` before invoking `action()`, so `PauseWriting()` can return while a writer call is still executing. Separately, `Flush()` waits for a FIFO marker and then flushes on the calling thread, while the consumer can already be writing a later record. `FileTelemetryWriter` wraps an unprotected `StreamWriter`.\n\n**Why it matters:** Overlapping writes and flushes can cause exceptions or unreliable diagnostic output. The pause boundary can also contaminate measurements intended to exclude telemetry I/O. These are staged-library consequences, not demonstrated current application failures.\n\n**Suggested change:**\n1. Hold the gate throughout each consumer action and release it in `finally`.\n2. Serialize the caller-side writer flush through the same gate, without holding it while waiting for the FIFO marker.\n3. Preserve the existing best-effort handling of write failures. This correction need not change logging policy or introduce retained-write-error exceptions.\n\n**Verification:** Use a controllable writer to verify that pause does not return until an active write finishes and that `Write()` cannot overlap `Flush()`. Retain coverage for resume and shutdown while paused.",
-      "posted_at": "2026-10-27T02:33:59Z",
-      "posted_comment_id": 4384552744,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/50539#discussion_r4384552744"
-    },
-    {
-      "id": "telemetry-clear-context-before-stop",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "posted",
-      "severity": "medium",
-      "title": "Clear the telemetry adapter even when shutdown fails",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
-      "start_line": 95,
-      "line": 96,
-      "side": "RIGHT",
-      "body": "### Clear the telemetry adapter even when shutdown fails\n\n**Severity:** `medium` - conditional hang/restart failure in the staged library.\n\n`TelemetryAdapter.Dispose()` completes the channel and drains its consumer before the final writer flush. If that flush throws, `Stop()` retains the already-stopped adapter. A subsequent `Flush()` can wait indefinitely for a signal that cannot be queued into the completed channel; `Start()` also calls `Stop()` again.\n\nDetach the adapter first while continuing to propagate the original shutdown exception. This does not add a broader thread-safety contract to the context.\n\n```suggestion\n        var adapter = this.adapter;\n        this.adapter = null;\n        adapter?.Dispose();\n```\n\nPlease cover a writer whose final flush throws: the initial `Stop()` should report the error, later context `Flush()`/`Stop()` calls should not hang, and a replacement writer should be startable.",
-      "posted_at": "2026-10-27T02:33:59Z",
-      "posted_comment_id": 4384552749,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/50539#discussion_r4384552749"
-    },
-    {
-      "id": "win32-full-input-count",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "posted",
-      "severity": "low",
-      "title": "Do not classify a zero SendInput result as success",
-      "path": "src/modules/MouseUtils/MouseJump.Common/Win32Gen/Functions/User32_SendInput.cs",
-      "start_line": 55,
-      "line": 57,
-      "side": "RIGHT",
-      "body": "### Do not classify a zero SendInput result as success\n\n**Severity:** `low` - wrapper contract edge case, not a demonstrated input failure.\n\nComparing the native result only with `pInputs.Length` classifies zero as success when the input span is empty, contrary to this wrapper's documented zero-result failure policy. Require both a nonzero result and complete insertion, preserving the native result and available last error.\n\n```suggestion\n        return result != 0 && result == (uint)pInputs.Length\n            ? new Win32Result<uint>(result, success: true)\n            : new Win32Result<uint>(result, success: false, lastError: Marshal.GetLastPInvokeError());\n```\n\nPlease cover zero requested/zero inserted, nonempty requested/zero inserted, partial insertion and complete insertion. No current caller of this new wrapper was found, and an empty request does not itself lose any input.",
-      "posted_at": "2026-10-27T02:33:59Z",
-      "posted_comment_id": 4384552762,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/50539#discussion_r4384552762"
-    }
-  ],
+  "stage": "review_ready",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-28T08:20:03.3306977+08:00",
+  "evaluated_at": "2026-10-28T08:20:03.3370495+08:00",
+  "source_updated_at": "2026-10-27T23:51:46Z",
+  "head_sha": "02df54143744233a3f9f32a173f0abc407c32a47",
+  "needs_revalidation": false,
+  "proposed_comments": [],
   "actions": [],
   "validation": {
     "upstream_head": {
-      "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
+      "head_sha": "02df54143744233a3f9f32a173f0abc407c32a47",
       "result": "passed"
-    },
-    "suggestion_patch": {
-      "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "telemetry-clear-context-before-stop",
-        "win32-full-input-count"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
-      "result": "passed",
-      "checked_comment_ids": [
-        "telemetry-clear-context-before-stop",
-        "win32-full-input-count"
-      ],
-      "files": [
-        {
-          "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryContext.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
-          "path": "src/modules/MouseUtils/MouseJump.Common/Win32Gen/Functions/User32_SendInput.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
     }
-  },
-  "waiting_since": "2026-10-27T02:33:59Z",
-  "author_wait_evidence": {
-    "review_url": "https://github.com/microsoft/PowerToys/pull/50539#pullrequestreview-5661582588",
-    "detail": "All four review comments were posted on this head. The blur-state identity, telemetry serialization, shutdown recovery and SendInput contract requests await an author response or correction. Later activity only starts CI.",
-    "head_sha": "e97e71a79ca46fb50e15547551ab753cbe2c636b",
-    "posted_at": "2026-10-27T02:33:59Z"
   }
 }
