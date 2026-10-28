@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 5,
+  "number": 51493,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "cmdpal: MORE Unsafe code cleanup",
+  "url": "https://github.com/microsoft/PowerToys/pull/51493",
+  "track": "review",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-10-28T12:30:02.3827433+08:00",
+  "evaluated_at": "2026-10-28T12:30:02.3827965+08:00",
+  "source_updated_at": "2026-10-23T16:38:01Z",
+  "head_sha": "924de2bb7dc35ecb6f694f2f68ba6ac4eb0b4847",
+  "needs_revalidation": false,
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": [
+    {
+      "requested_evidence": "Cancel pending navigation for automatic Go Home, GoHome itself, and dismiss.",
+      "author_reply_found": false,
+      "resolved": false,
+      "outdated": false,
+      "request_text": "This is good change, but it also opens a can of async worms. Original code was valid with this being synchronous.\n\nOther navigations and other shenanigans with the pallete should cancel pending navigation explicitly, e.g.:\n  - automatic Go home\n  - GoHome() itself\n  - dismiss \n",
+      "kind": "existing_code_review_feedback",
+      "author": "jiripolasek",
+      "url": "https://github.com/microsoft/PowerToys/pull/51493#discussion_r4361072741",
+      "created_at": "2026-10-23T15:12:56Z"
+    },
+    {
+      "requested_evidence": "Address the worker page-construction path touching ExtensionHost.StatusMessages while that collection is updated on the UI scheduler, or explain why the boundary is safe.",
+      "author_reply_found": false,
+      "resolved": false,
+      "outdated": false,
+      "request_text": "TryPreparePage \n-> CommandPalettePageViewModelFactory.TryCreatePageViewModel\n-> creates new specific page VM(s)\n-> base PageViewModel .ctor()\n-> PageViewModel.UpdateHasStatusMessage\n    -> touches ExtensionHost.StatusMessages collection, that is updated from UI thread (GlobalLogPageContext captures the scheduler from the current context, bleh) from AppExtensionHost\n",
+      "kind": "existing_code_review_feedback",
+      "author": "jiripolasek",
+      "url": "https://github.com/microsoft/PowerToys/pull/51493#discussion_r4361291512",
+      "created_at": "2026-10-23T15:34:56Z"
+    },
+    {
+      "requested_evidence": "Make cancellation-source ownership/disposal safe, including repeated Dispose; the reviewer explicitly notes that a simple exchange/dispose suggestion is insufficient on its own.",
+      "author_reply_found": false,
+      "resolved": false,
+      "outdated": false,
+      "request_text": "CancelNavigation fails after _navigationCts has been disposed. But Dispose() should be safe to call multiple times.\n\nI was going to suggest this, but after tracing the ownership and disposal, it turns out to be more complicated than that.\n\n```suggestion\n        var navigationCts = Interlocked.Exchange(ref _navigationCts, null);\n        navigationCts?.Dispose();\n```",
+      "kind": "existing_code_review_feedback",
+      "author": "jiripolasek",
+      "url": "https://github.com/microsoft/PowerToys/pull/51493#discussion_r4361404069",
+      "created_at": "2026-10-23T15:46:47Z"
+    }
+  ],
+  "validation": {}
+}
