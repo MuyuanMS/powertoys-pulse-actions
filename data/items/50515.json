@@ -1,10 +1,83 @@
 {
-  "schemaVersion":5,"number":50515,"kind":"issue","track":"fix","title":"cmdpal dock new auto-hide bug with bottom position","url":"https://github.com/microsoft/PowerToys/issues/50515","generated_at":"2026-10-28T08:31:28.338Z","evaluated_at":"2026-10-28T08:31:28.338Z","source_updated_at":"2026-10-28T07:37:06Z","stage":"triage","pending_author":false,
-  "summary":"A new current-package reproduction and source inspection support a bottom-edge reveal loop: the hit test has no upper Y bound, so taskbar positions can keep satisfying reveal after collapse is allowed.","next_action":"Reproduce the bottom-dock/taskbar loop on the installed package, then consider approval of the bounded edge-hit-test proposal.",
-  "judgment":{"status":"actionable_design","rationale":"The deterministic original sequence is now supported by a detailed reproduction on package 0.13.13001.0 and focused source evidence. IsCursorAtDockEdge's Bottom branch checks only a lower Y bound plus X-in-rect; CanCollapseAutoHideDock allows collapse when the cursor is below the revealed rectangle. The mechanism is plausible, while the author's isolated candidate checks are not a full app build or integration verification.","evidence":["The original sequence is Bottom position, Auto-hide on, pointer into the Windows taskbar; the Dock repeatedly shows/hides instead of remaining stable.","The 2026-10-28 comment reports the behavior on Command Palette package 0.13.13001.0, Windows 11 26H2 build 26300.9711, Bottom position and Auto-hide on, with a stationary pointer over the taskbar.","Current DockWindow.xaml.cs Bottom reveal predicate checks cursor.Y >= _revealedRect.bottom - margin and X within the rect, but has no upper Y bound.","CanCollapseAutoHideDock uses IsPointInRect(_revealedRect, cursorPoint) to block collapse only when the pointer is inside the revealed rectangle, supporting the reveal/collapse asymmetry.","The reporter reports 1,200 isolated hit-test cases but explicitly says no full application build/test and multi-monitor/fullscreen behavior remains unverified.","No covering upstream issue/PR, assignee, or fork issue/PR/branch trace was found."],"recommended_action":"Verify the bottom-taskbar interaction on the installed package and retain valid edge activation; then approve only the bounded hit-test design, not an unvalidated implementation.","evaluated_at":"2026-10-28T08:31:28.338Z","source_updated_at":"2026-10-28T07:37:06Z"},
-  "issue_context":{"summary":"Bottom-docked Command Palette auto-hide repeatedly reveals and collapses when the pointer rests in the Windows taskbar area.","known_information":["The original reproduction sets Dock position to Bottom, enables auto-hide, and moves the pointer into the taskbar.","The latest comment supplies current package version, Windows build, monitor/settings state, and stationary-pointer reproduction.","The Bottom reveal predicate has no upper Y bound; collapse is blocked only when the pointer is inside the actual revealed rectangle and WindowFromPoint resolves to the Dock window.","The reported isolated hit-test checks did not build or exercise the full application."],"inferences":["A pointer in the taskbar below the revealed Dock may continue satisfying the Bottom reveal predicate after collapse while collapse logic sees it outside the rectangle, producing oscillation.","Constraining reveal detection to the Dock rectangle is likely to address the loop, but valid edge activation and multi-monitor/fullscreen behavior need integration verification."],"analysis":"The 2026-10-28 comment adds a current-package reproduction and source-grounded explanation. Reuse it rather than requesting logs or repeating earlier investigation. The change remains a design candidate because only an isolated check, not an application build, was reported.","initial_investigation":["Read the full issue and all three comments; older comments add one matching video and a broader request about additional taskbar positions.","Read DockWindow.xaml.cs around IsCursorAtDockEdge and CanCollapseAutoHideDock; verified the missing upper coordinate bound and rectangle-limited collapse check.","Reused the reporter's disclosed 1,200-case isolated test result without rerunning tests or building; the comment says integration behavior remains unverified.","Searched upstream related PRs/issues and MuyuanMS fork issue/PR/branch traces; no covering work or assignee was found."],"information_gaps":[]},
-  "labels":["Issue-Bug","Needs-Triage"],"assignees":[],"comments":3,
-  "fix_assessment":{"status":"proposed","rationale":"The reveal predicate's unbounded coordinate and rectangle-based collapse test explain the reported oscillation. The candidate must preserve activation at valid edge positions and be verified across dock sides and monitor/taskbar layouts.","existing_fix_urls":[]},
-  "proposed_fixes":[{"title":"Bound auto-hide reveal detection to the dock edge rectangle","root_cause":"For Bottom docking, IsCursorAtDockEdge accepts any cursor Y at or below the dock's bottom edge as long as X remains within the dock width. A pointer in the taskbar below the revealed rectangle can trigger reveal even though CanCollapseAutoHideDock considers it outside and allows collapse.","plan":["Constrain edge reveal detection to the revealed Dock rectangle before applying the side-specific edge-margin test.","Preserve the intended one-pixel activation margin and verify equivalent behavior for Top, Left, and Right edges.","Add regression coverage for a cursor in the taskbar below Bottom docking and valid edge activation on single- and multi-monitor layouts."],"verification":["With Bottom docking and auto-hide enabled, leave the cursor stationary in the taskbar and verify the Dock does not oscillate.","Move across the valid Dock edge and verify reveal still works; repeat with alternate taskbar settings, dock sides, and monitor layouts."],"confidence":{"score":80,"level":"yellow","rationale":"The control-flow asymmetry directly matches the stationary-taskbar symptom, but full application behavior and edge activation regressions have not been tested."}}],
-  "actions":[{"type":"approve_design","label":"Approve bounded Dock auto-hide hit-test proposal"},{"type":"reproduce","label":"Reproduce Bottom Dock taskbar oscillation","note":"The reporter supplied a deterministic current-package sequence; verify full-app edge behavior before design handoff.","reproduce":{"title":"Verify Bottom Dock auto-hide near the taskbar","module":"Command Palette","version_requirement":"Command Palette package 0.13.13001.0 or newer","prerequisites":["Windows 11","Command Palette Dock enabled","Dock Auto-hide enabled","Dock position set to Bottom"],"setup":["Use one enabled primary display with the Windows taskbar at the bottom.","Set Always on top on and use Compact Dock size as in the detailed report."],"steps":["Restart Command Palette with Bottom docking and Auto-hide enabled.","Place the pointer over the bottom taskbar and leave it stationary.","Observe whether the Dock repeatedly reveals and collapses.","Move the pointer to the actual Dock edge and confirm valid reveal still works."],"expected_result":"The Dock remains stable while the pointer is over the taskbar and reveals only when the pointer enters its valid activation edge.","attachments":[{"label":"Reporter reproduction recording","url":"https://github.com/user-attachments/assets/f9915e67-dd4c-4410-95c5-928099f4db2e"}]}}]
+  "schemaVersion": 5,
+  "number": 50515,
+  "kind": "issue",
+  "generated_at": "2026-10-28T12:43:37Z",
+  "evaluated_at": "2026-10-28T12:55:24Z",
+  "source_updated_at": "2026-10-28T10:55:50Z",
+  "summary": "A source-supported bottom hit-region hypothesis exists, but reports now include other taskbar positions.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Deterministic bottom-dock/taskbar reproduction plus current source inspection pinpoint an unbounded bottom-edge reveal predicate in DockWindow.IsCursorAtDockEdge. New activity says the oscillation also occurs at other taskbar positions, so cross-edge design/reproduction is needed rather than accepting a bottom-only patch.",
+    "recommended_action": "Request exact cross-edge reproduction",
+    "evidence": [
+      "Issue describes bottom dock + auto-hide + cursor over taskbar causing reveal/hide oscillation; recording attached.",
+      "New report specifies Win11 26H2 build 26300.9711, 2560x1440, bottom dock, auto-hide on, stationary pointer, CmdPal package 0.13.13001.0.",
+      "Current src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs Bottom predicate tests cursor.Y >= _revealedRect.bottom - margin without upper Y bound; cross-axis is bounded.",
+      "Reporter candidate clamp and isolated test are explicitly not full-app tested; latest comment says other taskbar positions reproduce.",
+      "No linked PR or assigned maintainer surfaced."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "For the reported bottom case, IsCursorAtDockEdge has no upper Y bound, allowing taskbar pointer positions below the revealed dock to satisfy reveal; other-edge causes remain unverified.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "root_cause": "For the reported bottom case, IsCursorAtDockEdge has no upper Y bound, allowing taskbar pointer positions below the revealed dock to satisfy reveal; other-edge causes remain unverified.",
+      "verification": [
+        "Verify stationary taskbar pointers do not cause repeated reveal/collapse at each affected edge while deliberate edge movement still reveals the dock across layouts."
+      ],
+      "title": "Align auto-hide reveal and collapse hit regions across dock edges",
+      "plan": [
+        "Reproduce bottom and each reported alternate position while recording revealed rectangle, cursor position, and transition.",
+        "Define edge-specific reveal regions consistent with work-area/taskbar geometry and collapse logic; preserve intentional near-edge activation.",
+        "Add regression coverage for all edges, taskbar overlap, and monitor/work-area offsets."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "score": 76,
+        "rationale": "Bottom predicate is directly confirmed in source, but scope is broader and the candidate clamp is not full-app tested."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A source-supported bottom hit-region hypothesis exists, but reports now include other taskbar positions.",
+    "known_information": [
+      "Dock repeatedly shows/hides with pointer stationary over bottom taskbar.",
+      "Current Bottom reveal predicate has no upper cursor.Y bound; collapse logic is separate.",
+      "Candidate change has not been validated in full application; latest comment reports other taskbar positions too."
+    ],
+    "inferences": [
+      "Reveal/collapse hit-region mismatch plausibly contributes to bottom case; broader edge report means bottom-only correction may be incomplete."
+    ],
+    "analysis": "Source inspection supports a bounded hypothesis for the bottom case, but latest scope expansion requires cross-edge testing and preservation of intentional edge activation. Do not treat the suggested rectangle clamp as a converged fix.",
+    "initial_investigation": [
+      "Read full issue and latest comment; inspected DockWindow.xaml.cs reveal and collapse paths in current PowerToys tree.",
+      "Checked activity, ownership, and PR search; no linked PR or assignee surfaced.",
+      "Reporter test is isolated and not end-to-end app validation."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Which additional taskbar positions/edges reproduce, exact dock side and work-area geometry for each, and whether the pointer stays stationary during oscillation.",
+        "how_to_collect": "Please list each additional dock/taskbar edge that reproduces, monitor resolution/scaling, and whether the pointer remains stationary while the dock flashes.",
+        "why_needed": "Determines whether one hit-region mismatch spans edges or separate geometry/transition paths are involved."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve cross-edge auto-hide hit-region design",
+      "type": "approve_design"
+    },
+    {
+      "label": "Request exact cross-edge reproduction",
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for the source-level observation and for confirming that the issue is not limited to the bottom taskbar. The current bottom predicate does lack an upper Y bound, but the suggested clamp has not been tested in the full app and may not explain the other positions. Please list each additional dock/taskbar edge that reproduces, the monitor resolution/scaling, and whether the pointer remains stationary while the dock flashes. This will distinguish a shared hit-region mismatch from separate geometry transitions before a fix is chosen."
+      }
+    }
+  ]
 }

@@ -1,10 +1,79 @@
 {
-  "schemaVersion":5,"number":51658,"kind":"issue","track":"fix","title":"Zoomit Scrolling Screenshot Blackout & Crash","url":"https://github.com/microsoft/PowerToys/issues/51658","generated_at":"2026-10-28T08:31:48.024Z","evaluated_at":"2026-10-28T08:31:48.024Z","source_updated_at":"2026-10-28T07:15:29Z","stage":"triage","pending_author":false,
-  "summary":"Scrolling capture turns black before ZoomIt/Windows Magnifier fails; the attached ZIP was rejected as oversized, so a maintainer repro and fresh /bugreport are needed to distinguish capture failure from an OS Magnifier fault.","next_action":"Reproduce on the reported version and request only the missing capture sequence and a valid fresh /bugreport.",
-  "judgment":{"status":"needs_information","rationale":"The report includes version, Store install, Windows build, elevated per-user setup, and core failure sequence. The attached report was rejected for an oversized archive entry. The steps do not identify the target application/input or which process exits; those details and a usable report are needed to choose between ZoomIt capture/stitching and Windows Magnifier failure. The known sequence remains actionable for a maintainer reproduction.","evidence":["The reporter uses PowerToys 0.102.3001 from Microsoft Store on Windows build 26200, elevated and per-user.","The reporter says scrolling capture goes black after a few inches, may recover briefly, then Screen Magnifier crashes; ZoomIt can be restarted from PowerToys settings.","A triage workflow comment says the attached report was rejected because an archive entry was oversized and no diagnostics could be analyzed.","PanoramaCapture.cpp describes repeated desktop-frame capture followed by offline stitching; this gives a focused path for repro, not proof of the failing stage.","No covering issue/PR, assigned owner, or fork-side trace was found."],"recommended_action":"Have a maintainer reproduce the sequence, record which process fails and when the black frame begins, and obtain a fresh report before choosing a repair.","evaluated_at":"2026-10-28T08:31:48.024Z","source_updated_at":"2026-10-28T07:15:29Z"},
-  "issue_context":{"summary":"ZoomIt scrolling capture becomes black and is followed by a Windows Screen Magnifier crash on PowerToys 0.102.3001; submitted diagnostics were unusable.","known_information":["The reporter supplied version, Store install, Windows build, elevation, and per-user scope.","The reporter describes selecting a region, scrolling briefly, seeing a black area, then Screen Magnifier crashing; ZoomIt can be restarted.","The attached bug-report ZIP was rejected due to an oversized archive entry.","PanoramaCapture.cpp implements desktop-frame collection and later stitching, but evidence does not locate the failure."],"inferences":["The black transition may originate in desktop frame acquisition or stitching, but a separate Windows Magnifier failure remains plausible.","A particular target application or scrolling input may be required but is not identified."],"analysis":"The report supports first-pass local reproduction, so do not repeat its version or environment checklist. The blocked decision is whether ZoomIt's capture lifecycle or Windows Magnifier is failing. Exact capture steps and a replacement report immediately after reproducing are the smallest useful additions.","initial_investigation":["Read the full issue and triage workflow comment; confirmed the submitted ZIP was rejected rather than silently omitted.","Read PanoramaCapture.cpp overview and capture entry path; it uses repeated desktop frames and later stitching, while the issue does not identify which stage/process fails.","Searched related upstream issues/PRs and fork issue/PR/branch traces; none were found.","Did not download or extract the rejected archive; no diagnostic contents are claimed as inspected."],"information_gaps":[{"evidence_type":"repro_steps","information":"Exact target window, capture-start action, scrolling input, first black transition, and whether ZoomIt or Screen Magnifier exits first.","why_needed":"These details separate a ZoomIt frame/stitching failure from a Magnifier or app-specific failure.","how_to_collect":"Reply with short numbered steps naming target application, capture action, scroll input, first black transition, and which process closes or reports an error."},{"evidence_type":"bugreport_zip","information":"One fresh PowerToys diagnostic report captured immediately after reproducing the scrolling-capture failure.","why_needed":"The existing archive was rejected for an oversized entry and provided no usable logs.","how_to_collect":"Reproduce once, then add a comment containing `/bugreport` immediately afterward; if Settings or tray cannot open, run BugReportTool.exe from the PowerToys installation directory."}]},
-  "labels":["Issue-Bug","Needs-Author-Feedback","Needs-Triage","Product-ZoomIt"],"assignees":[],"comments":1,
-  "fix_assessment":{"status":"proposed","rationale":"A product-side failure remains plausible because the symptom is triggered inside scrolling capture, but the process boundary and failing stage are not established. Treat the recovery direction as a red-confidence hypothesis until reproduction and usable diagnostics distinguish it from an OS Magnifier fault.","existing_fix_urls":[]},
-  "proposed_fixes":[{"title":"Recover safely from a failed scrolling-capture frame","root_cause":"A failure or blank result during panorama frame acquisition/stitching may leave capture state active or propagate an invalid frame; the report cannot rule out a separate Windows Magnifier fault.","plan":["Reproduce and identify whether black occurs during desktop-frame acquisition or stitching, and record which process exits.","Trace RunPanoramaCaptureCommon frame-capture and stop/cleanup paths for the confirmed transition.","If ZoomIt is responsible, recover from the invalid frame and ensure capture state is cleaned up without terminating the affected process; add focused regression coverage."],"verification":["Repeat the confirmed sequence and verify capture completes or exits with recoverable error without a prolonged black frame or Magnifier crash.","Confirm ordinary scrolling capture and clipboard output still work after an interrupted or invalid frame."],"confidence":{"score":43,"level":"red","rationale":"The issue localizes the trigger to scrolling capture, but its archive was rejected and no source trace or reproduction establishes whether ZoomIt, Windows Magnifier, or their interaction fails."}}],
-  "actions":[{"type":"approve_design","label":"Approve scrolling-capture recovery investigation"},{"type":"reproduce","label":"Reproduce ZoomIt blackout and Magnifier failure","note":"The report provides a first-pass sequence; reproduce locally while identifying the target application and failing process.","reproduce":{"title":"Reproduce ZoomIt scrolling screenshot blackout","module":"ZoomIt","version_requirement":"PowerToys 0.102.3001 on Windows 11 build 26200","prerequisites":["ZoomIt scrolling screenshot enabled","Windows Screen Magnifier available"],"setup":["Select a reproducible scrollable application/window and note the scrolling input."],"steps":["Start ZoomIt scrolling screenshot capture and select the target region.","Scroll down a few inches at a normal pace.","Record when the area turns black and whether ZoomIt or Screen Magnifier becomes unresponsive or exits.","If capture completes, verify stitched image and clipboard result."],"expected_result":"Capture remains visible and completes without crashing Screen Magnifier; an unrecoverable failure exits cleanly without a black overlay or stuck state.","setup_prompt":"Prepare a non-sensitive scrollable test page and note the scroll input so the blackout can be reproduced without personal content."}},{"type":"request_info","label":"Request fresh ZoomIt bug report and exact scrolling steps","comment":{"body":"Thanks for providing the PowerToys version, Windows build, install scope, and the sequence where scrolling capture turns black before Screen Magnifier fails. The attached report was rejected because an archive entry was oversized, so it provided no usable diagnostics.\n\n**Needed**\n1. Please add the exact target application/window, how you start capture, the scroll input, and whether ZoomIt or Screen Magnifier exits first. This distinguishes a ZoomIt capture/stitching failure from a Magnifier or app-specific failure.\n2. Please reproduce once and add a comment containing `/bugreport` immediately afterward so maintainers can inspect a fresh report. If Settings or the tray cannot open, run `BugReportTool.exe` from the PowerToys installation directory.\n\nPlease avoid including sensitive page contents in screenshots or samples."}}]
+  "schemaVersion": 5,
+  "number": 51658,
+  "kind": "issue",
+  "generated_at": "2026-10-28T12:43:37Z",
+  "evaluated_at": "2026-10-28T12:55:24Z",
+  "source_updated_at": "2026-10-28T09:36:48Z",
+  "summary": "Detailed reproduction and Event Viewer records confirm ZoomIt 0.102.3001 scrolling-capture hangs.",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Updated discussion gives a detailed multi-app reproduction and replacement diagnostic ZIP. The attached Event Viewer XML confirms repeated AppHangTransient/AppHangB1 records for PowerToys.ZoomIt.exe 0.102.3001 on 2026-10-28, plus the author supplied a recording. Root cause remains unknown.",
+    "recommended_action": "Reproduce the confirmed hang, then trace the responsible path.",
+    "evidence": [
+      "Body provides numbered steps: select scrolling region, scroll a short distance, observe black capture and ZoomIt hang; Chrome, Android Studio, Windows 11 build 26200.",
+      "Inspected ZIP: Event Viewer records include 0.102.3001 AppHangTransient and AppHangB1 events on 2026-10-28.",
+      "Author supplied recording; says Store install, elevated, stable 0.102.3001.",
+      "No linked PR or assignee surfaced; issue has Needs-Team-Response label."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Not established: Event Viewer confirms ZoomIt hangs during scrolling capture but does not identify a faulting function or subsystem.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "root_cause": "Not established: Event Viewer confirms ZoomIt hangs during scrolling capture but does not identify a faulting function or subsystem.",
+      "verification": [
+        "Repeat Chrome and Android Studio scenarios and verify capture completes without a black frame or hang; confirm ZoomIt remains usable after exit."
+      ],
+      "title": "Stabilize ZoomIt scrolling capture after tracing the confirmed hang",
+      "plan": [
+        "Reproduce the supplied sequence on 0.102.3001 and capture the transition from scrolling to black frame and hang.",
+        "Trace the confirmed capture/hang path and correct the blocked or failing operation only after identifying it.",
+        "Add regression coverage for scrolling across the reported app types and interruption/recovery behavior."
+      ],
+      "confidence": {
+        "level": "red",
+        "score": 48,
+        "rationale": "Reproduction and application hangs are confirmed, but the diagnostic records do not reveal the faulty code path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Detailed reproduction and Event Viewer records confirm ZoomIt 0.102.3001 scrolling-capture hangs.",
+    "known_information": [
+      "Scrolling Screenshot blacks out after scrolling and is followed by a ZoomIt app hang.",
+      "The report spans multiple scrollable applications and includes diagnostic ZIP and recording.",
+      "Event Viewer records in the ZIP include PowerToys.ZoomIt.exe 0.102.3001 AppHangTransient/AppHangB1 events dated 2026-10-28."
+    ],
+    "inferences": [
+      "Evidence supports an actionable ZoomIt capture hang, but not which capture, compositor, or input path is responsible."
+    ],
+    "analysis": "The recent response improves the issue from unverified to reproducible: concrete steps and attached Windows events independently record ZoomIt hangs on the reported version. No cause should be inferred from the black frame alone.",
+    "initial_investigation": [
+      "Read complete updated discussion; inspected replacement ZIP ZoomIt logs and Event Viewer XML; confirmed 0.102.3001 hang events.",
+      "No linked PR or source-level root cause surfaced."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "label": "Approve focused ZoomIt scrolling-capture investigation",
+      "type": "approve_design"
+    },
+    {
+      "reproduce": {
+        "steps": [
+          "On v0.102.3001 with ZoomIt enabled, open Chrome or Android Studio with vertical content.",
+          "Activate Scrolling Screenshot with the reporter configured shortcut and select a rectangle.",
+          "Scroll downward normally and record black frame, ZoomIt hang, and Windows Magnifier state.",
+          "Repeat in a second app and note whether exit/re-enable restores capture."
+        ]
+      },
+      "label": "Reproduce the confirmed scrolling-capture hang",
+      "type": "reproduce"
+    }
+  ]
 }

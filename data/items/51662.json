@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 5,
+  "number": 51662,
+  "kind": "issue",
+  "generated_at": "2026-10-28T12:42:58Z",
+  "evaluated_at": "2026-10-28T12:55:24Z",
+  "source_updated_at": "2026-10-28T08:48:59Z",
+  "summary": "Command Palette bar items fail to reorder; exact drag/drop stage is missing.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The author reports added items cannot be moved on Windows 11/v0.102 and attaches a screenshot. Exact gesture, item, target, and whether drag starts are not described.",
+    "recommended_action": "Request exact item-reordering steps",
+    "evidence": [
+      "Body says added bar items cannot move to the middle or among themselves; nothing happens.",
+      "Screenshot linked; no discussion comments, assignee, or linked PR found.",
+      "No source-level failing transition established.",
+      "Inspected DockControl.xaml.cs: UpdateEditMode enables CanDragItems, CanReorderItems, and AllowDrop only when dock edit mode is active; same-list reorder is handled by ListView and cross-list drops have separate handling."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No root cause is established; source gates reordering on edit mode, and the report does not say whether that mode was active.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Confirm Dock Edit Mode is active and reproduce the exact reorder sequence; record drag start, drop target, and resulting order.",
+        "Trace the confirmed failing dock transition and make the smallest correction consistent with the ordering model.",
+        "Add focused regression coverage for moving an item within the bar."
+      ],
+      "title": "Restore reordering after isolating the failed gesture",
+      "root_cause": "Not established: source gates reordering on edit mode; the report does not say whether edit mode was active or which drag/drop phase failed.",
+      "verification": [
+        "Verify the exact gesture moves the item to the intended position and the order persists after reopening."
+      ],
+      "confidence": {
+        "rationale": "The issue may be expected outside edit mode; no failing drag/drop phase is yet confirmed.",
+        "score": 42,
+        "level": "red"
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette bar items fail to reorder; exact drag/drop stage is missing.",
+    "known_information": [
+      "User-added bar items do not visibly move/reorder.",
+      "Reporter says Windows 11 and earlier versions also affected.",
+      "Screenshot attached.",
+      "Current source only enables dock item drag/reorder in edit mode."
+    ],
+    "inferences": [
+      "Could be drag initiation, drop targeting, or persistence; report does not distinguish.",
+      "If edit mode was not active, the observed inability to move items is expected; if it was active, exact drag/drop phase is needed to identify a defect."
+    ],
+    "analysis": "The screenshot is available, but the report does not say whether Dock Edit Mode was active. Current DockControl source gates CanReorderItems on edit mode; if enabled, same-list reorder is handled by ListView and cross-list drops have separate handling. Ask for the mode and exact failed transition before selecting a design.",
+    "initial_investigation": [
+      "Read issue body and screenshot; inspected DockControl.xaml.cs edit-mode gating and drag/drop handlers, plus discussion, ownership, and PR search; no confirmed failure path found."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "Source enables reordering only in edit mode; this distinguishes expected disabled behavior from a drag-start, drop-target, or saved-order defect.",
+        "information": "Whether Dock Edit Mode was entered, plus exact reorder gesture, item type, source/destination positions, drag feedback, and whether order persists after reopening.",
+        "evidence_type": "repro_steps",
+        "how_to_collect": "Please enter Dock Edit Mode, then add numbered steps naming the item, pointer/keyboard gesture, source and target positions, visible feedback, and result after closing/reopening the bar."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve focused bar-item reordering design",
+      "type": "approve_design"
+    },
+    {
+      "type": "request_info",
+      "label": "Request exact item-reordering steps",
+      "comment": {
+        "body": "Thanks for reporting that added Command Palette bar items do not move and for attaching a screenshot. Current source enables drag/reorder only in Dock Edit Mode, so the first distinction is whether that mode was active. Please confirm how you entered edit mode, then add numbered steps naming the item, exact gesture, source and target positions, any drop indicator, and whether the order persists after reopening. This will distinguish disabled edit mode from a drag/drop defect before a fix is selected."
+      }
+    }
+  ]
+}

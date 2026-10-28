@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 5,
+  "number": 51663,
+  "kind": "issue",
+  "generated_at": "2026-10-28T12:42:58Z",
+  "evaluated_at": "2026-10-28T12:55:24Z",
+  "source_updated_at": "2026-10-28T08:53:36Z",
+  "summary": "Disk entry fails in a Command Palette dock flow; clarify the exact add-item interaction.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Typing C:\\ or C:/ reportedly does not add a disk while a manually mapped disk works; screenshots are linked. The add-item surface, confirmation action, and meaning of manual mapping are unspecified.",
+    "recommended_action": "Request exact disk-add workflow",
+    "evidence": [
+      "Body identifies Command Palette v0.102 and contrasts C:\\ or C:/ with a manually mapped disk that works.",
+      "Screenshots linked; no discussion, assignee, or linked PR found.",
+      "No source-level cause established.",
+      "Inspected the supplied failure screenshot: it shows a c:/ query in the Run surface, a Run-command result and a context menu with pin options; it does not show a drive item being pinned.",
+      "Source RunListPage.BuildListItemsForSearchAsync parses input and creates path items; MatchesFilter requires Directory.Exists for an exact match, while its source comment describes C:\\Win returning matching files."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Not established: local C:\\ entry fails while an ambiguously described manually mapped disk works.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Reproduce C:\\ and C:/ in the exact add-item flow and locate whether parsing, enumeration, or persistence fails.",
+        "Correct only the confirmed path/drive transition while preserving the working mapped-drive case.",
+        "Add focused tests for local and mapped inputs."
+      ],
+      "title": "Correct disk-item addition after the workflow is identified",
+      "root_cause": "Not established: local C:\\ entry fails while an ambiguously described manually mapped disk works.",
+      "verification": [
+        "Verify local C: and the working mapped-drive flow create the intended persistent dock item."
+      ],
+      "confidence": {
+        "rationale": "The input contrast is useful, but the workflow and manual mapping are undefined.",
+        "score": 45,
+        "level": "red"
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Disk entry fails in a Command Palette dock flow; clarify the exact add-item interaction.",
+    "known_information": [
+      "Typing C:\\ or C:/ does not add a disk in the reported dock workflow.",
+      "The author says a manually mapped disk works.",
+      "Screenshots attached.",
+      "The screenshot shows a c:/ Run query and pin menu, not an explicit disk result.",
+      "RunListPage resolves input and enumerates path items; exact-match results are included only when the full path is a directory."
+    ],
+    "inferences": [
+      "Could involve path parsing, drive enumeration, or a different workflow; not distinguishable yet.",
+      "The screenshots and source suggest the key missing distinction is whether the reporter expects C:\\ root as a Run result or is trying to pin a specific returned item; no parser defect is established."
+    ],
+    "analysis": "The failure screenshot shows c:/ in the Run surface with a Run-command result and a pin menu, while RunListPage parses the command and enumerates path items. The expected-result screenshot could not be retrieved (404). Ask which item/menu action is intended and clarify the working mapped-drive flow before selecting a fix.",
+    "initial_investigation": [
+      "Reviewed full issue body and screenshot references, discussion, ownership, and PR search; no concrete source cause or linked fix found.",
+      "Inspected the failure screenshot and RunListPage path-resolution, child-item creation, and exact-directory matching logic; no confirmed mismatch yet."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "The failure image shows a Run-command result and pin menu, while RunListPage handles file-system path enumeration; the intended item and action determine whether this is path handling or pin workflow.",
+        "information": "Exact add-item surface and menu action; whether C:\\ is expected to appear as a Run result or be pinned; identify the working mapped-disk operation.",
+        "evidence_type": "repro_steps",
+        "how_to_collect": "Please state which result you select and which pin/menu action you invoke, then add numbered steps for C:\\ and C:/ and the working mapped-drive flow. The expected-result screenshot link was unavailable during review."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve focused disk-item investigation",
+      "type": "approve_design"
+    },
+    {
+      "type": "request_info",
+      "label": "Request exact disk-add workflow",
+      "comment": {
+        "body": "Thanks for showing the `c:/` query and pin menu in the screenshot, and for noting that a manually mapped disk works. The image does not show a disk result being pinned, and the expected-result image link was unavailable. Current RunListPage source parses the path and builds file-system results, so please name the exact result and pin/menu action you use, then add numbered steps for both `C:\\` and `C:/` and for the working mapped-drive flow. This distinguishes path enumeration from the pin workflow before a code fix is chosen."
+      }
+    }
+  ]
+}

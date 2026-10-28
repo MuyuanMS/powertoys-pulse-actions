@@ -2,98 +2,42 @@
   "schemaVersion": 5,
   "number": 51567,
   "kind": "issue",
-  "title": "Mouse Without Borders fails to pair: \"Could not load or update pairing\" (Negotiation → Connecting → Error)",
-  "url": "https://github.com/microsoft/PowerToys/issues/51567",
-  "generated_at": "2026-10-27T20:01:38.347Z",
-  "evaluated_at": "2026-10-27T20:01:38.347Z",
-  "source_updated_at": "2026-10-27T19:48:23Z",
-  "stage": "triage_revalidated",
+  "generated_at": "2026-10-28T12:41:51Z",
+  "evaluated_at": "2026-10-28T12:55:24Z",
+  "source_updated_at": "2026-10-28T11:20:21Z",
+  "summary": "Duplicate of #50795: commenter confirms Settings IPC untrusted-signature.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The original two-PC report documents extensive network controls; newer replies confirm persistence on 0.102.3001.0. One user says removing the remote MWB service and rebooting restored operation, while another cannot generate or accept a key. The same release has a confirmed SettingsSync signer rejection tracked in #50795, but this issue has not supplied that exact error or service-state evidence; do not assume either cause or propose a competing fix.",
+    "status": "duplicate_or_handled",
+    "rationale": "New discussion includes the exact MWB log “Rejected Settings IPC client: untrusted-signature” on v0.102.3001. This matches the unresolved signer mismatch in #50795. A service-removal/reboot recovery report does not establish a separate cause.",
+    "recommended_action": "Consolidate with #50795.",
     "evidence": [
-      "The original two-PC 0.102.2933 report describes a 24-second failure and Negotiation → Connecting → Error after private-network/firewall/key/IP/admin/VPN/restart controls were tried.",
-      "Four later comments confirm generic failure on 0.102.3001.0; one reports recovery after removing the remote MWB service and rebooting, while another still cannot generate/accept a key after two reboots.",
-      "#50795 independently documents `Rejected SettingsSync server: untrusted-signature` and mismatched trusted signer certificates on 0.102.3001.0. Current source uses exact trusted leaf-certificate equality, but #51567 has no such error excerpt, so this is a possible shared cause, not an established duplicate: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI.Library/Utilities/NamedPipePeerVerification.cs#L265-L334",
-      "No attachment is present; the latest commenter says key generation and receipt still fail on 0.102.3001.0."
-    ],
-    "recommended_action": "Correlate one failed key/pairing attempt with its exact SettingsSync error and service mode before routing to #50795 or a separate investigation",
-    "evaluated_at": "2026-10-27T20:01:38.347Z",
-    "source_updated_at": "2026-10-27T19:48:23Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "If the first error is the confirmed signer rejection, route coverage to #50795; otherwise use the observed service/key state to identify a distinct branch. Do not propose a second fix for the same signature mismatch."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Attribute the first local key/SettingsSync failure before a separate MWB fix",
-      "root_cause": "Hypothesis only: the generic error may mask the release signer rejection already confirmed in #50795, or a separate local service/key synchronization failure; comments do not identify which error occurs first.",
-      "plan": [
-        "Capture the exact Settings-side error and MWB service/user mode from one failed key-generation or pairing attempt on an affected machine.",
-        "If the report contains the #50795 `untrusted-signature` rejection, keep the fix under #50795; otherwise investigate only the service/key branch demonstrated by the report.",
-        "Do not repeat the network controls already recorded or change credential handling without evidence of the first failure."
-      ],
-      "verification": [
-        "The affected machine generates/synchronizes a key in its reported service mode, and pairing completes or reports the distinct first local/network failure instead of masking it as a generic error."
-      ],
-      "confidence": {
-        "score": 34,
-        "level": "red",
-        "rationale": "Persistence and a relevant release-level failure are evidenced, but this issue lacks the exact Settings error and service-state correlation."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Multiple users report MWB pairing or key synchronization failure on 0.102; one recovery followed remote-service removal and reboot, while other reports remain unresolved.",
-    "known_information": [
-      "The original reporter used matching 0.102.2933 builds on two PCs and already tried private-network/firewall/key/IP/admin/VPN/restart controls without success.",
-      "Four comments confirm generic failure on 0.102.3001.0; one reports recovery after removing the remote MWB service and rebooting, and a later comment says key generation/acceptance still fail after two reboots.",
-      "#50795 confirms `untrusted-signature` on 0.102.3001.0 with the same valid Microsoft signer pair assigned to opposite Settings/MWB executables; #51567 itself does not include that exception."
-    ],
-    "inferences": [
-      "The #50795 signer mismatch could explain some key/SettingsSync failures in this release, but is not established for every #51567 reporter without the local exception text.",
-      "Service-removal recovery could indicate stale service state or a reboot-related recovery; that comment does not isolate which action fixed the machine."
-    ],
-    "analysis": "The issue already answers common network-control questions; do not repeat them. The diagnostic fork is the first SettingsSync error and service state when key generation/receipt fails. The #50795 rejection is a possible common path; service removal may indicate a separate one. Request the established bug report from a still-affected endpoint rather than assume a duplicate.",
-    "initial_investigation": [
-      "Refreshed the complete body and all five comments; no attachment is present. Comments include three generic 0.102.3001 confirmations, one service-removal/reboot recovery, and a report that key generation/receipt still fail.",
-      "Inspected the current peer policy at upstream main 9227a8497750 and compared it with #50795's exact error/certificates; relevant mechanism is not shown by #51567: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI.Library/Utilities/NamedPipePeerVerification.cs#L265-L334",
-      "Preserved the already-tried network/firewall/key/IP/admin/VPN/restart controls; no generic network checklist is requested."
-    ],
-    "information_gaps": [
-      {
-        "information": "The first SettingsSync error and MWB service/user mode when key generation/receipt fails on an affected 0.102.3001.0 endpoint.",
-        "why_needed": "The `untrusted-signature` rejection would place the report under #50795; a different first error or service state supports a distinct local key/service investigation.",
-        "how_to_collect": "On a machine that still fails, attempt New key or one pairing attempt, note its time and whether MWB runs as user or service, then comment /bugreport immediately. If two PCs are involved, attach both endpoint reports; do not post the security key or repeat the network controls already tested.",
-        "evidence_type": "bugreport_zip"
-      }
+      "Original issue gives detailed two-PC steps, network checks, and multiple v0.102.3001 confirmations.",
+      "2026-10-28 commenter supplies the exact Settings IPC untrusted-signature log.",
+      "Primary #50795 remains open; no covering PR surfaced."
     ]
   },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Capture the first MWB key-sync failure",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "body": "Thanks for the extensive network checks and newer-version confirmations. The service-removal/reboot recovery is useful, but another report still cannot generate or accept a key. A separate #50795 report confirms the exact `untrusted-signature` SettingsSync rejection on 0.102.3001.0; it would explain this only if that exception is present on the affected machine. On a machine that still fails, could you try New key or one pairing attempt, note the time and whether MWB is running as user or service, then comment /bugreport immediately? If two PCs are involved, please attach both reports. Do not post the security key; there is no need to repeat the firewall or network tests already listed."
-      },
-      "id": "issue-51567-request_info-1"
-    },
-    {
-      "type": "approve_design",
-      "label": "Review the conditional failure-attribution direction",
-      "primary": false,
-      "confirm": true,
-      "note": "Routing gate only; use the captured first error to decide whether #50795 covers this or a distinct investigation is needed.",
-      "id": "issue-51567-approve_design-2"
-    }
-  ],
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "comments": 5
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Duplicate of unresolved #50795 based on exact signer rejection; no competing fix should be proposed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Duplicate of #50795: commenter confirms Settings IPC untrusted-signature.",
+    "known_information": [
+      "Two PCs fail pairing and show Negotiation → Connecting → Error.",
+      "Commenter provides the exact untrusted-signature rejection on 0.102.3001.",
+      "A commenter says removing a remote service and rebooting appeared to help; effective step uncertain."
+    ],
+    "inferences": [
+      "Exact IPC signature rejection matches #50795; the recovery report does not prove a distinct service defect."
+    ],
+    "analysis": "The new log is the discriminating evidence absent from the earlier assessment; consolidate instead of asking for generic network details.",
+    "initial_investigation": [
+      "Read original report and current comments including the new error-log evidence.",
+      "Rechecked #50795 and PR search; no covering fix PR surfaced."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }
