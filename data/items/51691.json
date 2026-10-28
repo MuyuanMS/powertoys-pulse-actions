@@ -1,0 +1,99 @@
+{
+  "source_updated_at": "2026-10-28T20:05:31Z",
+  "proposed_fixes": [
+    {
+      "title": "Distinguish Keyboard Manager engine exit from a lost hook after startup",
+      "plan": [
+        "Reproduce the reboot failure while observing whether KeyboardManagerEngine is running and whether one known mapping works.",
+        "Correlate the failure time with engine logs and Application Error events; distinguish an engine exit from hook inactivity or target-app behavior.",
+        "Fix only the demonstrated lifecycle/hook path and add a reboot/startup regression; do not treat an editor-shortcut initialization message as proof of engine crash."
+      ],
+      "verification": [
+        "After reboot, test the same harmless mapping before and after toggling Keyboard Manager, checking engine process continuity and error evidence."
+      ],
+      "root_cause": "The engine may exit or lose effective input handling after logon; the supplied archive does not establish a crash or the exact failing branch.",
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The supplied engine log shows initialization and later chord handling; the KeyboardManagerEngine event export is empty. The title alone is not a crash diagnosis."
+      }
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "Capture the engine state and failing mapping before toggling, then investigate the demonstrated lifecycle path.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "track": "fix",
+  "number": 51691,
+  "url": "https://github.com/microsoft/PowerToys/issues/51691",
+  "pending_author": false,
+  "judgment": {
+    "recommended_action": "Capture the engine state and failing mapping before toggling, then investigate the demonstrated lifecycle path.",
+    "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+    "status": "needs_information",
+    "evidence": [
+      "The reporter says reboot requires toggling Keyboard Manager and supplies a diagnostic archive for 0.102.3001.",
+      "The engine log contains startup/settings loading and subsequent chord-handler activity. The exported KeyboardManagerEngine Application event file is empty.",
+      "The module-interface log reports editor-shortcut initialization failure; that is not itself an engine crash record.",
+      "Downloaded and inspected the supplied Keyboard Manager engine, module-interface and editor logs and relevant event-export lengths.",
+      "Source locates editor-shortcut initialization in dll/dllmain.cpp separately from KeyboardManagerEngineLibrary keyboard-hook installation.",
+      "No exception, crash stack or failed hook installation in the supplied evidence identifies a root cause; no account or application-path contents are copied into public output."
+    ],
+    "rationale": "A general request for the already supplied logs would add little. The missing discriminator is process state and one failing mapping captured before recovery, with a fresh failure-time report.",
+    "source_updated_at": "2026-10-28T20:05:31Z"
+  },
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate startup engine lifecycle"
+    },
+    {
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for the diagnostic ZIP. It contains engine startup and later chord-handling entries, but no KeyboardManagerEngine crash event; the editor-shortcut initialization message is a different path. After the next reboot, before toggling Keyboard Manager, please say whether PowerToys.KeyboardManagerEngine.exe is present in Task Manager and give one mapping that fails (source keys, intended action, and target app). Please then capture `/bugreport` immediately while it is still failing. This distinguishes an exited engine from a live process whose hook/mapping stopped working; there is no need to resend the old ZIP."
+      },
+      "label": "Request engine state at the failed startup"
+    }
+  ],
+  "owes": "us",
+  "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "generated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "title": "Keyboard Manager Keeps Needing to be Toggled on/off due to a crash",
+  "issue_context": {
+    "summary": "The supplied archive does not establish the reported crash; obtain engine state while startup remapping is still failing.",
+    "information_gaps": [
+      {
+        "information": "Whether KeyboardManagerEngine is running and one mapping that fails before toggling",
+        "why_needed": "Separates process exit from inactive hooks or mapping-specific behavior.",
+        "how_to_collect": "After reboot and before recovery, check Task Manager, describe the mapping, then capture /bugreport while failing.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ],
+    "initial_investigation": [
+      "Downloaded and inspected the supplied Keyboard Manager engine, module-interface and editor logs and relevant event-export lengths.",
+      "Source locates editor-shortcut initialization in dll/dllmain.cpp separately from KeyboardManagerEngineLibrary keyboard-hook installation.",
+      "No exception, crash stack or failed hook installation in the supplied evidence identifies a root cause; no account or application-path contents are copied into public output."
+    ],
+    "known_information": [
+      "The reporter says reboot requires toggling Keyboard Manager and supplies a diagnostic archive for 0.102.3001.",
+      "The engine log contains startup/settings loading and subsequent chord-handler activity. The exported KeyboardManagerEngine Application event file is empty.",
+      "The module-interface log reports editor-shortcut initialization failure; that is not itself an engine crash record."
+    ],
+    "inferences": [
+      "Engine exit, lost hook and mapping/target-app behavior remain competing possibilities; repeated toggling does not select one."
+    ],
+    "analysis": "A general request for the already supplied logs would add little. The missing discriminator is process state and one failing mapping captured before recovery, with a fresh failure-time report."
+  },
+  "summary": "The supplied archive does not establish the reported crash; obtain engine state while startup remapping is still failing."
+}

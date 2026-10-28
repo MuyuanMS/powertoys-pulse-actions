@@ -1,0 +1,108 @@
+{
+  "source_updated_at": "2026-10-28T18:19:58Z",
+  "proposed_fixes": [
+    {
+      "title": "Make settings persistence tolerate concurrent readers and writers",
+      "plan": [
+        "Reproduce the exact reconnect and concurrent Settings read sequence before changing shared SettingsUtils.",
+        "Design a shared read/write protocol with bounded sharing-violation retry and atomic replacement, including reader delete sharing where replacement requires it; do not merely add FileShare.ReadWrite to in-place writes.",
+        "Serialize or coalesce MWB reconnect writes and add concurrent read/write, interrupted-write and valid-JSON preservation tests."
+      ],
+      "verification": [
+        "On two physical Windows machines, keep Settings open while reconnecting repeatedly with service mode both off and on.",
+        "Verify the last successful configuration remains valid JSON and the key/layout persists after restarting both processes; verify bounded failures are reported rather than silently discarded."
+      ],
+      "root_cause": "The reported sharing violations fit SettingsUtils using ReadAllText and WriteAllText without a cross-process persistence protocol; in-place writes can conflict or expose partial content.",
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The supplied Process Monitor trace directly supports incompatible file sharing and source confirms non-atomic write behavior; atomic replacement, permissions and cross-process ordering still need a focused design."
+      }
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "Reproduce the sharing conflict and review a shared persistence design; keep signer-rejection tracking separate.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "track": "fix",
+  "number": 51682,
+  "url": "https://github.com/microsoft/PowerToys/issues/51682",
+  "pending_author": false,
+  "judgment": {
+    "recommended_action": "Reproduce the sharing conflict and review a shared persistence design; keep signer-rejection tracking separate.",
+    "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+    "status": "reproducible",
+    "evidence": [
+      "The report provides a SaveSettings IOException and Process Monitor sequence with incompatible reader/writer sharing modes.",
+      "It reports lost key/layout persistence on reconnect and a higher rate in service mode; no diagnostic ZIP is supplied.",
+      "Read the full body and related issue 26537. SettingsUtils.GetFile uses ReadAllText and SaveSettings uses WriteAllText; SaveSettings logs exceptions without retrying in release builds.",
+      "Reader-only sharing can collide with the in-place writer. Changing the read share alone would not ensure atomic JSON or prevent competing writes.",
+      "Checked existing fork issue traces; no selected-issue design or implementation should be assumed from a similar symptom."
+    ],
+    "rationale": "A maintainer can reproduce the supplied sequence before requesting another general report. The fix crosses shared persistence behavior and needs careful atomicity, access-control and multi-process validation.",
+    "source_updated_at": "2026-10-28T18:19:58Z"
+  },
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate safe settings persistence"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Writes either succeed with valid persisted configuration or report a bounded actionable failure; no lost key/layout or partial JSON.",
+        "module": "Mouse Without Borders / shared SettingsUtils",
+        "steps": [
+          "1. Pair the machines and change a harmless layout setting.",
+          "2. Press Ctrl+Alt+R repeatedly while Settings remains open.",
+          "3. Repeat with service mode enabled, then reboot and inspect persistence."
+        ],
+        "title": "Reproduce concurrent MWB settings persistence",
+        "prerequisites": [
+          "Two physical Windows PCs",
+          "A test pairing without production credentials",
+          "Process Monitor"
+        ],
+        "setup": [
+          "Keep PowerToys Settings open on the test machines.",
+          "Record service mode and capture settings.json operations without publishing key contents."
+        ],
+        "version_requirement": "Reported 0.101.2362.0; compare current build"
+      },
+      "label": "Reproduce concurrent MWB settings persistence"
+    }
+  ],
+  "owes": "us",
+  "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "generated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "title": "[Mouse Without Borders] settings.json writes fail with sharing violation – writer and readers use incompatible FileShare modes",
+  "issue_context": {
+    "summary": "The report supplies a concrete settings-file sharing conflict, distinct from the separate signer-rejection reports.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the full body and related issue 26537. SettingsUtils.GetFile uses ReadAllText and SaveSettings uses WriteAllText; SaveSettings logs exceptions without retrying in release builds.",
+      "Reader-only sharing can collide with the in-place writer. Changing the read share alone would not ensure atomic JSON or prevent competing writes.",
+      "Checked existing fork issue traces; no selected-issue design or implementation should be assumed from a similar symptom."
+    ],
+    "known_information": [
+      "The report provides a SaveSettings IOException and Process Monitor sequence with incompatible reader/writer sharing modes.",
+      "It reports lost key/layout persistence on reconnect and a higher rate in service mode; no diagnostic ZIP is supplied."
+    ],
+    "inferences": [
+      "The supplied file-sharing trace supports a persistence race, but does not independently prove every key mismatch has this cause."
+    ],
+    "analysis": "A maintainer can reproduce the supplied sequence before requesting another general report. The fix crosses shared persistence behavior and needs careful atomicity, access-control and multi-process validation."
+  },
+  "summary": "The report supplies a concrete settings-file sharing conflict, distinct from the separate signer-rejection reports."
+}

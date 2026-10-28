@@ -1,115 +1,71 @@
 {
-  "schemaVersion": 5,
-  "number": 51463,
-  "kind": "issue",
-  "title": "Autorun task is deleted and recreated with hardcoded PT03S delay on every elevated launch, making the tray icon startup race unworkaroundable",
-  "url": "https://github.com/microsoft/PowerToys/issues/51463",
-  "generated_at": "2026-10-27T15:51:05.723243+00:00",
-  "evaluated_at": "2026-10-27T15:51:05.723243+00:00",
-  "source_updated_at": "2026-10-23T12:25:31Z",
-  "stage": "triage_revalidated",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The task-customization reset is directly supported by current source and needs no additional reporter checklist. Treat task identity validation/idempotent update as the bounded direction; do not merely lengthen the hardcoded delay or promise to solve the independent Explorer/tray readiness race.",
-    "evidence": [
-      "The report supplies the exact elevated/startup configuration, PT3S-to-one-minute task edit, reboot sequence, source analysis, and a diagnostic ZIP for 0.100.2.",
-      "The supplied archive's general settings confirm startup and run_elevated are both true; this is not an unconfigured-startup report.",
-      "The claimed tray icon race and loss of task history are consequences reported by the author; changing the task lifecycle alone does not establish a tray-registration fix.",
-      "Source inspected at main 9227a8497750: src/runner/general_settings.cpp: apply_general_settings's startup+elevated branch unconditionally deletes then creates the autorun task. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/runner/general_settings.cpp",
-      "Source inspected at main 9227a8497750: src/runner/auto_start_helper.cpp: The create helper writes PT03S to the logon trigger; a freshly recreated task therefore loses a user-customized delay. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/runner/auto_start_helper.cpp",
-      "Downloaded the supplied ZIP, inventoried its installer/runner evidence and inspected startup flags. The issue-number and bounded autorun PR searches found no covering fix. No reboot or task mutation was performed here."
-    ],
-    "recommended_action": "Verify elevated startup preserves a customized task delay",
-    "evaluated_at": "2026-10-27T15:51:05.723243+00:00",
-    "source_updated_at": "2026-10-23T12:25:31Z"
-  },
+  "source_updated_at": "2026-10-28T16:50:44Z",
+  "proposed_fixes": [],
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The unconditional delete/create and fixed replacement delay directly explain the reported customization loss in both the reported source analysis and current source; tray-race causality is deliberately excluded."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Make elevated autorun-task maintenance idempotent",
-      "root_cause": "Confirmed source mechanism for delay reset: each elevated startup deletes the existing task, and the replacement uses the hardcoded three-second delay. The separate tray registration failure remains unproven.",
-      "plan": [
-        "Define the required task identity, executable action, principal, and run-level invariants.",
-        "Retain/enable an equivalent task rather than delete/recreate it; update required identity/action changes without silently resetting compatible trigger customization.",
-        "Add regression coverage for repeated elevated launches, executable relocation, elevation-mode changes, startup disable, and managed startup policy; assess tray readiness separately."
-      ],
-      "verification": [
-        "An edited one-minute delay survives repeated equivalent elevated launches and reboot.",
-        "Stale action paths/principals are corrected, and startup-off/GPO behavior does not regress."
-      ],
-      "confidence": {
-        "score": 90,
-        "level": "green",
-        "rationale": "The unconditional delete/create and fixed replacement delay directly explain the reported customization loss in both the reported source analysis and current source; tray-race causality is deliberately excluded."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Elevated startup recreates the user's autorun task and overwrites a customized delay.",
-    "known_information": [
-      "The report supplies the exact elevated/startup configuration, PT3S-to-one-minute task edit, reboot sequence, source analysis, and a diagnostic ZIP for 0.100.2.",
-      "The supplied archive's general settings confirm startup and run_elevated are both true; this is not an unconfigured-startup report.",
-      "The claimed tray icon race and loss of task history are consequences reported by the author; changing the task lifecycle alone does not establish a tray-registration fix."
-    ],
-    "inferences": [],
-    "analysis": "The task-customization reset is directly supported by current source and needs no additional reporter checklist. Treat task identity validation/idempotent update as the bounded direction; do not merely lengthen the hardcoded delay or promise to solve the independent Explorer/tray readiness race.",
-    "initial_investigation": [
-      "Source inspected at main 9227a8497750: src/runner/general_settings.cpp: apply_general_settings's startup+elevated branch unconditionally deletes then creates the autorun task. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/runner/general_settings.cpp",
-      "Source inspected at main 9227a8497750: src/runner/auto_start_helper.cpp: The create helper writes PT03S to the logon trigger; a freshly recreated task therefore loses a user-customized delay. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/runner/auto_start_helper.cpp",
-      "Downloaded the supplied ZIP, inventoried its installer/runner evidence and inspected startup flags. The issue-number and bounded autorun PR searches found no covering fix. No reboot or task mutation was performed here.",
-      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
-      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
-    ],
-    "information_gaps": [
-      {
-        "information": "Product-supported task customization policy and a controlled before/after task-XML comparison",
-        "why_needed": "Select preservation semantics without retaining an unsafe/stale principal or conflating the tray race.",
-        "how_to_collect": "Maintainer should export the task before/after two elevated launches and review required action/principal invariants on a disposable account.",
-        "evidence_type": "configuration_export"
-      }
+    "rationale": "Review and validate draft PR 51687; no competing fix should be started.",
+    "status": "existing_fix",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51687"
     ]
   },
-  "actions": [
-    {
-      "type": "reproduce",
-      "label": "Verify elevated startup preserves a customized task delay",
-      "primary": true,
-      "reproduce": {
-        "title": "Verify elevated startup preserves a customized task delay",
-        "module": "Runner startup",
-        "version_requirement": "Reported 0.100.2 versus current stable and current main on an isolated Windows account.",
-        "prerequisites": [
-          "Use an isolated test account or controlled test machine; preserve existing user data."
-        ],
-        "setup": [],
-        "steps": [
-          "1. Enable Run at startup and Always run as administrator; preserve/export the original task.",
-          "2. Change only the autorun task logon delay to one minute; launch PowerToys elevated twice and compare task XML after each launch.",
-          "3. Repeat after a controlled reboot, then exercise executable-path changes and enabling/disabling elevated startup.",
-          "4. Evaluate tray registration separately when Explorer is deliberately late; do not treat a preserved delay as proof that the tray race is fixed."
-        ],
-        "expected_result": "An equivalent existing task retains its supported trigger configuration; required path/principal corrections and startup policy still take effect.",
-        "attachment_urls": []
-      },
-      "id": "issue-51463-reproduce-1"
-    },
-    {
-      "type": "approve_design",
-      "label": "Review conditional investigation direction",
-      "primary": false,
-      "confirm": true,
-      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
-      "id": "issue-51463-approve_design-2"
-    }
-  ],
+  "track": "fix",
+  "number": 51463,
+  "url": "https://github.com/microsoft/PowerToys/issues/51463",
+  "pending_author": false,
+  "judgment": {
+    "recommended_action": "Review and validate draft PR 51687; no competing fix should be started.",
+    "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+    "status": "duplicate_or_handled",
+    "evidence": [
+      "The report includes a diagnostic archive and precise elevated-launch steps showing a custom task delay reverting to three seconds.",
+      "The contributor who offered to investigate has opened draft PR 51687, explicitly linked to this issue.",
+      "Read the full report, reply and cross-reference timeline; verified the linked PR is open and draft.",
+      "In src/runner/general_settings.cpp, the elevated startup path deletes then recreates the task. auto_start_helper.cpp sets PT03S. These source paths support the delay-reset mechanism.",
+      "The existence of a draft fix does not establish that it is correct, merged or released; the tray-registration race is a separate verification obligation."
+    ],
+    "rationale": "The source supports the reported reset and there is now concrete owned upstream work. Avoid competing designs and validate the contributor fix, including task principal/path changes and tray behavior.",
+    "source_updated_at": "2026-10-28T16:50:44Z"
+  },
+  "kind": "issue",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-General"
   ],
-  "assignees": [],
-  "comments": 0
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "post_comment",
+      "comment": {
+        "body": "Thanks for the detailed reproduction and source analysis. Draft PR #51687 now addresses the task-recreation path. Please keep the investigation there; validation should separately check that the customized delay survives an elevated restart, that required task identity/path changes still apply, and whether the tray-icon race is actually resolved. The draft is not yet a shipped fix."
+      },
+      "label": "Link the existing autorun fix"
+    }
+  ],
+  "owes": "us",
+  "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "generated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "title": "Autorun task is deleted and recreated with hardcoded PT03S delay on every elevated launch, making the tray icon startup race unworkaroundable",
+  "issue_context": {
+    "summary": "A contributor has opened a draft fix for the autorun-task recreation; follow that work instead of creating a competing implementation.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the full report, reply and cross-reference timeline; verified the linked PR is open and draft.",
+      "In src/runner/general_settings.cpp, the elevated startup path deletes then recreates the task. auto_start_helper.cpp sets PT03S. These source paths support the delay-reset mechanism.",
+      "The existence of a draft fix does not establish that it is correct, merged or released; the tray-registration race is a separate verification obligation."
+    ],
+    "known_information": [
+      "The report includes a diagnostic archive and precise elevated-launch steps showing a custom task delay reverting to three seconds.",
+      "The contributor who offered to investigate has opened draft PR 51687, explicitly linked to this issue."
+    ],
+    "inferences": [
+      "Preserving a valid task may preserve the delay, but does not by itself prove tray registration is reliable."
+    ],
+    "analysis": "The source supports the reported reset and there is now concrete owned upstream work. Avoid competing designs and validate the contributor fix, including task principal/path changes and tray behavior."
+  },
+  "summary": "A contributor has opened a draft fix for the autorun-task recreation; follow that work instead of creating a competing implementation."
 }

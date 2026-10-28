@@ -1,0 +1,106 @@
+{
+  "source_updated_at": "2026-10-28T18:20:17Z",
+  "proposed_fixes": [
+    {
+      "title": "Keep cleared Color Picker shortcut and conflict state consistent",
+      "plan": [
+        "Trace the clear/save value from the shortcut control through ColorPickerViewModel.ActivationShortcut and the runner configuration.",
+        "Define whether clearing is supported; if it is, preserve the disabled/empty value and unregister the effective hotkey before refreshing conflicts.",
+        "Add a regression test covering clear, save, reopen and conflict-refresh state without treating Ignore Conflict as the fix."
+      ],
+      "verification": [
+        "Assign Win+Shift+C, observe the reported conflict, clear and save it, reopen Settings and verify the effective hotkey/conflict agree."
+      ],
+      "root_cause": "Clearing the shortcut may restore the default value or leave runner/conflict state stale rather than unregistering the effective hotkey; the exact branch is not yet established.",
+      "confidence": {
+        "score": 59,
+        "level": "yellow",
+        "rationale": "The view model maps null to DefaultActivationShortcut, but the control may send a different empty representation and runtime conflict refresh has not been traced."
+      }
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "Run the clear/save/reopen reproduction and trace the effective shortcut, then refine the proposed fix.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "track": "fix",
+  "number": 51683,
+  "url": "https://github.com/microsoft/PowerToys/issues/51683",
+  "pending_author": false,
+  "judgment": {
+    "recommended_action": "Run the clear/save/reopen reproduction and trace the effective shortcut, then refine the proposed fix.",
+    "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+    "status": "reproducible",
+    "evidence": [
+      "The reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
+      "No diagnostic archive or screenshot was supplied; the sequence itself is sufficiently concrete for local reproduction.",
+      "Read the complete report. ColorPickerViewModel.ActivationShortcut substitutes DefaultActivationShortcut when assigned null.",
+      "GlobalHotkeyConflictManager caches runner-provided conflict groups and matches modifier/key values; ColorPicker set_config parses the hotkey then saves settings.",
+      "The input-control representation of a cleared shortcut and runner refresh sequence remain unverified; a stale-cache-only cause is not established."
+    ],
+    "rationale": "Reproduce locally and inspect the effective hotkey/configuration before asking the reporter for general logs. A narrow consistency fix is plausible but must not silently change the intended clear/reset semantics.",
+    "source_updated_at": "2026-10-28T18:20:17Z"
+  },
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate cleared-shortcut consistency"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "The displayed shortcut, actual registration and conflict notification agree; a disabled shortcut must not retain an active conflict.",
+        "module": "Color Picker / shortcut conflicts",
+        "steps": [
+          "1. Open Color Picker shortcut assignment and clear it.",
+          "2. Save and inspect the conflict panel.",
+          "3. Close and reopen Settings, then test whether the old shortcut still activates Color Picker."
+        ],
+        "title": "Reproduce clearing Color Picker shortcut",
+        "prerequisites": [
+          "Windows 11",
+          "Color Picker enabled",
+          "A known conflict for Win+Shift+C"
+        ],
+        "setup": [
+          "Record the effective shortcut before starting; do not use Ignore Conflict during the test."
+        ],
+        "version_requirement": "Reported v0.102.30001; record exact installed version"
+      },
+      "label": "Reproduce clearing Color Picker shortcut"
+    }
+  ],
+  "owes": "us",
+  "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "generated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "title": "Keyboard shortcut conflict notice won't go away when shortcut is deleted",
+  "issue_context": {
+    "summary": "Clearing the Color Picker shortcut leaves a conflict notice; verify the effective registration before selecting a fix.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the complete report. ColorPickerViewModel.ActivationShortcut substitutes DefaultActivationShortcut when assigned null.",
+      "GlobalHotkeyConflictManager caches runner-provided conflict groups and matches modifier/key values; ColorPicker set_config parses the hotkey then saves settings.",
+      "The input-control representation of a cleared shortcut and runner refresh sequence remain unverified; a stale-cache-only cause is not established."
+    ],
+    "known_information": [
+      "The reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
+      "No diagnostic archive or screenshot was supplied; the sequence itself is sufficiently concrete for local reproduction."
+    ],
+    "inferences": [
+      "Default restoration and stale conflict state are competing hypotheses, not confirmed defects in a specific function."
+    ],
+    "analysis": "Reproduce locally and inspect the effective hotkey/configuration before asking the reporter for general logs. A narrow consistency fix is plausible but must not silently change the intended clear/reset semantics."
+  },
+  "summary": "Clearing the Color Picker shortcut leaves a conflict notice; verify the effective registration before selecting a fix."
+}

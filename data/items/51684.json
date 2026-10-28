@@ -1,0 +1,108 @@
+{
+  "source_updated_at": "2026-10-28T18:22:52Z",
+  "proposed_fixes": [
+    {
+      "title": "Distinguish Outlook windows during workspace launch and placement",
+      "plan": [
+        "Use a disposable classic Outlook profile with three views and capture launch/window-arranger correlation.",
+        "Trace Launcher repeated-instance waiting and WindowArranger matching using application identity, window title and captured position; distinguish reused windows from new windows.",
+        "Only after the failing match is demonstrated, adjust matching/waiting without promising a general arbitrary launch order; add a multiple-window regression."
+      ],
+      "verification": [
+        "Launch the captured Mail/Calendar/Contacts workspace repeatedly and verify each intended window reaches its own saved rectangle.",
+        "Compare cold Outlook, already-running Outlook and move-existing-windows modes without exposing mailbox data."
+      ],
+      "root_cause": "Multiple windows of the same Outlook process may be matched or timed out before the intended view is identifiable, resulting in swapped placement; the exact matching failure is unconfirmed.",
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The supplied archive shows repeated Outlook launches and a repeated-instance wait timeout, but titles/arguments are partly private or redacted and the failed matching branch is not yet proven."
+      }
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "Reproduce with a disposable Outlook profile and correlate each view/window to its captured rectangle before designing a matching fix.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "track": "fix",
+  "number": 51684,
+  "url": "https://github.com/microsoft/PowerToys/issues/51684",
+  "pending_author": false,
+  "judgment": {
+    "recommended_action": "Reproduce with a disposable Outlook profile and correlate each view/window to its captured rectangle before designing a matching fix.",
+    "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+    "status": "reproducible",
+    "evidence": [
+      "The report supplies screenshots and a diagnostic ZIP for Mail, Calendar and Contacts opening in incorrect zones.",
+      "The archive contains three classic Outlook entries and launcher/window-arranger logs; launcher logs include a repeated-instance waiting timeout.",
+      "Downloaded and inspected the supplied archive, including workspaces.json and WorkspacesLauncher logs; personal mailbox and window-title contents are not copied into this artifact.",
+      "Launcher.cpp explicitly waits for earlier instances and contains an Outlook-specific additional delay. This counters a claim that instances are simply launched without sequencing.",
+      "Captured application order alone is not proof of the failed mapping; source and log evidence require correlation with the arranger and actual Outlook window lifecycle."
+    ],
+    "rationale": "The supplied evidence supports a targeted maintainer reproduction rather than another general ZIP request. Avoid a speculative global launch serialization or a claim that FancyZones itself chose the wrong zone.",
+    "source_updated_at": "2026-10-28T18:22:52Z"
+  },
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate Outlook window matching"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Each intended view is placed at its saved rectangle; launch-order differences alone are not failure unless they cause incorrect view/placement.",
+        "module": "Workspaces / FancyZones",
+        "steps": [
+          "1. Save a workspace with the three Outlook windows in distinct rectangles.",
+          "2. Close Outlook and launch the workspace.",
+          "3. Record actual view-to-rectangle mapping, then repeat with Outlook already open and with move-existing-windows enabled."
+        ],
+        "title": "Reproduce three Outlook workspace windows",
+        "prerequisites": [
+          "Windows with classic Outlook and a disposable test profile",
+          "One monitor with recorded scale",
+          "Workspaces enabled"
+        ],
+        "setup": [
+          "Open Mail, Calendar and Contacts as separate Outlook windows and capture their positions.",
+          "Use harmless test mailbox data; do not publish account/window-title contents."
+        ],
+        "version_requirement": "Reported v0.102.3001 with classic Outlook"
+      },
+      "label": "Reproduce three Outlook workspace windows"
+    }
+  ],
+  "owes": "us",
+  "evaluated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "generated_at": "2026-10-29T04:57:00.6502986+08:00",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "title": "Workspaces, Outlook and FancyZones",
+  "issue_context": {
+    "summary": "The supplied workspace archive supports investigating repeated Outlook instance matching, not assuming list order is the sole cause.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Downloaded and inspected the supplied archive, including workspaces.json and WorkspacesLauncher logs; personal mailbox and window-title contents are not copied into this artifact.",
+      "Launcher.cpp explicitly waits for earlier instances and contains an Outlook-specific additional delay. This counters a claim that instances are simply launched without sequencing.",
+      "Captured application order alone is not proof of the failed mapping; source and log evidence require correlation with the arranger and actual Outlook window lifecycle."
+    ],
+    "known_information": [
+      "The report supplies screenshots and a diagnostic ZIP for Mail, Calendar and Contacts opening in incorrect zones.",
+      "The archive contains three classic Outlook entries and launcher/window-arranger logs; launcher logs include a repeated-instance waiting timeout."
+    ],
+    "inferences": [
+      "An Outlook reused-window or timeout/matching race is plausible; no particular fix or strict order guarantee has been demonstrated."
+    ],
+    "analysis": "The supplied evidence supports a targeted maintainer reproduction rather than another general ZIP request. Avoid a speculative global launch serialization or a claim that FancyZones itself chose the wrong zone."
+  },
+  "summary": "The supplied workspace archive supports investigating repeated Outlook instance matching, not assuming list order is the sole cause."
+}
