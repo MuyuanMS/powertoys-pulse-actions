@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-28T20:36:21.9050327+08:00",
+  "generated_at": "2026-10-29T00:52:40.5494725+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 209,
-    "open_issues": 11023,
-    "community": 10148,
-    "artifacts": 1329
+    "open_issues": 11037,
+    "community": 10159,
+    "artifacts": 1325
   },
   "impact": {
-    "as_of": "2026-10-28T20:36:21.9050327+08:00",
+    "as_of": "2026-10-29T00:52:40.5494725+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1182,7 +1182,6 @@ window.BOARD_INDEX = {
     50488,
     50493,
     50496,
-    50513,
     50515,
     50516,
     50528,
@@ -1243,7 +1242,6 @@ window.BOARD_INDEX = {
     50788,
     50789,
     50791,
-    50793,
     50795,
     50801,
     50804,
@@ -1274,8 +1272,6 @@ window.BOARD_INDEX = {
     50946,
     50948,
     50949,
-    50954,
-    50955,
     50957,
     50959,
     50966,
@@ -1429,9 +1425,7 @@ window.BOARD_INDEX = {
     51506,
     51508,
     51510,
-    51511,
     51512,
-    51513,
     51514,
     51516,
     51517,
@@ -1459,9 +1453,7 @@ window.BOARD_INDEX = {
     51578,
     51579,
     51580,
-    51585,
     51587,
-    51591,
     51595,
     51596,
     51597,
@@ -1485,7 +1477,6 @@ window.BOARD_INDEX = {
     51635,
     51636,
     51637,
-    51638,
     51640,
     51641,
     51642,
@@ -1496,16 +1487,15 @@ window.BOARD_INDEX = {
     51662,
     51663,
     51667,
-    51669,
-    51666
+    51669
   ],
   "items": [
     {
-      "id": "pr-51657",
+      "id": "pr-51674",
       "kind": "pr",
-      "number": 51657,
-      "url": "https://github.com/microsoft/PowerToys/pull/51657",
-      "title": "[CI] Fold report tools into main build and publish packaged apps in one MSBuild call",
+      "number": 51674,
+      "url": "https://github.com/microsoft/PowerToys/pull/51674",
+      "title": "[ZoomIt] Build the precompiled header once so sources compile in parallel",
       "author": "crutkas",
       "state": "open",
       "is_draft": true,
@@ -1522,11 +1512,186 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Product-ZoomIt"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T12:18:08Z",
+      "updated_at": "2026-10-28T13:54:52Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51673",
+      "kind": "pr",
+      "number": 51673,
+      "url": "https://github.com/microsoft/PowerToys/pull/51673",
+      "title": "CmdPal: Keep Adaptive Card input values when the theme changes",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T11:46:26Z",
+      "updated_at": "2026-10-28T15:38:12Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": "CLEAN"
+    },
+    {
+      "id": "pr-51672",
+      "kind": "pr",
+      "number": 51672,
+      "url": "https://github.com/microsoft/PowerToys/pull/51672",
+      "title": "Give Quick Access the same transition as the System Shell",
+      "author": "0x5bfa",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "mirror",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Settings",
+        "Product-General",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T11:45:06Z",
+      "updated_at": "2026-10-28T12:31:37Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51671",
+      "kind": "pr",
+      "number": 51671,
+      "url": "https://github.com/microsoft/PowerToys/pull/51671",
+      "title": "Keyboard Manager editor: screen reader fixes and a11y test tooling",
+      "author": "niels9001",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T11:07:36Z",
+      "updated_at": "2026-10-28T11:15:28Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51665",
+      "kind": "pr",
+      "number": 51665,
+      "url": "https://github.com/microsoft/PowerToys/pull/51665",
+      "title": "[Release tooling] Fix contributor credits and display versions",
+      "author": "LegendaryBlair",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T09:10:20Z",
+      "updated_at": "2026-10-28T15:53:28Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-51657",
+      "kind": "pr",
+      "number": 51657,
+      "url": "https://github.com/microsoft/PowerToys/pull/51657",
+      "title": "[CI] Fold report tools into main build and publish packaged apps in one MSBuild call",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "mirror",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Ready for review"
+      ],
       "assignees": [],
       "created_at": "2026-10-28T06:58:22Z",
-      "updated_at": "2026-10-28T08:15:07Z",
-      "comments": 0,
+      "updated_at": "2026-10-28T11:37:25Z",
+      "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1540,7 +1705,7 @@ window.BOARD_INDEX = {
       "title": "[CI] Don't rerun MSBuild-tested assemblies in the VSTest step",
       "author": "crutkas",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -1550,15 +1715,17 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Ready for review"
+      ],
       "assignees": [],
       "created_at": "2026-10-28T06:47:31Z",
-      "updated_at": "2026-10-28T06:49:00Z",
-      "comments": 2,
+      "updated_at": "2026-10-28T11:37:37Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1572,7 +1739,7 @@ window.BOARD_INDEX = {
       "title": "[CI] Make vcpkg binary cache actually restore; cache vcpkg tools and registry",
       "author": "crutkas",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -1582,15 +1749,17 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Ready for review"
+      ],
       "assignees": [],
       "created_at": "2026-10-28T06:45:44Z",
-      "updated_at": "2026-10-28T06:48:52Z",
-      "comments": 2,
+      "updated_at": "2026-10-28T11:37:22Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1630,10 +1799,10 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-28T06:08:21Z",
-      "updated_at": "2026-10-28T06:28:23Z",
+      "updated_at": "2026-10-28T16:04:43Z",
       "comments": 1,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED"
     },
@@ -1665,7 +1834,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-28T06:03:40Z",
-      "updated_at": "2026-10-28T08:16:01Z",
+      "updated_at": "2026-10-28T13:04:42Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1735,8 +1904,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-28T05:50:06Z",
-      "updated_at": "2026-10-28T05:52:02Z",
-      "comments": 1,
+      "updated_at": "2026-10-28T11:36:08Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1878,9 +2047,9 @@ window.BOARD_INDEX = {
       "updated_at": "2026-10-28T05:17:28Z",
       "comments": 1,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": null,
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": null
     },
     {
       "id": "pr-51643",
@@ -1914,7 +2083,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51634",
@@ -1948,7 +2117,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51632",
@@ -1982,7 +2151,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51630",
@@ -2054,7 +2223,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51625",
@@ -2092,7 +2261,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51624",
@@ -2126,7 +2295,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51621",
@@ -2164,7 +2333,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "CLEAN"
     },
     {
       "id": "pr-51604",
@@ -2174,7 +2343,7 @@ window.BOARD_INDEX = {
       "title": "[CI] Move CodeQL out of CI builds into a scheduled pipeline",
       "author": "crutkas",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -2188,15 +2357,17 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Ready for review"
+      ],
       "assignees": [],
       "created_at": "2026-10-27T05:35:23Z",
-      "updated_at": "2026-10-27T05:35:23Z",
-      "comments": 0,
+      "updated_at": "2026-10-28T16:37:11Z",
+      "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51602",
@@ -2234,7 +2405,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51599",
@@ -2343,7 +2514,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51569",
@@ -2380,7 +2551,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51547",
@@ -2415,7 +2586,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51539",
@@ -2449,7 +2620,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51537",
@@ -2484,7 +2655,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51531",
@@ -2518,7 +2689,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51525",
@@ -2555,42 +2726,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-51513",
-      "kind": "pr",
-      "number": 51513,
-      "url": "https://github.com/microsoft/PowerToys/pull/51513",
-      "title": "CmdPal: Add InProcObject<T>",
-      "author": "zadjii-msft",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-23T11:06:52Z",
-      "updated_at": "2026-10-27T22:03:07Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51512",
@@ -2622,41 +2758,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-10-23T09:33:33Z",
       "updated_at": "2026-10-28T09:16:16Z",
       "comments": 1,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "failed",
-      "merge_state": "DIRTY"
-    },
-    {
-      "id": "pr-51511",
-      "kind": "pr",
-      "number": 51511,
-      "url": "https://github.com/microsoft/PowerToys/pull/51511",
-      "title": "Keep clipboard helper handoffs within the active session",
-      "author": "yeelam-gordon",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "2026-10-23T09:58:14Z",
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Mouse Without Borders",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-23T09:23:25Z",
-      "updated_at": "2026-10-26T08:41:07Z",
-      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2731,7 +2832,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51493",
@@ -2766,7 +2867,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51480",
@@ -2804,7 +2905,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51475",
@@ -2819,10 +2920,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "2026-10-27T23:47:13Z",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -2836,8 +2937,8 @@ window.BOARD_INDEX = {
         "Copilot"
       ],
       "created_at": "2026-10-21T23:33:34Z",
-      "updated_at": "2026-10-28T03:16:36Z",
-      "comments": 5,
+      "updated_at": "2026-10-28T16:11:35Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2876,7 +2977,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "CLEAN"
     },
     {
       "id": "pr-51449",
@@ -2908,7 +3009,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51447",
@@ -2940,7 +3041,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51438",
@@ -2974,7 +3075,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51435",
@@ -3008,7 +3109,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51404",
@@ -3120,7 +3221,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51383",
@@ -3155,7 +3256,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51381",
@@ -3195,7 +3296,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51380",
@@ -3232,7 +3333,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51377",
@@ -3270,7 +3371,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51375",
@@ -3307,7 +3408,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51372",
@@ -3379,7 +3480,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51363",
@@ -3415,7 +3516,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51361",
@@ -3449,7 +3550,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51358",
@@ -3481,7 +3582,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51350",
@@ -3515,7 +3616,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51324",
@@ -3570,7 +3671,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T06:52:15Z",
-      "updated_at": "2026-10-27T20:44:12Z",
+      "updated_at": "2026-10-28T15:37:19Z",
       "comments": 2,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -3611,7 +3712,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51321",
@@ -3648,7 +3749,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51297",
@@ -3756,7 +3857,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51288",
@@ -3790,7 +3891,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51236",
@@ -4120,7 +4221,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51212",
@@ -4277,7 +4378,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51208",
@@ -4301,8 +4402,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "label": "Post selected inline suggestion",
-        "type": "post_review"
+        "type": "post_review",
+        "label": "Post selected inline suggestion"
       },
       "labels": [
         "Product-Command Palette",
@@ -4312,12 +4413,12 @@ window.BOARD_INDEX = {
         "zadjii-msft"
       ],
       "created_at": "2026-10-12T16:41:24Z",
-      "updated_at": "2026-10-28T11:47:48Z",
+      "updated_at": "2026-10-28T15:20:55Z",
       "comments": 1,
       "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "review_decision": "APPROVED",
+      "ci_state": "failed",
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51205",
@@ -4350,11 +4451,11 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2026-10-12T16:27:17Z",
       "updated_at": "2026-10-28T11:46:37Z",
-      "comments": 1,
+      "comments": 3,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN"
     },
     {
       "id": "pr-51198",
@@ -4389,7 +4490,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51197",
@@ -4424,7 +4525,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51195",
@@ -4461,7 +4562,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51189",
@@ -4495,7 +4596,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51163",
@@ -4529,7 +4630,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51162",
@@ -4567,7 +4668,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51153",
@@ -4605,7 +4706,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51149",
@@ -4643,7 +4744,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51148",
@@ -4681,7 +4782,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51147",
@@ -4716,7 +4817,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51131",
@@ -4751,7 +4852,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51128",
@@ -4786,7 +4887,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51127",
@@ -4824,7 +4925,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51109",
@@ -4860,7 +4961,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51106",
@@ -4898,7 +4999,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51105",
@@ -4936,7 +5037,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51102",
@@ -5045,7 +5146,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51080",
@@ -5083,7 +5184,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51072",
@@ -5118,7 +5219,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51051",
@@ -5156,7 +5257,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51033",
@@ -5194,7 +5295,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51025",
@@ -5231,7 +5332,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51017",
@@ -5265,7 +5366,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51005",
@@ -5301,7 +5402,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50982",
@@ -5406,7 +5507,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50957",
@@ -5444,79 +5545,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-50955",
-      "kind": "pr",
-      "number": 50955,
-      "url": "https://github.com/microsoft/PowerToys/pull/50955",
-      "title": "build(deps): bump actions/github-script from 9.0.0 to 9.0.0",
-      "author": "dependabot[bot]",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "dependencies",
-        "github_actions",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-02T08:53:13Z",
-      "updated_at": "2026-10-02T20:17:00Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-50954",
-      "kind": "pr",
-      "number": 50954,
-      "url": "https://github.com/microsoft/PowerToys/pull/50954",
-      "title": "build(deps): bump github/gh-aw-actions/setup from 0.88.4 to 0.89.21",
-      "author": "dependabot[bot]",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "dependencies",
-        "github_actions",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-02T08:53:10Z",
-      "updated_at": "2026-10-02T20:17:06Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50948",
@@ -5592,7 +5621,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50915",
@@ -5630,7 +5659,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50914",
@@ -5668,7 +5697,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50909",
@@ -5706,7 +5735,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50907",
@@ -5783,7 +5812,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50892",
@@ -5823,7 +5852,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50871",
@@ -5938,7 +5967,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50772",
@@ -5980,7 +6009,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50757",
@@ -6049,7 +6078,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50739",
@@ -6083,7 +6112,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50736",
@@ -6337,7 +6366,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50663",
@@ -6812,43 +6841,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-50513",
-      "kind": "pr",
-      "number": 50513,
-      "url": "https://github.com/microsoft/PowerToys/pull/50513",
-      "title": "build(deps): bump actions/deploy-pages from 5.0.0 to 5.0.1",
-      "author": "dependabot[bot]",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "dependencies",
-        "github_actions",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-11T08:52:56Z",
-      "updated_at": "2026-10-01T12:16:22Z",
-      "comments": 6,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50493",
@@ -6886,7 +6879,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50488",
@@ -6923,7 +6916,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50479",
@@ -6963,7 +6956,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50463",
@@ -7073,7 +7066,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50385",
@@ -7112,7 +7105,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50341",
@@ -7148,7 +7141,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50333",
@@ -7410,7 +7403,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50029",
@@ -7447,7 +7440,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50011",
@@ -7521,7 +7514,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49963",
@@ -7562,7 +7555,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49956",
@@ -7667,7 +7660,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49949",
@@ -7773,7 +7766,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49862",
@@ -7812,7 +7805,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49825",
@@ -7979,7 +7972,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49647",
@@ -8228,7 +8221,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49226",
@@ -8636,7 +8629,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-48658",
@@ -23284,38 +23277,98 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-34161",
+      "id": "issue-51680",
       "kind": "issue",
-      "number": 34161,
-      "url": "https://github.com/microsoft/PowerToys/issues/34161",
-      "title": "FancyZones. The window goes out of bounds",
-      "author": "Gypst",
+      "number": 51680,
+      "url": "https://github.com/microsoft/PowerToys/issues/51680",
+      "title": "continuously asks for .NET installed when is currently up to date",
+      "author": "grahammcdonnell",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "reproduction_ready",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Product-FancyZones",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-08-05T08:45:16Z",
-      "updated_at": "2024-08-06T18:27:43Z",
+      "created_at": "2026-10-28T16:23:53Z",
+      "updated_at": "2026-10-28T16:23:53Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51679",
+      "kind": "issue",
+      "number": 51679,
+      "url": "https://github.com/microsoft/PowerToys/issues/51679",
+      "title": "# [Power Display] External DDC/CI monitor disappears after another PC reboots.",
+      "author": "emanuele-novellino-en",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T15:48:41Z",
+      "updated_at": "2026-10-28T15:48:41Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51678",
+      "kind": "issue",
+      "number": 51678,
+      "url": "https://github.com/microsoft/PowerToys/issues/51678",
+      "title": "bugpower",
+      "author": "LuizPetrocchi",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T14:48:03Z",
+      "updated_at": "2026-10-28T14:48:18Z",
       "comments": 0,
       "priority": null
     },
@@ -23353,13 +23406,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-34157",
+      "id": "issue-51676",
       "kind": "issue",
-      "number": 34157,
-      "url": "https://github.com/microsoft/PowerToys/issues/34157",
-      "title": "Rebound key not repeating when I hold it down",
-      "author": "martinambrus",
-      "state": "closed",
+      "number": 51676,
+      "url": "https://github.com/microsoft/PowerToys/issues/51676",
+      "title": "PowerToys Runs at Startup but Doesn't Create Tray Icons",
+      "author": "Cmdr-Keene",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -23376,24 +23429,22 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Needs-Triage",
-        "Product-Keyboard Manager"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-08-05T05:33:27Z",
-      "updated_at": "2026-10-11T15:49:11Z",
-      "comments": 2,
+      "created_at": "2026-10-28T14:28:19Z",
+      "updated_at": "2026-10-28T14:28:19Z",
+      "comments": 0,
       "priority": null
     },
     {
-      "id": "issue-47976",
+      "id": "issue-51675",
       "kind": "issue",
-      "number": 47976,
-      "url": "https://github.com/microsoft/PowerToys/issues/47976",
-      "title": "与NVIDIA浮窗的兼容性问题",
-      "author": "wodeshijieliu",
-      "state": "closed",
+      "number": 51675,
+      "url": "https://github.com/microsoft/PowerToys/issues/51675",
+      "title": "[Feature Request] Window visual effects during drag: Border customization, Transparency, or Blur",
+      "author": "coelho-coie",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -23405,17 +23456,15 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-Grab And Move"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-05-19T04:53:41Z",
-      "updated_at": "2026-06-07T08:05:12Z",
+      "created_at": "2026-10-28T12:32:32Z",
+      "updated_at": "2026-10-28T12:32:32Z",
       "comments": 0,
       "priority": null
     },
@@ -23453,15 +23502,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-16632",
+      "id": "issue-51670",
       "kind": "issue",
-      "number": 16632,
-      "url": "https://github.com/microsoft/PowerToys/issues/16632",
-      "title": "Running Installer when already Installed",
-      "author": "shmuelie",
+      "number": 51670,
+      "url": "https://github.com/microsoft/PowerToys/issues/51670",
+      "title": "Workspaces - suggestion of improvement ",
+      "author": "martea",
       "state": "open",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -23471,18 +23520,52 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Area-Setup/Install",
-        "Product-General"
+        "Needs-Triage",
+        "Product-Workspaces"
       ],
       "assignees": [],
-      "created_at": "2022-02-28T16:16:07Z",
-      "updated_at": "2026-04-19T10:28:04Z",
-      "comments": 7,
+      "created_at": "2026-10-28T10:33:10Z",
+      "updated_at": "2026-10-28T10:42:11Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51669",
+      "kind": "issue",
+      "number": 51669,
+      "url": "https://github.com/microsoft/PowerToys/issues/51669",
+      "title": "Command Palette is no longer working since update v0.102.3001.0",
+      "author": "pyjosse",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "tracked",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T10:25:08Z",
+      "updated_at": "2026-10-28T10:25:08Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -23522,20 +23605,53 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-34147",
+      "id": "issue-51667",
       "kind": "issue",
-      "number": 34147,
-      "url": "https://github.com/microsoft/PowerToys/issues/34147",
-      "title": "PowerToys Run pt-BR translation issues on unit conversion",
-      "author": "rodrigost23",
+      "number": 51667,
+      "url": "https://github.com/microsoft/PowerToys/issues/51667",
+      "title": "does it allowed to do reverse engineering and extract the oneOCR model from windows and then integrate it to my application that will used by my single client to convert pdfs to word files",
+      "author": "Khaled-Mohammed-Abdelgaber",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "tracked",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T09:33:05Z",
+      "updated_at": "2026-10-28T09:39:33Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51666",
+      "kind": "issue",
+      "number": 51666,
+      "url": "https://github.com/microsoft/PowerToys/issues/51666",
+      "title": "Latest update broke Mouse Without Borders: Old key not accepted, and unable to generate new key.",
+      "author": "WNG555",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
@@ -23545,16 +23661,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Area-Localization",
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Loc-Sent To Team",
-        "Issue-Translation"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-08-04T14:36:09Z",
-      "updated_at": "2025-02-07T20:37:03Z",
-      "comments": 5,
+      "created_at": "2026-10-28T09:10:23Z",
+      "updated_at": "2026-10-28T16:07:10Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -23597,13 +23709,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-34144",
+      "id": "issue-51663",
       "kind": "issue",
-      "number": 34144,
-      "url": "https://github.com/microsoft/PowerToys/issues/34144",
-      "title": "Keyboard Manager remapped shortcut stopped working unexpectedly",
-      "author": "mfolkes",
-      "state": "closed",
+      "number": 51663,
+      "url": "https://github.com/microsoft/PowerToys/issues/51663",
+      "title": "Command pallete",
+      "author": "GreedFire",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -23613,20 +23725,22 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-Keyboard Manager"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-08-04T09:43:26Z",
-      "updated_at": "2026-10-11T15:49:13Z",
-      "comments": 4,
+      "created_at": "2026-10-28T08:53:36Z",
+      "updated_at": "2026-10-28T08:53:36Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -23663,12 +23777,46 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-16622",
+      "id": "issue-51661",
       "kind": "issue",
-      "number": 16622,
-      "url": "https://github.com/microsoft/PowerToys/issues/16622",
-      "title": "Addition of opening applications via keyboard shortcuts",
-      "author": "samwdp",
+      "number": 51661,
+      "url": "https://github.com/microsoft/PowerToys/issues/51661",
+      "title": "I cant get new key for synk.",
+      "author": "Andrey31337",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "tracked",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-Mouse Without Borders"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-28T08:40:29Z",
+      "updated_at": "2026-10-28T08:47:05Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51660",
+      "kind": "issue",
+      "number": 51660,
+      "url": "https://github.com/microsoft/PowerToys/issues/51660",
+      "title": "Stealth feature",
+      "author": "minami-akira",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -23681,18 +23829,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-Keyboard Manager"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2022-02-28T09:10:30Z",
-      "updated_at": "2026-10-11T16:10:52Z",
-      "comments": 2,
+      "created_at": "2026-10-28T08:38:44Z",
+      "updated_at": "2026-10-28T09:20:57Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -23740,16 +23886,16 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -23757,9 +23903,7 @@ window.BOARD_INDEX = {
         "Needs-Team-Response",
         "Product-ZoomIt"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T07:07:24Z",
       "updated_at": "2026-10-28T09:36:48Z",
       "comments": 2,
@@ -24216,11 +24360,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -24228,9 +24372,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T03:44:28Z",
       "updated_at": "2026-10-28T08:51:03Z",
       "comments": 3,
@@ -24250,24 +24392,22 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T03:27:01Z",
       "updated_at": "2026-10-28T10:59:55Z",
       "comments": 2,
@@ -24322,14 +24462,11 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-PowerRename",
@@ -24337,7 +24474,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-27T23:40:10Z",
-      "updated_at": "2026-10-28T00:18:40Z",
+      "updated_at": "2026-10-28T13:19:00Z",
       "comments": 1,
       "priority": null
     },
@@ -24363,8 +24500,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -24968,8 +25105,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -25004,8 +25141,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Explain Reconnect and link the existing Quick Access labeling fix",
-        "type": "post_comment"
+        "type": "post_comment",
+        "label": "Explain Reconnect and link the existing Quick Access labeling fix"
       },
       "labels": [
         "Issue-Bug",
@@ -25072,8 +25209,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -25143,8 +25280,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reproduce PowerToys Run behavior",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Reproduce PowerToys Run behavior"
       },
       "labels": [
         "Issue-Bug",
@@ -25245,8 +25382,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -25283,8 +25420,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Explain Awake's locked-screen display contract",
-        "type": "post_comment"
+        "type": "post_comment",
+        "label": "Explain Awake's locked-screen display contract"
       },
       "labels": [
         "Issue-Bug",
@@ -25583,14 +25720,11 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "tracked",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
@@ -25598,8 +25732,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-26T14:47:46Z",
-      "updated_at": "2026-10-26T17:31:25Z",
-      "comments": 3,
+      "updated_at": "2026-10-28T15:30:35Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -25750,22 +25884,19 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "tracked",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-10-26T10:23:03Z",
-      "updated_at": "2026-10-26T10:28:00Z",
-      "comments": 0,
+      "updated_at": "2026-10-28T15:31:15Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -25885,8 +26016,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -25955,8 +26086,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -26024,8 +26155,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -26128,8 +26259,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -26230,8 +26361,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -26325,11 +26456,11 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -26337,9 +26468,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-25T17:15:15Z",
       "updated_at": "2026-10-28T11:20:21Z",
       "comments": 7,
@@ -26527,8 +26656,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reproduce Command Palette hotkeys behavior",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Reproduce Command Palette hotkeys behavior"
       },
       "labels": [
         "Issue-Bug",
@@ -26663,8 +26792,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -26994,8 +27123,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -27031,8 +27160,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -27169,8 +27298,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -27338,8 +27467,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -27672,8 +27801,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -27947,8 +28076,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -27984,8 +28113,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -28152,8 +28281,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -28189,8 +28318,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -28327,8 +28456,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -28400,8 +28529,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reproduce Quick Accent arrow-navigation crash behavior",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Reproduce Quick Accent arrow-navigation crash behavior"
       },
       "labels": [
         "Issue-Bug",
@@ -28554,7 +28683,7 @@ window.BOARD_INDEX = {
       "number": 51492,
       "url": "https://github.com/microsoft/PowerToys/issues/51492",
       "title": "[aw] Detection Runs",
-      "author": "app/github-actions",
+      "author": "github-actions[bot]",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -28575,8 +28704,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T15:44:04Z",
-      "updated_at": "2026-10-28T07:10:06Z",
-      "comments": 91,
+      "updated_at": "2026-10-28T16:30:04Z",
+      "comments": 106,
       "priority": null
     },
     {
@@ -28635,8 +28764,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -28706,8 +28835,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -28798,7 +28927,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51485",
       "title": "Last Focussed Window, Bring to Front",
       "author": "mojoZHU",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -28814,12 +28943,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback"
+        "Needs-Triage",
+        "Needs-Team-Response"
       ],
       "assignees": [],
       "created_at": "2026-10-22T10:59:26Z",
-      "updated_at": "2026-10-22T15:05:32Z",
-      "comments": 1,
+      "updated_at": "2026-10-28T15:38:55Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -28940,8 +29070,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -28977,8 +29107,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29001,7 +29131,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -29014,15 +29144,17 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Color Picker"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-10-22T02:10:34Z",
       "updated_at": "2026-10-22T05:30:17Z",
       "comments": 0,
@@ -29051,8 +29183,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -29155,8 +29287,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29321,8 +29453,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29459,8 +29591,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29496,8 +29628,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29562,8 +29694,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29599,8 +29731,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Validate the existing invalid-handle guard before a lifecycle rewrite",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Validate the existing invalid-handle guard before a lifecycle rewrite"
       },
       "labels": [
         "Issue-Bug",
@@ -29703,8 +29835,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -29837,8 +29969,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -30428,8 +30560,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -30500,8 +30632,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -33533,8 +33665,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reproduce Explorer context menus behavior",
-        "type": "reproduce"
+        "type": "reproduce",
+        "label": "Reproduce Explorer context menus behavior"
       },
       "labels": [
         "Issue-Bug",
@@ -40309,17 +40441,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41946",
+      "id": "issue-51035",
       "kind": "issue",
-      "number": 41946,
-      "url": "https://github.com/microsoft/PowerToys/issues/41946",
-      "title": "Somehow to make PowerToys not close/turn off at all",
-      "author": "bootywizard002",
-      "state": "open",
+      "number": 51035,
+      "url": "https://github.com/microsoft/PowerToys/issues/51035",
+      "title": "CmdPal: Fix app icon rendering (split from Apps extension refactor)",
+      "author": "jiripolasek",
+      "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -40327,18 +40459,19 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Settings",
-        "Needs-Triage"
+        "Issue-Bug",
+        "Product-Command Palette"
       ],
-      "assignees": [],
-      "created_at": "2025-09-23T03:51:50Z",
-      "updated_at": "2026-04-16T15:26:27Z",
-      "comments": 3,
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-10-05T20:20:48Z",
+      "updated_at": "2026-10-06T15:48:40Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -46685,14 +46818,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46700,8 +46830,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-26T00:36:14Z",
-      "updated_at": "2026-09-26T00:41:02Z",
-      "comments": 1,
+      "updated_at": "2026-10-28T16:25:28Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -49553,17 +49683,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50690",
+      "id": "issue-51677",
       "kind": "issue",
-      "number": 50690,
-      "url": "https://github.com/microsoft/PowerToys/issues/50690",
-      "title": "Command Pallette - Installed apps - User defined filters",
-      "author": "borisdelev",
+      "number": 51677,
+      "url": "https://github.com/microsoft/PowerToys/issues/51677",
+      "title": "Add temporary keyboard lock feature for cleaning and maintenance",
+      "author": "arquivocriatech-ofc",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
+      "is_cmdpal": false,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -49575,16 +49705,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
-        "Product-Command Palette",
-        "CmdPal - All Apps"
+        "Needs-Triage"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-09-21T10:20:35Z",
-      "updated_at": "2026-10-04T19:43:43Z",
-      "comments": 1,
+      "assignees": [],
+      "created_at": "2026-10-28T14:33:10Z",
+      "updated_at": "2026-10-28T14:33:10Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -54404,24 +54530,22 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": null,
-      "owes": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": null,
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-09-11T09:20:02Z",
       "updated_at": "2026-10-28T10:55:50Z",
       "comments": 4,
@@ -55118,6 +55242,40 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-09T18:16:23Z",
       "updated_at": "2026-09-09T18:16:23Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-34157",
+      "kind": "issue",
+      "number": 34157,
+      "url": "https://github.com/microsoft/PowerToys/issues/34157",
+      "title": "Rebound key not repeating when I hold it down",
+      "author": "martinambrus",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Needs-Triage",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2024-08-05T05:33:27Z",
+      "updated_at": "2026-10-11T15:49:11Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -66061,35 +66219,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50110",
+      "id": "issue-34161",
       "kind": "issue",
-      "number": 50110,
-      "url": "https://github.com/microsoft/PowerToys/issues/50110",
-      "title": "Windows Hopper not following Dark Mode",
-      "author": "nsathya2010",
-      "state": "closed",
+      "number": 34161,
+      "url": "https://github.com/microsoft/PowerToys/issues/34161",
+      "title": "FancyZones. The window goes out of bounds",
+      "author": "Gypst",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "08/25/2026 12:31:55",
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
+      "stage": "reproduction_ready",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
-        "Needs-Author-Feedback",
-        "Product-Window Hopper"
+        "Issue-Bug",
+        "Product-FancyZones",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-08-25T12:25:08Z",
-      "updated_at": "2026-09-15T14:51:51Z",
-      "comments": 2,
+      "created_at": "2024-08-05T08:45:16Z",
+      "updated_at": "2024-08-06T18:27:43Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -71343,6 +71505,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-47891",
+      "kind": "issue",
+      "number": 47891,
+      "url": "https://github.com/microsoft/PowerToys/issues/47891",
+      "title": "PowerToys shortcuts don't work when any window is focused.",
+      "author": "lpaulino07",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-05-14T23:48:44Z",
+      "updated_at": "2026-06-25T00:40:14Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-49914",
       "kind": "issue",
       "number": 49914,
@@ -75226,15 +75421,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49774",
+      "id": "issue-16632",
       "kind": "issue",
-      "number": 49774,
-      "url": "https://github.com/microsoft/PowerToys/issues/49774",
-      "title": "Power Toya went into an issue",
-      "author": "JatinChhikara-28",
-      "state": "closed",
+      "number": 16632,
+      "url": "https://github.com/microsoft/PowerToys/issues/16632",
+      "title": "Running Installer when already Installed",
+      "author": "shmuelie",
+      "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -75244,17 +75439,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Resolution-Duplicate"
+        "Idea-Enhancement",
+        "Area-Setup/Install",
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2026-08-08T12:21:11Z",
-      "updated_at": "2026-08-08T12:22:10Z",
-      "comments": 2,
+      "created_at": "2022-02-28T16:16:07Z",
+      "updated_at": "2026-04-19T10:28:04Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -83158,39 +83354,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49467",
+      "id": "issue-34147",
       "kind": "issue",
-      "number": 49467,
-      "url": "https://github.com/microsoft/PowerToys/issues/49467",
-      "title": "Report on Mouse Disappearance When Zooming Out While Enabling Zoom LT Screen Recording",
-      "author": "STHunmant",
+      "number": 34147,
+      "url": "https://github.com/microsoft/PowerToys/issues/34147",
+      "title": "PowerToys Run pt-BR translation issues on unit conversion",
+      "author": "rodrigost23",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Area-Localization",
         "Needs-Triage",
-        "Product-ZoomIt"
+        "Needs-Team-Response",
+        "Loc-Sent To Team",
+        "Issue-Translation"
       ],
       "assignees": [],
-      "created_at": "2026-07-23T13:18:47Z",
-      "updated_at": "2026-07-23T13:19:10Z",
-      "comments": 0,
+      "created_at": "2024-08-04T14:36:09Z",
+      "updated_at": "2025-02-07T20:37:03Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -91316,13 +91512,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49160",
+      "id": "issue-34144",
       "kind": "issue",
-      "number": 49160,
-      "url": "https://github.com/microsoft/PowerToys/issues/49160",
-      "title": "Fancy Zones (More Control with Space around Zones)",
-      "author": "roiekarni",
-      "state": "open",
+      "number": 34144,
+      "url": "https://github.com/microsoft/PowerToys/issues/34144",
+      "title": "Keyboard Manager remapped shortcut stopped working unexpectedly",
+      "author": "mfolkes",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -91334,16 +91530,52 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-FancyZones",
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2024-08-04T09:43:26Z",
+      "updated_at": "2026-10-11T15:49:13Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-51662",
+      "kind": "issue",
+      "number": 51662,
+      "url": "https://github.com/microsoft/PowerToys/issues/51662",
+      "title": "Moving items in command pallette additional bar",
+      "author": "GreedFire",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "tracked",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
+      "labels": [
+        "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-07-06T14:35:52Z",
-      "updated_at": "2026-07-06T14:36:13Z",
+      "created_at": "2026-10-28T08:48:59Z",
+      "updated_at": "2026-10-28T08:48:59Z",
       "comments": 0,
       "priority": null
     },
@@ -95627,7 +95859,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2020-07-18T02:12:12Z",
-      "updated_at": "2026-10-22T23:31:17Z",
+      "updated_at": "2026-10-28T16:11:19Z",
       "comments": 63,
       "priority": null
     },
@@ -99716,39 +99948,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-42004",
-      "kind": "issue",
-      "number": 42004,
-      "url": "https://github.com/microsoft/PowerToys/issues/42004",
-      "title": "Auto-start after auto-update",
-      "author": "var314",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-Enhancement",
-        "Area-Setup/Install",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2025-09-25T07:28:45Z",
-      "updated_at": "2026-05-22T06:01:58Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-50457",
       "kind": "issue",
       "number": 50457,
@@ -102257,12 +102456,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-20229",
+      "id": "issue-49774",
       "kind": "issue",
-      "number": 20229,
-      "url": "https://github.com/microsoft/PowerToys/issues/20229",
-      "title": "Shortcut for more than 1 letter for one modifier.",
-      "author": "VGE007",
+      "number": 49774,
+      "url": "https://github.com/microsoft/PowerToys/issues/49774",
+      "title": "Power Toya went into an issue",
+      "author": "JatinChhikara-28",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -102275,17 +102474,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-Keyboard Manager"
+        "Issue-Bug",
+        "Resolution-Duplicate"
       ],
       "assignees": [],
-      "created_at": "2022-09-02T05:13:05Z",
-      "updated_at": "2026-10-11T16:05:43Z",
+      "created_at": "2026-08-08T12:21:11Z",
+      "updated_at": "2026-08-08T12:22:10Z",
       "comments": 2,
       "priority": null
     },
@@ -103234,6 +103432,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-16622",
+      "kind": "issue",
+      "number": 16622,
+      "url": "https://github.com/microsoft/PowerToys/issues/16622",
+      "title": "Addition of opening applications via keyboard shortcuts",
+      "author": "samwdp",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Resolution-Duplicate",
+        "Idea-Enhancement",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2022-02-28T09:10:30Z",
+      "updated_at": "2026-10-11T16:10:52Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-50119",
       "kind": "issue",
       "number": 50119,
@@ -104147,8 +104378,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-18T07:44:29Z",
-      "updated_at": "2026-06-18T07:45:51Z",
-      "comments": 0,
+      "updated_at": "2026-10-28T15:15:53Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -119185,17 +119416,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-43924",
+      "id": "issue-30676",
       "kind": "issue",
-      "number": 43924,
-      "url": "https://github.com/microsoft/PowerToys/issues/43924",
-      "title": "Command Palette: File Search: don't switch controls",
-      "author": "JMazat",
+      "number": 30676,
+      "url": "https://github.com/microsoft/PowerToys/issues/30676",
+      "title": "Create CheckBoxWithDescription in XAML",
+      "author": "Jay-o-Way",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
-      "is_cmdpal": true,
+      "is_cmdpal": false,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -119207,13 +119438,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Command Palette",
-        "CmdPal - Indexer"
+        "Product-Settings",
+        "Area-Build"
       ],
       "assignees": [],
-      "created_at": "2025-11-27T08:26:03Z",
-      "updated_at": "2026-09-27T00:39:49Z",
-      "comments": 1,
+      "created_at": "2023-12-31T13:25:55Z",
+      "updated_at": "2024-02-03T10:18:23Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -127737,15 +127968,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47891",
+      "id": "issue-9901",
       "kind": "issue",
-      "number": 47891,
-      "url": "https://github.com/microsoft/PowerToys/issues/47891",
-      "title": "PowerToys shortcuts don't work when any window is focused.",
-      "author": "lpaulino07",
-      "state": "closed",
+      "number": 9901,
+      "url": "https://github.com/microsoft/PowerToys/issues/9901",
+      "title": "Move Cpp.Build.props and Directory.Build.props out of root dir",
+      "author": "crutkas",
+      "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -127755,18 +127986,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
+        "Area-Build",
         "Product-General"
       ],
       "assignees": [],
-      "created_at": "2026-05-14T23:48:44Z",
-      "updated_at": "2026-06-25T00:40:14Z",
-      "comments": 3,
+      "created_at": "2021-02-25T18:56:56Z",
+      "updated_at": "2026-04-18T15:04:08Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -128201,12 +128431,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24226",
+      "id": "issue-51668",
       "kind": "issue",
-      "number": 24226,
-      "url": "https://github.com/microsoft/PowerToys/issues/24226",
-      "title": "Integrate Awake with shortcuts pop-up",
-      "author": "JVimes",
+      "number": 51668,
+      "url": "https://github.com/microsoft/PowerToys/issues/51668",
+      "title": "File Explorer: keep preview pane width proportional to window size",
+      "author": "kireinatori",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -128219,16 +128449,15 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Awake"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2023-02-20T18:01:58Z",
-      "updated_at": "2026-10-12T20:16:18Z",
+      "created_at": "2026-10-28T10:02:52Z",
+      "updated_at": "2026-10-28T10:02:52Z",
       "comments": 0,
       "priority": null
     },
@@ -133061,8 +133290,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-05-07T10:41:26Z",
-      "updated_at": "2026-05-10T14:32:45Z",
-      "comments": 0,
+      "updated_at": "2026-10-28T13:41:14Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -133855,6 +134084,42 @@ window.BOARD_INDEX = {
       "created_at": "2026-05-06T16:11:20Z",
       "updated_at": "2026-05-07T07:11:45Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-12575",
+      "kind": "issue",
+      "number": 12575,
+      "url": "https://github.com/microsoft/PowerToys/issues/12575",
+      "title": "Shortcut mapper malfunction",
+      "author": "mqdb",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Fix Committed",
+        "Severity-High",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [
+        "jaimecbernardo"
+      ],
+      "created_at": "2021-08-01T20:14:18Z",
+      "updated_at": "2026-10-11T16:18:47Z",
+      "comments": 31,
       "priority": null
     },
     {
@@ -138132,37 +138397,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47558",
-      "kind": "issue",
-      "number": 47558,
-      "url": "https://github.com/microsoft/PowerToys/issues/47558",
-      "title": "right click menu",
-      "author": "yeraunt",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-05-01T16:32:33Z",
-      "updated_at": "2026-05-01T16:37:45Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
       "id": "issue-30037",
       "kind": "issue",
       "number": 30037,
@@ -140865,36 +141099,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47468",
+      "id": "issue-29949",
       "kind": "issue",
-      "number": 47468,
-      "url": "https://github.com/microsoft/PowerToys/issues/47468",
-      "title": "PowerToys does not check for a newer version (B) if it has already notified that a new version (A) is ready",
-      "author": "kynetic29",
+      "number": 29949,
+      "url": "https://github.com/microsoft/PowerToys/issues/29949",
+      "title": "Provide more options for SDR to HDR gamma emulation. Current Windows behavior uses sRGB piecewise gamma emulation but most people use gamma 2.2, 2.4, or BT.1886",
+      "author": "Jason-GitH",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
+        "Idea-New PowerToy",
         "Needs-Triage",
-        "Product-General"
+        "Needs-Team-Response"
       ],
       "assignees": [],
-      "created_at": "2026-04-30T02:58:10Z",
-      "updated_at": "2026-05-16T20:15:52Z",
-      "comments": 2,
+      "created_at": "2023-11-21T10:48:46Z",
+      "updated_at": "2026-04-28T16:47:36Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -141286,8 +141520,8 @@ window.BOARD_INDEX = {
         "moooyo"
       ],
       "created_at": "2026-04-29T21:34:35Z",
-      "updated_at": "2026-06-11T02:02:49Z",
-      "comments": 11,
+      "updated_at": "2026-10-28T09:08:04Z",
+      "comments": 12,
       "priority": null
     },
     {
@@ -153045,6 +153279,38 @@ window.BOARD_INDEX = {
       "created_at": "2021-04-05T15:01:31Z",
       "updated_at": "2022-10-27T22:46:43Z",
       "comments": 10,
+      "priority": null
+    },
+    {
+      "id": "issue-50110",
+      "kind": "issue",
+      "number": 50110,
+      "url": "https://github.com/microsoft/PowerToys/issues/50110",
+      "title": "Windows Hopper not following Dark Mode",
+      "author": "nsathya2010",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "needs_reply",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "08/25/2026 12:31:55",
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-Window Hopper"
+      ],
+      "assignees": [],
+      "created_at": "2026-08-25T12:25:08Z",
+      "updated_at": "2026-09-15T14:51:51Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -178522,6 +178788,42 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-448",
+      "kind": "issue",
+      "number": 448,
+      "url": "https://github.com/microsoft/PowerToys/issues/448",
+      "title": "FancyZones Editor unexpectedly closes when trying to edit layout but no layout is selected",
+      "author": "ghost",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "FancyZones-Editor",
+        "Product-FancyZones",
+        "Status-In progress"
+      ],
+      "assignees": [
+        "enricogior"
+      ],
+      "created_at": "2019-09-26T19:56:38Z",
+      "updated_at": "2026-06-06T10:30:56Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-41327",
       "kind": "issue",
       "number": 41327,
@@ -179050,8 +179352,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -193628,15 +193930,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-9901",
+      "id": "issue-21719",
       "kind": "issue",
-      "number": 9901,
-      "url": "https://github.com/microsoft/PowerToys/issues/9901",
-      "title": "Move Cpp.Build.props and Directory.Build.props out of root dir",
-      "author": "crutkas",
+      "number": 21719,
+      "url": "https://github.com/microsoft/PowerToys/issues/21719",
+      "title": "Option to Group all PowerToys Windows 11 context menu items in one menu",
+      "author": "TheAndyMac",
       "state": "open",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -193646,17 +193948,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Area-Build",
-        "Product-General"
+        "Idea-Enhancement",
+        "Area-Setup/Install",
+        "Area-Runner"
       ],
       "assignees": [],
-      "created_at": "2021-02-25T18:56:56Z",
-      "updated_at": "2026-04-18T15:04:08Z",
-      "comments": 4,
+      "created_at": "2022-11-04T08:27:21Z",
+      "updated_at": "2024-10-13T12:15:27Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -200721,15 +201024,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-8337",
+      "id": "issue-44549",
       "kind": "issue",
-      "number": 8337,
-      "url": "https://github.com/microsoft/PowerToys/issues/8337",
-      "title": "[Color Picker] Activation behavior \"Picker and editor\" allows to open picker and editor parallel",
-      "author": "htcfreek",
-      "state": "open",
+      "number": 44549,
+      "url": "https://github.com/microsoft/PowerToys/issues/44549",
+      "title": "Authorize arbitrary key to start a shortcut",
+      "author": "phrn62",
+      "state": "closed",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -200744,13 +201047,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Idea-Enhancement",
-        "Area-User Interface",
-        "Product-Color Picker"
+        "Needs-Triage",
+        "Product-Keyboard Manager"
       ],
       "assignees": [],
-      "created_at": "2020-12-02T16:16:10Z",
-      "updated_at": "2020-12-18T21:55:41Z",
-      "comments": 4,
+      "created_at": "2026-01-05T21:04:24Z",
+      "updated_at": "2026-10-11T15:36:49Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -212748,36 +213051,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41993",
+      "id": "issue-2219",
       "kind": "issue",
-      "number": 41993,
-      "url": "https://github.com/microsoft/PowerToys/issues/41993",
-      "title": "Remapping caps-lock to shift doesn't work on RustDesk on OS boot",
-      "author": "divinity76",
-      "state": "open",
+      "number": 2219,
+      "url": "https://github.com/microsoft/PowerToys/issues/2219",
+      "title": "[KBM] Shortcut Guide has unexpected behaviour if Win key is swapped with another key",
+      "author": "arjunbalgovind",
+      "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
+        "Product-Shortcut Guide",
+        "Resolution-Fix Committed",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
-      "created_at": "2025-09-24T22:40:04Z",
-      "updated_at": "2026-10-11T16:47:18Z",
-      "comments": 0,
+      "assignees": [
+        "arjunbalgovind"
+      ],
+      "created_at": "2020-04-19T00:20:27Z",
+      "updated_at": "2026-10-11T16:44:54Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -212815,37 +213120,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-26405",
+      "id": "issue-43924",
       "kind": "issue",
-      "number": 26405,
-      "url": "https://github.com/microsoft/PowerToys/issues/26405",
-      "title": "While using MWB, UAC popup on Win 10 \"client\" system causes various problems",
-      "author": "stevemagruder",
+      "number": 43924,
+      "url": "https://github.com/microsoft/PowerToys/issues/43924",
+      "title": "Command Palette: File Search: don't switch controls",
+      "author": "JMazat",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-Mouse Without Borders"
+        "Product-Command Palette",
+        "CmdPal - Indexer"
       ],
       "assignees": [],
-      "created_at": "2023-05-27T23:19:05Z",
-      "updated_at": "2026-05-13T06:23:30Z",
-      "comments": 5,
+      "created_at": "2025-11-27T08:26:03Z",
+      "updated_at": "2026-09-27T00:39:49Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -214580,6 +214883,39 @@ window.BOARD_INDEX = {
       "created_at": "2020-12-29T09:53:15Z",
       "updated_at": "2026-10-11T16:27:05Z",
       "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-24474",
+      "kind": "issue",
+      "number": 24474,
+      "url": "https://github.com/microsoft/PowerToys/issues/24474",
+      "title": "Mouse Jump enhancement - support for virtual desktops",
+      "author": "ChrisJohnTaylor",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Find My Mouse"
+      ],
+      "assignees": [],
+      "created_at": "2023-03-02T18:11:47Z",
+      "updated_at": "2026-04-16T16:29:41Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -222591,12 +222927,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30676",
+      "id": "issue-8337",
       "kind": "issue",
-      "number": 30676,
-      "url": "https://github.com/microsoft/PowerToys/issues/30676",
-      "title": "Create CheckBoxWithDescription in XAML",
-      "author": "Jay-o-Way",
+      "number": 8337,
+      "url": "https://github.com/microsoft/PowerToys/issues/8337",
+      "title": "[Color Picker] Activation behavior \"Picker and editor\" allows to open picker and editor parallel",
+      "author": "htcfreek",
       "state": "open",
       "is_draft": false,
       "is_community": false,
@@ -222609,17 +222945,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Settings",
-        "Area-Build"
+        "Idea-Enhancement",
+        "Area-User Interface",
+        "Product-Color Picker"
       ],
       "assignees": [],
-      "created_at": "2023-12-31T13:25:55Z",
-      "updated_at": "2024-02-03T10:18:23Z",
-      "comments": 5,
+      "created_at": "2020-12-02T16:16:10Z",
+      "updated_at": "2020-12-18T21:55:41Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -237838,12 +238175,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-19480",
+      "id": "issue-51664",
       "kind": "issue",
-      "number": 19480,
-      "url": "https://github.com/microsoft/PowerToys/issues/19480",
-      "title": "Add Activation Shortcut mode on \"Keyboard Manager\" in PowerToys",
-      "author": "ghost",
+      "number": 51664,
+      "url": "https://github.com/microsoft/PowerToys/issues/51664",
+      "title": "Mouse without Borders  faild",
+      "author": "nutcrackers2",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -237856,18 +238193,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-Keyboard Manager"
+        "Issue-Bug",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2022-07-16T17:53:32Z",
-      "updated_at": "2026-10-11T16:06:55Z",
-      "comments": 2,
+      "created_at": "2026-10-28T09:06:00Z",
+      "updated_at": "2026-10-28T10:31:18Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -240344,6 +240680,41 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-24285",
+      "kind": "issue",
+      "number": 24285,
+      "url": "https://github.com/microsoft/PowerToys/issues/24285",
+      "title": "Extreme input lag caused by PowerToys running in the background",
+      "author": "ammartk",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Area-Quality",
+        "Priority-2",
+        "Area-App Compat",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2023-02-23T10:41:42Z",
+      "updated_at": "2026-10-03T11:19:53Z",
+      "comments": 17,
+      "priority": null
+    },
+    {
       "id": "issue-31833",
       "kind": "issue",
       "number": 31833,
@@ -240806,12 +241177,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-7275",
+      "id": "issue-20229",
       "kind": "issue",
-      "number": 7275,
-      "url": "https://github.com/microsoft/PowerToys/issues/7275",
-      "title": "[HP EliteBook 840 G6] Special keys remapping",
-      "author": "depablo",
+      "number": 20229,
+      "url": "https://github.com/microsoft/PowerToys/issues/20229",
+      "title": "Shortcut for more than 1 letter for one modifier.",
+      "author": "VGE007",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -240824,18 +241195,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
         "Resolution-Duplicate",
+        "Idea-Enhancement",
         "Product-Keyboard Manager"
       ],
       "assignees": [],
-      "created_at": "2020-10-14T09:18:15Z",
-      "updated_at": "2026-10-11T16:30:06Z",
-      "comments": 4,
+      "created_at": "2022-09-02T05:13:05Z",
+      "updated_at": "2026-10-11T16:05:43Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -243069,6 +243440,38 @@ window.BOARD_INDEX = {
       "created_at": "2025-10-04T07:30:58Z",
       "updated_at": "2026-10-23T18:06:06Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-24226",
+      "kind": "issue",
+      "number": 24226,
+      "url": "https://github.com/microsoft/PowerToys/issues/24226",
+      "title": "Integrate Awake with shortcuts pop-up",
+      "author": "JVimes",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-Awake"
+      ],
+      "assignees": [],
+      "created_at": "2023-02-20T18:01:58Z",
+      "updated_at": "2026-10-12T20:16:18Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -245601,6 +246004,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-47976",
+      "kind": "issue",
+      "number": 47976,
+      "url": "https://github.com/microsoft/PowerToys/issues/47976",
+      "title": "与NVIDIA浮窗的兼容性问题",
+      "author": "wodeshijieliu",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Grab And Move"
+      ],
+      "assignees": [],
+      "created_at": "2026-05-19T04:53:41Z",
+      "updated_at": "2026-06-07T08:05:12Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-42041",
       "kind": "issue",
       "number": 42041,
@@ -246326,17 +246762,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-51035",
+      "id": "issue-42004",
       "kind": "issue",
-      "number": 51035,
-      "url": "https://github.com/microsoft/PowerToys/issues/51035",
-      "title": "CmdPal: Fix app icon rendering (split from Apps extension refactor)",
-      "author": "jiripolasek",
+      "number": 42004,
+      "url": "https://github.com/microsoft/PowerToys/issues/42004",
+      "title": "Auto-start after auto-update",
+      "author": "var314",
       "state": "closed",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
+      "is_cmdpal": false,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -246344,19 +246780,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-Command Palette"
+        "Idea-Enhancement",
+        "Area-Setup/Install",
+        "Needs-Triage"
       ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-10-05T20:20:48Z",
-      "updated_at": "2026-10-06T15:48:40Z",
-      "comments": 0,
+      "assignees": [],
+      "created_at": "2025-09-25T07:28:45Z",
+      "updated_at": "2026-05-22T06:01:58Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -246627,35 +247062,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24474",
+      "id": "issue-41993",
       "kind": "issue",
-      "number": 24474,
-      "url": "https://github.com/microsoft/PowerToys/issues/24474",
-      "title": "Mouse Jump enhancement - support for virtual desktops",
-      "author": "ChrisJohnTaylor",
+      "number": 41993,
+      "url": "https://github.com/microsoft/PowerToys/issues/41993",
+      "title": "Remapping caps-lock to shift doesn't work on RustDesk on OS boot",
+      "author": "divinity76",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
+        "Issue-Bug",
         "Needs-Triage",
-        "Product-Find My Mouse"
+        "Product-Keyboard Manager"
       ],
       "assignees": [],
-      "created_at": "2023-03-02T18:11:47Z",
-      "updated_at": "2026-04-16T16:29:41Z",
+      "created_at": "2025-09-24T22:40:04Z",
+      "updated_at": "2026-10-11T16:47:18Z",
       "comments": 0,
       "priority": null
     },
@@ -247091,39 +247526,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24452",
+      "id": "issue-41971",
       "kind": "issue",
-      "number": 24452,
-      "url": "https://github.com/microsoft/PowerToys/issues/24452",
-      "title": "FancyZones not working with multiple displays in combination with portable apps",
-      "author": "alimuratgymn",
+      "number": 41971,
+      "url": "https://github.com/microsoft/PowerToys/issues/41971",
+      "title": "Cmdpal will not launch until a long period passed in windows sandbox",
+      "author": "vanzue",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": "fix",
-      "stage": "triage_revalidated",
-      "owes": "us",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Product-FancyZones",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette"
       ],
       "assignees": [],
-      "created_at": "2023-03-02T12:26:39Z",
-      "updated_at": "2024-05-22T10:36:58Z",
-      "comments": 7,
+      "created_at": "2025-09-24T07:16:44Z",
+      "updated_at": "2025-09-28T14:39:15Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -247588,12 +248020,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24427",
+      "id": "issue-41946",
       "kind": "issue",
-      "number": 24427,
-      "url": "https://github.com/microsoft/PowerToys/issues/24427",
-      "title": "Costomized screen color filter. ",
-      "author": "GanyuWang",
+      "number": 41946,
+      "url": "https://github.com/microsoft/PowerToys/issues/41946",
+      "title": "Somehow to make PowerToys not close/turn off at all",
+      "author": "bootywizard002",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -247606,17 +248038,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy",
+        "Idea-Enhancement",
+        "Product-Settings",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2023-03-02T05:46:11Z",
-      "updated_at": "2023-03-02T06:29:43Z",
-      "comments": 0,
+      "created_at": "2025-09-23T03:51:50Z",
+      "updated_at": "2026-04-16T15:26:27Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -247854,37 +248287,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24412",
+      "id": "issue-41931",
       "kind": "issue",
-      "number": 24412,
-      "url": "https://github.com/microsoft/PowerToys/issues/24412",
-      "title": "Always on Top: Stale pinned window border when switching to windows on other virtual desktops",
-      "author": "Terrance",
+      "number": 41931,
+      "url": "https://github.com/microsoft/PowerToys/issues/41931",
+      "title": "Clipboard history with \"stay open after paste\", search bar, and inline editor",
+      "author": "massimilianopranzo",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-Always On Top",
-        "Needs-Team-Response",
-        "Status-Reproducible"
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Advanced Paste"
       ],
       "assignees": [],
-      "created_at": "2023-03-01T19:20:38Z",
-      "updated_at": "2026-09-16T12:40:24Z",
-      "comments": 6,
+      "created_at": "2025-09-22T06:15:46Z",
+      "updated_at": "2026-04-18T11:47:08Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -247920,35 +248352,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24409",
+      "id": "issue-41928",
       "kind": "issue",
-      "number": 24409,
-      "url": "https://github.com/microsoft/PowerToys/issues/24409",
-      "title": "Request: for \"Quick accent\" tool, also offer the special characters in Hebrew of Niqqud (similar to vowels in English)",
-      "author": "AndroidDeveloperLB",
+      "number": 41928,
+      "url": "https://github.com/microsoft/PowerToys/issues/41928",
+      "title": "Command Palette calculation accuracy issue",
+      "author": "hxscst",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "is_cmdpal": true,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Issue-Bug",
         "Needs-Triage",
-        "Product-Quick Accent"
+        "Product-Command Palette",
+        "CmdPal - Calculator"
       ],
       "assignees": [],
-      "created_at": "2023-03-01T17:10:08Z",
-      "updated_at": "2023-10-12T18:39:15Z",
-      "comments": 0,
+      "created_at": "2025-09-22T02:35:17Z",
+      "updated_at": "2026-01-08T10:23:20Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -248932,12 +249366,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-44549",
+      "id": "issue-12978",
       "kind": "issue",
-      "number": 44549,
-      "url": "https://github.com/microsoft/PowerToys/issues/44549",
-      "title": "Authorize arbitrary key to start a shortcut",
-      "author": "phrn62",
+      "number": 12978,
+      "url": "https://github.com/microsoft/PowerToys/issues/12978",
+      "title": "Remap Window not opening",
+      "author": "PierreENOlivier",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -248950,18 +249384,21 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Needs-Triage",
+        "Issue-Bug",
+        "Resolution-Fix Committed",
+        "Severity-High",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
-      "created_at": "2026-01-05T21:04:24Z",
-      "updated_at": "2026-10-11T15:36:49Z",
-      "comments": 3,
+      "assignees": [
+        "jaimecbernardo"
+      ],
+      "created_at": "2021-09-01T09:19:18Z",
+      "updated_at": "2026-10-11T16:17:22Z",
+      "comments": 20,
       "priority": null
     },
     {
@@ -249629,40 +250066,6 @@ window.BOARD_INDEX = {
       "created_at": "2023-02-26T12:53:57Z",
       "updated_at": "2026-06-06T13:00:26Z",
       "comments": 6,
-      "priority": null
-    },
-    {
-      "id": "issue-24167",
-      "kind": "issue",
-      "number": 24167,
-      "url": "https://github.com/microsoft/PowerToys/issues/24167",
-      "title": "[fancyzone feature request] option to add extra toggles to window bar for adjusting window to specific sizes",
-      "author": "bebotette",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-Enhancement",
-        "Product-FancyZones",
-        "Area-User Interface",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2023-02-17T01:32:50Z",
-      "updated_at": "2026-04-16T16:30:14Z",
-      "comments": 0,
       "priority": null
     },
     {
@@ -250369,12 +250772,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24285",
+      "id": "issue-47468",
       "kind": "issue",
-      "number": 24285,
-      "url": "https://github.com/microsoft/PowerToys/issues/24285",
-      "title": "Extreme input lag caused by PowerToys running in the background",
-      "author": "ammartk",
+      "number": 47468,
+      "url": "https://github.com/microsoft/PowerToys/issues/47468",
+      "title": "PowerToys does not check for a newer version (B) if it has already notified that a new version (A) is ready",
+      "author": "kynetic29",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -250392,15 +250795,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Area-Quality",
-        "Priority-2",
-        "Area-App Compat",
+        "Needs-Triage",
         "Product-General"
       ],
       "assignees": [],
-      "created_at": "2023-02-23T10:41:42Z",
-      "updated_at": "2026-10-03T11:19:53Z",
-      "comments": 17,
+      "created_at": "2026-04-30T02:58:10Z",
+      "updated_at": "2026-05-16T20:15:52Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -252477,39 +252878,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-29949",
-      "kind": "issue",
-      "number": 29949,
-      "url": "https://github.com/microsoft/PowerToys/issues/29949",
-      "title": "Provide more options for SDR to HDR gamma emulation. Current Windows behavior uses sRGB piecewise gamma emulation but most people use gamma 2.2, 2.4, or BT.1886",
-      "author": "Jason-GitH",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-New PowerToy",
-        "Needs-Triage",
-        "Needs-Team-Response"
-      ],
-      "assignees": [],
-      "created_at": "2023-11-21T10:48:46Z",
-      "updated_at": "2026-04-28T16:47:36Z",
-      "comments": 5,
-      "priority": null
-    },
-    {
       "id": "issue-41702",
       "kind": "issue",
       "number": 41702,
@@ -252850,36 +253218,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41971",
+      "id": "issue-24167",
       "kind": "issue",
-      "number": 41971,
-      "url": "https://github.com/microsoft/PowerToys/issues/41971",
-      "title": "Cmdpal will not launch until a long period passed in windows sandbox",
-      "author": "vanzue",
+      "number": 24167,
+      "url": "https://github.com/microsoft/PowerToys/issues/24167",
+      "title": "[fancyzone feature request] option to add extra toggles to window bar for adjusting window to specific sizes",
+      "author": "bebotette",
       "state": "open",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-Command Palette"
+        "Idea-Enhancement",
+        "Product-FancyZones",
+        "Area-User Interface",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2025-09-24T07:16:44Z",
-      "updated_at": "2025-09-28T14:39:15Z",
-      "comments": 5,
+      "created_at": "2023-02-17T01:32:50Z",
+      "updated_at": "2026-04-16T16:30:14Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -254839,6 +255208,42 @@ window.BOARD_INDEX = {
       "created_at": "2025-09-03T21:33:24Z",
       "updated_at": "2026-04-18T14:08:08Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-24452",
+      "kind": "issue",
+      "number": 24452,
+      "url": "https://github.com/microsoft/PowerToys/issues/24452",
+      "title": "FancyZones not working with multiple displays in combination with portable apps",
+      "author": "alimuratgymn",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2023-03-02T12:26:39Z",
+      "updated_at": "2024-05-22T10:36:58Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -257810,39 +258215,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50687",
-      "kind": "issue",
-      "number": 50687,
-      "url": "https://github.com/microsoft/PowerToys/issues/50687",
-      "title": "[Dedupe Digest] 2026-09-21",
-      "author": "github-actions[bot]",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "dedupe-digest"
-      ],
-      "assignees": [
-        "niels9001"
-      ],
-      "created_at": "2026-09-21T08:21:26Z",
-      "updated_at": "2026-09-22T08:19:14Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-6392",
       "kind": "issue",
       "number": 6392,
@@ -259679,6 +260051,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-19480",
+      "kind": "issue",
+      "number": 19480,
+      "url": "https://github.com/microsoft/PowerToys/issues/19480",
+      "title": "Add Activation Shortcut mode on \"Keyboard Manager\" in PowerToys",
+      "author": "ghost",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Resolution-Duplicate",
+        "Idea-Enhancement",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2022-07-16T17:53:32Z",
+      "updated_at": "2026-10-11T16:06:55Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-41338",
       "kind": "issue",
       "number": 41338,
@@ -259776,6 +260181,39 @@ window.BOARD_INDEX = {
       "created_at": "2025-08-23T10:17:11Z",
       "updated_at": "2026-04-18T14:50:36Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-7275",
+      "kind": "issue",
+      "number": 7275,
+      "url": "https://github.com/microsoft/PowerToys/issues/7275",
+      "title": "[HP EliteBook 840 G6] Special keys remapping",
+      "author": "depablo",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-10-14T09:18:15Z",
+      "updated_at": "2026-10-11T16:30:06Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -287798,6 +288236,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-3997",
+      "kind": "issue",
+      "number": 3997,
+      "url": "https://github.com/microsoft/PowerToys/issues/3997",
+      "title": "[FancyZones] window must resist dragging",
+      "author": "Boolean22",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "FancyZones-Dragging&UI",
+        "Product-FancyZones"
+      ],
+      "assignees": [],
+      "created_at": "2020-06-02T17:12:35Z",
+      "updated_at": "2021-04-19T09:58:09Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-21515",
       "kind": "issue",
       "number": 21515,
@@ -288925,41 +289396,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-04-03T14:39:22Z",
       "updated_at": "2026-09-24T23:59:33Z",
       "comments": 4,
-      "priority": null
-    },
-    {
-      "id": "issue-2219",
-      "kind": "issue",
-      "number": 2219,
-      "url": "https://github.com/microsoft/PowerToys/issues/2219",
-      "title": "[KBM] Shortcut Guide has unexpected behaviour if Win key is swapped with another key",
-      "author": "arjunbalgovind",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Shortcut Guide",
-        "Resolution-Fix Committed",
-        "Product-Keyboard Manager"
-      ],
-      "assignees": [
-        "arjunbalgovind"
-      ],
-      "created_at": "2020-04-19T00:20:27Z",
-      "updated_at": "2026-10-11T16:44:54Z",
-      "comments": 1,
       "priority": null
     },
     {
@@ -299229,6 +299665,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-49160",
+      "kind": "issue",
+      "number": 49160,
+      "url": "https://github.com/microsoft/PowerToys/issues/49160",
+      "title": "Fancy Zones (More Control with Space around Zones)",
+      "author": "roiekarni",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-07-06T14:35:52Z",
+      "updated_at": "2026-07-06T14:36:13Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-39207",
       "kind": "issue",
       "number": 39207,
@@ -302100,12 +302568,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-3997",
+      "id": "issue-24427",
       "kind": "issue",
-      "number": 3997,
-      "url": "https://github.com/microsoft/PowerToys/issues/3997",
-      "title": "[FancyZones] window must resist dragging",
-      "author": "Boolean22",
+      "number": 24427,
+      "url": "https://github.com/microsoft/PowerToys/issues/24427",
+      "title": "Costomized screen color filter. ",
+      "author": "GanyuWang",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -302118,18 +302586,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "FancyZones-Dragging&UI",
-        "Product-FancyZones"
+        "Idea-New PowerToy",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2020-06-02T17:12:35Z",
-      "updated_at": "2021-04-19T09:58:09Z",
-      "comments": 4,
+      "created_at": "2023-03-02T05:46:11Z",
+      "updated_at": "2023-03-02T06:29:43Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -304467,20 +304934,20 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-12575",
+      "id": "issue-26405",
       "kind": "issue",
-      "number": 12575,
-      "url": "https://github.com/microsoft/PowerToys/issues/12575",
-      "title": "Shortcut mapper malfunction",
-      "author": "mqdb",
-      "state": "closed",
+      "number": 26405,
+      "url": "https://github.com/microsoft/PowerToys/issues/26405",
+      "title": "While using MWB, UAC popup on Win 10 \"client\" system causes various problems",
+      "author": "stevemagruder",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
@@ -304490,16 +304957,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Fix Committed",
-        "Severity-High",
-        "Product-Keyboard Manager"
+        "Needs-Triage",
+        "Needs-Team-Response",
+        "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        "jaimecbernardo"
-      ],
-      "created_at": "2021-08-01T20:14:18Z",
-      "updated_at": "2026-10-11T16:18:47Z",
-      "comments": 31,
+      "assignees": [],
+      "created_at": "2023-05-27T23:19:05Z",
+      "updated_at": "2026-05-13T06:23:30Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -328576,17 +329041,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41931",
+      "id": "issue-50690",
       "kind": "issue",
-      "number": 41931,
-      "url": "https://github.com/microsoft/PowerToys/issues/41931",
-      "title": "Clipboard history with \"stay open after paste\", search bar, and inline editor",
-      "author": "massimilianopranzo",
+      "number": 50690,
+      "url": "https://github.com/microsoft/PowerToys/issues/50690",
+      "title": "Command Pallette - Installed apps - User defined filters",
+      "author": "borisdelev",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -328594,18 +329059,20 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
         "Needs-Triage",
-        "Product-Advanced Paste"
+        "Product-Command Palette",
+        "CmdPal - All Apps"
       ],
-      "assignees": [],
-      "created_at": "2025-09-22T06:15:46Z",
-      "updated_at": "2026-04-18T11:47:08Z",
-      "comments": 2,
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-09-21T10:20:35Z",
+      "updated_at": "2026-10-04T19:43:43Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -330748,34 +331215,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-2467",
+      "id": "issue-24412",
       "kind": "issue",
-      "number": 2467,
-      "url": "https://github.com/microsoft/PowerToys/issues/2467",
-      "title": "[KBM] Should the Edit Shortcuts dialog have Original Shortcut list",
-      "author": "JamespiWork",
-      "state": "closed",
+      "number": 24412,
+      "url": "https://github.com/microsoft/PowerToys/issues/24412",
+      "title": "Always on Top: Stale pinned window border when switching to windows on other virtual desktops",
+      "author": "Terrance",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Keyboard Manager"
+        "Issue-Bug",
+        "Product-Always On Top",
+        "Needs-Team-Response",
+        "Status-Reproducible"
       ],
       "assignees": [],
-      "created_at": "2020-04-29T00:04:47Z",
-      "updated_at": "2026-10-11T16:43:44Z",
-      "comments": 0,
+      "created_at": "2023-03-01T19:20:38Z",
+      "updated_at": "2026-09-16T12:40:24Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -334991,37 +335461,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41928",
+      "id": "issue-50687",
       "kind": "issue",
-      "number": 41928,
-      "url": "https://github.com/microsoft/PowerToys/issues/41928",
-      "title": "Command Palette calculation accuracy issue",
-      "author": "hxscst",
-      "state": "open",
+      "number": 50687,
+      "url": "https://github.com/microsoft/PowerToys/issues/50687",
+      "title": "[Dedupe Digest] 2026-09-21",
+      "author": "github-actions[bot]",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-Command Palette",
-        "CmdPal - Calculator"
+        "dedupe-digest"
       ],
-      "assignees": [],
-      "created_at": "2025-09-22T02:35:17Z",
-      "updated_at": "2026-01-08T10:23:20Z",
-      "comments": 3,
+      "assignees": [
+        "niels9001"
+      ],
+      "created_at": "2026-09-21T08:21:26Z",
+      "updated_at": "2026-09-22T08:19:14Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -335755,37 +336224,6 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2025-02-03T17:30:51Z",
       "updated_at": "2025-03-15T01:45:05Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-47542",
-      "kind": "issue",
-      "number": 47542,
-      "url": "https://github.com/microsoft/PowerToys/issues/47542",
-      "title": "Utility to record and playback keystrokes and mouse clicks",
-      "author": "OgreMHDW",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-05-01T07:12:16Z",
-      "updated_at": "2026-05-01T10:12:08Z",
       "comments": 2,
       "priority": null
     },
@@ -337313,12 +337751,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-21719",
+      "id": "issue-24409",
       "kind": "issue",
-      "number": 21719,
-      "url": "https://github.com/microsoft/PowerToys/issues/21719",
-      "title": "Option to Group all PowerToys Windows 11 context menu items in one menu",
-      "author": "TheAndyMac",
+      "number": 24409,
+      "url": "https://github.com/microsoft/PowerToys/issues/24409",
+      "title": "Request: for \"Quick accent\" tool, also offer the special characters in Hebrew of Niqqud (similar to vowels in English)",
+      "author": "AndroidDeveloperLB",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -337331,18 +337769,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Area-Setup/Install",
-        "Area-Runner"
+        "Needs-Triage",
+        "Product-Quick Accent"
       ],
       "assignees": [],
-      "created_at": "2022-11-04T08:27:21Z",
-      "updated_at": "2024-10-13T12:15:27Z",
-      "comments": 2,
+      "created_at": "2023-03-01T17:10:08Z",
+      "updated_at": "2023-10-12T18:39:15Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -353179,7 +353616,7 @@ window.BOARD_INDEX = {
       "number": 22098,
       "url": "https://github.com/microsoft/PowerToys/issues/22098",
       "title": "Get space / tab data out when OCR is executed",
-      "author": "Paul-Bur",
+      "author": "ghost",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -363722,42 +364159,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-12978",
-      "kind": "issue",
-      "number": 12978,
-      "url": "https://github.com/microsoft/PowerToys/issues/12978",
-      "title": "Remap Window not opening",
-      "author": "PierreENOlivier",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Resolution-Fix Committed",
-        "Severity-High",
-        "Product-Keyboard Manager"
-      ],
-      "assignees": [
-        "jaimecbernardo"
-      ],
-      "created_at": "2021-09-01T09:19:18Z",
-      "updated_at": "2026-10-11T16:17:22Z",
-      "comments": 20,
-      "priority": null
-    },
-    {
       "id": "issue-35727",
       "kind": "issue",
       "number": 35727,
@@ -364912,6 +365313,37 @@ window.BOARD_INDEX = {
       "created_at": "2019-05-07T01:53:45Z",
       "updated_at": "2026-10-11T16:46:18Z",
       "comments": 46,
+      "priority": null
+    },
+    {
+      "id": "issue-2467",
+      "kind": "issue",
+      "number": 2467,
+      "url": "https://github.com/microsoft/PowerToys/issues/2467",
+      "title": "[KBM] Should the Edit Shortcuts dialog have Original Shortcut list",
+      "author": "JamespiWork",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-04-29T00:04:47Z",
+      "updated_at": "2026-10-11T16:43:44Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -368001,39 +368433,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-448",
+      "id": "issue-49467",
       "kind": "issue",
-      "number": 448,
-      "url": "https://github.com/microsoft/PowerToys/issues/448",
-      "title": "FancyZones Editor unexpectedly closes when trying to edit layout but no layout is selected",
-      "author": "ghost",
-      "state": "closed",
+      "number": 49467,
+      "url": "https://github.com/microsoft/PowerToys/issues/49467",
+      "title": "Report on Mouse Disappearance When Zooming Out While Enabling Zoom LT Screen Recording",
+      "author": "STHunmant",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
-        "FancyZones-Editor",
-        "Product-FancyZones",
-        "Status-In progress"
+        "Needs-Triage",
+        "Product-ZoomIt"
       ],
-      "assignees": [
-        "enricogior"
-      ],
-      "created_at": "2019-09-26T19:56:38Z",
-      "updated_at": "2026-06-06T10:30:56Z",
-      "comments": 1,
+      "assignees": [],
+      "created_at": "2026-07-23T13:18:47Z",
+      "updated_at": "2026-07-23T13:19:10Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -371590,8 +372022,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "label": "Start fixing",
-        "type": "approve_design"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -376575,225 +377007,6 @@ window.BOARD_INDEX = {
       "created_at": "2020-05-19T21:25:41Z",
       "updated_at": "2026-10-11T16:40:57Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-51661",
-      "kind": "issue",
-      "number": 51661,
-      "url": "https://github.com/microsoft/PowerToys/issues/51661",
-      "title": "I cant get new key for synk.",
-      "author": "Andrey31337",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Needs-Triage",
-        "Product-Mouse Without Borders"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T08:40:29Z",
-      "updated_at": "2026-10-28T08:47:05Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-51662",
-      "kind": "issue",
-      "number": 51662,
-      "url": "https://github.com/microsoft/PowerToys/issues/51662",
-      "title": "Moving items in command pallette additional bar",
-      "author": "GreedFire",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T08:48:59Z",
-      "updated_at": "2026-10-28T08:48:59Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-51663",
-      "kind": "issue",
-      "number": 51663,
-      "url": "https://github.com/microsoft/PowerToys/issues/51663",
-      "title": "Command pallete",
-      "author": "GreedFire",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T08:53:36Z",
-      "updated_at": "2026-10-28T08:53:36Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-51667",
-      "kind": "issue",
-      "number": 51667,
-      "url": "https://github.com/microsoft/PowerToys/issues/51667",
-      "title": "does it allowed to do reverse engineering and extract the oneOCR model from windows and then integrate it to my application that will used by my single client to convert pdfs to word files",
-      "author": "Khaled-Mohammed-Abdelgaber",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Needs-Triage"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T09:33:05Z",
-      "updated_at": "2026-10-28T09:39:33Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-51669",
-      "kind": "issue",
-      "number": 51669,
-      "url": "https://github.com/microsoft/PowerToys/issues/51669",
-      "title": "Command Palette is no longer working since update v0.102.3001.0",
-      "author": "pyjosse",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T10:25:08Z",
-      "updated_at": "2026-10-28T10:25:08Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-51666",
-      "kind": "issue",
-      "number": 51666,
-      "url": "https://github.com/microsoft/PowerToys/issues/51666",
-      "title": "Latest update broke Mouse Without Borders: Old key not accepted, and unable to generate new key.",
-      "author": "WNG555",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": null,
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "label": "Reply with suggested comments",
-        "type": "request_info"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
-      ],
-      "assignees": [
-        null
-      ],
-      "created_at": "2026-10-28T09:10:23Z",
-      "updated_at": "2026-10-28T11:01:05Z",
-      "comments": 1,
       "priority": null
     }
   ]
