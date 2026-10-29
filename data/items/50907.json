@@ -7,103 +7,28 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T19:52:55.358Z",
-  "evaluated_at": "2026-10-10T07:34:03.2964256Z",
+  "generated_at": "2026-10-29T02:32:59.504104Z",
+  "evaluated_at": "2026-10-29T02:32:59.504104Z",
   "source_updated_at": "2026-09-30T12:55:48Z",
   "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
   "proposed_comments": [
     {
-      "id": "bound-titlebar-hit-test-budget-1",
+      "id": "bound-titlebar-hit-test-budget",
       "kind": "inline",
       "in_diff": true,
       "disposition": "proposed",
       "severity": "medium",
-      "title": "(1/3) Share one hit-test deadline",
+      "title": "Share one timeout budget across the title-bar hit tests",
       "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-      "line": 2666,
-      "side": "RIGHT",
-      "body": "### (1/3) Share one hit-test deadline\n\n**Severity:** `medium`\n\n`ResolveTitleBarWindow` is called from the low-level `MouseProc` hook and can query up to 32 ancestors. Giving every `WM_NCHITTEST` call a fresh 100 ms timeout lets a chain of responsive-but-slow `HTTRANSPARENT` windows accumulate far beyond the intended budget, delaying mouse input and risking hook timeout. Rename this to a total budget and establish one deadline before the loop; apply this together with (2/3) and (3/3).\n\n```suggestion\n    constexpr UINT HIT_TEST_TOTAL_TIMEOUT_MS = 100;\n```",
-      "confidence": {
-        "score": 82,
-        "rationale": "The exact upstream loop gives every ancestor call the full 100 ms and can run from MouseProc; the cumulative worst case follows directly from the depth cap, though no slow-window timing test was run."
-      },
       "start_line": 2666,
-      "selection_group": {
-        "id": "bound-titlebar-hit-test-budget",
-        "title": "Bound the complete title-bar hit-test walk",
-        "position": 1,
-        "total": 3,
-        "atomic": true
-      },
-      "body_sha256": "df0a1d0eec2c419d133e2f28f1c819d1280a1345095ce4b6737fed846620b6f5"
-    },
-    {
-      "id": "bound-titlebar-hit-test-budget-2",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "title": "(2/3) Start the deadline before the loop",
-      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-      "line": 2669,
-      "side": "RIGHT",
-      "body": "### (2/3) Start the deadline before the loop\n\n**Severity:** `medium`\n\nThe hit-test loop currently has only a per-call timeout, so walking several transparent ancestors can consume a fresh 100 ms at each level while the low-level mouse hook is waiting. Record the shared deadline once before entering the loop, then use the remaining time for each call as in (3/3).\n\n```suggestion\n    const ULONGLONG deadline = GetTickCount64() + HIT_TEST_TOTAL_TIMEOUT_MS;\n    for (int depth = 0; hwnd && depth < MAX_DEPTH; depth++)\n```",
-      "confidence": {
-        "score": 82,
-        "rationale": "The upstream loop lacks a shared deadline; this one-line insertion is directly tied to the per-call timeout behavior and was included in the exact candidate build."
-      },
-      "start_line": 2669,
-      "selection_group": {
-        "id": "bound-titlebar-hit-test-budget",
-        "title": "Bound the complete title-bar hit-test walk",
-        "position": 2,
-        "total": 3,
-        "atomic": true
-      },
-      "body_sha256": "34c42ba393b7b4dae96768d72e724491314b7c1b057ca1d80b045def8566a1d7"
-    },
-    {
-      "id": "bound-titlebar-hit-test-budget-3",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "title": "(3/3) Pass only the remaining budget",
-      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
       "line": 2675,
       "side": "RIGHT",
-      "body": "### (3/3) Pass only the remaining budget\n\n**Severity:** `medium`\n\nThe existing `SendMessageTimeoutW` call receives the full timeout on every ancestor, so several slow-but-responsive windows can keep the low-level mouse hook waiting for multiple timeout periods. Compute the remaining time from the shared deadline before each send and stop once it expires; this must be applied with the deadline setup in (1/3) and (2/3).\n\n```suggestion\n        const ULONGLONG now = GetTickCount64();\n        if (now >= deadline)\n        {\n            return nullptr;\n        }\n\n        const UINT remainingTimeoutMs = static_cast<UINT>(deadline - now);\n        if (!SendMessageTimeoutW(\n                hwnd,\n                WM_NCHITTEST,\n                0,\n                MAKELPARAM(local.x, local.y),\n                SMTO_ABORTIFHUNG,\n                remainingTimeoutMs,\n                &hit))\n```",
+      "body": "### Share one timeout budget across the title-bar hit tests\n\n**Severity:** `medium`\n\nThis runs synchronously inside the low-level mouse hook, but each ancestor receives a fresh 100 ms timeout. A controlled chain of 20 transparent children plus the root, each responding after 60 ms, made this resolver take about 1.33 seconds: long enough to exceed Windows' maximum low-level-hook timeout, delay input, and risk silent hook removal. Share one deadline across the complete walk and pass only the remaining time to each send; this single-file suggestion contains all dependent edits.\n\n```suggestion\n    constexpr UINT HIT_TEST_TOTAL_TIMEOUT_MS = 100;\n    constexpr int MAX_DEPTH = 32;\n    const ULONGLONG deadline = GetTickCount64() + HIT_TEST_TOTAL_TIMEOUT_MS;\n    for (int depth = 0; hwnd && depth < MAX_DEPTH; depth++)\n    {\n        // WM_NCHITTEST takes screen coordinates in the target's own DPI space.\n        POINT local = pt;\n        PhysicalToLogicalPointForPerMonitorDPI(hwnd, &local);\n\n        DWORD_PTR hit = 0;\n        const ULONGLONG now = GetTickCount64();\n        if (now >= deadline)\n        {\n            return nullptr;\n        }\n\n        const UINT remainingTimeoutMs = static_cast<UINT>(deadline - now);\n        if (!SendMessageTimeoutW(\n                hwnd,\n                WM_NCHITTEST,\n                0,\n                MAKELPARAM(local.x, local.y),\n                SMTO_ABORTIFHUNG,\n                remainingTimeoutMs,\n                &hit))\n```\n\nVerify the slow transparent-child chain exits near the shared budget, while an ordinary title bar still resolves and a child returning `HTCLIENT` is still left alone.",
       "confidence": {
-        "score": 82,
-        "rationale": "The call site visibly resets the full timeout on every iteration; remaining-time propagation was applied literally and the minimized atomic candidate built successfully."
+        "score": 92,
+        "rationale": "The exact upstream resolver took 1327.599 ms over 21 responsive hit tests in an isolated Win32 fixture. The shared-deadline candidate took 117.557 ms. The synchronous hook call path is confirmed; actual hook removal and representative-app frequency were not measured."
       },
-      "start_line": 2675,
-      "selection_group": {
-        "id": "bound-titlebar-hit-test-budget",
-        "title": "Bound the complete title-bar hit-test walk",
-        "position": 3,
-        "total": 3,
-        "atomic": true
-      },
-      "body_sha256": "ca0b8f2dc8b851365aa4b5f060e0e57d1e7d8363c4f63b775c3afedfe9139dd5"
-    },
-    {
-      "id": "custom-titlebar-root-hit-test",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "title": "Check the root hit-test after a child returns HTCLIENT",
-      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-      "line": 2685,
-      "side": "RIGHT",
-      "body": "### Check the root hit-test after a child returns `HTCLIENT`\n\n**Severity:** `medium`\n\nWhen `WindowFromPoint` returns a child control, this loop stops on `HTCLIENT` without asking the root window for its non-client hit-test. A custom title bar can report `HTCAPTION` for its drag region only from the root, so right-dragging over an `HTCLIENT` child in that region is missed even though the top-level window identifies it as draggable. Query the root once for this child result before returning `nullptr`.\n\n```suggestion\n        if (hitTest == HTCLIENT && hwnd != root)\n        {\n            // A custom title bar may define its drag region only in the root window.\n            hwnd = root;\n            continue;\n        }\n        if (hitTest != HTTRANSPARENT || hwnd == root)\n```",
-      "confidence": {
-        "score": 73,
-        "rationale": "The pinned source stops on child HTCLIENT and the saved Win32 probe reproduces a child HTCLIENT/root HTCAPTION pair; no representative custom-title-bar application was exercised."
-      },
-      "start_line": 2685,
-      "body_sha256": "5cc4b462ff7e1f73ee73f6069ad9fa7f0985e0ac6511da247e1f1cf54a1b737a"
+      "body_sha256": "6a09178d8fb58203d9171f571d0b125cbcbb015f070522f7bb07a8de7c3782e2"
     },
     {
       "id": "defer-all-titlebar-click-replays",
@@ -111,38 +36,33 @@
       "in_diff": true,
       "disposition": "proposed",
       "severity": "medium",
-      "title": "Defer title-bar click replay on every pending exit",
+      "title": "Keep title-bar cancellation replay outside the mouse hook",
       "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
       "line": 2944,
       "side": "RIGHT",
-      "body": "### Defer title-bar click replay on every pending exit\n\n**Severity:** `medium`\n\nThe normal pending title-bar release posts `WM_REPLAY_CLICK` so `SendInput` runs after `MouseProc` returns, but the same title-bar interaction can also exit through `RecoverStaleInteraction` or the failed-`BeginInteraction` branch in `HandleMouseEvent`; both still call `ReplayPendingClick` synchronously from the hook. Please route title-bar replay through the deferred message on those exits too, while preserving modifier completion and the ordering of any newly arriving button-down; leave the existing modifier-session replay behavior unchanged. Verify normal release, stale recovery with an overlapping button-down, and failed begin each deliver the click once and preserve input order.",
+      "body": "### Keep title-bar cancellation replay outside the mouse hook\n\n**Severity:** `medium`\n\nNormal title-bar release correctly posts `WM_REPLAY_CLICK` to avoid calling `SendInput` inside `MouseProc`, but two pending exits bypass that mitigation. Hold the right button on a title bar, then press the left button before crossing the drag threshold: `HandleMouseEvent` enters `RecoverStaleInteraction`, which calls `ReplayPendingClick` synchronously. The failed-`BeginInteraction` branch does the same if the target disappears before the drag starts. Left-button cancellation itself is documented behavior; the concern is re-entering the synchronous replay path, not cancelling the drag. The exceptional paths' user-visible delay and input ordering have not been interaction-tested.\n\n**Suggested change:** In `src/modules/GrabAndMove/GrabAndMove/main.cpp`:\n1. Capture the pending interaction's `fromTitleBar` flag and replay information before `StopInteraction` clears them. Route title-bar replay from normal release, `RecoverStaleInteraction`, and failed begin through one deferred completion path serviced by the message window.\n2. Preserve ordering when a new button-down triggers cancellation: do not simply post the old right-click and let the incoming left-button event overtake it. Ensure the replayed button pair is emitted at most once and the matching physical button-up is handled consistently.\n3. Leave modifier-session replay, including `completeModifier` handling, unchanged; apply the deferred path specifically to title-bar interactions.\n\n**Verification:** Cover a normal title-bar right-click, right-button hold followed by left-button down before moving, and a target closing between press and drag threshold. Confirm title-bar pending exits do not call `SendInput` from the hook, button events are not duplicated or reordered, no button remains logically held, and existing modifier+click behavior is unchanged.",
       "confidence": {
         "score": 79,
-        "rationale": "The pinned call paths show SendInput in ReplayPendingClick and synchronous calls from stale recovery and failed begin, contrasting with the deferred normal release; ordering requires coordinated control-flow changes and was not interaction-tested."
+        "rationale": "Pinned-source tracing establishes the pending title-bar cancellation and failed-begin paths reach synchronous SendInput, while ordinary release defers it. Runtime latency and exactly-once ordering on those exceptional paths remain unmeasured."
       },
-      "start_line": 2944,
-      "body_sha256": "5f8b2d7289c91ec50cf2636265237965d1541419afa6483fca0c52deba1ae215"
+      "body_sha256": "4c82fb75c1101cb44922a883c60a819715b0421b9838e9a186efc1a39060cce9"
     }
   ],
   "actions": [
     {
       "id": "post-review-50907",
       "type": "post_review",
-      "label": "Post validated inline suggestions and review comments",
+      "label": "Post the selected timeout suggestion and replay guidance",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Five current-head inline comments are grounded; the three timeout-budget suggestions form one complete atomic group. This is a non-blocking COMMENT review.",
+      "note": "Two current-head findings: one self-contained single-file timeout suggestion and one prose-only replay correction. Non-blocking COMMENT review; select the comments to post.",
       "review": {
         "event": "COMMENT",
         "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0"
       }
     }
   ],
-  "freshness": {
-    "queued_at": "2026-09-30T12:55:48Z",
-    "checkpoint_at": "2026-10-08T19:52:55.358Z"
-  },
   "validation": {
     "upstream_head": {
       "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
@@ -153,20 +73,14 @@
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
-        "bound-titlebar-hit-test-budget-1",
-        "bound-titlebar-hit-test-budget-2",
-        "bound-titlebar-hit-test-budget-3",
-        "custom-titlebar-root-hit-test"
+        "bound-titlebar-hit-test-budget"
       ]
     },
     "line_ending_safety": {
       "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
       "result": "passed",
       "checked_comment_ids": [
-        "bound-titlebar-hit-test-budget-1",
-        "bound-titlebar-hit-test-budget-2",
-        "bound-titlebar-hit-test-budget-3",
-        "custom-titlebar-root-hit-test"
+        "bound-titlebar-hit-test-budget"
       ],
       "files": [
         {
