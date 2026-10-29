@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 5,
+  "number": 51687,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Runner: stop recreating the autorun task on every launch",
+  "url": "https://github.com/microsoft/PowerToys/pull/51687",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-29T15:41:01.4321575+08:00",
+  "evaluated_at": "2026-10-29T15:41:01.4322094+08:00",
+  "source_updated_at": "2026-10-29T03:42:44Z",
+  "head_sha": "a1878b7bd5432f397853b70ee6e19b243c209b7a",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "kind": "companion",
+      "severity": "medium",
+      "body": "### Include inherited allow ACEs in trustee validation\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/runner/auto_start_task.h:get_explicit_trustees` and `grants_access_only_to`, their caller in `src/runner/auto_start_helper.cpp`, and `src/runner/UnitTests/AutoStartTaskTests.cpp:InheritedAcesAreIgnored`.\r\n\r\n**Problem:** The `INHERITED_ACE` branch skips an ACE before checking its trustee. The existing inherited-ACE test therefore accepts full access granted to `OtherUserSid`, even though that principal is absent from the expected descriptor. Inherited allow ACEs still grant access; excluding them makes this helper's \"only these trustees\" result incomplete.\r\n\r\n**Why it matters:** If left unchanged, an ACL with an unexpected inherited trustee can be classified as trusted, so the reuse path can retain a task that does not satisfy its intended trustee allow-list. This is a trust-classification edge case, not a demonstrated privilege-escalation scenario.\r\n\r\n**Suggested change:**\r\n1. Remove the inherited-ACE skip and include inherited allow trustees in the existing membership check. Preserve the intentional subset comparison; set equality is not required.\r\n2. Update the inherited-ACE unit case to reject an unexpected inherited trustee, while retaining acceptance for inherited SYSTEM, Administrators and the expected user already covered by the registered descriptor.\r\n3. Keep malformed/unsupported ACE handling conservative, and update the helper/test naming if it now misleadingly promises explicit ACEs only.\r\n\r\n**Verification:** Run `AutoStartTaskTests`, checking both the ordinary registered descriptor and an unexpected inherited full-access trustee. The latter must be rejected; the normal registered descriptor must remain trusted.",
+      "out_of_diff_reason": "Coordinated header and test change; presented as one implementation-ready general PR comment rather than cross-file suggestions.",
+      "in_diff": false,
+      "confidence": {
+        "rationale": "The exact inherited-ACE test explicitly accepts an unexpected full-access trustee, and the reuse caller relies on this helper. The correction preserves the existing subset policy; no real scheduled-task exploit is claimed.",
+        "score": 93
+      },
+      "title": "Include inherited allow ACEs in trustee validation",
+      "id": "inherited-trustee-validation"
+    },
+    {
+      "side": "RIGHT",
+      "line": 221,
+      "kind": "inline",
+      "path": "src/runner/auto_start_helper.cpp",
+      "body": "### Stop when deleting a mismatched task fails\r\n\r\n**Severity:** `medium`\r\n\r\nWhen `DeleteTask` fails, execution still reaches the second `GetTask` and `put_Enabled` calls. Those calls can overwrite the failed HRESULT with success, enabling the same task that the preceding checks rejected and returning success instead of reporting the failed replacement. If left unfixed, this failure path can retain an outdated or untrusted task while appearing successful. Exit through the existing logged cleanup path immediately after the failed deletion:\r\n\r\n```suggestion\r\n                hr = pTaskFolder->DeleteTask(_bstr_t(wstrTaskName.c_str()), 0);\r\n                ExitOnFailure(hr, \"Cannot delete mismatched autorun task: {:x}\", hr);\r\n```",
+      "severity": "medium",
+      "in_diff": true,
+      "confidence": {
+        "rationale": "The exact upstream failure falls through to HRESULT-overwriting calls and a success exit. The single guard matches existing error handling and was independently compiled on the pinned upstream tree.",
+        "score": 96
+      },
+      "id": "stop-after-delete-failure",
+      "title": "Stop when deleting a mismatched task fails"
+    }
+  ],
+  "actions": [
+    {
+      "label": "Post one general trustee-validation comment and one inline failure guard",
+      "type": "post_review",
+      "status": "awaiting_review_approval",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "inherited-trustee-validation",
+          "stop-after-delete-failure"
+        ],
+        "commit_id": "a1878b7bd5432f397853b70ee6e19b243c209b7a"
+      },
+      "id": "51687-post-review",
+      "head_sha": "a1878b7bd5432f397853b70ee6e19b243c209b7a"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a1878b7bd5432f397853b70ee6e19b243c209b7a",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "a1878b7bd5432f397853b70ee6e19b243c209b7a",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "stop-after-delete-failure"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "a1878b7bd5432f397853b70ee6e19b243c209b7a",
+      "result": "passed",
+      "checked_comment_ids": [
+        "stop-after-delete-failure"
+      ],
+      "files": [
+        {
+          "path": "src/runner/auto_start_helper.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
