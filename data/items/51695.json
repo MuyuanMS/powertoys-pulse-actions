@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 5,
+  "number": 51695,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[CI] Move MSVC C++ code analysis into a parallel CI job",
+  "url": "https://github.com/microsoft/PowerToys/pull/51695",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-29T16:10:36.6522253+08:00",
+  "evaluated_at": "2026-10-29T16:10:36.6522741+08:00",
+  "source_updated_at": "2026-10-29T07:28:08Z",
+  "head_sha": "047f8cbf2383e232677f5cc593772f5cd5f39718",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "severity": "medium",
+      "id": "preserve-variant-cpp-analysis",
+      "title": "Keep analysis enabled when no parallel replacement runs",
+      "body": "### Keep analysis enabled when no parallel replacement runs\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.pipelines/v2/templates/pipeline-ci-build.yml` (the build-job variables and `CppCodeAnalysis` stage), `.pipelines/v2/ci-nightly.yml`, and the WebView2/Windows App SDK variant callers.\r\n\r\n**Problem:** The build jobs now set `SkipCppCodeAnalysis: 1` unconditionally, but the replacement stage runs only when `runCppCodeAnalysis` is true, which defaults to false. `ci.yml` opts in; `ci-test-with-canary-webview2.yml` and `ci-using-the-latest-winappsdk.yml` do not. Those variant pipelines therefore lose their inline C++ analysis without receiving the parallel replacement.\r\n\r\n**Why it matters:** If left unfixed, variant builds can pass without running the analysis that previously checked them, allowing variant-specific diagnostics to go undetected. This is a coverage gap, not evidence that a particular diagnostic currently fails.\r\n\r\n**Suggested change:**\r\n1. Make the ordinary-build skip conditional on the parallel analysis stage being enabled.\r\n2. Preserve the nightly prewarm's deliberate build/cache-input parity with an explicit false-by-default override, such as `skipCppCodeAnalysisInBuild`. Set it only in `ci-nightly.yml`, and skip inline analysis when either that override or `runCppCodeAnalysis` is true.\r\n3. Keep the main PR pipeline's parallel analysis blocking, while leaving inline analysis enabled for the WebView2/Windows App SDK variants unless they explicitly gain a replacement stage. Do not remove the callee's existing `variables` template parameter or its job-variable insertion.\r\n\r\n**Verification:** Check the four callers separately: main skips inline analysis and runs the parallel stage; nightly retains its explicit cache-prewarm skip; both variants retain inline analysis. Check all four boolean combinations, validate the expanded Azure pipeline templates, and run `.pipelines/tests/mwbUiTestSelection.Tests.ps1` to preserve the adjacent selector behavior.",
+      "out_of_diff_reason": "Coordinated template and nightly-caller changes must preserve cache-prewarm parity; presented as one implementation-ready general PR comment instead of separate code suggestions.",
+      "kind": "companion",
+      "confidence": {
+        "score": 95,
+        "rationale": "The unconditional skip, false default, gated analysis stage and two non-opting-in variant callers are directly visible on the exact upstream tree. The corrected four-caller/four-combination structure and 28 selector tests passed; live Azure expansion was not run."
+      },
+      "in_diff": false
+    }
+  ],
+  "actions": [
+    {
+      "status": "awaiting_review_approval",
+      "type": "post_review",
+      "id": "51695-post-review",
+      "review": {
+        "comment_ids": [
+          "preserve-variant-cpp-analysis"
+        ],
+        "commit_id": "047f8cbf2383e232677f5cc593772f5cd5f39718",
+        "event": "COMMENT"
+      },
+      "head_sha": "047f8cbf2383e232677f5cc593772f5cd5f39718",
+      "label": "Post one general comment preserving variant analysis and nightly parity"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "047f8cbf2383e232677f5cc593772f5cd5f39718",
+      "result": "passed"
+    }
+  }
+}

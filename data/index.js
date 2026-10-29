@@ -1504,7 +1504,8 @@ window.BOARD_INDEX = {
     51700,
     51649,
     51687,
-    51685
+    51685,
+    51695
   ],
   "items": [
     {
@@ -1520,21 +1521,24 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "label": "Post one general comment preserving variant analysis and nightly parity",
+        "type": "post_review"
+      },
       "labels": [
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-28T23:58:36Z",
-      "updated_at": "2026-10-29T06:14:55Z",
+      "updated_at": "2026-10-29T07:28:08Z",
       "comments": 1,
       "priority": null,
       "review_decision": null,
