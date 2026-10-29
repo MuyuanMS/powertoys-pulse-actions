@@ -1505,7 +1505,12 @@ window.BOARD_INDEX = {
     51693,
     51695,
     51696,
-    51700
+    51700,
+    51701,
+    51702,
+    51666,
+    51542,
+    51706
   ],
   "items": [
     {
@@ -22477,21 +22482,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Reply with suggested comments",
+        "type": "request_info"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-29T10:16:04Z",
       "updated_at": "2026-10-29T10:16:04Z",
       "comments": 0,
@@ -22640,21 +22650,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Reply with suggested comments",
+        "type": "request_info"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-29T06:13:46Z",
       "updated_at": "2026-10-29T06:13:46Z",
       "comments": 0,
@@ -23578,8 +23593,8 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -23587,7 +23602,9 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-28T09:10:23Z",
       "updated_at": "2026-10-29T08:52:06Z",
       "comments": 7,
@@ -27163,13 +27180,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -27178,7 +27195,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-24T15:53:15Z",
       "updated_at": "2026-10-29T10:07:18Z",
       "comments": 1,
@@ -364249,21 +364268,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Reply with suggested comments",
+        "type": "request_info"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-29T08:09:14Z",
       "updated_at": "2026-10-29T08:09:14Z",
       "comments": 0,

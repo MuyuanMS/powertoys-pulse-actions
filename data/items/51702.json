@@ -1,0 +1,112 @@
+{
+  "source_updated_at": "2026-10-29T08:09:14Z",
+  "schemaVersion": 5,
+  "stage": "triaged",
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate text-shortcut source-key suppression"
+    },
+    {
+      "reproduce": {
+        "expected_result": "Only the configured text is inserted for the remap; no source B leaks and ordinary typing remains functional.",
+        "title": "PowerToys Keyboard Manager: \"B\" key is being inserted into text when using Ctrl+Shift+B shortcut",
+        "prerequisites": [
+          "A non-sensitive Ctrl+Shift+B text mapping with a short identifiable string.",
+          "Notepad and the reporter target application when known."
+        ],
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 as reported, then compare the current supported build.",
+        "steps": [
+          "Press and release Ctrl+Shift+B quickly in Notepad; repeat with B held long enough for repeat.",
+          "Compare releasing B before the modifiers with releasing modifiers before B.",
+          "Repeat in the reporter target application and record whether a source B appears before, inside, or after the expansion.",
+          "Type unmodified B afterward and check no modifiers remain stuck."
+        ]
+      },
+      "label": "Reproduce Ctrl+Shift+B text leakage",
+      "type": "reproduce"
+    },
+    {
+      "comment": {
+        "body": "Thanks for the chord and symptom. Please share a minimal mapping using harmless sample text instead of the email template, the target application and keyboard layout, and whether the extra B occurs when B is held/repeated or when Ctrl/Shift are released first. Please also compare the same mapping in Notepad. No private email content is needed."
+      },
+      "label": "Request minimal mapping and key sequence",
+      "type": "request_info"
+    }
+  ],
+  "pending_author": false,
+  "judgment": {
+    "source_updated_at": "2026-10-29T08:09:14Z",
+    "evaluated_at": "2026-10-29T18:34:16.1402217+08:00",
+    "status": "reproducible",
+    "rationale": "The report is specific enough for a maintainer event-sequence reproduction. A leaked/repeated source action key is a plausible hypothesis, not a proven root cause. Do not prescribe a suppression change until key-repeat, release-order and target-application behavior are distinguished.",
+    "recommended_action": "Reproduce using a non-sensitive text mapping, compare quick release and held/repeated B, then trace the actual source/injected event sequence before choosing a fix.",
+    "evidence": [
+      "The predefined text is inserted, with an additional source action-key character appearing intermittently.",
+      "The report gives the chord and PowerToys version, but not a minimal non-sensitive mapping, target application, release order, or keyboard layout.",
+      "Read the text-shortcut branch in KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp: it releases source modifiers, sends text and marks shortcut invocation state.",
+      "Compared action-key handling with the injected-event and repeated-input paths; no failing event sequence was reproduced.",
+      "A targeted title search for text/shortcut/extra did not find a matching covering issue; an empty search is not proof no duplicate exists."
+    ]
+  },
+  "title": "PowerToys Keyboard Manager: \"B\" key is being inserted into text when using Ctrl+Shift+B shortcut",
+  "repository": "microsoft/PowerToys",
+  "owes": "us",
+  "number": 51702,
+  "evaluated_at": "2026-10-29T18:34:16.1402056+08:00",
+  "generated_at": "2026-10-29T18:34:16.1401767+08:00",
+  "issue_context": {
+    "analysis": "The report is specific enough for a maintainer event-sequence reproduction. A leaked/repeated source action key is a plausible hypothesis, not a proven root cause. Do not prescribe a suppression change until key-repeat, release-order and target-application behavior are distinguished.",
+    "known_information": [
+      "The predefined text is inserted, with an additional source action-key character appearing intermittently.",
+      "The report gives the chord and PowerToys version, but not a minimal non-sensitive mapping, target application, release order, or keyboard layout."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "Distinguish repeat/release-order handling from application-specific behavior before altering suppression.",
+        "evidence_type": "repro_steps",
+        "information": "A non-sensitive minimal mapping, target application/layout, and press/release-order result including Notepad comparison.",
+        "how_to_collect": "Replace the email template with harmless sample text; record the target/layout and compare quick press, held B, and modifier-first release in Notepad."
+      }
+    ],
+    "inferences": [
+      "Source B may escape suppression during repeat or modifier transitions; target application behavior is another unresolved possibility."
+    ],
+    "initial_investigation": [
+      "Read the complete current report, comments, labels, ownership and linked-work history.",
+      "Read the text-shortcut branch in KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp: it releases source modifiers, sends text and marks shortcut invocation state.",
+      "Compared action-key handling with the injected-event and repeated-input paths; no failing event sequence was reproduced.",
+      "A targeted title search for text/shortcut/extra did not find a matching covering issue; an empty search is not proof no duplicate exists."
+    ],
+    "summary": "A text-remapped Ctrl+Shift+B intermittently inserts an extra B."
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "The symptom and chord are explicit, but the minimal event sequence, mapping and target/layout discriminator are not yet established.",
+        "score": 45,
+        "level": "red"
+      },
+      "title": "Trace source-key suppression during text-shortcut repeats",
+      "root_cause": "Hypothesis: source action-key repeat or key-up handling around modifier release allows B to reach the target after text injection.",
+      "plan": [
+        "Create a minimal Ctrl+Shift+B to harmless multi-line text mapping and record the precise key press/release sequence.",
+        "Trace KeyboardEventHandlers.cpp text-shortcut handling, source-key suppression and injected-event filtering with the real sequence.",
+        "Only if leakage is demonstrated, change the responsible invocation-state transition and add a focused regression test preserving unrelated B input and modifier behavior."
+      ],
+      "verification": [
+        "Compare Notepad with the reported target; quick press, held B/repeat, B released first and modifiers released first.",
+        "Verify exactly one intended text expansion per activation, no stray B, no stuck modifiers and normal unmodified B after chord completion."
+      ]
+    }
+  ],
+  "track": "triage",
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/51702",
+  "fix_assessment": {
+    "status": "proposed",
+    "existing_fix_urls": [],
+    "rationale": "A confidence-qualified investigation plan is applicable; no implementation design or confirmed root cause is claimed."
+  }
+}
