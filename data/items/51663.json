@@ -2,21 +2,24 @@
   "schemaVersion": 5,
   "number": 51663,
   "kind": "issue",
-  "generated_at": "2026-10-28T12:42:58Z",
-  "evaluated_at": "2026-10-28T12:55:24Z",
-  "source_updated_at": "2026-10-28T08:53:36Z",
-  "summary": "Disk entry fails in a Command Palette dock flow; clarify the exact add-item interaction.",
+  "generated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "source_updated_at": "2026-10-28T21:44:00Z",
+  "summary": "A maintainer supplied the Add bookmark workflow for a drive; confirm that route before treating Run-result pinning as a disk parser defect.",
   "judgment": {
     "status": "needs_information",
-    "rationale": "Typing C:\\ or C:/ reportedly does not add a disk while a manually mapped disk works; screenshots are linked. The add-item surface, confirmation action, and meaning of manual mapping are unspecified.",
-    "recommended_action": "Request exact disk-add workflow",
+    "rationale": "The new reply recommends creating a drive bookmark and pinning it, with an Add bookmark screenshot. The reporter has not confirmed whether that delivers the intended dock item; no code defect is established.",
+    "recommended_action": "Confirm the proposed drive-bookmark workflow and investigate only a failing supported transition.",
     "evidence": [
       "Body identifies Command Palette v0.102 and contrasts C:\\ or C:/ with a manually mapped disk that works.",
       "Screenshots linked; no discussion, assignee, or linked PR found.",
       "No source-level cause established.",
       "Inspected the supplied failure screenshot: it shows a c:/ query in the Run surface, a Run-command result and a context menu with pin options; it does not show a drive item being pinned.",
-      "Source RunListPage.BuildListItemsForSearchAsync parses input and creates path items; MatchesFilter requires Directory.Exists for an exact match, while its source comment describes C:\\Win returning matching files."
-    ]
+      "Source RunListPage.BuildListItemsForSearchAsync parses input and creates path items; MatchesFilter requires Directory.Exists for an exact match, while its source comment describes C:\\Win returning matching files.",
+      "Maintainer workflow and inspected Add bookmark screenshot: https://github.com/microsoft/PowerToys/issues/51663#issuecomment-6481425257"
+    ],
+    "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+    "source_updated_at": "2026-10-28T21:44:00Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -26,46 +29,48 @@
   "proposed_fixes": [
     {
       "plan": [
-        "Reproduce C:\\ and C:/ in the exact add-item flow and locate whether parsing, enumeration, or persistence fails.",
-        "Correct only the confirmed path/drive transition while preserving the working mapped-drive case.",
-        "Add focused tests for local and mapped inputs."
+        "Confirm that the Add bookmark route creates and pins a C:\\ drive item.",
+        "If that supported workflow fails, reproduce the exact failing step and trace bookmark creation or pin persistence.",
+        "Change code and add focused tests only after distinguishing a workflow explanation from a product defect."
       ],
       "title": "Correct disk-item addition after the workflow is identified",
-      "root_cause": "Not established: local C:\\ entry fails while an ambiguously described manually mapped disk works.",
+      "root_cause": "Not established: the report used the Run surface, while a maintainer now recommends a drive bookmark.",
       "verification": [
         "Verify local C: and the working mapped-drive flow create the intended persistent dock item."
       ],
       "confidence": {
-        "rationale": "The input contrast is useful, but the workflow and manual mapping are undefined.",
-        "score": 45,
+        "score": 35,
+        "rationale": "The new maintainer workflow may satisfy the request; an implementation defect is still unproven.",
         "level": "red"
       }
     }
   ],
   "issue_context": {
-    "summary": "Disk entry fails in a Command Palette dock flow; clarify the exact add-item interaction.",
+    "summary": "A maintainer supplied the Add bookmark workflow for a drive; confirm that route before treating Run-result pinning as a disk parser defect.",
     "known_information": [
       "Typing C:\\ or C:/ does not add a disk in the reported dock workflow.",
       "The author says a manually mapped disk works.",
       "Screenshots attached.",
       "The screenshot shows a c:/ Run query and pin menu, not an explicit disk result.",
-      "RunListPage resolves input and enumerates path items; exact-match results are included only when the full path is a directory."
+      "RunListPage resolves input and enumerates path items; exact-match results are included only when the full path is a directory.",
+      "The new maintainer reply explicitly recommends creating a bookmark for the drive and pinning that bookmark."
     ],
     "inferences": [
       "Could involve path parsing, drive enumeration, or a different workflow; not distinguishable yet.",
       "The screenshots and source suggest the key missing distinction is whether the reporter expects C:\\ root as a Run result or is trying to pin a specific returned item; no parser defect is established."
     ],
-    "analysis": "The failure screenshot shows c:/ in the Run surface with a Run-command result and a pin menu, while RunListPage parses the command and enumerates path items. The expected-result screenshot could not be retrieved (404). Ask which item/menu action is intended and clarify the working mapped-drive flow before selecting a fix.",
+    "analysis": "The new reply recommends creating a drive bookmark and pinning it, with an Add bookmark screenshot. The reporter has not confirmed whether that delivers the intended dock item; no code defect is established.",
     "initial_investigation": [
       "Reviewed full issue body and screenshot references, discussion, ownership, and PR search; no concrete source cause or linked fix found.",
-      "Inspected the failure screenshot and RunListPage path-resolution, child-item creation, and exact-directory matching logic; no confirmed mismatch yet."
+      "Inspected the failure screenshot and RunListPage path-resolution, child-item creation, and exact-directory matching logic; no confirmed mismatch yet.",
+      "Read the new reply and inspected its Add bookmark image; it supplies a distinct supported workflow, not evidence that the earlier Run query failed to enumerate a drive."
     ],
     "information_gaps": [
       {
-        "why_needed": "The failure image shows a Run-command result and pin menu, while RunListPage handles file-system path enumeration; the intended item and action determine whether this is path handling or pin workflow.",
-        "information": "Exact add-item surface and menu action; whether C:\\ is expected to appear as a Run result or be pinned; identify the working mapped-disk operation.",
-        "evidence_type": "repro_steps",
-        "how_to_collect": "Please state which result you select and which pin/menu action you invoke, then add numbered steps for C:\\ and C:/ and the working mapped-drive flow. The expected-result screenshot link was unavailable during review."
+        "information": "Whether adding a bookmark for the drive and pinning it produces the desired dock item.",
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "Follow the maintainer Add bookmark route for C:\\ and pin that bookmark, then report which step fails, if any.",
+        "why_needed": "Distinguishes a missing workflow step from a reproducible drive-bookmark or pinning defect."
       }
     ]
   },
@@ -76,10 +81,19 @@
     },
     {
       "type": "request_info",
-      "label": "Request exact disk-add workflow",
+      "label": "Confirm drive-bookmark pinning",
       "comment": {
-        "body": "Thanks for showing the `c:/` query and pin menu in the screenshot, and for noting that a manually mapped disk works. The image does not show a disk result being pinned, and the expected-result image link was unavailable. Current RunListPage source parses the path and builds file-system results, so please name the exact result and pin/menu action you use, then add numbered steps for both `C:\\` and `C:/` and for the working mapped-drive flow. This distinguishes path enumeration from the pin workflow before a code fix is chosen."
+        "body": "Thanks for the screenshots and the comparison with the mapped drive. The maintainer has now suggested creating a bookmark for the drive and pinning that bookmark. Please try that Add bookmark route for C:\\ and confirm whether it creates the dock item you wanted. If not, name the exact bookmark-creation or pinning step that fails. This separates a workflow difference from a reproducible product defect without asking you to repeat the earlier Run-query screenshots."
       }
     }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [
+    null
   ]
 }

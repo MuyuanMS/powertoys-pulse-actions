@@ -1,0 +1,109 @@
+{
+  "proposed_fixes": [
+    {
+      "title": "Probe omitted continuous VCP capabilities in maximum compatibility mode",
+      "root_cause": "A parseable capabilities string lacking 0x62 can prevent direct probing: FetchCapabilitiesWithFallbackAsync probes only when parsed capabilities are null, while volume support is derived from the reconciled codes.",
+      "plan": [
+        "Reproduce with a parseable capabilities string omitting 0x62 and a successful direct volume read; contrast normal and maximum compatibility modes.",
+        "Define a bounded read-only probe for missing supported continuous codes in maximum compatibility mode while preserving advertised metadata, cancellation, retry policy and invalid-handle handling.",
+        "Enable volume only after valid positive evidence; preserve the observed range and reuse the probed value. Do not simply force-enable a settings flag.",
+        "Add tests for parseable-but-incomplete capabilities, unsupported/zero-range replies, cache supplementation, cancellation and unavailable handles."
+      ],
+      "confidence": {
+        "score": 78,
+        "rationale": "The reported direct-read result and current source gate align, but the affected release and hardware path have not been independently reproduced.",
+        "level": "yellow"
+      },
+      "verification": [
+        "Use a fake DDC transport for parsed capabilities without 0x62 plus a valid current=50/max=100 reply; maximum compatibility should discover volume without requiring corrupted settings.",
+        "On an M32U over DisplayPort, verify volume UI and CLI set/read, restart/rescan, normal-mode behavior and a monitor that genuinely rejects 0x62."
+      ]
+    }
+  ],
+  "judgment": {
+    "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+    "recommended_action": "Run the focused maintainer reproduction before choosing an implementation.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-28T22:51:00Z",
+    "evidence": [
+      "The report supplies the complete capability string, CLI diagnostic, hardware/connection and a successful direct Windows VCP read returning 50/100.",
+      "Twinkle Tray volume control reportedly works; editing cached settings is overwritten on rediscovery.",
+      "Read canonical source at 0ccfdff939e8820c041baf2f88b097866eb76d10: DdcCiController.FetchCapabilitiesWithFallbackAsync gates the probe on caps == null and maximum compatibility; UpdateMonitorCapabilitiesFromVcp derives volume from code support.",
+      "Read VcpDiscoveryEvidence.Reconcile: live or cached positive evidence may supplement parsed capabilities, but the parsed path does not itself issue the missing-code read.",
+      "Searched covering PRs; the earlier probe-value-reuse change does not establish a fix for missing-code probing. No hardware reproduction was performed."
+    ],
+    "rationale": "The report already supplies the discriminator needed for a targeted maintainer reproduction. Investigate missing-code probing rather than requesting another generic archive or force-enabling an unverified feature."
+  },
+  "pending_author": false,
+  "issue_context": {
+    "analysis": "The report already supplies the discriminator needed for a targeted maintainer reproduction. Investigate missing-code probing rather than requesting another generic archive or force-enabling an unverified feature.",
+    "initial_investigation": [
+      "Read canonical source at 0ccfdff939e8820c041baf2f88b097866eb76d10: DdcCiController.FetchCapabilitiesWithFallbackAsync gates the probe on caps == null and maximum compatibility; UpdateMonitorCapabilitiesFromVcp derives volume from code support.",
+      "Read VcpDiscoveryEvidence.Reconcile: live or cached positive evidence may supplement parsed capabilities, but the parsed path does not itself issue the missing-code read.",
+      "Searched covering PRs; the earlier probe-value-reuse change does not establish a fix for missing-code probing. No hardware reproduction was performed."
+    ],
+    "information_gaps": [],
+    "inferences": [
+      "The parseable-but-incomplete capabilities gate plausibly explains the observation; a documentation promise to ignore every capabilities string is not independently established."
+    ],
+    "summary": "Power Display may skip a supported volume code when capabilities parse successfully but omit 0x62.",
+    "known_information": [
+      "The report supplies the complete capability string, CLI diagnostic, hardware/connection and a successful direct Windows VCP read returning 50/100.",
+      "Twinkle Tray volume control reportedly works; editing cached settings is overwritten on rediscovery."
+    ]
+  },
+  "owes": "us",
+  "actions": [
+    {
+      "label": "Investigate Power Display correction",
+      "type": "approve_design"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "setup": [
+          "Retain a parseable capabilities string that omits VCP 0x62 and a direct read returning current=50, maximum=100.",
+          "Record normal/maximum compatibility mode and exclude another monitor application from concurrent bus access."
+        ],
+        "expected_result": "Maximum compatibility admits omitted volume only on valid positive evidence and reuses the measured range; failures do not expose an unsupported control or discard unrelated advertised capabilities.",
+        "version_requirement": "Reported 0.102.3001.0; compare an exact current build",
+        "module": "Power Display",
+        "steps": [
+          "1. Start discovery in normal mode and record advertised volume support.",
+          "2. Enable maximum compatibility mode, rescan, and check whether 0x62 is actually probed.",
+          "3. Compare a successful direct read with the per-monitor Volume control and CLI volume support.",
+          "4. Repeat with an unsupported or invalid-range reply, cancellation and a disconnected monitor."
+        ],
+        "prerequisites": [
+          "Gigabyte M32U with DDC/CI enabled over DisplayPort, or a fake DDC transport returning the supplied capability string.",
+          "No manual settings support override."
+        ],
+        "title": "Reproduce volume discovery with incomplete capabilities"
+      },
+      "label": "Reproduce volume discovery with incomplete capabilities"
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "The report already supplies the discriminator needed for a targeted maintainer reproduction. Investigate missing-code probing rather than requesting another generic archive or force-enabling an unverified feature.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "source_updated_at": "2026-10-28T22:51:00Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51693",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "summary": "Power Display may skip a supported volume code when capabilities parse successfully but omit 0x62.",
+  "schemaVersion": 5,
+  "generated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "title": "Power Display: Volume (VCP 0x62) unavailable on Gigabyte M32U although the monitor responds to it",
+  "track": "fix",
+  "assignees": [
+    null
+  ],
+  "kind": "issue",
+  "number": 51693,
+  "stage": "triaged"
+}

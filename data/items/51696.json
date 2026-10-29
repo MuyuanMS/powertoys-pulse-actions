@@ -1,0 +1,116 @@
+{
+  "proposed_fixes": [
+    {
+      "title": "Correlate long-hold activation, overlay lifetime and Start-menu suppression",
+      "root_cause": "Not established: the supplied logs show WindowsKeyHold reaching the UI and selecting ShowFullGuide, so failure may occur during overlay visibility/lifetime or shell interaction rather than simple hook registration.",
+      "plan": [
+        "Reproduce the exact hold configuration and correlate runner signal, UI activation action, overlay visibility and Windows-key release.",
+        "Compare stock Explorer with both named shell customizers disabled together; separate that result from runs disabling only one.",
+        "Trace the confirmed failing state transition before changing hook timing or Start-menu suppression; preserve ordinary Windows-key taps and Win-key chords.",
+        "Add an activation-policy/state regression for the demonstrated sequence, then validate real UI behavior."
+      ],
+      "confidence": {
+        "score": 48,
+        "rationale": "The archive narrows the failing phase, but log timing alone does not establish overlay visibility or prove a shell customizer is responsible.",
+        "level": "red"
+      },
+      "verification": [
+        "Hold left and right Windows keys beyond 500 ms with win_key_action=2 and close_on_windows_key_release=false; expected guide remains visible and Start does not take over.",
+        "Compare ordinary taps, Win-key chords and the configured regular hotkey; repeat with stock shell and each customizer combination."
+      ]
+    }
+  ],
+  "judgment": {
+    "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+    "recommended_action": "Run the focused maintainer reproduction before choosing an implementation.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-29T00:40:30Z",
+    "evidence": [
+      "The screenshot shows Hold Windows key set to Open Shortcut Guide; the regular hotkey reportedly works.",
+      "The supplied module settings record win_key_action=2, press_time=500, close_on_windows_key_release=false and no excluded apps.",
+      "The module log records Windows key hold; the UI log records WindowsKeyHold followed by ShowFullGuide. A subsequent stale navigation initialization is logged, but does not by itself prove the failure.",
+      "Windhawk and StartAllBack were disabled individually, not simultaneously; their causal involvement remains unproven.",
+      "Downloaded and inspected the supplied ZIP, module settings and both relevant logs; reviewed the settings screenshot. No need to ask for the same ZIP again.",
+      "Read current ShortcutGuideModuleInterface/dllmain.cpp and App.xaml.cs at 0ccfdff939e8820c041baf2f88b097866eb76d10: the hold event and activation-policy paths are separate from regular hotkey activation.",
+      "No actual keyboard/UI reproduction was performed; event receipt does not prove that the window stayed visible or that Start suppression succeeded."
+    ],
+    "rationale": "A concrete maintainer reproduction can correlate visibility and shell behavior using the supplied configuration. Do not assert that disabling one shell customizer exonerates both, or that a stale navigation message is the root cause."
+  },
+  "pending_author": false,
+  "issue_context": {
+    "analysis": "A concrete maintainer reproduction can correlate visibility and shell behavior using the supplied configuration. Do not assert that disabling one shell customizer exonerates both, or that a stale navigation message is the root cause.",
+    "initial_investigation": [
+      "Downloaded and inspected the supplied ZIP, module settings and both relevant logs; reviewed the settings screenshot. No need to ask for the same ZIP again.",
+      "Read current ShortcutGuideModuleInterface/dllmain.cpp and App.xaml.cs at 0ccfdff939e8820c041baf2f88b097866eb76d10: the hold event and activation-policy paths are separate from regular hotkey activation.",
+      "No actual keyboard/UI reproduction was performed; event receipt does not prove that the window stayed visible or that Start suppression succeeded."
+    ],
+    "information_gaps": [],
+    "inferences": [
+      "The report narrows investigation to timing/overlay/shell interaction after at least one hold event was delivered, not a proven missing-hook defect."
+    ],
+    "summary": "The supplied Shortcut Guide archive records a successful hold-event handoff; investigate what happens to the overlay afterward.",
+    "known_information": [
+      "The screenshot shows Hold Windows key set to Open Shortcut Guide; the regular hotkey reportedly works.",
+      "The supplied module settings record win_key_action=2, press_time=500, close_on_windows_key_release=false and no excluded apps.",
+      "The module log records Windows key hold; the UI log records WindowsKeyHold followed by ShowFullGuide. A subsequent stale navigation initialization is logged, but does not by itself prove the failure.",
+      "Windhawk and StartAllBack were disabled individually, not simultaneously; their causal involvement remains unproven."
+    ]
+  },
+  "owes": "us",
+  "actions": [
+    {
+      "label": "Investigate Shortcut Guide correction",
+      "type": "approve_design"
+    },
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "The configured hold opens and retains the guide without Start taking over; taps and ordinary Windows shortcuts retain their expected behavior.",
+        "title": "Reproduce long-hold overlay and Start-menu interaction",
+        "version_requirement": "Reported stable 0.102.3001.0 on Windows 11; record exact OS build",
+        "module": "Shortcut Guide",
+        "steps": [
+          "1. Verify the regular hotkey opens the guide.",
+          "2. Hold left Windows key beyond 500 ms, then release; record whether the guide appeared before Start took over.",
+          "3. Repeat with right Windows key, then ordinary taps and Win-key chords.",
+          "4. Compare both customizers off, each individually enabled and the original combined environment while correlating activation and UI logs."
+        ],
+        "attachments": [
+          "https://github.com/user-attachments/files/34106799/PowerToysReport_2026-10-28-18-35-39.zip"
+        ],
+        "prerequisites": [
+          "Windows 11 test machine with Shortcut Guide enabled.",
+          "Compare stock Explorer and Windhawk/StartAllBack configurations; use a test account."
+        ],
+        "setup": [
+          "Set Hold Windows key to Open Shortcut Guide, hold delay 500 ms, close on key release disabled.",
+          "Retain the working regular hotkey as a control; start with both shell customizers disabled together."
+        ]
+      },
+      "label": "Reproduce long-hold overlay and Start-menu interaction"
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "A concrete maintainer reproduction can correlate visibility and shell behavior using the supplied configuration. Do not assert that disabling one shell customizer exonerates both, or that a stale navigation message is the root cause.",
+    "status": "proposed",
+    "existing_fix_urls": []
+  },
+  "source_updated_at": "2026-10-29T00:40:30Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51696",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "summary": "The supplied Shortcut Guide archive records a successful hold-event handoff; investigate what happens to the overlay afterward.",
+  "schemaVersion": 5,
+  "generated_at": "2026-10-29T09:47:06.0157726+08:00",
+  "title": "[Shortcut Guide] Press and Hold shortcut still failing",
+  "track": "fix",
+  "assignees": [
+    null
+  ],
+  "kind": "issue",
+  "number": 51696,
+  "stage": "triaged"
+}
