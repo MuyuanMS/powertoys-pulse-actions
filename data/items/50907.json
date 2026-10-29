@@ -1,94 +1,47 @@
 {
+  "schemaVersion": 5,
   "number": 50907,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "Grab and move right drag title bar",
   "url": "https://github.com/microsoft/PowerToys/pull/50907",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-10-29T02:32:59.504104Z",
-  "evaluated_at": "2026-10-29T02:32:59.504104Z",
-  "source_updated_at": "2026-09-30T12:55:48Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-10-29T15:14:59.1160638+08:00",
+  "evaluated_at": "2026-10-29T15:14:59.1160868+08:00",
+  "source_updated_at": "2026-10-29T03:16:28Z",
   "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
-  "proposed_comments": [
+  "needs_revalidation": false,
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": [
     {
-      "id": "bound-titlebar-hit-test-budget",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "title": "Share one timeout budget across the title-bar hit tests",
-      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-      "start_line": 2666,
-      "line": 2675,
-      "side": "RIGHT",
-      "body": "### Share one timeout budget across the title-bar hit tests\n\n**Severity:** `medium`\n\nThis runs synchronously inside the low-level mouse hook, but each ancestor receives a fresh 100 ms timeout. A controlled chain of 20 transparent children plus the root, each responding after 60 ms, made this resolver take about 1.33 seconds: long enough to exceed Windows' maximum low-level-hook timeout, delay input, and risk silent hook removal. Share one deadline across the complete walk and pass only the remaining time to each send; this single-file suggestion contains all dependent edits.\n\n```suggestion\n    constexpr UINT HIT_TEST_TOTAL_TIMEOUT_MS = 100;\n    constexpr int MAX_DEPTH = 32;\n    const ULONGLONG deadline = GetTickCount64() + HIT_TEST_TOTAL_TIMEOUT_MS;\n    for (int depth = 0; hwnd && depth < MAX_DEPTH; depth++)\n    {\n        // WM_NCHITTEST takes screen coordinates in the target's own DPI space.\n        POINT local = pt;\n        PhysicalToLogicalPointForPerMonitorDPI(hwnd, &local);\n\n        DWORD_PTR hit = 0;\n        const ULONGLONG now = GetTickCount64();\n        if (now >= deadline)\n        {\n            return nullptr;\n        }\n\n        const UINT remainingTimeoutMs = static_cast<UINT>(deadline - now);\n        if (!SendMessageTimeoutW(\n                hwnd,\n                WM_NCHITTEST,\n                0,\n                MAKELPARAM(local.x, local.y),\n                SMTO_ABORTIFHUNG,\n                remainingTimeoutMs,\n                &hit))\n```\n\nVerify the slow transparent-child chain exits near the shared budget, while an ordinary title bar still resolves and a child returning `HTCLIENT` is still left alone.",
-      "confidence": {
-        "score": 92,
-        "rationale": "The exact upstream resolver took 1327.599 ms over 21 responsive hit tests in an isolated Win32 fixture. The shared-deadline candidate took 117.557 ms. The synchronous hook call path is confirmed; actual hook removal and representative-app frequency were not measured."
-      },
-      "body_sha256": "6a09178d8fb58203d9171f571d0b125cbcbb015f070522f7bb07a8de7c3782e2"
+      "kind": "existing_code_review_feedback",
+      "author": "MuyuanMS",
+      "url": "https://github.com/microsoft/PowerToys/pull/50907#discussion_r4408348073",
+      "created_at": "2026-10-29T03:16:24Z",
+      "requested_evidence": "Address the posted shared timeout-budget suggestion for the title-bar hit-test walk, or explain why the current behavior is appropriate.",
+      "author_reply_found": false,
+      "resolved": false,
+      "outdated": false
     },
     {
-      "id": "defer-all-titlebar-click-replays",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "title": "Keep title-bar cancellation replay outside the mouse hook",
-      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-      "line": 2944,
-      "side": "RIGHT",
-      "body": "### Keep title-bar cancellation replay outside the mouse hook\n\n**Severity:** `medium`\n\nNormal title-bar release correctly posts `WM_REPLAY_CLICK` to avoid calling `SendInput` inside `MouseProc`, but two pending exits bypass that mitigation. Hold the right button on a title bar, then press the left button before crossing the drag threshold: `HandleMouseEvent` enters `RecoverStaleInteraction`, which calls `ReplayPendingClick` synchronously. The failed-`BeginInteraction` branch does the same if the target disappears before the drag starts. Left-button cancellation itself is documented behavior; the concern is re-entering the synchronous replay path, not cancelling the drag. The exceptional paths' user-visible delay and input ordering have not been interaction-tested.\n\n**Suggested change:** In `src/modules/GrabAndMove/GrabAndMove/main.cpp`:\n1. Capture the pending interaction's `fromTitleBar` flag and replay information before `StopInteraction` clears them. Route title-bar replay from normal release, `RecoverStaleInteraction`, and failed begin through one deferred completion path serviced by the message window.\n2. Preserve ordering when a new button-down triggers cancellation: do not simply post the old right-click and let the incoming left-button event overtake it. Ensure the replayed button pair is emitted at most once and the matching physical button-up is handled consistently.\n3. Leave modifier-session replay, including `completeModifier` handling, unchanged; apply the deferred path specifically to title-bar interactions.\n\n**Verification:** Cover a normal title-bar right-click, right-button hold followed by left-button down before moving, and a target closing between press and drag threshold. Confirm title-bar pending exits do not call `SendInput` from the hook, button events are not duplicated or reordered, no button remains logically held, and existing modifier+click behavior is unchanged.",
-      "confidence": {
-        "score": 79,
-        "rationale": "Pinned-source tracing establishes the pending title-bar cancellation and failed-begin paths reach synchronous SendInput, while ordinary release defers it. Runtime latency and exactly-once ordering on those exceptional paths remain unmeasured."
-      },
-      "body_sha256": "4c82fb75c1101cb44922a883c60a819715b0421b9838e9a186efc1a39060cce9"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50907",
-      "type": "post_review",
-      "label": "Post the selected timeout suggestion and replay guidance",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Two current-head findings: one self-contained single-file timeout suggestion and one prose-only replay correction. Non-blocking COMMENT review; select the comments to post.",
-      "review": {
-        "event": "COMMENT",
-        "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0"
-      }
+      "kind": "existing_code_review_feedback",
+      "author": "MuyuanMS",
+      "url": "https://github.com/microsoft/PowerToys/pull/50907#discussion_r4408348087",
+      "created_at": "2026-10-29T03:16:24Z",
+      "requested_evidence": "Address the posted title-bar cancellation replay guidance and input-ordering verification, or provide counterevidence.",
+      "author_reply_found": false,
+      "resolved": false,
+      "outdated": false
     }
   ],
   "validation": {
     "upstream_head": {
       "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
       "result": "passed"
-    },
-    "suggestion_patch": {
-      "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "bound-titlebar-hit-test-budget"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
-      "result": "passed",
-      "checked_comment_ids": [
-        "bound-titlebar-hit-test-budget"
-      ],
-      "files": [
-        {
-          "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
     }
   }
 }
