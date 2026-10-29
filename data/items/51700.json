@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 5,
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Investigate: Isolate the Keyboard Manager abort boundary"
+    },
+    {
+      "comment": {
+        "body": "Thanks for the ZIP. It already shows Keyboard Manager engine aborts, including on 0.102.3001, so another general report is not needed. Could you describe the exact keys or editor action immediately before it stops responding, whether restarting only Keyboard Manager restores it, and the smallest active mapping involved? The text-remap portion of the export is redacted; please share only the relevant non-sensitive mapping, not private typed text."
+      },
+      "type": "request_info",
+      "label": "Request the abort-triggering action"
+    }
+  ],
+  "evaluated_at": "2026-10-29T14:17:38.5771121+08:00",
+  "repository": "microsoft/PowerToys",
+  "issue_context": {
+    "known_information": [
+      "The report identifies Store PowerToys 0.102.3001 and includes a diagnostic archive.",
+      "The supplied engine log contains two ABORT sequences on the reported version, followed by engine restart.",
+      "Windows application events contain c0000409 failures in KeyboardManagerEngine on both 0.100.2 and 0.102.3001; that status alone does not identify a buffer-overrun root cause.",
+      "The exported ordinary key/shortcut mappings are empty, while text-remap content is privacy-redacted."
+    ],
+    "initial_investigation": [
+      "Read the complete issue body and public discussion, current ownership, labels and linked-work history.",
+      "Downloaded and inspected the supplied archive without running its contents: current engine/editor logs, mapping export, and application events.",
+      "Compared old and current event versions; retained raw offsets and symbol-resolution failures privately rather than publishing reporter paths.",
+      "KeyboardManagerEngineLibrary routes low-level keyboard input through its event handlers and marks its own injected events separately."
+    ],
+    "inferences": [
+      "An exception or fail-fast on the hook/chord lifecycle may explain the apparent freeze, but unsymbolicated frames do not establish the failing function."
+    ],
+    "information_gaps": [
+      {
+        "how_to_collect": "Reply with a short numbered sequence and a sanitized screenshot or transcription of only the relevant mapping; report whether toggling Keyboard Manager restores operation.",
+        "evidence_type": "configuration_export",
+        "why_needed": "This distinguishes input handling from editor/engine lifecycle and permits a minimal reproducer for the recorded abort.",
+        "information": "Exact pre-abort action, engine-versus-editor behavior, and the relevant non-sensitive mapping hidden by export redaction."
+      }
+    ],
+    "summary": "Keyboard Manager has supplied crash evidence, not merely an uncorroborated freeze report.",
+    "analysis": "Use the actual supplied abort evidence. The immediate missing discriminator is the action/configuration leading to the abort, not another general ZIP. A source change chosen from the word freeze alone would be unsafe."
+  },
+  "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is a scoped, confidence-qualified investigation/fix proposal, not an approved or independently converged implementation design.",
+    "existing_fix_urls": []
+  },
+  "track": "triage",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Use the actual supplied abort evidence. The immediate missing discriminator is the action/configuration leading to the abort, not another general ZIP. A source change chosen from the word freeze alone would be unsafe.",
+    "source_updated_at": "2026-10-29T04:32:57Z",
+    "recommended_action": "Obtain the smallest triggering sequence and only the redacted mapping fields needed to reproduce, then symbolicate the recorded current-version failure.",
+    "evidence": [
+      "The report identifies Store PowerToys 0.102.3001 and includes a diagnostic archive.",
+      "The supplied engine log contains two ABORT sequences on the reported version, followed by engine restart.",
+      "Windows application events contain c0000409 failures in KeyboardManagerEngine on both 0.100.2 and 0.102.3001; that status alone does not identify a buffer-overrun root cause.",
+      "The exported ordinary key/shortcut mappings are empty, while text-remap content is privacy-redacted.",
+      "Downloaded and inspected the supplied archive without running its contents: current engine/editor logs, mapping export, and application events.",
+      "Compared old and current event versions; retained raw offsets and symbol-resolution failures privately rather than publishing reporter paths.",
+      "KeyboardManagerEngineLibrary routes low-level keyboard input through its event handlers and marks its own injected events separately."
+    ],
+    "evaluated_at": "2026-10-29T14:17:38.5797667+08:00"
+  },
+  "title": "toy freezing using keyboard manager",
+  "number": 51700,
+  "owes": "us",
+  "source_updated_at": "2026-10-29T04:32:57Z",
+  "stage": "triaged",
+  "generated_at": "2026-10-29T14:17:38.5748025+08:00",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 35,
+        "rationale": "Two real aborts narrow the failure class, but neither a symbolicated failing frame nor the triggering mapping is available.",
+        "level": "red"
+      },
+      "plan": [
+        "Use matching 0.102.3001 symbols to resolve the retained exception offset and callback stack.",
+        "Reproduce the supplied sequence with the minimal active text/key remap; distinguish engine exit from editor-only unresponsiveness.",
+        "Correct the identified state/lifetime boundary without globally swallowing exceptions or ignoring injected input, then add a regression at that boundary."
+      ],
+      "title": "Isolate the Keyboard Manager abort boundary",
+      "root_cause": "A hook/chord teardown or input-handler exception may escape the callback; the archive proves aborts but does not yet distinguish these paths.",
+      "verification": [
+        "The original sequence must leave the engine alive and remaps working after editor close/reopen.",
+        "Verify ordinary key, shortcut and text mappings still work; retain a failing-before/passing-after trace."
+      ]
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/51700",
+  "pending_author": false
+}

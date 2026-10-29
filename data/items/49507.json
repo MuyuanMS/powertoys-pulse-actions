@@ -1,125 +1,97 @@
 {
   "schemaVersion": 5,
-  "number": 49507,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-27T09:37:17Z",
-  "title": "Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
-  "url": "https://github.com/microsoft/PowerToys/issues/49507",
-  "labels": [
-    "Issue-Bug"
-  ],
-  "assignees": [],
-  "comments": 0,
-  "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-    "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
-    ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-27T09:37:17Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Targeted fix for Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
-      "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
-      ],
-      "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
-      ],
-      "confidence": {
-        "score": 70,
-        "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Open PowerToys report: Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
-    "known_information": [
-      "Title: Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
-    ],
-    "inferences": [
-      "The issue may involve environment-specific configuration or module state."
-    ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
-    "initial_investigation": [
-      "Read metadata and labels for #49507.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
-  },
   "actions": [
     {
-      "id": "design-49507",
       "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+      "label": "Investigate: Align Quick Accent gaming suppression with its supported policy"
     },
     {
       "type": "reproduce",
-      "label": "Reproduce Quick Accent: \"Do not activate when",
       "reproduce": {
-        "title": "Local reproduction for #49507",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
+        "title": "Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
+        "version_requirement": "Reported game/PowerToys versions and current supported build",
         "prerequisites": [
-          "PowerToys running"
+          "Use one affected game and the Game Mode checkbox.",
+          "Keep a normal desktop application and an explicitly excluded game as controls."
         ],
-        "setup": [],
+        "module": "Quick Accent",
+        "expected_result": "The detector result and intended suppression policy explain the behavior without assuming every recognized game returns D3D fullscreen.",
         "steps": [
-          "Launch PowerToys and open the affected module for #49507.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
-        ],
-        "expected_result": "Module functions without error or unexpected termination."
-      }
+          "Invoke Quick Accent in the affected game using fullscreen and borderless modes separately.",
+          "Maintainer instrumentation records SHQueryUserNotificationState status/value for each attempt.",
+          "Compare desktop and explicit-exclusion controls; distinguish Game Bar recognition from the notification-state result."
+        ]
+      },
+      "label": "Reproduce Quick Accent discriminator"
     }
-  ]
+  ],
+  "evaluated_at": "2026-10-29T14:17:38.7196184+08:00",
+  "repository": "microsoft/PowerToys",
+  "issue_context": {
+    "known_information": [
+      "The report and replies show different behavior across games, including games explicitly excluded as a workaround.",
+      "KeyboardListener::IsSuppressedByGameMode uses the shared detect_game_mode helper.",
+      "The helper calls SHQueryUserNotificationState and returns true only for QUNS_RUNNING_D3D_FULL_SCREEN; API failure returns false."
+    ],
+    "initial_investigation": [
+      "Read the complete issue body and public discussion, current ownership, labels and linked-work history.",
+      "Read the game-by-game confirmations and explicit excluded-app workaround.",
+      "Inspected PowerAccentKeyboardService/KeyboardListener.cpp and common/utils/game_mode.h, including the precise accepted state and failure behavior."
+    ],
+    "inferences": [
+      "Borderless/windowed games or a different Windows gaming classification may not satisfy this detector, explaining why the checkbox can appear ineffective in selected games."
+    ],
+    "information_gaps": [],
+    "summary": "Quick Accent Game Mode suppression currently checks a D3D-fullscreen notification state, which is not the same as Game Bar game classification.",
+    "analysis": "The code provides a specific detector mismatch to investigate, not a generic event/state design. First establish the actual notification state and intended supported game policy; a Game Bar recognized game does not automatically imply this API returns fullscreen."
+  },
+  "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is a scoped, confidence-qualified investigation/fix proposal, not an approved or independently converged implementation design.",
+    "existing_fix_urls": []
+  },
+  "track": "triage",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The code provides a specific detector mismatch to investigate, not a generic event/state design. First establish the actual notification state and intended supported game policy; a Game Bar recognized game does not automatically imply this API returns fullscreen.",
+    "source_updated_at": "2026-10-26T15:12:32Z",
+    "recommended_action": "Reproduce fullscreen versus borderless behavior and decide the supported suppression policy before changing the shared detector.",
+    "evidence": [
+      "The report and replies show different behavior across games, including games explicitly excluded as a workaround.",
+      "KeyboardListener::IsSuppressedByGameMode uses the shared detect_game_mode helper.",
+      "The helper calls SHQueryUserNotificationState and returns true only for QUNS_RUNNING_D3D_FULL_SCREEN; API failure returns false.",
+      "Read the game-by-game confirmations and explicit excluded-app workaround.",
+      "Inspected PowerAccentKeyboardService/KeyboardListener.cpp and common/utils/game_mode.h, including the precise accepted state and failure behavior."
+    ],
+    "evaluated_at": "2026-10-29T14:17:38.7196311+08:00"
+  },
+  "title": "Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
+  "number": 49507,
+  "owes": "us",
+  "source_updated_at": "2026-10-26T15:12:32Z",
+  "stage": "triaged",
+  "generated_at": "2026-10-29T14:17:38.7195983+08:00",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 72,
+        "rationale": "The source mismatch is concrete, but the actual returned state and intended broader product policy are not yet established.",
+        "level": "yellow"
+      },
+      "plan": [
+        "Reproduce an affected game in fullscreen and borderless modes while recording the existing helper result.",
+        "Define whether this setting promises D3D fullscreen suppression or broader Windows gaming classification; assess other callers before changing the shared helper.",
+        "Implement the confirmed policy in the narrowest appropriate boundary and add tests for accepted states, API failure, and explicit excluded apps."
+      ],
+      "title": "Align Quick Accent gaming suppression with its supported policy",
+      "root_cause": "The D3D-fullscreen-only notification-state detector may miss games that users consider Game Mode active, particularly borderless/windowed cases.",
+      "verification": [
+        "The intended gaming modes suppress Quick Accent consistently and normal desktop typing remains available.",
+        "Explicit application exclusion continues to work; unrelated callers do not silently acquire a broader suppression policy."
+      ]
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/49507",
+  "pending_author": false
 }

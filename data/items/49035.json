@@ -1,97 +1,99 @@
 {
-  "number": 49035,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "reproduction_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-13T13:10:24Z",
-  "evaluated_at": "2026-09-13T13:10:24Z",
-  "source_updated_at": "2026-06-30T07:11:08Z",
-  "status": {
-    "glyph": "🧪",
-    "label": "Ready for maintainer reproduction",
-    "detail": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change."
-  },
-  "next_action": {
-    "glyph": "➡️",
-    "label": "Run the documented scenario on a current build before selecting a fix design.",
-    "reason": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted."
-  },
+  "schemaVersion": 5,
   "actions": [
     {
-      "id": "reproduce-49035",
+      "type": "approve_design",
+      "label": "Investigate: Bound WeChat synthetic-shortcut interaction"
+    },
+    {
       "type": "reproduce",
-      "label": "Reproduce 键盘管理器bug",
-      "primary": true,
-      "confirm": true,
       "reproduce": {
-        "module": "Keyboard Manager",
-        "version_requirements": "0.100.2",
+        "title": "键盘管理器bug",
+        "version_requirement": "Reported PowerToys baseline and the affected WeChat version",
         "prerequisites": [
-          "Use the reported configuration for Keyboard Manager.",
-          "Compare the reported Microsoft Store installation with a clean current installation if practical."
+          "Use only the minimal Ctrl/Alt exchange; record the exact WeChat version.",
+          "Use non-sensitive text and keep WeChat Alt+C enabled for the baseline."
         ],
+        "module": "Keyboard Manager / WeChat",
+        "expected_result": "No unintended window action occurs, and the evidence identifies whether the copy-to-close hypothesis explains each reported sequence.",
         "steps": [
-          "When Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize.",
-          "The issue disappears after Keyboard Manager is disabled."
-        ],
-        "expected_result": "fixed"
-      }
+          "Double-click text and drag a selection separately; record copy, close and minimize behavior.",
+          "Compare with Keyboard Manager disabled and with only WeChat Alt+C disabled, one change at a time.",
+          "Maintainer traces distinguish physical keys, foreign injected keys and Keyboard Manager own injected marker; compare against a plain text application."
+        ]
+      },
+      "label": "Reproduce Keyboard Manager / WeChat discriminator"
     }
   ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change.",
-    "evidence": [
-      "The report covers PowerToys 0.100.2, installed via Microsoft Store, affecting Keyboard Manager.",
-      "Reported reproduction: When Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
-      "Reported result: When Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
-      "Expected result: fixed",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Keyboard Manager."
-    ],
-    "recommended_action": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted.",
-    "evaluated_at": "2026-09-13T13:10:24Z",
-    "source_updated_at": "2026-06-30T07:11:08Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A separate code fix is not appropriate at this stage because the issue is waiting, handled, external or by-design, or still requires maintainer reproduction.",
-    "existing_fix_urls": []
-  },
+  "evaluated_at": "2026-10-29T14:17:38.7296501+08:00",
+  "repository": "microsoft/PowerToys",
   "issue_context": {
-    "summary": "The Keyboard Manager report describes when Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
     "known_information": [
-      "The report covers PowerToys 0.100.2, installed via Microsoft Store, affecting Keyboard Manager.",
-      "Reported reproduction: When Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
-      "Reported result: When Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
-      "Expected result: fixed",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Keyboard Manager."
+      "The reports describe WeChat minimizing or closing during drag/double-click when Ctrl and Alt are exchanged.",
+      "The discussion already translates the Chinese reproduction; no new translation request is needed.",
+      "A commenter reports that WeChat-generated Ctrl+C becomes Alt+C and disabling WeChat Alt+C prevents closing, but did not observe the original copy behavior."
+    ],
+    "initial_investigation": [
+      "Read the complete issue body and public discussion, current ownership, labels and linked-work history.",
+      "Read both related issue histories and the newly supplied synthetic-shortcut explanation.",
+      "KeyboardManagerEngineLibrary::GeneratedByKBM and event handlers distinguish Keyboard Manager own extra-info marker rather than all foreign injected input.",
+      "Compared the Alt+C workaround report with its explicit lack of observed original copy behavior."
     ],
     "inferences": [
-      "A PowerToys code defect may be present, but the exact failing branch remains unconfirmed until current-build reproduction."
+      "Remapping another application injected shortcut may explain the close action, but no trace establishes that as the complete original cause."
     ],
-    "analysis": "The live body, complete comment history, labels, assignees, and linked-work timeline were reviewed. The issue is specific enough for local verification, but no confirmed fix or sufficiently narrow root cause is present.",
-    "initial_investigation": [
-      "Reviewed the complete live issue body, 0 public comment(s), current labels, assignees, and timeline through 2026-06-30T07:11:08Z.",
-      "No linked issue or pull request in the live timeline establishes a current fix or duplicate.",
-      "No current fix, active assignee, or confirmed duplicate was found; maintainer reproduction is the next discriminating step."
-    ],
-    "information_gaps": []
+    "information_gaps": [],
+    "summary": "Ctrl/Alt exchange interacts with WeChat mouse-copy/window shortcuts; the supplied translation and workaround are already usable evidence.",
+    "analysis": "Use the specific WeChat shortcut hypothesis for controlled reproduction. Do not globally ignore all injected keys, which could break intended remapping and automation, or turn the reported workaround into a proven root cause."
   },
-  "url": "https://github.com/microsoft/PowerToys/issues/49035",
+  "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is a scoped, confidence-qualified investigation/fix proposal, not an approved or independently converged implementation design.",
+    "existing_fix_urls": []
+  },
+  "track": "triage",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Use the specific WeChat shortcut hypothesis for controlled reproduction. Do not globally ignore all injected keys, which could break intended remapping and automation, or turn the reported workaround into a proven root cause.",
+    "source_updated_at": "2026-10-28T03:20:27Z",
+    "recommended_action": "Reproduce the minimal Ctrl/Alt exchange in the stated WeChat version, distinguishing physical from application-injected input.",
+    "evidence": [
+      "The reports describe WeChat minimizing or closing during drag/double-click when Ctrl and Alt are exchanged.",
+      "The discussion already translates the Chinese reproduction; no new translation request is needed.",
+      "A commenter reports that WeChat-generated Ctrl+C becomes Alt+C and disabling WeChat Alt+C prevents closing, but did not observe the original copy behavior.",
+      "Read both related issue histories and the newly supplied synthetic-shortcut explanation.",
+      "KeyboardManagerEngineLibrary::GeneratedByKBM and event handlers distinguish Keyboard Manager own extra-info marker rather than all foreign injected input.",
+      "Compared the Alt+C workaround report with its explicit lack of observed original copy behavior."
+    ],
+    "evaluated_at": "2026-10-29T14:17:38.7296628+08:00"
+  },
   "title": "键盘管理器bug",
-  "author": "NULL67",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Keyboard Manager"
+  "number": 49035,
+  "owes": "us",
+  "source_updated_at": "2026-10-28T03:20:27Z",
+  "stage": "triaged",
+  "generated_at": "2026-10-29T14:17:38.7296314+08:00",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 45,
+        "rationale": "The workaround supplies a plausible specific mechanism, but the original sequence and input provenance have not been traced.",
+        "level": "red"
+      },
+      "plan": [
+        "Reproduce double-click and drag separately with one minimal Ctrl/Alt exchange and record the WeChat version.",
+        "Capture maintainer-side virtual-key/flags/extra-info ordering for physical and application-generated events without recording text.",
+        "If confirmed, define a narrow compatible policy for that interaction and add physical/injected-input regression cases; do not blanket-ignore injected events."
+      ],
+      "title": "Bound WeChat synthetic-shortcut interaction",
+      "root_cause": "WeChat may synthesize a copy shortcut that Ctrl/Alt exchange turns into its close shortcut; event provenance and the original drag/minimize behavior remain unconfirmed.",
+      "verification": [
+        "The original mouse sequence does not unexpectedly close/minimize WeChat while intended Ctrl/Alt remapping still works.",
+        "Copy behavior, unrelated applications and deliberate remapped injected input remain compatible."
+      ]
+    }
   ],
-  "assignees": [],
-  "comments": 0,
-  "summary": "The Keyboard Manager report describes when Keyboard Manager is enabled, entering a WeChat chat box and holding down the left mouse button while moving the mouse causes WeChat to minimize. The issue disappears after Keyboard Manager is disabled.",
-  "proposed_fixes": []
+  "url": "https://github.com/microsoft/PowerToys/issues/49035",
+  "pending_author": false
 }

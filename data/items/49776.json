@@ -1,96 +1,90 @@
 {
-  "number": 49776,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triaging",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "A right-shift-only remap should not change left shift behavior."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
-  },
+  "schemaVersion": 5,
   "actions": [
     {
-      "id": "design-49776",
       "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "label": "Investigate: Preserve left/right Shift identity"
     },
     {
       "comment": {
-        "body": "Thank you for reporting this issue with PowerToys. To help us investigate and reproduce the problem accurately, could you please reproduce the issue and then run /bugreport in a comment to attach a fresh diagnostic ZIP? This will provide the exact module logs and system environment details needed to confirm the root cause."
+        "body": "A right-Shift-only mapping should not remap left Shift. Could you share a sanitized screenshot of the mapping row and say whether it is under Remap a key or Remap a shortcut, whether the source displays Shift (Right) or plain Shift, and whether another Shift mapping is active? This key-identity distinction is the next useful discriminator."
       },
-      "description": "Ask reporter for fresh /bugreport diagnostic ZIP to confirm root cause.",
       "type": "request_info",
-      "label": "Request diagnostic ZIP"
+      "label": "Request right-Shift mapping identity"
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-08T17:02:33Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "A right-shift-only remap should not change left shift behavior.",
-    "evidence": [
-      "A right-shift-only remap should not change left shift behavior.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
-    ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-08T17:02:33Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Proposed fix plan derived from issue report and initial investigation."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Investigate root cause and apply targeted fix for issue #49776",
-      "confidence": {
-        "rationale": "Initial hypothesis requires reproduction or diagnostic trace.",
-        "score": 70,
-        "level": "yellow"
-      },
-      "root_cause": "Failing mechanism reported in issue #49776 requires code revalidation.",
-      "plan": [
-        "Verify reproduction steps",
-        "Trace failing code path",
-        "Apply fix and verify"
-      ],
-      "verification": [
-        "Run targeted module tests and verify expected behavior."
-      ]
-    }
-  ],
+  "evaluated_at": "2026-10-29T14:17:38.6992258+08:00",
+  "repository": "microsoft/PowerToys",
   "issue_context": {
-    "summary": "Remapping right shift also affects left shift.",
+    "known_information": [
+      "The report identifies PowerToys 0.100.2 from the Store and says a right-Shift-only remap affects left Shift.",
+      "There are no supplied mapping details or diagnostic attachments establishing whether the stored source is right Shift or generic Shift."
+    ],
     "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+      "Read the complete issue body and public discussion, current ownership, labels and linked-work history.",
+      "Read the complete report and absence of follow-up mapping details.",
+      "KeyboardManagerEngineLibrary explicitly handles VK_LSHIFT, VK_RSHIFT and VK_SHIFT, so these identities cannot be treated as interchangeable evidence."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
-    ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+      "Generic VK_SHIFT selection or left/right key normalization could produce the symptom; the report does not distinguish configuration from engine behavior."
     ],
     "information_gaps": [
       {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
-        "evidence_type": "bugreport_zip"
+        "how_to_collect": "Reply with the relevant mapping row only, and test left Shift and right Shift separately.",
+        "evidence_type": "configuration_export",
+        "why_needed": "This separates a generic Shift configuration from loss of right-specific identity in the editor or engine.",
+        "information": "The exact source-key label, key-versus-shortcut mapping type, and any other active Shift mapping."
       }
     ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
-  }
+    "summary": "A right-Shift remap reportedly also changes left Shift; the stored key identity is the decisive missing detail.",
+    "analysis": "Replace the unsupported generic 70-percent design with a low-confidence, key-identity-specific investigation and one precise configuration request."
+  },
+  "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is a scoped, confidence-qualified investigation/fix proposal, not an approved or independently converged implementation design.",
+    "existing_fix_urls": []
+  },
+  "track": "triage",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Replace the unsupported generic 70-percent design with a low-confidence, key-identity-specific investigation and one precise configuration request.",
+    "source_updated_at": "2026-10-11T16:46:56Z",
+    "recommended_action": "Inspect the stored source key and compare left/right Shift separately before changing remapping logic.",
+    "evidence": [
+      "The report identifies PowerToys 0.100.2 from the Store and says a right-Shift-only remap affects left Shift.",
+      "There are no supplied mapping details or diagnostic attachments establishing whether the stored source is right Shift or generic Shift.",
+      "Read the complete report and absence of follow-up mapping details.",
+      "KeyboardManagerEngineLibrary explicitly handles VK_LSHIFT, VK_RSHIFT and VK_SHIFT, so these identities cannot be treated as interchangeable evidence."
+    ],
+    "evaluated_at": "2026-10-29T14:17:38.6992389+08:00"
+  },
+  "title": "Remapping right shift also affects left shift.",
+  "number": 49776,
+  "owes": "us",
+  "source_updated_at": "2026-10-11T16:46:56Z",
+  "stage": "triaged",
+  "generated_at": "2026-10-29T14:17:38.6992084+08:00",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 35,
+        "rationale": "The expected behavior is clear, but no supplied mapping proves the editor stored right-specific identity.",
+        "level": "red"
+      },
+      "plan": [
+        "Confirm the stored source key and whether this is a single-key or shortcut remap.",
+        "Compare physical left/right Shift events with the configured source identity.",
+        "If right-specific identity is lost, correct that conversion boundary and add separate left/right/generic Shift cases."
+      ],
+      "title": "Preserve left/right Shift identity",
+      "root_cause": "The mapping may store generic Shift or normalize right Shift into a generic identity; the precise failing boundary is not established.",
+      "verification": [
+        "A right-Shift-only remap leaves left Shift unchanged.",
+        "Generic Shift mappings intentionally cover both sides and shortcut handling stays compatible."
+      ]
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/49776",
+  "pending_author": false
 }
