@@ -9,26 +9,41 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-29T16:20:10.6620578+08:00",
-  "evaluated_at": "2026-10-29T16:20:10.6651644+08:00",
-  "source_updated_at": "2026-10-29T06:38:29Z",
-  "head_sha": "7364b3fd8269f12878268343d1d8c01d590d94e7",
+  "generated_at": "2026-10-30T04:04:08.1731411+08:00",
+  "evaluated_at": "2026-10-30T04:04:08.1731627+08:00",
+  "source_updated_at": "2026-10-29T19:07:06Z",
+  "head_sha": "1b4390b762ff9be98148e9873c93946a5ccd1f1a",
   "needs_revalidation": false,
-  "proposed_comments": [],
+  "proposed_comments": [
+    {
+      "body": "### Keep a failed snippet refresh pending until it can be read\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/textexpander/TextExpander.Editor/Helpers/TextExpanderStorageEnvironment.cs:FileArrivalWatcher.Poll` and `src/modules/textexpander/TextExpander.Editor/ViewModels/TextExpanderViewModel.cs:SnippetFilesMayHaveChanged`.\r\n\r\n**Problem:** `Poll` updates `_observed` before invoking the callback, but `SnippetFilesMayHaveChanged` consumes a transient file-read failure without arranging another attempt. If the read becomes possible without another size/write-time change, subsequent polls consider that version handled and never request it again. The watcher explicitly supports folders that did not exist at registration, so a FileSystemWatcher event cannot always rescue this path.\r\n\r\n**Why it matters:** After a temporary sharing lock or delayed availability, the editor can retain stale snippet rows or an unavailable-file state until another write or manual retry, even though the file is readable again. This is a missed automatic refresh, not a demonstrated data-loss claim.\r\n\r\n**Suggested change:**\r\n1. Keep a failed refresh pending and arrange a bounded retry independent of a further metadata change. Pass read-success feedback to the watcher or retain retry state in the view-model; merely moving `_observed` after a void/asynchronous callback does not prove that the UI read succeeded.\r\n2. Preserve coalescing and generation/disposal checks so retries cannot overlap slow reads or update a replaced watcher.\r\n3. Add a regression for a previously absent watched folder: create the file, make the first callback encounter a sharing failure, release it without another content/stamp change, and verify an eventual successful refresh.\r\n\r\n**Verification:** A focused harness compiled the exact watcher and observed one failed callback and no new callback after releasing the lock across ten further polling intervals. Verify the repaired path eventually loads the new bytes, then becomes quiet; also retain the no-change/no-extra-UI-read behavior. This harness did not run the editor UI or a whole-product build.",
+      "confidence": {
+        "rationale": "Compiled the exact nested watcher and reproduced one failed callback with zero callbacks after the sharing lock was released; exact view-model source consumes that read failure without scheduling a retry.",
+        "score": 96
+      },
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep a failed snippet refresh pending until it can be read",
+      "out_of_diff_reason": "The watcher acknowledges only metadata changes while the view-model consumes read failures; the retry-success contract spans both files and is safer as one coordinated implementation prompt.",
+      "in_diff": false,
+      "id": "51475-retry-transient-snippet-read"
+    }
+  ],
   "actions": [
     {
-      "status": "awaiting_review_approval",
-      "type": "post_review",
+      "head_sha": "1b4390b762ff9be98148e9873c93946a5ccd1f1a",
       "review": {
-        "head_sha": "7364b3fd8269f12878268343d1d8c01d590d94e7",
+        "head_sha": "1b4390b762ff9be98148e9873c93946a5ccd1f1a",
+        "body_prefix": "",
         "event": "COMMENT",
-        "comment_ids": [],
-        "commit_id": "7364b3fd8269f12878268343d1d8c01d590d94e7",
-        "body_prefix": "### Review assessment\n\nThe accumulated assessment found no remaining unposted actionable finding on the current head. Prior supported obligations are addressed, and the new branding/resource delta passed the focused source checks. Obsolete findings from an earlier revision are not carried forward as current defects.\n\n**Validation scope:** Source/resource checks support this conclusion; they do not establish complete UI, packaging, or runtime validation of the current revision.\n\nNo additional code change is requested by this assessment. This is a qualified review summary, not an unconditional approval."
+        "commit_id": "1b4390b762ff9be98148e9873c93946a5ccd1f1a",
+        "comment_ids": [
+          "51475-retry-transient-snippet-read"
+        ]
       },
-      "id": "51475-post-assessment-summary",
-      "head_sha": "7364b3fd8269f12878268343d1d8c01d590d94e7",
-      "label": "Post qualified assessment summary (no code changes requested)"
+      "type": "post_review",
+      "label": "Post one general comment about snippet refresh retry",
+      "id": "51475-post-review"
     }
   ],
   "validation": {}
