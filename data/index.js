@@ -3464,7 +3464,7 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-10-16T22:14:10Z",
-      "updated_at": "2026-10-29T08:18:09Z",
+      "updated_at": "2026-10-29T08:27:04Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
