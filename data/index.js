@@ -1512,7 +1512,8 @@ window.BOARD_INDEX = {
     51542,
     51706,
     51599,
-    51627
+    51627,
+    51645
   ],
   "items": [
     {
@@ -2296,15 +2297,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post qualified assessment summary (no code changes requested)"
+      },
       "labels": [
         "Product-Command Palette",
         "Product-Keyboard Manager",
