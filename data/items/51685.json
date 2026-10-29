@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 5,
+  "number": 51685,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Fix duplicate preview release-note titles",
+  "url": "https://github.com/microsoft/PowerToys/pull/51685",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-29T15:51:43.2453406+08:00",
+  "evaluated_at": "2026-10-29T15:51:43.2453902+08:00",
+  "source_updated_at": "2026-10-28T18:30:03Z",
+  "head_sha": "590c0d407f91a861ec9ece0fb2d7fb7a71f842f4",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "in_diff": false,
+      "confidence": {
+        "score": 94,
+        "rationale": "Two valid fenced-code inputs deterministically trigger the exact upstream heading error inside a correctly ordered managed region; both live callers invoke the assertion. No replacement parser or full release publication was tested."
+      },
+      "kind": "companion",
+      "body": "### Ignore fenced code when checking release-note headings\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.github/skills/release-note-generation/scripts/preview-release-body.ps1:Assert-PreviewReleaseBodyLayout`, its draft-creation and verification callers, and `.github/skills/release-note-generation/tests/preview-release.Tests.ps1`.\r\n\r\n**Problem:** Both heading regexes scan fenced code as ordinary Markdown. For example, a fenced PowerShell snippet containing `# Print the installed version.` is rejected as a level-one heading; fenced output containing `Status` followed by `======` is rejected too. Neither produces a rendered title, and the same inputs fail inside the correctly ordered managed block.\r\n\r\n**Why it matters:** If left unfixed, otherwise valid preview notes containing code examples or diagnostic output can be blocked during draft creation and final verification, even though no duplicate title is present.\r\n\r\n**Suggested change:**\r\n1. Make the heading scan ignore fenced-code contents while retaining the existing managed-region boundary.\r\n2. Recognize Markdown backtick and tilde fences, including matching closing-fence lengths, rather than deleting individual lines that happen to contain backticks.\r\n3. Keep rejection of real ATX and Setext level-one headings outside fences. Add regression cases for fenced PowerShell comments and Setext-looking output, alongside the existing true-heading and outside-managed-region cases.\r\n\r\n**Verification:** Run the existing preview-release test suite and the new fence cases through the shared assertion. Valid fenced examples must pass; real level-one headings in the managed content must still fail. Exercise the same cases through the draft-creation and final-verification entry points.",
+      "id": "ignore-fenced-code-in-heading-validation",
+      "title": "Ignore fenced code when checking release-note headings",
+      "out_of_diff_reason": "Coordinated Markdown scanning and regression-test changes are presented as one implementation-ready general PR comment, not an unvalidated regex suggestion.",
+      "severity": "medium"
+    }
+  ],
+  "actions": [
+    {
+      "head_sha": "590c0d407f91a861ec9ece0fb2d7fb7a71f842f4",
+      "status": "awaiting_review_approval",
+      "id": "51685-post-review",
+      "review": {
+        "comment_ids": [
+          "ignore-fenced-code-in-heading-validation"
+        ],
+        "event": "COMMENT",
+        "commit_id": "590c0d407f91a861ec9ece0fb2d7fb7a71f842f4"
+      },
+      "type": "post_review",
+      "label": "Post one general comment about fenced-code validation"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "590c0d407f91a861ec9ece0fb2d7fb7a71f842f4",
+      "result": "passed"
+    }
+  }
+}

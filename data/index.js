@@ -1503,7 +1503,8 @@ window.BOARD_INDEX = {
     51696,
     51700,
     51649,
-    51687
+    51687,
+    51685
   ],
   "items": [
     {
@@ -1695,15 +1696,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "label": "Post one general comment about fenced-code validation",
+        "type": "post_review"
+      },
       "labels": [
         "Ready for review"
       ],
