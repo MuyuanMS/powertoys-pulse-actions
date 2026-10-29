@@ -2698,7 +2698,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
+        "label": "Post qualified assessment summary"
       },
       "labels": [
         "Product-Command Palette",
@@ -2706,7 +2706,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-26T19:34:56Z",
-      "updated_at": "2026-10-29T12:05:37Z",
+      "updated_at": "2026-10-29T15:13:58Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
