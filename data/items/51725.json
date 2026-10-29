@@ -1,0 +1,100 @@
+{
+  "source_updated_at": "2026-10-29T15:30:04Z",
+  "judgment": {
+    "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
+    "evidence": [
+      "Version 0.102.3001, elevated per-user PowerToys and Windows build 26300 are already supplied.",
+      "The requested mapping is Right Alt + F23 to Left Alt + F4. The Classic editor shows both a shorter source and a Win/Ctrl/Shift/Right-Alt/F23 source.",
+      "Restarting Windows restores input, but disabling Keyboard Manager alone does not always do so; duplicate involvement has not been tested.",
+      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
+      "Traced shortcut event matching and modifier release/restore cases in KeyboardEventHandlers.cpp, including the Right-Alt/Left-Control state handling.",
+      "Checked existing modifier/Copilot handling and focused issue search. No existing linked fix or exact reproducing key-event sequence was established."
+    ],
+    "recommended_action": "Request mapping and key release order",
+    "status": "needs_information",
+    "rationale": "The detailed report is useful, but it does not identify which mapping is actually active or whether Right Alt is AltGr for this layout. A fix must preserve legitimately held physical modifiers; blanket key-up injection would be unsafe. Capture the effective mapping and release order before choosing an engine versus editor correction.",
+    "source_updated_at": "2026-10-29T15:30:04Z"
+  },
+  "stage": "triaged",
+  "number": 51725,
+  "track": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-10-30T03:54:32.2816919+08:00",
+  "owes": "us",
+  "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
+  "title": "Right Alt + Copilot (F23) shortcut causes stuck modifiers and unexpected keyboard behaviour on virtual desktops",
+  "url": "https://github.com/microsoft/PowerToys/issues/51725",
+  "actions": [
+    {
+      "id": "51725-approve-investigation",
+      "type": "approve_design",
+      "label": "Approve focused investigation proposal"
+    },
+    {
+      "id": "51725-request-evidence",
+      "comment": {
+        "body": "Thanks for the exact shortcut, Windows/build details and the comparison between editors. Before changing modifier handling, please provide:\r\n1. Only the relevant active mapping rows, or sanitized Keyboard Manager configuration with unrelated mappings and personal paths removed.\r\n2. The keyboard language/layout and physical press/release order for Right Alt and Copilot. If possible on a test desktop, say whether it occurs with only the intended mapping enabled.\r\n\r\nThis distinguishes overlapping mappings or AltGr/compound-key state from an editor serialization problem."
+      },
+      "type": "request_info",
+      "label": "Request mapping and key release order"
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The detailed report is useful, but it does not identify which mapping is actually active or whether Right Alt is AltGr for this layout. A fix must preserve legitimately held physical modifiers; blanket key-up injection would be unsafe. Capture the effective mapping and release order before choosing an engine versus editor correction.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "analysis": "The detailed report is useful, but it does not identify which mapping is actually active or whether Right Alt is AltGr for this layout. A fix must preserve legitimately held physical modifiers; blanket key-up injection would be unsafe. Capture the effective mapping and release order before choosing an engine versus editor correction.",
+    "known_information": [
+      "Version 0.102.3001, elevated per-user PowerToys and Windows build 26300 are already supplied.",
+      "The requested mapping is Right Alt + F23 to Left Alt + F4. The Classic editor shows both a shorter source and a Win/Ctrl/Shift/Right-Alt/F23 source.",
+      "Restarting Windows restores input, but disabling Keyboard Manager alone does not always do so; duplicate involvement has not been tested."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "Determine whether overlapping source shortcuts are actually present and select the correct engine input",
+        "how_to_collect": "Share only the relevant mapping rows or sanitized Keyboard Manager module configuration; remove unrelated mappings and personal paths.",
+        "information": "The relevant active Keyboard Manager mappings as saved by the new editor",
+        "evidence_type": "configuration_export"
+      },
+      {
+        "why_needed": "Right Alt can imply AltGr/Left Control, and the Copilot key may emit a compound shortcut",
+        "how_to_collect": "State the keyboard language/layout and which keys are pressed and released first. Say whether the issue occurs with only the intended mapping enabled on a test desktop.",
+        "information": "Keyboard layout and the exact physical press/release order",
+        "evidence_type": "keyboard_layout"
+      }
+    ],
+    "initial_investigation": [
+      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
+      "Traced shortcut event matching and modifier release/restore cases in KeyboardEventHandlers.cpp, including the Right-Alt/Left-Control state handling.",
+      "Checked existing modifier/Copilot handling and focused issue search. No existing linked fix or exact reproducing key-event sequence was established."
+    ],
+    "inferences": [
+      "A mismatch between physical Copilot/AltGr modifier state and synthetic release/restore handling is plausible; the editor or virtual desktops have not been isolated as the cause."
+    ],
+    "summary": "Right Alt/Copilot remapping can leave modifier-like behavior after closing an application on a virtual desktop."
+  },
+  "kind": "issue",
+  "pending_author": false,
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Load the actual sanitized mapping into the engine tests and model the physical press/release sequence, including AltGr if applicable.",
+        "Trace which source mapping wins, which synthetic modifiers are released, and which original modifiers are restored; correct only the demonstrated imbalance or duplicate serialization path.",
+        "Add regression rows for single/overlapping mappings, different key-up orders and closing the foreground application while preserving legitimately held modifiers."
+      ],
+      "root_cause": "Hypothesis: a compound Copilot/Right-Alt source overlaps another mapping or restores a modifier after its physical release.",
+      "confidence": {
+        "rationale": "The symptom and engine state boundaries fit the hypothesis, but the active mapping, layout and key sequence are missing. No local reproduction or editor-regression claim is made.",
+        "level": "red",
+        "score": 48
+      },
+      "title": "Balance modifier state for the effective Copilot shortcut",
+      "verification": [
+        "After the shortcut closes the application, typing F and Z is ordinary text and Win/virtual-desktop navigation remains normal; legitimate held modifiers still work."
+      ]
+    }
+  ],
+  "repository": "microsoft/PowerToys"
+}

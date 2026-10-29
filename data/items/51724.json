@@ -1,0 +1,96 @@
+{
+  "source_updated_at": "2026-10-29T15:26:36Z",
+  "judgment": {
+    "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
+    "evidence": [
+      "The reporter supplies six per-monitor diagnostic reports and a fresh 0.103.3012 preview diagnostic archive.",
+      "The reports have the same display model but differing Windows instance/UID portions; the current discovery log sees one external DDC/CI target.",
+      "The reporter says prior records cannot be deleted and the setting does not follow the newly identified display; the transition producing the new identity is unknown.",
+      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
+      "Inspected the supplied monitor reports, Power Display discovery log and persisted settings/state; did not copy per-device identifiers into public context.",
+      "Traced MonitorIdentity.FromDevicePath and MonitorSettingsRebuilder.Rebuild: device-path instance segments are retained, and disconnected recent/hidden entries can remain.",
+      "Read related issue 48977. Its similar model-duplication symptom does not establish that the same identity transition causes this report."
+    ],
+    "recommended_action": "Request display connection transition",
+    "status": "needs_information",
+    "rationale": "Investigate identity reconciliation and disconnected-record management rather than merging all same-model monitors. The current log has one target, not proof of simultaneous duplicate physical handles. The WMI discovery error is not sufficient to explain the DDC/CI identity changes.",
+    "source_updated_at": "2026-10-29T15:26:36Z"
+  },
+  "stage": "triaged",
+  "number": 51724,
+  "track": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-10-30T03:54:32.2816919+08:00",
+  "owes": "us",
+  "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
+  "title": "Power Display lists multi monitors of same one",
+  "url": "https://github.com/microsoft/PowerToys/issues/51724",
+  "actions": [
+    {
+      "id": "51724-approve-investigation",
+      "type": "approve_design",
+      "label": "Approve focused investigation proposal"
+    },
+    {
+      "id": "51724-request-evidence",
+      "comment": {
+        "body": "Thanks for the supplied monitor reports and archive. They show differing Windows monitor instance identities while the current scan sees one DDC/CI display. To distinguish an endpoint change from duplicate discovery, please describe the connection path (direct, dock, KVM or adapter) and the first transition that adds an entry, if known: sleep/wake, reconnect, another port, or Win+P. If the trigger is still unknown, please say so and describe the normal connection path."
+      },
+      "type": "request_info",
+      "label": "Request display connection transition"
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Investigate identity reconciliation and disconnected-record management rather than merging all same-model monitors. The current log has one target, not proof of simultaneous duplicate physical handles. The WMI discovery error is not sufficient to explain the DDC/CI identity changes.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "analysis": "Investigate identity reconciliation and disconnected-record management rather than merging all same-model monitors. The current log has one target, not proof of simultaneous duplicate physical handles. The WMI discovery error is not sufficient to explain the DDC/CI identity changes.",
+    "known_information": [
+      "The reporter supplies six per-monitor diagnostic reports and a fresh 0.103.3012 preview diagnostic archive.",
+      "The reports have the same display model but differing Windows instance/UID portions; the current discovery log sees one external DDC/CI target.",
+      "The reporter says prior records cannot be deleted and the setting does not follow the newly identified display; the transition producing the new identity is unknown."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "Distinguish a changed Windows endpoint from duplicate discovery, and avoid conflating two identical physical displays",
+        "how_to_collect": "State whether the monitor is directly connected or uses a dock/KVM/adapter, and whether sleep/wake, reconnect, port changes or Win+P first causes another record. The supplied ZIP and monitor reports do not need to be uploaded again.",
+        "information": "The connection route and exact display transition that adds a record",
+        "evidence_type": "monitor_topology"
+      }
+    ],
+    "initial_investigation": [
+      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
+      "Inspected the supplied monitor reports, Power Display discovery log and persisted settings/state; did not copy per-device identifiers into public context.",
+      "Traced MonitorIdentity.FromDevicePath and MonitorSettingsRebuilder.Rebuild: device-path instance segments are retained, and disconnected recent/hidden entries can remain.",
+      "Read related issue 48977. Its similar model-duplication symptom does not establish that the same identity transition causes this report."
+    ],
+    "inferences": [
+      "Device-path identity churn plus retained disconnected settings is a plausible explanation; identical model names alone cannot prove physical-device identity or justify merging records."
+    ],
+    "summary": "Power Display accumulates disabled records when the same reported monitor acquires different Windows device-path identities."
+  },
+  "kind": "issue",
+  "pending_author": false,
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Reproduce one connection/sleep transition using the supplied report as the comparison baseline and trace discovery-to-settings keys.",
+        "Only after proving an unambiguous physical match, migrate the previous settings to the replacement key; preserve distinct identical-model displays and port-specific intentional configurations.",
+        "Provide a deliberate removal path for stale disconnected records, and add identity/retention regression tests before changing automatic matching."
+      ],
+      "root_cause": "Hypothesis: Windows publishes a new device-path instance for the same display, while the old entry remains retained and the new key starts with default settings.",
+      "confidence": {
+        "rationale": "Distinct stored path identities and a single current DDC/CI target fit this mechanism, but the transition and safe physical identity criterion are not established. This is a lightweight proposal, not an approved implementation design.",
+        "level": "yellow",
+        "score": 73
+      },
+      "title": "Reconcile changed monitor identities without losing settings",
+      "verification": [
+        "One physical display retains its intended settings after the confirmed transition; two identical displays remain separate; stale-record removal cannot delete an active display."
+      ]
+    }
+  ],
+  "repository": "microsoft/PowerToys"
+}
