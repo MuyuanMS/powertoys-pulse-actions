@@ -2066,7 +2066,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_assessed",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2074,7 +2074,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post qualified assessment summary (no code changes requested)"
+      },
       "labels": [
         "Product-Shortcut Guide",
         "Product-Image Resizer",
