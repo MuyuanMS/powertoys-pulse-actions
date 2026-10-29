@@ -1,16 +1,19 @@
 {
+  "schemaVersion": 5,
   "number": 51392,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[MouseWithoutBorders] Fix InputInjector startup probe and fall back to SendInput on COMException",
   "url": "https://github.com/microsoft/PowerToys/pull/51392",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-19T09:51:00.8882358+08:00",
-  "evaluated_at": "2026-10-19T09:51:00.8882358+08:00",
-  "source_updated_at": "2026-10-18T17:35:08Z",
+  "generated_at": "2026-10-29T23:24:17.9871028+08:00",
+  "evaluated_at": "2026-10-29T23:24:17.9904015+08:00",
+  "source_updated_at": "2026-10-29T14:06:47Z",
   "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
+  "needs_revalidation": false,
   "proposed_comments": [
     {
       "id": "mwb-eof-sa1518",
@@ -26,49 +29,37 @@
         "score": 99,
         "rationale": "The exact upstream App build reports SA1518 in both changed files; removing only each surplus EOF CRLF line was applied literally and the focused App build exited 0."
       }
+    },
+    {
+      "confidence": {
+        "rationale": "Pinned startup/runtime catch filters omit UnauthorizedAccessException; HRESULT mapping and filter behavior reproduced in a focused .NET harness, and the synchronous startup escape is source-traced",
+        "score": 96
+      },
+      "out_of_diff_reason": "Coordinated expected-exception handling is required across both runtime branches and the startup probe; a standalone catch edit leaves another escape path",
+      "severity": "medium",
+      "id": "mwb-access-denied-fallback",
+      "kind": "companion",
+      "body": "### Keep access-denied injection failures on the fallback path\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs:SendInputEx`, `src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs:Init`, and the startup call in `src/modules/MouseWithoutBorders/App/Class/Program.cs:Main`.\r\n\r\n**Problem:** Both mouse-injection branches catch only `COMException`; the startup probe likewise admits only `EntryPointNotFoundException` or `COMException`. An injection refusal reported as `E_ACCESSDENIED` can project as `UnauthorizedAccessException`, which is not a `COMException`, so it skips the new SendInput fallback.\r\n\r\n**Why it matters:** During startup, `MoveMouseRelative` invokes its callback synchronously through `Common.DoSomethingInTheInputSimulationThread`. This exception can therefore escape `Init` into `Program.Main`'s outer logging catch before `Application.Run`, ending startup rather than retaining the fallback.\r\n\r\n**Suggested change:**\r\n1. Include the expected `UnauthorizedAccessException` in both runtime fallback guards, preserving the existing logging and SendInput fallback for the current input.\r\n2. Include it in the startup guard as well so a denied probe disables the unavailable injector and initialization continues.\r\n3. Keep handling restricted to expected injection failures; do not swallow arbitrary exceptions or change the global retry policy as part of this fix.\r\n\r\n**Verification:** Check that a denied startup probe still reaches the UI loop and a denied runtime injection falls back for the current input in both pointer-width branches; retain the successful-injection path. The exception mapping and filters were checked with a focused harness; actual injector refusal and interactive remote control have not been run here.",
+      "in_diff": false
     }
   ],
   "actions": [
     {
-      "id": "post-review-51392",
+      "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
       "type": "post_review",
-      "label": "Post inline build-fix comment",
-      "source_updated_at": "2026-10-18T17:35:08Z",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "One prose inline comment covering two surplus EOF blank lines; no apply-ready patch because both raw files have mixed line endings. The eight-request limit is exhausted without automated convergence; this is not approval readiness.",
+      "label": "Post selected review comments",
       "review": {
         "event": "COMMENT",
-        "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
-        "comments": [
-          {
-            "id": "mwb-eof-sa1518",
-            "kind": "inline",
-            "in_diff": true,
-            "severity": "medium",
-            "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
-            "path": "src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs",
-            "line": 503,
-            "side": "RIGHT",
-            "body": "**Severity:** `medium`\n\nThe Mouse Without Borders App build fails StyleCop `SA1518` because both `InputSimulation.cs` and `InitAndCleanup.cs` have an extra blank line after the final closing brace. Please remove only the surplus final blank line in each file, leaving the normal single newline after the brace; the resulting App build then passes without changing runtime code.",
-            "confidence": {
-              "score": 99,
-              "rationale": "The exact upstream App build reports SA1518 in both changed files; removing only each surplus EOF CRLF line was applied literally and the focused App build exited 0."
-            }
-          }
-        ]
-      }
+        "commit_id": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
+        "comment_ids": [
+          "mwb-eof-sa1518",
+          "mwb-access-denied-fallback"
+        ],
+        "body_prefix": "",
+        "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712"
+      },
+      "id": "51392-post-review"
     }
   ],
-  "freshness": {
-    "queued_at": "2026-10-18T17:49:01.4826809Z",
-    "checkpoint_at": "2026-10-18T17:49:01.4826809Z"
-  },
-  "validation": {
-    "upstream_head": {
-      "head_sha": "076f17bc423bcb38ccef476f02559ef1fcbd2712",
-      "result": "failed"
-    }
-  }
+  "validation": {}
 }
