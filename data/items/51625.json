@@ -9,82 +9,80 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-28T10:43:53.3348722+08:00",
-  "evaluated_at": "2026-10-28T10:43:53.3381546+08:00",
-  "source_updated_at": "2026-10-27T19:04:51Z",
-  "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+  "generated_at": "2026-10-31T03:55:17.6395048+08:00",
+  "evaluated_at": "2026-10-31T03:55:17.6395377+08:00",
+  "source_updated_at": "2026-10-30T16:00:41Z",
+  "head_sha": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75",
   "needs_revalidation": false,
   "proposed_comments": [
     {
-      "id": "51625-undefined-provider-settings",
+      "line": 98,
       "kind": "inline",
-      "severity": "high",
-      "title": "Use the existing provider-settings property",
       "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
-      "line": 388,
+      "title": "Keep disabled fallbacks out of global results",
       "side": "RIGHT",
+      "severity": "medium",
+      "disposition": "proposed",
       "confidence": {
-        "score": 100,
-        "rationale": "Exact upstream compilation reports CS0103 at this expression; the constructor assigns the existing ProviderSettings property."
+        "rationale": "The disabled/global=true regression fails on the exact current predicate, passes with the literal replacement, and the global-selection caller bypasses its enabled check for this branch.",
+        "score": 99
       },
-      "body": "### Use the existing provider-settings property\n\n**Severity:** `high`\n\n`_providerSettings` is no longer declared on `TopLevelViewModel`, so the new lookup fails compilation with CS0103. The constructor already stores the provider snapshot in the `ProviderSettings` property; use that property when the current settings dictionary has no provider entry.\n\n```suggestion\n            : ProviderSettings;\n```",
-      "in_diff": true
+      "in_diff": true,
+      "id": "51625-disabled-global-fallback",
+      "body": "**Severity: Medium — disabled fallback commands can still contribute global results.**\r\n\r\n`MainListPage` adds items satisfying this property to `specialFallbacks` before its `else if (s.IsEnabled)` check. Checking only the global-results flag therefore bypasses the fallback's enabled setting. The previous global-selection helper required both flags.\r\n\r\n**If left unchanged:** a fallback saved with `IsEnabled=false` and `IncludeInGlobalResults=true` can continue producing global results despite being disabled.\r\n\r\n```suggestion\r\n    internal bool IncludeInGlobalResults => GetFallbackSettings() is { IsEnabled: true, IncludeInGlobalResults: true };\r\n```\r\n\r\nThe four enabled/global combinations were exercised against the current source: only disabled/global=true fails before this replacement, and all four pass after it. The literal replacement compiles. This does not claim an interactive Command Palette run or an analyzer-clean build."
     },
     {
-      "id": "51625-disabled-global-fallback",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Keep disabled fallbacks out of global results",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
-      "line": 98,
-      "side": "RIGHT",
+      "out_of_diff_reason": "This is a separate test repair coordinating its import and three invocation arguments; the enabled-fallback suggestion is independently applicable.",
+      "kind": "companion",
       "confidence": {
-        "score": 99,
-        "rationale": "The old global-selection helper requires both flags. The added four-case regression fails only for disabled/global=true with the original predicate and all twelve focused cases pass after this edit."
+        "rationale": "The exact current test throws ArgumentException before its assertions; wrapping all three arguments compiles and the full twelve-case focused suite passes.",
+        "score": 100
       },
-      "body": "### Keep disabled fallbacks out of global results\n\n**Severity:** `medium`\n\nA fallback can retain `IncludeInGlobalResults = true` while `IsEnabled = false`. The previous `GetGlobalFallbacks()` required both flags, but this predicate checks only global inclusion, and `MainListPage` adds such items to its global sources before the enabled check. The update guard prevents new handler calls but does not exclude a nonempty title from rendering; preserve the enabled condition in the provider-qualified lookup.\n\n```suggestion\n    internal bool IncludeInGlobalResults => GetFallbackSettings() is { IsEnabled: true, IncludeInGlobalResults: true };\n```",
-      "in_diff": true
+      "title": "Pass the current wrapper type to the ranking regression test",
+      "severity": "medium",
+      "disposition": "proposed",
+      "in_diff": false,
+      "id": "51625-repair-ranking-test-input",
+      "body": "**Severity: Medium — the ranking regression test currently fails before testing ranking.**\r\n\r\n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ProviderFallbackSettingsTests.cs`, `FallbackRanking_PrefersProviderQualifiedIdAndPreservesLegacyRank`; and the existing `MainListPage.ScoreFallbackItem` signature in `Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs`.\r\n\r\n**Problem:** `ScoreFallbackItem` now accepts `InProcObject<IListItem>`, but all three reflection invocations still pass a raw `TopLevelFallbackViewModel`. Running this exact test throws `ArgumentException` because reflection cannot convert the argument to the wrapper type.\r\n\r\n**Why it matters:** If left unchanged, the focused suite fails and none of these assertions verifies provider-qualified ranking or the legacy-rank fallback. This is a test failure, not a demonstrated production crash.\r\n\r\n**Suggested change:**\r\n1. Add the `Microsoft.CmdPal.UI.ViewModels.Models` import to the test file.\r\n2. Wrap each of the three reflection invocations' first arguments in `new InProcObject<IListItem>(...)`, retaining the existing ranks and expected scores.\r\n3. Keep the production signature and all assertions; do not remove coverage merely to bypass the mismatch.\r\n\r\n**Verification:** Run `ProviderFallbackSettingsTests`. The unmodified invocation fails on the current revision; repairing the three arguments removes that failure. Together with the separate enabled-fallback correction, all 12 focused cases pass. The standard build still reports the existing SA1515/SA1028 errors in `SettingsViewModel.cs`; compilation and these tests were checked separately with analyzers disabled, not reported as an analyzer-clean build."
     }
   ],
   "actions": [
     {
-      "id": "51625-post-review",
       "type": "post_review",
-      "label": "Post two inline correctness suggestions",
-      "status": "awaiting_review_approval",
-      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
       "review": {
+        "commit_id": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75",
         "event": "COMMENT",
-        "commit_id": "d828f027dfe8201230d483495d3c09adcf03607b",
+        "head_sha": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75",
         "comment_ids": [
-          "51625-undefined-provider-settings",
-          "51625-disabled-global-fallback"
+          "51625-disabled-global-fallback",
+          "51625-repair-ranking-test-input"
         ]
-      }
+      },
+      "label": "Post inline suggestion and separate general test comment",
+      "id": "51625-post-current-assessment",
+      "head_sha": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75"
     }
   ],
   "validation": {
     "suggestion_patch": {
-      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+      "head_sha": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
-        "51625-undefined-provider-settings",
         "51625-disabled-global-fallback"
       ]
     },
     "line_ending_safety": {
-      "head_sha": "d828f027dfe8201230d483495d3c09adcf03607b",
+      "head_sha": "0004467a16b11a8cafa88bc82f0b793a2b7e6f75",
       "result": "passed",
       "checked_comment_ids": [
-        "51625-undefined-provider-settings",
         "51625-disabled-global-fallback"
       ],
       "files": [
         {
           "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelViewModel.cs",
           "result": "passed",
-          "line_endings": "lf"
+          "line_endings": "crlf"
         }
       ]
     }
