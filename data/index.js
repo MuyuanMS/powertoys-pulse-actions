@@ -1698,15 +1698,15 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post one general comment preserving variant analysis and nightly parity"
+        "label": "Post one general comment preserving variant analysis and nightly parity",
+        "type": "post_review"
       },
       "labels": [
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-28T23:58:36Z",
-      "updated_at": "2026-10-30T04:57:56Z",
+      "updated_at": "2026-10-30T05:22:12Z",
       "comments": 1,
       "priority": null,
       "review_decision": null,
