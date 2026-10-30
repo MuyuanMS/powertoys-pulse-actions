@@ -1,0 +1,114 @@
+{
+  "judgment": {
+    "rationale": "The report supplies a useful elevation-boundary reproduction. Reproduce cursor restoration versus immediate per-window repaint separately; ordinary elevated windows and the UAC secure desktop must not be conflated.",
+    "evaluated_at": "2026-10-30T10:24:07.8844791+00:00",
+    "evidence": [
+      "PowerToys0.102.3001; activate CursorHide, open Task Manager elevated, then move the pointer over it: the pointer reportedly stays invisible.",
+      "The supplied archive contains AutoHideCursor settings with hide_on_typing=true and hide_on_idle=false; the module-specific log entries do not identify a restore error.",
+      "The inspected implementation replaces system cursors and reloads them via SPI_SETCURSORS; RefreshCurrentCursor sends WM_NCHITTEST/WM_SETCURSOR to the window under the pointer.",
+      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation."
+    ],
+    "source_updated_at": "2026-10-30T09:35:50Z",
+    "status": "reproducible",
+    "recommended_action": "Run the elevated Task Manager cursor-restore matrix before selecting the repair boundary."
+  },
+  "issue_context": {
+    "analysis": "The report supplies a useful elevation-boundary reproduction. Reproduce cursor restoration versus immediate per-window repaint separately; ordinary elevated windows and the UAC secure desktop must not be conflated.",
+    "initial_investigation": [
+      "Read the complete report, all discussion and linked-work timeline, current labels and ownership.",
+      "Read the supplied settings and module log inventory.",
+      "Traced SystemCursorHider.RestoreSystemCursors/RefreshCurrentCursor and Worker timer/hook paths at inspected source67ac3d8b; no elevated input, cursor mutation or product runtime executed."
+    ],
+    "inferences": [
+      "Cursor restoration or the cross-integrity refresh message may fail to refresh an elevated window; no exact failing API is established by the archive."
+    ],
+    "known_information": [
+      "PowerToys0.102.3001; activate CursorHide, open Task Manager elevated, then move the pointer over it: the pointer reportedly stays invisible.",
+      "The supplied archive contains AutoHideCursor settings with hide_on_typing=true and hide_on_idle=false; the module-specific log entries do not identify a restore error.",
+      "The inspected implementation replaces system cursors and reloads them via SPI_SETCURSORS; RefreshCurrentCursor sends WM_NCHITTEST/WM_SETCURSOR to the window under the pointer.",
+      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation."
+    ],
+    "summary": "CursorHide visibility reportedly fails over elevated windows; settings and restoration boundaries support a focused reproduction.",
+    "information_gaps": [
+      {
+        "evidence_type": "module_trace",
+        "why_needed": "Avoid replacing global cursor policy or assuming all missing hook events are the cause",
+        "information": "Which restore/refresh boundary fails over an elevated window",
+        "how_to_collect": "Maintainer runs the supplied elevation/repaint matrix and records restore return/error plus visible cursor state"
+      }
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional investigation/fix direction, not a demonstrated root cause or completed design."
+  },
+  "number": 51752,
+  "source_updated_at": "2026-10-30T09:35:50Z",
+  "kind": "issue",
+  "proposed_fixes": [
+    {
+      "title": "Restore and refresh CursorHide visibility across elevation boundaries",
+      "verification": [
+        "Pointer returns when moving over normal and elevated windows after typing-hide.",
+        "Disabling the module restores the configured cursor scheme; secure-desktop transition is tested separately."
+      ],
+      "plan": [
+        "Reproduce typing-hide then pointer movement over normal and elevated Task Manager while recording restore and refresh outcomes.",
+        "If system restoration succeeds but target repaint fails, correct the supported refresh/fallback boundary without sending privileged input; if restore fails, preserve and handle the actual error.",
+        "Add focused restoration/error-path tests and retain disable/worker-exit recovery."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "score": 58,
+        "rationale": "Concrete reproduction and supplied settings, but no independently executed product scenario or causal failure trace."
+      },
+      "root_cause": "Hypothesis: successful global cursor restoration does not refresh the elevated target, or restoration itself fails. Timer polling is counterevidence to attributing everything to missing hook callbacks."
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/51752",
+  "schemaVersion": 5,
+  "generated_at": "2026-10-30T10:24:07.8844791+00:00",
+  "title": "CursorHide: no mouse cursor with elevated apps",
+  "evaluated_at": "2026-10-30T10:24:07.8844791+00:00",
+  "repository": "microsoft/PowerToys",
+  "pending_author": false,
+  "actions": [
+    {
+      "primary": true,
+      "type": "reproduce",
+      "label": "Reproduce elevated-window cursor restoration",
+      "id": "issue-51752-reproduce",
+      "reproduce": {
+        "version_requirement": "Reported0.102.3001 versus current stable/main",
+        "setup": [
+          "Use hide-on-typing enabled and hide-on-idle disabled, as supplied."
+        ],
+        "attachment_urls": [
+          "https://github.com/user-attachments/files/34174622/PowerToysReport_2026-10-30-10-33-45.zip"
+        ],
+        "prerequisites": [
+          "Controlled Windows test machine; preserve cursor scheme and module settings."
+        ],
+        "title": "Separate system-cursor restore from elevated-window repaint",
+        "steps": [
+          "1. Type to hide the pointer, move over an ordinary window and record recovery.",
+          "2. Repeat over elevated Task Manager, with PowerToys non-elevated and then elevated; record which boundary fails.",
+          "3. Capture SPI_SETCURSORS result/error and refresh-message outcomes; disable CursorHide and confirm the configured cursor returns.",
+          "4. Exercise UAC secure-desktop entry/exit separately, without treating it as an ordinary elevated window."
+        ],
+        "module": "CursorHide",
+        "expected_result": "Pointer visibility recovers on movement and module disable without requiring privileged input or replacing the user cursor scheme permanently."
+      }
+    },
+    {
+      "note": "Lightweight direction only; reproduce and locate the failed boundary before implementation approval.",
+      "type": "approve_design",
+      "label": "Review conditional cursor-restore investigation",
+      "id": "issue-51752-approve-direction",
+      "confirm": true
+    }
+  ],
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us"
+}
