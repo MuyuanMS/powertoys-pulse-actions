@@ -9,25 +9,27 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-30T09:01:42.2793769+08:00",
-  "evaluated_at": "2026-10-30T09:01:42.2794119+08:00",
-  "source_updated_at": "2026-10-30T00:13:04Z",
+  "generated_at": "2026-10-30T18:31:28.395194+08:00",
+  "evaluated_at": "2026-10-30T18:31:28.3952188+08:00",
+  "source_updated_at": "2026-10-30T09:58:17Z",
   "head_sha": "c1c84438727b72ec50fa540cf7323f11168e1505",
   "needs_revalidation": false,
   "proposed_comments": [],
   "actions": [
     {
+      "id": "51713-post-current-assessment",
+      "type": "post_review",
       "review": {
-        "body_prefix": "### Review assessment\r\n\r\nThe focused source assessment traced serialized preview activation, UI dispatch, per-screen screenshot backfill, stale screenshot rejection, and physical-pixel/DIP mapping for pointer navigation. The host now owns the outer border while the preview pane owns screen visuals.\r\n\r\nThe reported high-severity message-window failure was not established: no current repository caller uses `CreateMessageOnlyWindow`, and an isolated Win32 API probe successfully created a message-only window with the reported process-handle/null-instance combination as well as with a proper-module positive control. A process handle is not a module handle, so using proper module handles remains a reasonable cleanup, but this evidence does not establish an active MouseJump startup defect. The only caller of the generated managed `SendInput` wrapper sends exactly one input, so the proposed partial-send case does not demonstrate a failure of that caller.\r\n\r\n**Validation scope:** The paths above and their dependent helpers were inspected, exact-revision diff checks and changed XML/XAML well-formedness checks passed, and the isolated Win32 API contract probe ran. That probe is not execution of the MouseJump product. No full product build, added unit-test run, capture-performance measurement, mixed-DPI/multi-monitor UI scenario or accessibility/theme scenario was executed.\r\n\r\nNo production-code correction is asserted by this qualified assessment. It does not certify the unexecuted feature scenarios and is not an unconditional approval.",
-        "head_sha": "c1c84438727b72ec50fa540cf7323f11168e1505",
+        "event": "COMMENT",
         "commit_id": "c1c84438727b72ec50fa540cf7323f11168e1505",
-        "comment_ids": [],
-        "event": "COMMENT"
+        "comment_ids": [
+          null
+        ],
+        "body_prefix": "### Updated Mouse Jump assessment\r\n\r\nThe new upstream review was reassessed against the unchanged source. The following requests consolidate feedback already posted in that review rather than add duplicate inline threads:\r\n\r\n1. **High — activation and dismissal:** `PreviewWindow_Activated` throws for the valid `PointerActivated` state. Handle it alongside code activation. `InitializeWindow` also calls activating `AppWindow.Show()` after clipping the window empty, while `HideWindow` only clips/clears an HWND that can remain foreground. Show initialization without activation and give dismissal a deliberate foreground-release policy, preserving the no-flash rendering goal. **If left unchanged:** a pointer activation can terminate the UI process, and an invisible preview can retain keyboard focus at startup or after dismissal. Verify startup, mouse activation, Escape, successful navigation and typing back into the previous application.\r\n2. **Medium — pending activation cancellation:** the event thread waits for the callback to finish and passes its application-lifetime token. It cannot consume a second hotkey while the activated-screen capture is still pending. Introduce a per-activation cancellation scope and keep event intake responsive; handle supersession cancellation as expected, not as the event-loop fatal-error path. **If left unchanged:** a slow first capture can reveal an obsolete preview before a later request is processed. Test rapid activation with a deliberately delayed capture.\r\n3. **Medium — deterministic hit testing:** screen origins and sizes are rounded independently, but the pointer handler requires a unique containing screen via `SingleOrDefault`. Three equal adjacent1920px screens fitted into578px produce widths193px and origins0/193/385, so the latter two overlap at385px. Use deterministic first-match behavior or disjoint rounded edges. **If left unchanged:** clicking an overlap can throw rather than navigate. Add a fractional-scaling/adjacent-screen case, not just integer-scale layouts.\r\n4. **Medium — dismissal input and test observability:** the right-click handler belongs only to `PreviewPane`, while the outer `BorderImage` is not hit-testable. Route cancellation from a hit-testable host covering the border. Existing Mouse Jump UI tests wait for HWND SHOW/HIDE events, but region reveal/empty masking does not perform those HWND visibility transitions. Update readiness/dismissal observations to the actual preview state, or retain meaningful visibility transitions. **If left unchanged:** border right-click does not dismiss and the current show/hide-based tests wait for events the design no longer emits. Verify border/pane right-click, focus loss and repeated reveal/dismissal.\r\n\r\nThe repeated message-window `hInstance` concern still does not establish an active startup failure: the helper has no current caller and the retained isolated Win32 probe did not reproduce the claimed class-lookup failure. A process handle is not a module handle; correcting that dormant helper remains cleanup rather than evidence for the reported live activation/dismissal defects.\r\n\r\n**Validation scope:** This is source/caller/test-contract analysis plus the stated rounded-coordinate fixture, not a Mouse Jump product execution. Previous static/XML checks and the isolated Win32 probe remain bound to their original receipts. No new full build, added unit-test run, mixed-DPI UI, capture-performance or focus-restoration scenario was executed; the consequences above follow from the identified control/API paths, not a claimed end-to-end reproduction. This is not unconditional approval.",
+        "head_sha": "c1c84438727b72ec50fa540cf7323f11168e1505"
       },
-      "id": "51713-post-assessment-summary",
       "label": "Post qualified assessment summary (general comment)",
-      "head_sha": "c1c84438727b72ec50fa540cf7323f11168e1505",
-      "type": "post_review"
+      "head_sha": "c1c84438727b72ec50fa540cf7323f11168e1505"
     }
   ],
   "validation": {}
