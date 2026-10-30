@@ -2,29 +2,27 @@
   "schemaVersion": 5,
   "number": 50795,
   "kind": "issue",
-  "title": "[Mouse Without Borders] v0.101.2652.0: Settings rejects MWB with \"Rejected SettingsSync server: untrusted-signature\" because Settings.exe and MWB binaries are signed with different certificates",
+  "title": "[Mouse Without Borders] Rejected SettingsSync server: untrusted-signature / Settings.exe and MWB binaries are signed with different certificates (v0.101.2652.0+)",
   "url": "https://github.com/microsoft/PowerToys/issues/50795",
-  "generated_at": "2026-10-29T09:47:06.0157726+08:00",
-  "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
-  "source_updated_at": "2026-10-28T22:53:53Z",
+  "generated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "source_updated_at": "2026-10-30T14:48:20Z",
   "stage": "triage_revalidated",
   "judgment": {
     "status": "actionable_design",
     "rationale": "The comments extend the defect beyond GitHub per-user installation to Microsoft Store and the reciprocal IPC direction. Preserve the verification boundary and align the released peer binaries with the accepted signer policy. #51620 and #51077 are tracking/corroborating context, not independent fixes. Preserve primary tracking in #50795. Do not present cross-release file replacement as an approved correction or weaken signer/version checks.",
     "evidence": [
-      "The original 0.101.2652.0 report records repeated `untrusted-signature` exceptions in both service modes and different valid signer thumbprints for Settings and MWB binaries.",
-      "The October 27 comment confirms the same exception on 0.102.3001.0 and same certificate pair reversed across the executables; key/settings resets and service-mode changes failed, while downgrade to 0.101.2362.0 restored pairing.",
-      "At upstream main 9227a8497750, MeetsSigningPolicy requires HaveSameTrustedMicrosoftSigner for embedded-signed peers; HaveMatchingSignerCertificate compares signer RawData with FixedTimeEquals. This accounts for the rejection: https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI.Library/Utilities/NamedPipePeerVerification.cs#L265-L334",
-      "The issue links #50480, #49949, and #50615. Issue #51620 repeats the exact 0.102.3001.0 mismatch and is duplicate coverage, not a second fix candidate.",
-      "A new 0.102.0→0.102.3001 Microsoft Store report confirms the MWB-side rejection of Settings IPC as untrusted-signature and shows the impact on settings propagation, mapping and status updates; its file/config workaround only restores partial use and does not restore Settings UI synchronization.",
-      "Open #51620 independently reports the same 0.102.3001 key-generation/pairing failure, directly links #50795 and confirms the same signer mismatch.",
-      "Open tracking overview #51077 groups #50795 under the Settings-to-MWB peer-verification signer mismatch; no covering release-signing PR was found.",
+      "The original 0.101.2652.0 report records repeated SettingsSync rejection in both service modes and different Microsoft signer certificates for Settings and MWB executables.",
+      "A commenter reconfirmed the same error on 0.102.3001, with the same two certificates assigned to opposite executables, and reported downgrade to 0.101.2362.0 restored pairing.",
+      "A later Store-install report on 0.102.0→0.102.3001 records reciprocal MWB-side rejection of Settings IPC and describes incomplete workarounds.",
+      "Current NamedPipePeerVerification source requires same trusted signer identity for signed peers and compares signer certificate bytes.",
       "A new commenter reports that replacing the three MWB launcher executables with files from another release restored pairing on two x64 machine-wide installations: https://github.com/microsoft/PowerToys/issues/51567#issuecomment-6482766769",
-      "This is an unofficial mixed-version workaround reported by one commenter, not independently validated, a shipped fix, or evidence covering other architectures/install scopes. A Settings executable swap reportedly caused a runner version mismatch."
+      "This is an unofficial mixed-version workaround reported by one commenter, not independently validated, a shipped fix, or evidence covering other architectures/install scopes. A Settings executable swap reportedly caused a runner version mismatch.",
+      "The maintainer renamed the primary issue to identify the SettingsSync signer-certificate mismatch and pinned it. The late timeline adds no new code repair or additional reporter evidence."
     ],
     "recommended_action": "Continue the trust-preserving release-signing consistency correction in #50795; validate complete packages rather than endorsing mixed-version replacement.",
-    "evaluated_at": "2026-10-29T09:47:06.0157726+08:00",
-    "source_updated_at": "2026-10-28T22:53:53Z"
+    "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+    "source_updated_at": "2026-10-30T14:48:20Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -57,7 +55,8 @@
       "A later Store-install report on 0.102.0→0.102.3001 records reciprocal MWB-side rejection of Settings IPC and describes incomplete workarounds.",
       "Current NamedPipePeerVerification source requires same trusted signer identity for signed peers and compares signer certificate bytes.",
       "A new commenter reports that replacing the three MWB launcher executables with files from another release restored pairing on two x64 machine-wide installations: https://github.com/microsoft/PowerToys/issues/51567#issuecomment-6482766769",
-      "This is an unofficial mixed-version workaround reported by one commenter, not independently validated, a shipped fix, or evidence covering other architectures/install scopes. A Settings executable swap reportedly caused a runner version mismatch."
+      "This is an unofficial mixed-version workaround reported by one commenter, not independently validated, a shipped fix, or evidence covering other architectures/install scopes. A Settings executable swap reportedly caused a runner version mismatch.",
+      "The maintainer renamed the primary issue to identify the SettingsSync signer-certificate mismatch and pinned it. The late timeline adds no new code repair or additional reporter evidence."
     ],
     "inferences": [
       "The release signing assignment or packaging is the likely correction point; the exact pipeline owner/mechanism is not established by issue evidence.",
@@ -69,7 +68,9 @@
       "Inspected the cited NamedPipePeerVerification implementation and preserved the exact signer-equality behavior from the previous source investigation.",
       "Compared #51620, where a commenter identifies the same 0.102.3001 error and links #50795; read the #51077 tracker section that groups the signer-mismatch cause.",
       "Searched upstream PRs for the issue/error phrase; #50480 is the verification-policy change, not a fix for the release signer mismatch. No assignee or covering fix PR was found.",
-      "Read the linked workaround and its limitations without executing the supplied administrative script or modifying an installation. The reported matching-signer result corroborates the existing failure mechanism; it does not validate package compatibility."
+      "Read the linked workaround and its limitations without executing the supplied administrative script or modifying an installation. The reported matching-signer result corroborates the existing failure mechanism; it does not validate package compatibility.",
+      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair.",
+      "Read the complete refreshed comment pages and late rename/pin timeline; retained the existing signer-policy investigation rather than treating metadata activity as a repair."
     ],
     "information_gaps": []
   },

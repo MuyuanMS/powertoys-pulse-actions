@@ -1,0 +1,114 @@
+{
+  "title": "'Find My Mouse' can be activated during 'Grab and Move' functionality, which cancels 'Grab and Move'.",
+  "source_updated_at": "2026-10-30T13:49:07Z",
+  "actions": [
+    {
+      "reproduce": {
+        "steps": [
+          "1. Grab an ordinary window and move it far enough/rapidly enough to trigger Find My Mouse.",
+          "2. Record whether the grab stops and the first cancellation/focus/input transition; compare with Find My Mouse disabled.",
+          "3. Repeat across monitor boundaries, release the modifier/button and verify no input remains stuck.",
+          "4. Verify standalone Find My Mouse activation and cancellation/module-disable recovery."
+        ],
+        "version_requirement": "Reported0.102.3001 versus current stable/main",
+        "title": "Trace shake-triggered cancellation of an active grab",
+        "module": "Grab And Move / Find My Mouse",
+        "expected_result": "An active grab is not canceled by unrelated pointer-location activation, and normal module activation/input recovery remain correct.",
+        "prerequisites": [
+          "Controlled Windows machine; preserve both module configurations."
+        ],
+        "attachment_urls": [
+          "https://github.com/user-attachments/files/34177900/PowerToysReport_2026-10-30-11-54-25.zip"
+        ],
+        "setup": [
+          "Enable Grab And Move with the supplied modifier and Find My Mouse shake activation; use two monitors if available."
+        ]
+      },
+      "type": "reproduce",
+      "label": "Reproduce Find My Mouse during an active grab",
+      "primary": true,
+      "id": "issue-51758-reproduce"
+    },
+    {
+      "confirm": true,
+      "type": "approve_design",
+      "label": "Review conditional mouse-interaction coordination",
+      "note": "Lightweight direction only; reproduce and locate the failed transition before implementation.",
+      "id": "issue-51758-approve-direction"
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "root_cause": "Hypothesis: Find My Mouse overlay activation interrupts the grab state machine; the precise input/focus/cancellation path remains unproven.",
+      "verification": [
+        "A grabbed window continues moving while Find My Mouse would otherwise activate.",
+        "Normal shake/shortcut activation still works outside a grab.",
+        "Modifier/button release, cancellation and module disable restore ordinary input."
+      ],
+      "plan": [
+        "Reproduce the supplied configuration and identify the first interaction cancellation transition.",
+        "If confirmed, coordinate Find My Mouse activation with the existing active-grab lifecycle or correct the overlay behavior at the demonstrated boundary; retain normal standalone activation.",
+        "Add start/end/cancel regressions, including modifier release, multi-monitor movement and module shutdown."
+      ],
+      "title": "Preserve active Grab And Move gestures during Find My Mouse activation",
+      "confidence": {
+        "rationale": "Concrete report and supplied module configurations; no independently executed product interaction or causal trace.",
+        "level": "yellow",
+        "score": 60
+      }
+    }
+  ],
+  "generated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "repository": "microsoft/PowerToys",
+  "track": "triage",
+  "kind": "issue",
+  "owes": "us",
+  "url": "https://github.com/microsoft/PowerToys/issues/51758",
+  "number": 51758,
+  "pending_author": false,
+  "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "judgment": {
+    "evidence": [
+      "PowerToys0.102.3001; the report supplies reproducible steps and a diagnostic ZIP: activating Find My Mouse while moving a grabbed window reportedly cancels the grab.",
+      "The supplied FindMyMouse configuration uses activation_method2 with shaking thresholds; GrabAndMove uses modifierKey1. Both module configurations were read from the archive.",
+      "Thirty-eight relevant text/config entries were inspected. No capture-loss trace establishes the exact cancellation mechanism.",
+      "The inspected Find My Mouse StartSonar path applies game-mode/excluded-app guards, then shows its topmost overlay. No cross-module active-grab guard appears in that path."
+    ],
+    "rationale": "The report and supplied configuration support a targeted maintainer interaction reproduction, not another generic log request. Determine which grab cancellation transition fires before choosing a shared interaction-state or overlay-activation repair.",
+    "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+    "recommended_action": "Reproduce shake-during-grab and record the precise cancellation boundary before implementing coordination.",
+    "source_updated_at": "2026-10-30T13:49:07Z",
+    "status": "reproducible"
+  },
+  "stage": "triaged",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A conditional interaction-coordination fix is applicable, but its exact boundary is not established."
+  },
+  "schemaVersion": 5,
+  "issue_context": {
+    "known_information": [
+      "PowerToys0.102.3001; the report supplies reproducible steps and a diagnostic ZIP: activating Find My Mouse while moving a grabbed window reportedly cancels the grab.",
+      "The supplied FindMyMouse configuration uses activation_method2 with shaking thresholds; GrabAndMove uses modifierKey1. Both module configurations were read from the archive.",
+      "Thirty-eight relevant text/config entries were inspected. No capture-loss trace establishes the exact cancellation mechanism.",
+      "The inspected Find My Mouse StartSonar path applies game-mode/excluded-app guards, then shows its topmost overlay. No cross-module active-grab guard appears in that path."
+    ],
+    "summary": "Find My Mouse shake activation interrupts an active Grab And Move gesture.",
+    "inferences": [
+      "The overlay activation may interrupt an active drag, but the failing cancellation/focus/input transition is not yet demonstrated."
+    ],
+    "analysis": "The report and supplied configuration support a targeted maintainer interaction reproduction, not another generic log request. Determine which grab cancellation transition fires before choosing a shared interaction-state or overlay-activation repair.",
+    "information_gaps": [
+      {
+        "how_to_collect": "Maintainer runs the supplied shake-during-drag scenario and traces interaction end reason, overlay activation and input release",
+        "information": "The active-grab cancellation transition when Find My Mouse activates",
+        "evidence_type": "module_trace",
+        "why_needed": "Select the narrow fix boundary without disabling Find My Mouse globally or inventing a capture-loss cause"
+      }
+    ],
+    "initial_investigation": [
+      "Read the complete report, discussion, labels and timeline; inspected the supplied archive and both module configurations.",
+      "Inspected FindMyMouse StartSonar and GrabAndMove interaction state at source397c491b. No product/input reproduction or capture-loss trace was executed."
+    ]
+  }
+}

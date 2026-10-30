@@ -1,10 +1,118 @@
 {
-  "schemaVersion":5,"number":51652,"kind":"issue","track":"fix","title":"CmdPal: Dock always uses system theme on launch until the Dock settings page is opened or system theme changes","url":"https://github.com/microsoft/PowerToys/issues/51652","generated_at":"2026-10-28T08:31:28.252Z","evaluated_at":"2026-10-28T08:31:28.252Z","source_updated_at":"2026-10-28T06:02:24Z","stage":"triage","pending_author":false,
-  "summary":"The Dock initially ignores its saved theme until a theme event occurs; initialize the Dock root from CurrentDockTheme rather than relying solely on later change notifications.","next_action":"Reproduce once with the saved Dock theme on the installed Command Palette package, then consider the startup-theme proposal.",
-  "judgment":{"status":"actionable_design","rationale":"The report gives a concise startup repro and a screen recording. Source inspection shows DockWindow refreshes Root.RequestedTheme only in its ThemeChanged handler; the constructor subscribes but does not apply the current Dock theme to the root. This is a credible initialization gap; runtime reproduction should confirm event ordering and theme variants before detailed design.","evidence":["On Command Palette package 0.13.13001.0, the author reports that the Dock uses the system theme at launch and changes to its configured theme only after opening Dock settings or changing the system theme.","The report includes a screen-recording ZIP; it was not downloaded or independently inspected in this triage.","DockWindow.xaml.cs subscribes to IThemeService.ThemeChanged in its constructor; Root.RequestedTheme is cycled through Dark, Light, and CurrentDockTheme.Theme only in ThemeService_ThemeChanged.","ThemeService computes and publishes CurrentDockTheme during Reload; DockWindow calls UpdateSettingsOnUiThread but does not directly set Root.RequestedTheme from CurrentDockTheme in its constructor.","#51366 reports a related Dock startup theme-resource refresh symptom, but remains open without a covering fix; no linked PR or fork trace was found for #51652."],"recommended_action":"Reproduce saved-theme startup and, if confirmed, approve a focused initialization proposal applying CurrentDockTheme when the Dock root is created.","evaluated_at":"2026-10-28T08:31:28.252Z","source_updated_at":"2026-10-28T06:02:24Z"},
-  "issue_context":{"summary":"The Command Palette Dock renders with the system theme instead of its saved theme on launch; opening Dock settings or a system-theme change makes the configured theme appear.","known_information":["The reporter uses Microsoft Store Command Palette package 0.13.13001.0 and expects the saved Dock theme at launch.","The failure stops after Dock settings are opened or the system theme changes.","A screen-recording ZIP is attached.","Current DockWindow applies the root theme in response to ThemeChanged but does not explicitly initialize Root.RequestedTheme in its constructor."],"inferences":["The Dock may miss the theme service's initial notification or render before the saved Dock theme is applied; source inspection supports this possibility but does not prove runtime ordering.","The issue may share an initialization path with #51366, which describes dark foreground resources refreshing only after Dock settings are opened."],"analysis":"The recovery trigger points to stale initialization rather than a persistent settings failure. A small startup synchronization change is plausible, but reproduce Light, Dark, and System before detailed design. #51366 is related evidence, not a confirmed covering fix.","initial_investigation":["Read the full issue body and discussion; there are no comments, assignees, or diagnostic logs.","Read DockWindow constructor, ThemeService_ThemeChanged, and ThemeService.Reload's CurrentDockTheme creation/notification behavior.","Compared #51366: it shares the initial Dock theme/resource refresh trigger but reports a dark foreground symptom, so it is treated as related rather than assumed duplicate.","Searched upstream PRs and MuyuanMS fork issue/PR/branch traces for #51652; none were found."],"information_gaps":[]},
-  "labels":["Issue-Bug","Needs-Triage"],"assignees":[],"comments":0,
-  "fix_assessment":{"status":"proposed","rationale":"A Dock-root theme initialization correction is plausible from the event-only root refresh; reproduce launch timing before detailed design.","existing_fix_urls":[]},
-  "proposed_fixes":[{"title":"Apply the saved Dock theme when the Dock root is initialized","root_cause":"DockWindow appears to rely on ThemeChanged to synchronize Root.RequestedTheme. If the theme service's initial notification precedes the Dock subscription, the root can retain its default/system theme until a later theme event.","plan":["Reproduce with a saved Dark or Light Dock theme and record startup versus opening Dock settings.","Initialize the Dock root from IThemeService.CurrentDockTheme.Theme after XAML root creation, using the existing theme refresh behavior where required.","Add regression coverage for Dark, Light, and System Dock themes on first launch without opening settings."],"verification":["Restart Command Palette with each saved Dock theme and verify the first rendered Dock uses the configured theme before settings are opened.","Open Dock settings and change the system theme to verify existing change-notification behavior remains correct."],"confidence":{"score":74,"level":"yellow","rationale":"The recovery trigger and event-only root synchronization fit an initialization gap, but actual startup ordering and theme variants need confirmation on the installed package."}}],
-  "actions":[{"type":"approve_design","label":"Approve Dock startup-theme initialization proposal"},{"type":"reproduce","label":"Reproduce saved Dock theme on launch","note":"The report is specific enough for a maintainer to verify before requesting diagnostics.","reproduce":{"title":"Verify saved Command Palette Dock theme at startup","module":"Command Palette","version_requirement":"Microsoft Store Command Palette package 0.13.13001.0 or newer","prerequisites":["Command Palette Dock enabled","A saved Dock theme different from the current system theme"],"setup":["Set the Dock theme to Dark while Windows is using Light (or vice versa).","Close and restart Command Palette without opening Dock settings."],"steps":["Observe the Dock immediately after launch.","Open the Dock settings page without changing any value.","Observe whether the Dock then switches to the saved theme.","Repeat with the Dock theme set to System."],"expected_result":"The Dock uses its saved Light/Dark theme on first render; System follows Windows theme without opening Dock settings.","attachments":[{"label":"Reporter screen recording","url":"https://github.com/user-attachments/files/34060013/Screen.Recording.2026-10-28.160146.zip"}]}}]
+  "schemaVersion": 5,
+  "number": 51652,
+  "kind": "issue",
+  "track": "fix",
+  "title": "CmdPal: Dock always uses system theme on launch until the Dock settings page is opened or system theme changes",
+  "url": "https://github.com/microsoft/PowerToys/issues/51652",
+  "generated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "source_updated_at": "2026-10-30T13:50:52Z",
+  "stage": "triage",
+  "pending_author": false,
+  "summary": "The Dock initially ignores its saved theme until a theme event occurs; initialize the Dock root from CurrentDockTheme rather than relying solely on later change notifications.",
+  "next_action": "Reproduce once with the saved Dock theme on the installed Command Palette package, then consider the startup-theme proposal.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a concise startup repro and a screen recording. Source inspection shows DockWindow refreshes Root.RequestedTheme only in its ThemeChanged handler; the constructor subscribes but does not apply the current Dock theme to the root. This is a credible initialization gap; runtime reproduction should confirm event ordering and theme variants before detailed design.",
+    "evidence": [
+      "The reporter uses Microsoft Store Command Palette package 0.13.13001.0 and expects the saved Dock theme at launch.",
+      "The failure stops after Dock settings are opened or the system theme changes.",
+      "A screen-recording ZIP is attached.",
+      "Current DockWindow applies the root theme in response to ThemeChanged but does not explicitly initialize Root.RequestedTheme in its constructor."
+    ],
+    "recommended_action": "Reproduce saved-theme startup and, if confirmed, approve a focused initialization proposal applying CurrentDockTheme when the Dock root is created.",
+    "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+    "source_updated_at": "2026-10-30T13:50:52Z"
+  },
+  "issue_context": {
+    "summary": "The Command Palette Dock renders with the system theme instead of its saved theme on launch; opening Dock settings or a system-theme change makes the configured theme appear.",
+    "known_information": [
+      "The reporter uses Microsoft Store Command Palette package 0.13.13001.0 and expects the saved Dock theme at launch.",
+      "The failure stops after Dock settings are opened or the system theme changes.",
+      "A screen-recording ZIP is attached.",
+      "Current DockWindow applies the root theme in response to ThemeChanged but does not explicitly initialize Root.RequestedTheme in its constructor."
+    ],
+    "inferences": [
+      "The Dock may miss the theme service's initial notification or render before the saved Dock theme is applied; source inspection supports this possibility but does not prove runtime ordering.",
+      "The issue may share an initialization path with #51366, which describes dark foreground resources refreshing only after Dock settings are opened."
+    ],
+    "analysis": "The recovery trigger points to stale initialization rather than a persistent settings failure. A small startup synchronization change is plausible, but reproduce Light, Dark, and System before detailed design. #51366 is related evidence, not a confirmed covering fix.",
+    "initial_investigation": [
+      "Read the full issue body and discussion; there are no comments, assignees, or diagnostic logs.",
+      "Read DockWindow constructor, ThemeService_ThemeChanged, and ThemeService.Reload's CurrentDockTheme creation/notification behavior.",
+      "Compared #51366: it shares the initial Dock theme/resource refresh trigger but reports a dark foreground symptom, so it is treated as related rather than assumed duplicate.",
+      "Searched upstream PRs and MuyuanMS fork issue/PR/branch traces for #51652; none were found.",
+      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair."
+    ],
+    "information_gaps": []
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Dock-root theme initialization correction is plausible from the event-only root refresh; reproduce launch timing before detailed design.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply the saved Dock theme when the Dock root is initialized",
+      "root_cause": "DockWindow appears to rely on ThemeChanged to synchronize Root.RequestedTheme. If the theme service's initial notification precedes the Dock subscription, the root can retain its default/system theme until a later theme event.",
+      "plan": [
+        "Reproduce with a saved Dark or Light Dock theme and record startup versus opening Dock settings.",
+        "Initialize the Dock root from IThemeService.CurrentDockTheme.Theme after XAML root creation, using the existing theme refresh behavior where required.",
+        "Add regression coverage for Dark, Light, and System Dock themes on first launch without opening settings."
+      ],
+      "verification": [
+        "Restart Command Palette with each saved Dock theme and verify the first rendered Dock uses the configured theme before settings are opened.",
+        "Open Dock settings and change the system theme to verify existing change-notification behavior remains correct."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The recovery trigger and event-only root synchronization fit an initialization gap, but actual startup ordering and theme variants need confirmation on the installed package."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Dock startup-theme initialization proposal"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce saved Dock theme on launch",
+      "note": "The report is specific enough for a maintainer to verify before requesting diagnostics.",
+      "reproduce": {
+        "title": "Verify saved Command Palette Dock theme at startup",
+        "module": "Command Palette",
+        "version_requirement": "Microsoft Store Command Palette package 0.13.13001.0 or newer",
+        "prerequisites": [
+          "Command Palette Dock enabled",
+          "A saved Dock theme different from the current system theme"
+        ],
+        "setup": [
+          "Set the Dock theme to Dark while Windows is using Light (or vice versa).",
+          "Close and restart Command Palette without opening Dock settings."
+        ],
+        "steps": [
+          "Observe the Dock immediately after launch.",
+          "Open the Dock settings page without changing any value.",
+          "Observe whether the Dock then switches to the saved theme.",
+          "Repeat with the Dock theme set to System."
+        ],
+        "expected_result": "The Dock uses its saved Light/Dark theme on first render; System follows Windows theme without opening Dock settings.",
+        "attachments": [
+          {
+            "label": "Reporter screen recording",
+            "url": "https://github.com/user-attachments/files/34060013/Screen.Recording.2026-10-28.160146.zip"
+          }
+        ]
+      }
+    }
+  ]
 }
