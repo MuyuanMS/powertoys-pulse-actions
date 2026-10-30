@@ -5607,10 +5607,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 3,
+      "proposed_open": 2,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post two inline suggestions and one review note"
+        "label": "Post two implementation-ready general PR comments",
+        "type": "post_review"
       },
       "labels": [
         "Product-ZoomIt",
