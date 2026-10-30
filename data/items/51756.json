@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 5,
+  "number": 51756,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Fix AI issue triage accounting and typed publication",
+  "url": "https://github.com/microsoft/PowerToys/pull/51756",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-30T23:09:38.1504585+08:00",
+  "evaluated_at": "2026-10-30T23:09:38.1504777+08:00",
+  "source_updated_at": "2026-10-30T11:41:52Z",
+  "head_sha": "e4f9d882ab2c9cbb44452d536c012e341894a23e",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "body": "**Severity: High — the fallback is not a conservative maximum for the whole workflow run.**\r\n\r\n**Affected code:** `.github/workflows/issue-triage.md` credit configuration and its generated `.github/workflows/issue-triage.lock.yml`, especially the daily guardrail at lines192–193 and the detection allowance at line1735.\r\n\r\n**Problem:** The pinned guardrail runtime passes `GH_AW_MAX_AI_CREDITS` as the scanner's whole-run fallback when accounting cannot be recovered. Here that is 10, but it caps only the agent. The generated detection job separately uses `GH_AW_DEFAULT_DETECTION_MAX_AI_CREDITS`, defaulting to 400. Its usage is therefore not bounded by the 10-credit assumption. A controlled test of the pinned scanner confirms that a cancelled run with unresolved accounting is counted as 10; measured usage is retained when available, and removing the fallback fails closed.\r\n\r\n**Why it matters:** If left unchanged, a run whose detection stage consumed more than 10 credits can be counted as only 10 when its usage cannot be recovered. Repeated unresolved runs can materially undercount the 300-credit rolling budget and admit additional work. This is a reachable accounting-boundary problem, not a claim that the default 400 credits were actually spent.\r\n\r\n**Suggested change:**\r\n1. Keep the intended 10-credit agent cap, but make the guardrail's fallback a conservative bound for every billable component, including detection and its configured allowance. Do not solve this by simply raising the agent's spending limit.\r\n2. Use compiler/runtime support for an aggregate bound, or fail closed when any component usage is unresolved and no safe aggregate bound is available. If detection is explicitly capped, ensure its maximum is also included in the fallback contract.\r\n3. Regenerate the lock file and extend the workflow contract/accounting regressions to cover a cancelled or unavailable detection usage record, including nondefault detection allowances.\r\n\r\n**Verification:** Confirm the rolling total cannot admit work using an estimate below the possible agent-plus-detection consumption. All 58 existing Python regressions passed, and six assertions exercised the pinned scanner's unresolved/measured/no-fallback paths. These checks do not execute hosted billing, a real cancelled workflow or a replacement accounting design. The existing upstream review raises the same concern; consolidate the correction there rather than create duplicate threads.",
+      "confidence": {
+        "score": 95,
+        "rationale": "Pinned scanner fixture confirms whole-run fallback10; generated exact-head agent/detection settings expose independent component allowances."
+      },
+      "out_of_diff_reason": "The source configuration, compiler/runtime accounting contract, generated lock and regression expectations must be coordinated; a one-line agent-limit edit is not a safe remedy.",
+      "id": "51756-cover-detection-in-fallback",
+      "title": "Account for all billable components in the daily fallback",
+      "kind": "companion",
+      "disposition": "proposed",
+      "severity": "high",
+      "in_diff": false
+    }
+  ],
+  "actions": [
+    {
+      "head_sha": "e4f9d882ab2c9cbb44452d536c012e341894a23e",
+      "id": "51756-post-current-assessment",
+      "label": "Post implementation-ready general PR comment",
+      "type": "post_review",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "51756-cover-detection-in-fallback"
+        ],
+        "head_sha": "e4f9d882ab2c9cbb44452d536c012e341894a23e",
+        "commit_id": "e4f9d882ab2c9cbb44452d536c012e341894a23e"
+      }
+    }
+  ],
+  "validation": {}
+}
