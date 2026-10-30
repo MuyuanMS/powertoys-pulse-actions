@@ -1506,7 +1506,11 @@ window.BOARD_INDEX = {
     51752,
     51753,
     51756,
-    51758
+    51758,
+    51561,
+    51757,
+    51567,
+    51780
   ],
   "items": [
     {
@@ -28039,8 +28043,8 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -28049,7 +28053,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-25T17:15:15Z",
       "updated_at": "2026-10-30T19:09:47Z",
       "comments": 19,
@@ -28227,22 +28233,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
+      "track": "triage",
       "stage": "triage_revalidated",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Reproduce Command Palette hotkeys behavior",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Command Palette",
         "CmdPal-Keyboard"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-25T14:27:41Z",
       "updated_at": "2026-10-30T15:07:21Z",
       "comments": 4,
@@ -218959,21 +218970,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Reproduce both Windows10 menu handlers",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-30T18:56:56Z",
       "updated_at": "2026-10-30T18:56:56Z",
       "comments": 0,
@@ -261622,8 +261638,8 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -261632,7 +261648,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-30T10:52:05Z",
       "updated_at": "2026-10-30T17:49:28Z",
       "comments": 0,

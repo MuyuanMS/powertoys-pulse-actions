@@ -4,10 +4,13 @@
   "kind": "issue",
   "title": "Shortcut not working despite no detected conflicts",
   "url": "https://github.com/microsoft/PowerToys/issues/51561",
-  "generated_at": "2026-10-27T19:04:50.85658+08:00",
-  "evaluated_at": "2026-10-27T19:04:50.85658+08:00",
-  "source_updated_at": "2026-10-26T01:34:27Z",
+  "generated_at": "2026-10-30T19:36:47.4943894+00:00",
+  "evaluated_at": "2026-10-30T19:36:47.4943894+00:00",
+  "source_updated_at": "2026-10-30T15:07:21Z",
   "stage": "triage_revalidated",
+  "track": "triage",
+  "owes": "us",
+  "pending_author": false,
   "judgment": {
     "status": "duplicate_or_handled",
     "rationale": "Use the existing dedicated-keyboard-thread work for the hook-reliability portion. Keep conflict-reporting expectations distinct from successful system-shortcut interception; do not promise #50982 resolves every warning/UI expectation.",
@@ -15,11 +18,11 @@
       "Without the low-level hook, Win+S opens Windows Search; with the hook, both applications sometimes open.",
       "The maintainer says the hook is required for system-shortcut override and points to #50982 for reliability.",
       "A 'no conflict' UI result is not proof that Windows does not reserve a shortcut.",
-      "Read open #50982's GlobalHotkeyService/GlobalKeyboardHook changes: hooks run on a dedicated message loop with renewal and nonblocking callback requirements."
+      "The reporter says an AutoHotkey remap from Win+S to the ordinary CmdPal shortcut works, while the PowerToys hook still does not. A maintainer notes AHK uses the same low-level hook mechanism; that does not prove equivalent thread/lifetime behavior."
     ],
     "recommended_action": "Reproduce Command Palette hotkeys behavior",
-    "evaluated_at": "2026-10-27T19:04:50.85658+08:00",
-    "source_updated_at": "2026-10-26T01:34:27Z"
+    "evaluated_at": "2026-10-30T19:36:47.4943894+00:00",
+    "source_updated_at": "2026-10-30T15:07:21Z"
   },
   "fix_assessment": {
     "status": "existing_fix",
@@ -34,12 +37,14 @@
     "known_information": [
       "Without the low-level hook, Win+S opens Windows Search; with the hook, both applications sometimes open.",
       "The maintainer says the hook is required for system-shortcut override and points to #50982 for reliability.",
-      "A 'no conflict' UI result is not proof that Windows does not reserve a shortcut."
+      "A 'no conflict' UI result is not proof that Windows does not reserve a shortcut.",
+      "The reporter says an AutoHotkey remap from Win+S to the ordinary CmdPal shortcut works, while the PowerToys hook still does not. A maintainer notes AHK uses the same low-level hook mechanism; that does not prove equivalent thread/lifetime behavior."
     ],
     "inferences": [],
-    "analysis": "Use the existing dedicated-keyboard-thread work for the hook-reliability portion. Keep conflict-reporting expectations distinct from successful system-shortcut interception; do not promise #50982 resolves every warning/UI expectation.",
+    "analysis": "Use the existing dedicated-keyboard-thread work for the hook-reliability portion. Keep conflict-reporting expectations distinct from successful system-shortcut interception; do not promise #50982 resolves every warning/UI expectation. The AHK comparison supports a controlled interception/suppression comparison, not a conclusion that CmdPal must embed AHK or that all low-level hooks are broken.",
     "initial_investigation": [
-      "Read open #50982's GlobalHotkeyService/GlobalKeyboardHook changes: hooks run on a dedicated message loop with renewal and nonblocking callback requirements."
+      "Read open #50982's GlobalHotkeyService/GlobalKeyboardHook changes: hooks run on a dedicated message loop with renewal and nonblocking callback requirements.",
+      "Read all three new replies. Covering dedicated-keyboard-thread PR50982 is still open and unmerged, so no shipped-fix claim is made. Retained maintainer reproduction rather than asking for another generic report."
     ],
     "information_gaps": []
   },
@@ -59,7 +64,8 @@
         "steps": [
           "Set Win+S, compare hook disabled/enabled and a nonreserved shortcut.",
           "Compare current stable with the existing #50982 branch in a controlled environment and verify both activation and suppression of Windows Search.",
-          "Record conflict diagnostics separately from hook interception behavior."
+          "Record conflict diagnostics separately from hook interception behavior.",
+          "Compare the reported AHK Win+S-to-default-shortcut workaround with the same direct CmdPal Win+S binding; record which application receives the key-up/down events without logging unrelated typed input."
         ],
         "expected_result": "The hook-enabled override activates only the intended target; any remaining conflict-display limitation is identified separately."
       }
