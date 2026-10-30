@@ -2031,7 +2031,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2039,16 +2039,13 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-28T06:58:22Z",
-      "updated_at": "2026-10-29T06:14:15Z",
+      "updated_at": "2026-10-30T05:53:14Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
