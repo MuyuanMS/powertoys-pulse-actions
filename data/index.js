@@ -1628,7 +1628,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "post_review",
-        "label": "Post qualified source assessment"
+        "label": "Post qualified capture assessment (general comment)"
       },
       "labels": [
         "Product-ZoomIt",
