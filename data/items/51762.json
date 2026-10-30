@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 5,
+  "number": 51762,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: Apps (0): Prerequisites (3) - Introduce stable app command IDs",
+  "url": "https://github.com/microsoft/PowerToys/pull/51762",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-31T04:10:04.4077227+08:00",
+  "evaluated_at": "2026-10-31T04:10:04.4110926+08:00",
+  "source_updated_at": "2026-10-30T18:08:21Z",
+  "head_sha": "86c284f46b987e777679e467d032f5f728b8c4e5",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "title": "Resolve hidden-app aliases when removing recent history",
+      "in_diff": true,
+      "body": "**Severity: Medium — removing a hidden pinned app from Recents can leave its saved history unchanged.**\r\n\r\nWith Recents placed before pinned commands, `TopLevelCommandResolver` can select an explicitly pinned hidden app into the recent section. If that pin uses the current command ID while persisted history still uses an equivalent legacy ID, this visible-only lookup cannot canonicalize the hidden app's history entry. `WithoutHistoryItem` then returns the unchanged manager and the command exits without updating state.\r\n\r\n**If left unchanged:** Remove from recent can appear to do nothing for that item, and its old history remains available when the app is shown again.\r\n\r\nHistory identity resolution should include hidden apps, just as `QuickAccessShelfViewModel.TryRemoveItem` already does; visibility filtering should stay in the display-resolution paths.\r\n\r\n```suggestion\r\n                : savedId => appSnapshot.GetApp(savedId)?.Command?.Id ?? savedId;\r\n```\r\n\r\nPlease retain regression coverage for a canonical-ID hidden pin with legacy-ID history and Recents-before-pins, plus the visible-app control and an unrelated history entry. A focused compiled probe using the actual snapshot/history types verified that the current selector retains the hidden legacy entry while this replacement removes it and preserves unrelated history. The caller path was traced in source; no interactive context-menu execution or complete UI build is claimed.",
+      "id": "hidden-recent-history-alias",
+      "confidence": {
+        "rationale": "Actual snapshot/history probe verifies the alias-removal failure and replacement. Reachability is traced through explicit hidden pins, recent-first resolution and the recent-item context menu; no interactive execution is claimed.",
+        "score": 84
+      },
+      "side": "RIGHT",
+      "line": 426,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
+      "kind": "inline",
+      "severity": "medium"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "comment_ids": [
+          "hidden-recent-history-alias"
+        ],
+        "head_sha": "86c284f46b987e777679e467d032f5f728b8c4e5",
+        "event": "COMMENT",
+        "commit_id": "86c284f46b987e777679e467d032f5f728b8c4e5"
+      },
+      "label": "Post supported inline suggestion",
+      "head_sha": "86c284f46b987e777679e467d032f5f728b8c4e5",
+      "type": "post_review",
+      "id": "51762-post-current-assessment"
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "86c284f46b987e777679e467d032f5f728b8c4e5",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "hidden-recent-history-alias"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "86c284f46b987e777679e467d032f5f728b8c4e5",
+      "result": "passed",
+      "checked_comment_ids": [
+        "hidden-recent-history-alias"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
+          "result": "passed",
+          "line_endings": "crlf"
+        }
+      ]
+    }
+  }
+}
