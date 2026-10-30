@@ -1531,7 +1531,8 @@ window.BOARD_INDEX = {
     51666,
     51733,
     51736,
-    50740
+    50740,
+    51713
   ],
   "items": [
     {
@@ -1660,15 +1661,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Post qualified assessment summary (general comment)",
+        "type": "post_review"
+      },
       "labels": [
         "Product-Mouse Jump",
         "Ready for review"
