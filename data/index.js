@@ -2840,8 +2840,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified command ownership assessment"
+        "label": "Post qualified assessment summary",
+        "type": "post_review"
       },
       "labels": [
         "Product-Command Palette",
