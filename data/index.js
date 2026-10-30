@@ -4119,7 +4119,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4127,7 +4127,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Post qualified assessment summary",
+        "type": "post_review"
+      },
       "labels": [
         "Product-General",
         "Ready for review"
@@ -4136,7 +4139,7 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-10-13T14:14:06Z",
-      "updated_at": "2026-10-30T13:02:10Z",
+      "updated_at": "2026-10-30T15:02:57Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
