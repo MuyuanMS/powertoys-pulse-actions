@@ -2656,8 +2656,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post implementation-ready general PR comment"
+        "label": "Post implementation-ready general PR comment",
+        "type": "post_review"
       },
       "labels": [
         "Ready for review"
