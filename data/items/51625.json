@@ -9,15 +9,15 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-31T08:47:55.4163947+08:00",
-  "evaluated_at": "2026-10-31T08:47:55.4164425+08:00",
-  "source_updated_at": "2026-10-30T21:24:59Z",
+  "generated_at": "2026-10-31T13:31:20.8027585+08:00",
+  "evaluated_at": "2026-10-31T13:31:20.8027783+08:00",
+  "source_updated_at": "2026-10-31T02:05:23Z",
   "head_sha": "370058f73da3c1972f04d06b70c110f261e731e7",
   "needs_revalidation": false,
   "proposed_comments": [
     {
       "severity": "medium",
-      "body": "**Severity: Medium — disabled fallback commands can still contribute global results.**\r\n\r\n`MainListPage` adds items satisfying this property to `specialFallbacks` before its `else if (s.IsEnabled)` check. Checking only the global-results flag therefore bypasses the fallback's enabled setting. The previous global-selection helper required both flags.\r\n\r\n**If left unchanged:** a fallback saved with `IsEnabled=false` and `IncludeInGlobalResults=true` can continue producing global results despite being disabled.\r\n\r\n```suggestion\r\n    internal bool IncludeInGlobalResults => GetFallbackSettings() is { IsEnabled: true, IncludeInGlobalResults: true };\r\n```\r\n\r\nThe four enabled/global combinations were exercised against the current source: only disabled/global=true fails before this replacement, and all four pass after it. The literal replacement compiles with analyzers enabled. This does not claim an interactive Command Palette run.",
+      "body": "**Severity: Medium — disabled fallback commands can still contribute global results.**\r\n\r\n`MainListPage` adds items satisfying this property to `specialFallbacks` before its `else if (s.IsEnabled)` check. Checking only the global-results flag therefore bypasses the fallback's enabled setting. The previous global-selection helper required both flags.\r\n\r\n**If left unchanged:** a fallback saved with `IsEnabled=false` and `IncludeInGlobalResults=true` can continue producing global results despite being disabled.\r\n\r\n```suggestion\r\n    internal bool IncludeInGlobalResults => GetFallbackSettings() is { IsEnabled: true, IncludeInGlobalResults: true };\r\n```\r\n\r\nThe four enabled/global combinations were exercised against the current source: only disabled/global=true fails before this replacement, and all four pass after it. The literal replacement compiles with analyzers enabled. This does not claim an interactive Command Palette run.\n\n**Latest maintainer context:** The maintainer identifies a bad merge and says this wrapper had already been removed from main. Reconcile that merge first and do not restore retired code just to apply this draft. The observed enabled/global and reflection-input failures describe the still-present current revision; after removing or replacing that code, recheck the equivalent current path and retire any suggestion whose target disappears.",
       "in_diff": true,
       "title": "Keep disabled fallbacks out of global results",
       "confidence": {
@@ -33,7 +33,7 @@
     },
     {
       "severity": "medium",
-      "body": "**Severity: Medium — the ranking regression test currently fails before testing ranking.**\r\n\r\n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ProviderFallbackSettingsTests.cs`, `FallbackRanking_PrefersProviderQualifiedIdAndPreservesLegacyRank`; and the existing `MainListPage.ScoreFallbackItem` signature in `Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs`.\r\n\r\n**Problem:** `ScoreFallbackItem` now accepts `InProcObject<IListItem>`, but all three reflection invocations still pass a raw `TopLevelFallbackViewModel`. Running this exact test throws `ArgumentException` because reflection cannot convert the argument to the wrapper type.\r\n\r\n**Why it matters:** If left unchanged, the focused suite fails and none of these assertions verifies provider-qualified ranking or the legacy-rank fallback. This is a test failure, not a demonstrated production crash.\r\n\r\n**Suggested change:**\r\n1. Add the `Microsoft.CmdPal.UI.ViewModels.Models` import to the test file.\r\n2. Wrap each of the three reflection invocations' first arguments in `new InProcObject<IListItem>(...)`, retaining the existing ranks and expected scores.\r\n3. Keep the production signature and all assertions; do not remove coverage merely to bypass the mismatch.\r\n\r\n**Verification:** Run `ProviderFallbackSettingsTests`. The unmodified invocation fails on the current revision; repairing the three arguments removes that failure. Together with the separate enabled-fallback correction and four added enabled/global control cases, all 12 focused cases pass. This current revision also fixes the earlier formatting diagnostics: the exact test project and the minimal candidate both build with analyzers enabled.",
+      "body": "**Severity: Medium — the ranking regression test currently fails before testing ranking.**\r\n\r\n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ProviderFallbackSettingsTests.cs`, `FallbackRanking_PrefersProviderQualifiedIdAndPreservesLegacyRank`; and the existing `MainListPage.ScoreFallbackItem` signature in `Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs`.\r\n\r\n**Problem:** `ScoreFallbackItem` now accepts `InProcObject<IListItem>`, but all three reflection invocations still pass a raw `TopLevelFallbackViewModel`. Running this exact test throws `ArgumentException` because reflection cannot convert the argument to the wrapper type.\r\n\r\n**Why it matters:** If left unchanged, the focused suite fails and none of these assertions verifies provider-qualified ranking or the legacy-rank fallback. This is a test failure, not a demonstrated production crash.\r\n\r\n**Suggested change:**\r\n1. Add the `Microsoft.CmdPal.UI.ViewModels.Models` import to the test file.\r\n2. Wrap each of the three reflection invocations' first arguments in `new InProcObject<IListItem>(...)`, retaining the existing ranks and expected scores.\r\n3. Keep the production signature and all assertions; do not remove coverage merely to bypass the mismatch.\r\n\r\n**Verification:** Run `ProviderFallbackSettingsTests`. The unmodified invocation fails on the current revision; repairing the three arguments removes that failure. Together with the separate enabled-fallback correction and four added enabled/global control cases, all 12 focused cases pass. This current revision also fixes the earlier formatting diagnostics: the exact test project and the minimal candidate both build with analyzers enabled.\n\n**Latest maintainer context:** The maintainer identifies a bad merge and says this wrapper had already been removed from main. Reconcile that merge first and do not restore retired code just to apply this draft. The observed enabled/global and reflection-input failures describe the still-present current revision; after removing or replacing that code, recheck the equivalent current path and retire any suggestion whose target disappears.",
       "in_diff": false,
       "title": "Pass the current wrapper type to the ranking regression test",
       "id": "51625-repair-ranking-test-input",
@@ -48,19 +48,19 @@
   ],
   "actions": [
     {
-      "type": "post_review",
-      "head_sha": "370058f73da3c1972f04d06b70c110f261e731e7",
-      "label": "Post inline suggestion and separate general test comment",
+      "id": "51625-post-current-assessment",
+      "label": "Post supported inline suggestion",
       "review": {
-        "event": "COMMENT",
-        "commit_id": "370058f73da3c1972f04d06b70c110f261e731e7",
-        "head_sha": "370058f73da3c1972f04d06b70c110f261e731e7",
         "comment_ids": [
           "51625-disabled-global-fallback",
           "51625-repair-ranking-test-input"
-        ]
+        ],
+        "event": "COMMENT",
+        "commit_id": "370058f73da3c1972f04d06b70c110f261e731e7",
+        "head_sha": "370058f73da3c1972f04d06b70c110f261e731e7"
       },
-      "id": "51625-post-current-assessment"
+      "type": "post_review",
+      "head_sha": "370058f73da3c1972f04d06b70c110f261e731e7"
     }
   ],
   "validation": {
