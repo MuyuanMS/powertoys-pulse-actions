@@ -1514,7 +1514,8 @@ window.BOARD_INDEX = {
     51780,
     51782,
     51783,
-    51786
+    51786,
+    51316
   ],
   "items": [
     {
@@ -35438,16 +35439,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Product-PowerRename",
@@ -35455,7 +35459,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-File Locksmith"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-15T06:17:16Z",
       "updated_at": "2026-10-31T05:07:40Z",
       "comments": 3,
