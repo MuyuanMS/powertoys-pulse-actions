@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-01T03:24:33.6677273+08:00",
+  "generated_at": "2026-11-01T07:53:18.3229588+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 214,
-    "open_issues": 11075,
-    "community": 10182,
-    "artifacts": 1349
+    "open_prs": 213,
+    "open_issues": 11077,
+    "community": 10184,
+    "artifacts": 1350
   },
   "impact": {
-    "as_of": "2026-11-01T03:24:33.6677273+08:00",
+    "as_of": "2026-11-01T07:53:18.3229588+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1393,7 +1393,6 @@ window.BOARD_INDEX = {
     51539,
     51540,
     51542,
-    51544,
     51545,
     51547,
     51551,
@@ -1498,6 +1497,7 @@ window.BOARD_INDEX = {
     51745,
     51751,
     51752,
+    51753,
     51756,
     51757,
     51758,
@@ -1507,14 +1507,12 @@ window.BOARD_INDEX = {
     51780,
     51782,
     51783,
-    51784,
     51786,
     51787,
     51789,
     51790,
     51791,
     51794,
-    51753,
     51796
   ],
   "items": [
@@ -1554,7 +1552,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51789",
@@ -1630,7 +1628,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51786",
@@ -1671,44 +1669,6 @@ window.BOARD_INDEX = {
       "merge_state": "UNSTABLE"
     },
     {
-      "id": "pr-51784",
-      "kind": "pr",
-      "number": 51784,
-      "url": "https://github.com/microsoft/PowerToys/pull/51784",
-      "title": "[UI Tests] Power Display new UI tests",
-      "author": "khmyznikov",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
-      "labels": [
-        "Product-PowerDisplay",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-30T21:04:37Z",
-      "updated_at": "2026-10-31T17:15:40Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
       "id": "pr-51782",
       "kind": "pr",
       "number": 51782,
@@ -1744,7 +1704,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51776",
@@ -2385,7 +2345,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51756",
@@ -3016,7 +2976,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51654",
@@ -3060,7 +3020,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51649",
@@ -3251,7 +3211,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51643",
@@ -3626,7 +3586,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51539",
@@ -3694,7 +3654,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51525",
@@ -3875,8 +3835,8 @@ window.BOARD_INDEX = {
         "Copilot"
       ],
       "created_at": "2026-10-21T23:33:34Z",
-      "updated_at": "2026-10-31T18:46:12Z",
-      "comments": 6,
+      "updated_at": "2026-10-31T23:36:08Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -3947,7 +3907,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51447",
@@ -4047,7 +4007,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51404",
@@ -4194,7 +4154,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51381",
@@ -4347,7 +4307,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51365",
@@ -4449,7 +4409,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51350",
@@ -4616,7 +4576,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51292",
@@ -4689,7 +4649,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51236",
@@ -5367,7 +5327,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51162",
@@ -5589,7 +5549,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51128",
@@ -5624,7 +5584,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51127",
@@ -5846,7 +5806,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51080",
@@ -5922,7 +5882,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51051",
@@ -6035,7 +5995,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51017",
@@ -6105,7 +6065,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50982",
@@ -6300,7 +6260,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Port UI tests to UITestAutomation.Next (winappcli)",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -6319,18 +6279,19 @@ window.BOARD_INDEX = {
       },
       "labels": [
         "Area-Tests",
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "Ready for review"
       ],
       "assignees": [
         "khmyznikov"
       ],
       "created_at": "2026-10-02T00:22:43Z",
-      "updated_at": "2026-10-31T06:34:48Z",
+      "updated_at": "2026-10-31T21:28:49Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50915",
@@ -6597,7 +6558,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50830",
@@ -6675,7 +6636,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50772",
@@ -6832,7 +6793,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50708",
@@ -6904,7 +6865,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50695",
@@ -7014,7 +6975,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50663",
@@ -7055,7 +7016,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50639",
@@ -7266,7 +7227,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50532",
@@ -7304,7 +7265,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50531",
@@ -7418,7 +7379,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50488",
@@ -7565,7 +7526,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50418",
@@ -7605,7 +7566,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50385",
@@ -7680,7 +7641,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50333",
@@ -7718,7 +7679,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50253",
@@ -7756,7 +7717,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50251",
@@ -7792,7 +7753,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50222",
@@ -7864,7 +7825,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50081",
@@ -7903,7 +7864,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50029",
@@ -7940,7 +7901,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50011",
@@ -8014,7 +7975,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49963",
@@ -8055,7 +8016,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49956",
@@ -8126,7 +8087,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49950",
@@ -8192,7 +8153,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49891",
@@ -8227,7 +8188,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49862",
@@ -8266,7 +8227,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49825",
@@ -8335,7 +8296,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49748",
@@ -8399,7 +8360,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49726",
@@ -8433,7 +8394,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49647",
@@ -8470,7 +8431,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49625",
@@ -8502,7 +8463,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49502",
@@ -8536,7 +8497,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49333",
@@ -8570,7 +8531,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49276",
@@ -8608,7 +8569,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49226",
@@ -8646,7 +8607,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49225",
@@ -8680,7 +8641,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49224",
@@ -8715,7 +8676,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49223",
@@ -8755,7 +8716,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49222",
@@ -8789,7 +8750,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49221",
@@ -8863,7 +8824,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49100",
@@ -8898,7 +8859,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49077",
@@ -8938,7 +8899,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48904",
@@ -9016,7 +8977,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48658",
@@ -9090,7 +9051,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48483",
@@ -9122,7 +9083,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47888",
@@ -21876,12 +21837,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-29361",
+      "id": "issue-51800",
       "kind": "issue",
-      "number": 29361,
-      "url": "https://github.com/microsoft/PowerToys/issues/29361",
-      "title": "Improvement of the 'Mouse Without Borders'",
-      "author": "skanda890",
+      "number": 51800,
+      "url": "https://github.com/microsoft/PowerToys/issues/51800",
+      "title": "[UI Tests] Power Display virtual monitor fixtures (UMDF/IddCx)",
+      "author": "khmyznikov",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -21894,28 +21855,27 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Status-In progress",
+        "Area-Tests",
         "Needs-Triage",
-        "Product-Mouse Without Borders"
+        "Product-PowerDisplay"
       ],
       "assignees": [],
-      "created_at": "2023-10-22T13:14:29Z",
-      "updated_at": "2025-12-04T15:53:57Z",
-      "comments": 2,
+      "created_at": "2026-10-31T21:14:40Z",
+      "updated_at": "2026-10-31T21:17:54Z",
+      "comments": 0,
       "priority": null
     },
     {
-      "id": "issue-16761",
+      "id": "issue-51799",
       "kind": "issue",
-      "number": 16761,
-      "url": "https://github.com/microsoft/PowerToys/issues/16761",
-      "title": "Allow for multiple activation methods at same time for Find my mouse",
-      "author": "hotn",
+      "number": 51799,
+      "url": "https://github.com/microsoft/PowerToys/issues/51799",
+      "title": "Der keayboard manager zeigt Tastenumbelegungen älterer versionen an, führt sie auch aus, aber neue Umbelegungen  in dieser Form kann man nicht mehr anlegen.",
+      "author": "DiSchGue",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -21928,19 +21888,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Help Wanted",
-        "Product-Mouse Utilities",
-        "Product-Find My Mouse"
+        "Issue-Bug",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2022-03-03T18:33:02Z",
-      "updated_at": "2025-08-25T12:36:27Z",
-      "comments": 8,
+      "created_at": "2026-10-31T20:21:19Z",
+      "updated_at": "2026-10-31T20:21:19Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -22036,9 +21994,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-31T15:52:48Z",
       "updated_at": "2026-10-31T16:24:35Z",
       "comments": 0,
@@ -22876,9 +22832,7 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Quick Accent"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-30T09:36:54Z",
       "updated_at": "2026-10-31T18:26:21Z",
       "comments": 3,
@@ -23813,8 +23767,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce PowerToys installer behavior"
+        "label": "Reproduce PowerToys installer behavior",
+        "type": "reproduce"
       },
       "labels": [
         "Issue-Bug",
@@ -23917,8 +23871,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -23956,8 +23910,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -24059,8 +24013,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Clarify the requested shortcut behavior"
+        "label": "Clarify the requested shortcut behavior",
+        "type": "post_comment"
       },
       "labels": [
         "Issue-Bug",
@@ -24225,8 +24179,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -24262,8 +24216,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -24299,8 +24253,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -25020,14 +24974,11 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Docs",
-        "Needs-Triage",
-        "Product-Command Palette",
-        "CmdPal-Settings"
+        "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-10-28T17:33:48Z",
-      "updated_at": "2026-10-30T16:29:17Z",
+      "updated_at": "2026-10-31T23:45:10Z",
       "comments": 1,
       "priority": null
     },
@@ -26289,8 +26240,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -26897,8 +26848,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -26933,8 +26884,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Explain Reconnect and link the existing Quick Access labeling fix"
+        "label": "Explain Reconnect and link the existing Quick Access labeling fix",
+        "type": "post_comment"
       },
       "labels": [
         "Issue-Bug",
@@ -27001,8 +26952,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -27073,8 +27024,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce PowerToys Run behavior"
+        "label": "Reproduce PowerToys Run behavior",
+        "type": "reproduce"
       },
       "labels": [
         "Issue-Bug",
@@ -27142,8 +27093,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -27179,8 +27130,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -27217,8 +27168,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Explain Awake's locked-screen display contract"
+        "label": "Explain Awake's locked-screen display contract",
+        "type": "post_comment"
       },
       "labels": [
         "Issue-Bug",
@@ -27820,8 +27771,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -27890,8 +27841,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -27963,8 +27914,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -28067,8 +28018,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -28171,8 +28122,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -28470,8 +28421,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce Command Palette hotkeys behavior"
+        "label": "Reproduce Command Palette hotkeys behavior",
+        "type": "reproduce"
       },
       "labels": [
         "Issue-Bug",
@@ -28608,8 +28559,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -28795,7 +28746,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51550",
       "title": "UITests - PowerDisplay",
       "author": "khmyznikov",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -28816,7 +28767,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-24T23:55:52Z",
-      "updated_at": "2026-10-24T23:55:52Z",
+      "updated_at": "2026-10-31T23:22:31Z",
       "comments": 0,
       "priority": null
     },
@@ -28941,8 +28892,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -28963,7 +28914,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51544",
       "title": "PowerToys crashes immediately after launch",
       "author": "originalbeam",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -28973,14 +28924,11 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": null,
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -28989,10 +28937,9 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-24T18:12:55Z",
-      "updated_at": "2026-10-24T18:17:56Z",
-      "comments": 1,
-      "priority": null,
-      "needs_revalidation": false
+      "updated_at": "2026-10-31T23:26:32Z",
+      "comments": 2,
+      "priority": null
     },
     {
       "id": "issue-34024",
@@ -29115,8 +29062,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -29284,8 +29231,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -29893,8 +29840,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -29930,8 +29877,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -30097,8 +30044,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30134,8 +30081,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30271,8 +30218,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30344,8 +30291,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce Quick Accent arrow-navigation crash behavior"
+        "label": "Reproduce Quick Accent arrow-navigation crash behavior",
+        "type": "reproduce"
       },
       "labels": [
         "Issue-Bug",
@@ -30549,8 +30496,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -30620,8 +30567,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30855,8 +30802,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30892,8 +30839,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30929,8 +30876,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -30968,8 +30915,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -31072,8 +31019,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -31238,8 +31185,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -31412,8 +31359,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -31478,8 +31425,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -31515,8 +31462,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "reproduce",
-        "label": "Validate the existing invalid-handle guard before a lifecycle rewrite"
+        "label": "Validate the existing invalid-handle guard before a lifecycle rewrite",
+        "type": "reproduce"
       },
       "labels": [
         "Issue-Bug",
@@ -31619,8 +31566,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -31753,8 +31700,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -32344,8 +32291,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -32416,8 +32363,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -145552,34 +145499,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-29810",
+      "id": "issue-47329",
       "kind": "issue",
-      "number": 29810,
-      "url": "https://github.com/microsoft/PowerToys/issues/29810",
-      "title": "Environment Variables: CPU details",
-      "author": "Jay-o-Way",
+      "number": 47329,
+      "url": "https://github.com/microsoft/PowerToys/issues/47329",
+      "title": "In the semi-transparent highlight mode of ZoomIt, there are straight drag traces",
+      "author": "Sec-Joe",
       "state": "open",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Environment Variables"
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-ZoomIt"
       ],
       "assignees": [],
-      "created_at": "2023-11-12T19:31:13Z",
-      "updated_at": "2024-03-10T16:09:04Z",
-      "comments": 2,
+      "created_at": "2026-04-29T01:22:02Z",
+      "updated_at": "2026-04-29T07:20:29Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -180686,8 +180635,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Reply with suggested comments",
+        "type": "request_info"
       },
       "labels": [
         "Issue-Bug",
@@ -186023,6 +185972,40 @@ window.BOARD_INDEX = {
       "created_at": "2023-08-08T15:06:35Z",
       "updated_at": "2026-06-04T11:57:53Z",
       "comments": 21,
+      "priority": null
+    },
+    {
+      "id": "issue-16761",
+      "kind": "issue",
+      "number": 16761,
+      "url": "https://github.com/microsoft/PowerToys/issues/16761",
+      "title": "Allow for multiple activation methods at same time for Find my mouse",
+      "author": "hotn",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Help Wanted",
+        "Product-Mouse Utilities",
+        "Product-Find My Mouse"
+      ],
+      "assignees": [],
+      "created_at": "2022-03-03T18:33:02Z",
+      "updated_at": "2025-08-25T12:36:27Z",
+      "comments": 8,
       "priority": null
     },
     {
@@ -202151,6 +202134,39 @@ window.BOARD_INDEX = {
       "created_at": "2023-06-26T10:52:38Z",
       "updated_at": "2025-08-22T12:29:14Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-5915",
+      "kind": "issue",
+      "number": 5915,
+      "url": "https://github.com/microsoft/PowerToys/issues/5915",
+      "title": "[KBM] Add test for the interaction between the keyboard hook and the UI",
+      "author": "arjunbalgovind",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Area-Tests",
+        "Resolution-Already Fixed/Doesn't Apply",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-08-12T18:42:03Z",
+      "updated_at": "2026-10-11T16:33:25Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -231561,39 +231577,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47329",
-      "kind": "issue",
-      "number": 47329,
-      "url": "https://github.com/microsoft/PowerToys/issues/47329",
-      "title": "In the semi-transparent highlight mode of ZoomIt, there are straight drag traces",
-      "author": "Sec-Joe",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-ZoomIt"
-      ],
-      "assignees": [],
-      "created_at": "2026-04-29T01:22:02Z",
-      "updated_at": "2026-04-29T07:20:29Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-7919",
       "kind": "issue",
       "number": 7919,
@@ -234821,13 +234804,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-5915",
+      "id": "issue-29810",
       "kind": "issue",
-      "number": 5915,
-      "url": "https://github.com/microsoft/PowerToys/issues/5915",
-      "title": "[KBM] Add test for the interaction between the keyboard hook and the UI",
-      "author": "arjunbalgovind",
-      "state": "closed",
+      "number": 29810,
+      "url": "https://github.com/microsoft/PowerToys/issues/29810",
+      "title": "Environment Variables: CPU details",
+      "author": "Jay-o-Way",
+      "state": "open",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -234843,14 +234826,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Area-Tests",
-        "Resolution-Already Fixed/Doesn't Apply",
-        "Product-Keyboard Manager"
+        "Product-Environment Variables"
       ],
       "assignees": [],
-      "created_at": "2020-08-12T18:42:03Z",
-      "updated_at": "2026-10-11T16:33:25Z",
-      "comments": 4,
+      "created_at": "2023-11-12T19:31:13Z",
+      "updated_at": "2024-03-10T16:09:04Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -274372,9 +274353,11 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-Awake"
       ],
-      "assignees": [],
+      "assignees": [
+        "khmyznikov"
+      ],
       "created_at": "2025-07-17T19:44:23Z",
-      "updated_at": "2026-10-12T20:15:42Z",
+      "updated_at": "2026-10-31T21:38:29Z",
       "comments": 2,
       "priority": null
     },
@@ -274439,10 +274422,11 @@ window.BOARD_INDEX = {
         "Product-General"
       ],
       "assignees": [
+        "khmyznikov",
         "shuaiyuanxx"
       ],
       "created_at": "2025-07-17T19:41:43Z",
-      "updated_at": "2026-04-18T14:58:54Z",
+      "updated_at": "2026-10-31T21:38:44Z",
       "comments": 0,
       "priority": null
     },
@@ -301369,6 +301353,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-29361",
+      "kind": "issue",
+      "number": 29361,
+      "url": "https://github.com/microsoft/PowerToys/issues/29361",
+      "title": "Improvement of the 'Mouse Without Borders'",
+      "author": "skanda890",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Status-In progress",
+        "Needs-Triage",
+        "Product-Mouse Without Borders"
+      ],
+      "assignees": [],
+      "created_at": "2023-10-22T13:14:29Z",
+      "updated_at": "2025-12-04T15:53:57Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-39200",
       "kind": "issue",
       "number": 39200,
@@ -311722,7 +311740,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2025-04-06T00:04:23Z",
-      "updated_at": "2026-10-30T13:51:25Z",
+      "updated_at": "2026-10-31T21:26:43Z",
       "comments": 42,
       "priority": null
     },
@@ -337865,8 +337883,8 @@ window.BOARD_INDEX = {
         "niels9001"
       ],
       "created_at": "2026-07-05T12:47:27Z",
-      "updated_at": "2026-10-28T01:26:44Z",
-      "comments": 19,
+      "updated_at": "2026-10-31T21:12:27Z",
+      "comments": 20,
       "priority": null
     },
     {
@@ -373918,8 +373936,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -375103,7 +375121,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2024-10-02T18:46:34Z",
-      "updated_at": "2026-10-11T16:48:23Z",
+      "updated_at": "2026-10-31T20:47:43Z",
       "comments": 1,
       "priority": null
     },
