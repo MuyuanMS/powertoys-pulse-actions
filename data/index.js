@@ -1512,7 +1512,9 @@ window.BOARD_INDEX = {
     51782,
     51783,
     51786,
-    51787
+    51787,
+    51567,
+    51790
   ],
   "items": [
     {
@@ -22222,21 +22224,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "triage",
+      "stage": "triaged",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-31T05:59:36Z",
       "updated_at": "2026-10-31T05:59:36Z",
       "comments": 0,
@@ -28298,17 +28305,22 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Validate the linked pairing fix"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-25T17:15:15Z",
       "updated_at": "2026-10-31T05:29:39Z",
       "comments": 20,
