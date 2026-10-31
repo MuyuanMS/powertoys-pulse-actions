@@ -9,17 +9,17 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-30T14:01:50.0390602+08:00",
-  "evaluated_at": "2026-10-30T14:01:50.0424889+08:00",
-  "source_updated_at": "2026-10-30T05:53:19Z",
-  "head_sha": "f54bca67a2a2f39c3c636eefd738ed096b1b8507",
+  "generated_at": "2026-10-31T08:47:34.2360516+08:00",
+  "evaluated_at": "2026-10-31T08:47:34.2360731+08:00",
+  "source_updated_at": "2026-10-30T23:32:42Z",
+  "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
   "needs_revalidation": false,
   "proposed_comments": [
     {
       "severity": "medium",
       "id": "preserve-variant-cpp-analysis",
       "title": "Keep analysis enabled when no parallel replacement runs",
-      "body": "### Keep analysis enabled when no parallel replacement runs\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.pipelines/v2/templates/pipeline-ci-build.yml` (the build-job variables and `CppCodeAnalysis` stage), `.pipelines/v2/ci-nightly.yml`, and the WebView2/Windows App SDK variant callers.\r\n\r\n**Problem:** The build jobs now set `SkipCppCodeAnalysis: 1` unconditionally, but the replacement stage runs only when `runCppCodeAnalysis` is true, which defaults to false. `ci.yml` opts in; `ci-test-with-canary-webview2.yml` and `ci-using-the-latest-winappsdk.yml` do not. Those variant pipelines therefore lose their inline C++ analysis without receiving the parallel replacement.\r\n\r\n**Why it matters:** If left unfixed, variant builds can pass without running the analysis that previously checked them, allowing variant-specific diagnostics to go undetected. This is a coverage gap, not evidence that a particular diagnostic currently fails.\r\n\r\n**Suggested change:**\r\n1. Make the ordinary-build skip conditional on the parallel analysis stage being enabled.\r\n2. Preserve the nightly prewarm's deliberate build/cache-input parity with an explicit false-by-default override, such as `skipCppCodeAnalysisInBuild`. Set it only in `ci-nightly.yml`, and skip inline analysis when either that override or `runCppCodeAnalysis` is true.\r\n3. Keep the main PR pipeline's parallel analysis blocking, while leaving inline analysis enabled for the WebView2/Windows App SDK variants unless they explicitly gain a replacement stage. Do not remove the callee's existing `variables` template parameter or its job-variable insertion.\r\n\r\n**Verification:** Check the four callers separately: main skips inline analysis and runs the parallel stage; nightly retains its explicit cache-prewarm skip; both variants retain inline analysis. Check all four boolean combinations, validate the expanded Azure pipeline templates, and run `.pipelines/tests/mwbUiTestSelection.Tests.ps1` to preserve the adjacent selector behavior.",
+      "body": "### Keep analysis enabled when no parallel replacement runs\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.pipelines/v2/templates/pipeline-ci-build.yml` (the build-job variables and `CppCodeAnalysis` stage), `.pipelines/v2/ci-nightly.yml`, and the WebView2/Windows App SDK variant callers.\r\n\r\n**Problem:** The build jobs now set `SkipCppCodeAnalysis: 1` unconditionally, but the replacement stage runs only when `runCppCodeAnalysis` is true, which defaults to false. `ci.yml` opts in; `ci-test-with-canary-webview2.yml` and `ci-using-the-latest-winappsdk.yml` do not. Those variant pipelines therefore lose their inline C++ analysis without receiving the parallel replacement.\r\n\r\n**Why it matters:** If left unfixed, variant builds can pass without running the analysis that previously checked them, allowing variant-specific diagnostics to go undetected. This is a coverage gap, not evidence that a particular diagnostic currently fails.\r\n\r\n**Suggested change:**\r\n1. Make the ordinary-build skip conditional on the parallel analysis stage being enabled.\r\n2. Preserve the nightly prewarm's deliberate build/cache-input parity with an explicit false-by-default override, such as `skipCppCodeAnalysisInBuild`. Set it only in `ci-nightly.yml`, and skip inline analysis when either that override or `runCppCodeAnalysis` is true.\r\n3. Keep the main PR pipeline's parallel analysis blocking, while leaving inline analysis enabled for the WebView2/Windows App SDK variants unless they explicitly gain a replacement stage. Do not remove the callee's existing `variables` template parameter or its job-variable insertion.\r\n\r\n**Verification:** Check the four callers separately: main skips inline analysis and runs the parallel stage; nightly retains its explicit cache-prewarm skip; both variants retain inline analysis. Check all four boolean combinations, validate the expanded Azure pipeline templates, and run `.pipelines/tests/mwbUiTestSelection.Tests.ps1` to preserve the adjacent selector behavior.\n\n**Current-revision reassessment:** The SDK setup simplification and ARM64 HID gating changes do not change this relationship: both variants still inherit the false analysis-stage default while the build skip remains unconditional. Earlier executable checks retain their original revision identities; this refresh rechecked the exact template and all four callers, not a new Azure run.",
       "out_of_diff_reason": "Coordinated template and nightly-caller changes must preserve cache-prewarm parity; presented as one implementation-ready general PR comment instead of separate code suggestions.",
       "kind": "companion",
       "confidence": {
@@ -31,25 +31,19 @@
   ],
   "actions": [
     {
-      "status": "awaiting_review_approval",
-      "type": "post_review",
-      "id": "51695-post-review",
       "review": {
+        "commit_id": "01ccf26e6f46a030da35a88039581de950ece0ae",
+        "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
         "comment_ids": [
           "preserve-variant-cpp-analysis"
         ],
-        "commit_id": "f54bca67a2a2f39c3c636eefd738ed096b1b8507",
-        "event": "COMMENT",
-        "head_sha": "f54bca67a2a2f39c3c636eefd738ed096b1b8507"
+        "event": "COMMENT"
       },
-      "head_sha": "f54bca67a2a2f39c3c636eefd738ed096b1b8507",
-      "label": "Post one general comment preserving variant analysis and nightly parity"
+      "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
+      "type": "post_review",
+      "id": "51695-post-current-assessment",
+      "label": "Post implementation-ready general PR comment"
     }
   ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "047f8cbf2383e232677f5cc593772f5cd5f39718",
-      "result": "passed"
-    }
-  }
+  "validation": {}
 }
