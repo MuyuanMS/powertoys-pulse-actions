@@ -1,9 +1,33 @@
 {
   "title": "mouse without borders don't let me connect after blackout",
-  "source_updated_at": "2026-10-30T17:49:28Z",
-  "actions": [],
+  "source_updated_at": "2026-10-31T11:13:01Z",
+  "actions": [
+    {
+      "label": "Validate key generation and signed peer pairing",
+      "id": "51757-reproduce-signed-pairing-fix",
+      "primary": true,
+      "reproduce": {
+        "setup": [
+          "Keep the reported post-blackout scenario and preserve existing settings; do not mix executable versions or bypass trust checks."
+        ],
+        "prerequisites": [
+          "Two isolated Windows PCs on the same private network, same supported version/install scope and trusted product components."
+        ],
+        "steps": [
+          "1. Reproduce new-key generation and existing-peer reconnection separately on the reported release; correlate the failure with the IPC rejection reason.",
+          "2. Repeat both operations using a supported signed build containing the correction, including independently signed different-leaf components.",
+          "3. Pair in both directions and reboot/reconnect once; classify any remaining network or identity failures separately."
+        ],
+        "expected_result": "Settings key generation and valid peer pairing work without signer-equality rejection; altered/untrusted components remain rejected and unrelated connection failures are not declared fixed.",
+        "version_requirement": "Reported0.102.3001 and a supported signed build containing PR51789",
+        "title": "Separate Settings signer rejection from network recovery",
+        "module": "Mouse Without Borders"
+      },
+      "type": "reproduce"
+    }
+  ],
   "proposed_fixes": [],
-  "generated_at": "2026-10-30T19:36:47.4943894+00:00",
+  "generated_at": "2026-10-31T14:46:30.9155175+00:00",
   "repository": "microsoft/PowerToys",
   "track": "triage",
   "kind": "issue",
@@ -11,45 +35,59 @@
   "url": "https://github.com/microsoft/PowerToys/issues/51757",
   "number": 51757,
   "pending_author": false,
-  "evaluated_at": "2026-10-30T19:36:47.4943894+00:00",
+  "evaluated_at": "2026-10-31T14:46:30.9155175+00:00",
   "judgment": {
+    "rationale": "The previously inspected archive establishes the signer-rejection class. The new Settings/key symptoms reinforce that route, but do not prove the blackout is causal or every connection failure shares it. Preserve the report under50795 and its open signer fix rather than request the same ZIP again or recommend mixed-release executable replacement.",
+    "source_updated_at": "2026-10-31T11:13:01Z",
+    "recommended_action": "Consolidate the new key-generation/reconnection evidence with50795 and validate the open signer fix using supported signed product components.",
+    "status": "duplicate_or_handled",
     "evidence": [
       "PowerToys0.102.3001 from Microsoft Store; the title reports MWB will not connect after a blackout, but the body provides no explicit failing action or error banner.",
       "The supplied diagnostic ZIP was inspected privately: seven relevant Settings/MWB text entries contain repeated untrusted-signature rejection.",
-      "Primary50795 remains open and covers the Settings-to-MWB peer-verification rejection class. A released repair is not established."
+      "Primary50795 remains open and covers the Settings-to-MWB peer-verification rejection class. A released repair is not established.",
+      "The October31 follow-up reports both new-key generation and existing-peer connection fail after updating to0.102.3001, even when elevated, and supplies a screenshot.",
+      "Open PR51789 replaces equal leaf-certificate bytes with independent trusted Microsoft-signature checks while preserving peer identity gates. Its exact affected project and50 selected IPC tests were independently executed successfully during the earlier scheduled update."
     ],
-    "rationale": "The supplied archive is sufficient to route the observed SettingsSync rejection to the existing investigation. It does not prove the blackout caused the trust failure or explain every network reconnection symptom; preserve that recovery scenario with the primary issue.",
-    "evaluated_at": "2026-10-30T19:36:47.4943894+00:00",
-    "recommended_action": "Consolidate the diagnostic-confirmed rejection and post-blackout reconnect scenario with50795; do not start a competing fix.",
-    "source_updated_at": "2026-10-30T17:49:28Z",
-    "status": "duplicate_or_handled"
+    "evaluated_at": "2026-10-31T14:46:30.9155175+00:00"
   },
   "stage": "triaged",
   "fix_assessment": {
-    "status": "existing_fix",
+    "rationale": "Primary50795 and open PR51789 cover the diagnostic-confirmed signer rejection. This is not a merged/shipped fix or proof that all transport failures are resolved.",
     "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/50795"
+      "https://github.com/microsoft/PowerToys/issues/50795",
+      "https://github.com/microsoft/PowerToys/pull/51789"
     ],
-    "rationale": "An existing investigation covers the confirmed rejection class; this is not a shipped-fix claim."
+    "status": "existing_fix"
   },
   "schemaVersion": 5,
   "issue_context": {
     "known_information": [
       "PowerToys0.102.3001 from Microsoft Store; the title reports MWB will not connect after a blackout, but the body provides no explicit failing action or error banner.",
       "The supplied diagnostic ZIP was inspected privately: seven relevant Settings/MWB text entries contain repeated untrusted-signature rejection.",
-      "Primary50795 remains open and covers the Settings-to-MWB peer-verification rejection class. A released repair is not established."
+      "Primary50795 remains open and covers the Settings-to-MWB peer-verification rejection class. A released repair is not established.",
+      "The October31 follow-up reports both new-key generation and existing-peer connection fail after updating to0.102.3001, even when elevated, and supplies a screenshot.",
+      "Open PR51789 replaces equal leaf-certificate bytes with independent trusted Microsoft-signature checks while preserving peer identity gates. Its exact affected project and50 selected IPC tests were independently executed successfully during the earlier scheduled update."
     ],
     "summary": "MWB reconnection report includes diagnostic-confirmed SettingsSync signer rejection.",
     "inferences": [
       "The SettingsSync rejection can prevent configuration and pairing updates; the transport-disconnection cause is not established."
     ],
-    "analysis": "The supplied archive is sufficient to route the observed SettingsSync rejection to the existing investigation. It does not prove the blackout caused the trust failure or explain every network reconnection symptom; preserve that recovery scenario with the primary issue.",
-    "information_gaps": [],
+    "analysis": "The previously inspected archive establishes the signer-rejection class. The new Settings/key symptoms reinforce that route, but do not prove the blackout is causal or every connection failure shares it. Preserve the report under50795 and its open signer fix rather than request the same ZIP again or recommend mixed-release executable replacement.",
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether supported signed components containing the open signer correction restore both key generation and pairing",
+        "how_to_collect": "Maintainer repeats Settings new-key generation and pairing in both directions on two isolated same-version machines with officially signed components.",
+        "why_needed": "Passing IPC unit tests do not establish an installed two-machine repair or identify every network failure."
+      }
+    ],
     "initial_investigation": [
       "Read the full report, all discussion and timeline, labels and ownership.",
       "Downloaded and inspected the supplied archive privately; did not request the same evidence again.",
       "Compared the observed rejection with current primary50795 and the established peer-verification boundary; no trust bypass or mixed-release binary replacement recommended.",
-      "Read the complete refreshed discussion and timeline. No new reporter evidence or repair was supplied; the existing archive-confirmed untrusted-signature observations remain bound to the previously inspected archive."
+      "Read the complete refreshed discussion and timeline. No new reporter evidence or repair was supplied; the existing archive-confirmed untrusted-signature observations remain bound to the previously inspected archive.",
+      "Read the complete new reply and screenshot reference; the original report ZIP was already inspected privately, so no duplicate collection requested.",
+      "Confirmed50795 remains open and inspected the retained exact PR51789 signer build/50-test receipt; no live two-machine pairing or released-fix claim."
     ]
   }
 }

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "Detailed report and supplied values/logs support reproduction, but no independent physical experiment or failing operation trace pins the root cause.",
+        "score": 45,
+        "level": "red"
+      },
+      "root_cause": "Unproven hypothesis: the profile application path updates displayed state without completing the intended monitor color-temperature effect, or another profile parameter resets that effect. Stored values and current JSON mapping are present; no schema-drop defect is established.",
+      "verification": [
+        "User1(0x0B) to8200K(0x07) and back changes actual monitor color immediately; the UI and independent readback agree after profile completion.",
+        "Brightness continues applying correctly; a full profile does not overwrite or silently reset the intended color preset.",
+        "Regression demonstrates the specific before/after failure; no green hardware signoff without suitable physical equipment."
+      ],
+      "plan": [
+        "Load the supplied profile values in an isolated supported test setup and instrument the reported release path: profile value, matching monitor/capability/visibility, setter dispatch and result.",
+        "Compare color-only profile, full brightness/contrast/color profile and direct-menu selection; read VCP0x14 independently after completion and record physical appearance.",
+        "Trace only the first divergent boundary through ApplyProfileAsync, TryRestore, MonitorViewModel.SetColorTemperatureAsync and the DDC controller. If ordering or a reset is demonstrated, reuse existing per-monitor operation coordination rather than adding sleeps or a trust/default bypass.",
+        "Add a targeted regression for the diagnosed dispatch/order/state failure and verify profile switching, manual selection, unsupported monitors and failed writes without false success."
+      ],
+      "title": "Identify and repair the profile color-temperature application boundary"
+    }
+  ],
+  "issue_context": {
+    "analysis": "The report and archive justify a focused maintainer reproduction, not another generic diagnostic request. UI selection and API success cannot be treated as physical monitor readback. First separate profile loading/visibility gates, per-setting completion and concurrent brightness/contrast effects from an actual VCP write/readback failure. The current source is not proof of the reported release root cause.",
+    "information_gaps": [
+      {
+        "evidence_type": "module_trace",
+        "information": "First divergent profile dispatch, completion or physical VCP0x14 readback compared with direct menu selection",
+        "how_to_collect": "Maintainer follows the supplied profile-versus-menu matrix with per-operation instrumentation and suitable DDC/CI hardware; the reporter already supplied profiles and diagnostics.",
+        "why_needed": "Avoid an unsupported schema fix or blind sequentialization based only on UI checkmarks."
+      }
+    ],
+    "inferences": [
+      "Per-setting dispatch/completion or a monitor-side interaction with brightness/contrast could explain profile-versus-menu divergence; neither is proven."
+    ],
+    "summary": "Profile switching reportedly leaves physical color temperature unchanged although selection updates; archive confirms stored preset values and enabled capability.",
+    "initial_investigation": [
+      "Read the complete new report, empty discussion and all ownership/linked-work timeline entries; searched related color-temperature/profile issues and PRs without an established covering fix.",
+      "Downloaded the supplied diagnostic archive privately and inspected profiles, monitor preferences/state and relevant module logs; no private identifiers or raw logs are published.",
+      "Read exact current MainViewModel.Settings ApplyProfileAsync/TryRestore, ProfileMonitorSetting JSON mapping and MonitorViewModel color setter/menu handler. No product/profile/hardware experiment was executed and the current source is not relabeled as reported-release proof.",
+      "The hex preset codes are useful VCP diagnostics; bracketed profile numbers correspond to stable profile IDs and are separate from the functional color-write symptom."
+    ],
+    "known_information": [
+      "PowerToys0.102.3001 on Windows10, LG22MK430H over HDMI; profile brightness applies but User1/8200K color temperature reportedly does not until reselecting the already checkmarked menu item.",
+      "The supplied profiles contain colorTemperature values11 and7, and the supplied monitor settings enable color temperature and report support for it.",
+      "The supplied module log records repeated profile selections around the reported capture time; it does not by itself prove physical VCP0x14 readback or identify a failed color write.",
+      "Current source maps the legacy JSON colorTemperature property to ColorTemperatureVcp. ApplyProfileAsync dispatches the saved color value through TryRestore and SetColorTemperatureAsync; the menu reaches that same setter."
+    ]
+  },
+  "number": 51794,
+  "source_updated_at": "2026-10-31T11:51:13Z",
+  "stage": "triaged",
+  "track": "triage",
+  "judgment": {
+    "rationale": "The report and archive justify a focused maintainer reproduction, not another generic diagnostic request. UI selection and API success cannot be treated as physical monitor readback. First separate profile loading/visibility gates, per-setting completion and concurrent brightness/contrast effects from an actual VCP write/readback failure. The current source is not proof of the reported release root cause.",
+    "source_updated_at": "2026-10-31T11:51:13Z",
+    "recommended_action": "Reproduce profile versus direct-menu VCP0x14 behavior with the supplied values and independent readback before selecting a repair.",
+    "status": "reproducible",
+    "evidence": [
+      "PowerToys0.102.3001 on Windows10, LG22MK430H over HDMI; profile brightness applies but User1/8200K color temperature reportedly does not until reselecting the already checkmarked menu item.",
+      "The supplied profiles contain colorTemperature values11 and7, and the supplied monitor settings enable color temperature and report support for it.",
+      "The supplied module log records repeated profile selections around the reported capture time; it does not by itself prove physical VCP0x14 readback or identify a failed color write.",
+      "Current source maps the legacy JSON colorTemperature property to ColorTemperatureVcp. ApplyProfileAsync dispatches the saved color value through TryRestore and SetColorTemperatureAsync; the menu reaches that same setter."
+    ],
+    "evaluated_at": "2026-10-31T14:46:30.9482317+00:00"
+  },
+  "generated_at": "2026-10-31T14:46:30.9482317+00:00",
+  "pending_author": false,
+  "evaluated_at": "2026-10-31T14:46:30.9482317+00:00",
+  "title": "Power Display: switching profiles does not apply color temperature — must manually re-select in menu",
+  "url": "https://github.com/microsoft/PowerToys/issues/51794",
+  "owes": "us",
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "actions": [
+    {
+      "label": "Reproduce profile color-temperature readback",
+      "id": "51794-reproduce-profile-color",
+      "primary": true,
+      "reproduce": {
+        "setup": [
+          "Prepare two disposable profiles with the reported preset values, first color-only then with reported brightness/contrast; use stable monitor identification rather than copying private device paths."
+        ],
+        "prerequisites": [
+          "Isolated interactive Windows setup with DDC/CI monitor supporting User1(0x0B) and8200K(0x07), ideally LG22MK430H; preserve settings/profiles and initial monitor values."
+        ],
+        "steps": [
+          "1. Select User1 then8200K profiles and record UI selection, physical color and independent VCP0x14 readback after completion.",
+          "2. Reselect the already checkmarked preset in the manual menu and record the same values.",
+          "3. Repeat with color-only and full profiles, logging loaded value, capability/visibility gate, setter dispatch, per-operation result and final readback.",
+          "4. Restore the original monitor state and profiles; identify the first divergent gate or hardware operation before implementing a correction."
+        ],
+        "expected_result": "Profile and manual selection both apply the requested physical preset; a failing trace separates missing dispatch, failed operation, later reset and misleading cached UI state.",
+        "version_requirement": "Reported PowerToys0.102.3001; compare a supported current build separately",
+        "title": "Compare profile application with direct color-temperature selection",
+        "module": "Power Display"
+      },
+      "type": "reproduce"
+    },
+    {
+      "label": "Investigate the profile color-application boundary",
+      "id": "51794-approve-profile-color-investigation",
+      "type": "approve_design"
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A real profile application failure is reported, but the exact failing gate/write/readback boundary is not yet proven. Conditional investigation proposal, not a completed fix design."
+  }
+}

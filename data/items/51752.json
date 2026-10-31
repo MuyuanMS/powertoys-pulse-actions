@@ -1,41 +1,45 @@
 {
   "judgment": {
-    "rationale": "The report supplies a useful elevation-boundary reproduction. Reproduce cursor restoration versus immediate per-window repaint separately; ordinary elevated windows and the UAC secure desktop must not be conflated.",
-    "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+    "rationale": "The new recovery observation adds a z-order/repaint alternative to elevation. Run elevated/non-elevated and always-on-top on/off as separate axes; do not blame missing hooks alone or conflate an ordinary elevated window with the UAC secure desktop.",
+    "evaluated_at": "2026-10-31T14:46:30.9313602+00:00",
     "evidence": [
       "PowerToys0.102.3001; activate CursorHide, open Task Manager elevated, then move the pointer over it: the pointer reportedly stays invisible.",
       "The supplied archive contains AutoHideCursor settings with hide_on_typing=true and hide_on_idle=false; the module-specific log entries do not identify a restore error.",
       "The inspected implementation replaces system cursors and reloads them via SPI_SETCURSORS; RefreshCurrentCursor sends WM_NCHITTEST/WM_SETCURSOR to the window under the pointer.",
-      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation."
+      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation.",
+      "The October31 follow-up suggests Task Manager always-on-top rather than elevation may determine the failure; minimizing then restoring reportedly leaves the cursor visible."
     ],
-    "source_updated_at": "2026-10-30T13:49:14Z",
+    "source_updated_at": "2026-10-31T12:25:36Z",
     "status": "reproducible",
-    "recommended_action": "Run the elevated Task Manager cursor-restore matrix before selecting the repair boundary."
+    "recommended_action": "Run the cursor visibility, elevation, z-order and minimize/restore matrix before choosing the restore or repaint boundary."
   },
   "issue_context": {
-    "analysis": "The report supplies a useful elevation-boundary reproduction. Reproduce cursor restoration versus immediate per-window repaint separately; ordinary elevated windows and the UAC secure desktop must not be conflated.",
+    "analysis": "The new recovery observation adds a z-order/repaint alternative to elevation. Run elevated/non-elevated and always-on-top on/off as separate axes; do not blame missing hooks alone or conflate an ordinary elevated window with the UAC secure desktop.",
     "initial_investigation": [
       "Read the complete report, all discussion and linked-work timeline, current labels and ownership.",
       "Read the supplied settings and module log inventory.",
       "Traced SystemCursorHider.RestoreSystemCursors/RefreshCurrentCursor and Worker timer/hook paths at inspected source67ac3d8b; no elevated input, cursor mutation or product runtime executed.",
-      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair."
+      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair.",
+      "Read the complete new reply and all timeline events; no new diagnostic archive was supplied.",
+      "Reread current SystemCursorHider RestoreSystemCursors/RefreshCurrentCursor: SPI_SETCURSORS followed by bounded WM_NCHITTEST/WM_SETCURSOR. No elevated input or global cursor mutation was executed in this update."
     ],
     "inferences": [
-      "Cursor restoration or the cross-integrity refresh message may fail to refresh an elevated window; no exact failing API is established by the archive."
+      "The minimize/restore recovery is consistent with a repaint/z-order or window-local cursor state issue, but does not identify a failing API or exclude an integrity boundary."
     ],
     "known_information": [
       "PowerToys0.102.3001; activate CursorHide, open Task Manager elevated, then move the pointer over it: the pointer reportedly stays invisible.",
       "The supplied archive contains AutoHideCursor settings with hide_on_typing=true and hide_on_idle=false; the module-specific log entries do not identify a restore error.",
       "The inspected implementation replaces system cursors and reloads them via SPI_SETCURSORS; RefreshCurrentCursor sends WM_NCHITTEST/WM_SETCURSOR to the window under the pointer.",
-      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation."
+      "The worker also polls cursor position on its timer, so a missing elevated hook callback alone is not a proven explanation.",
+      "The October31 follow-up suggests Task Manager always-on-top rather than elevation may determine the failure; minimizing then restoring reportedly leaves the cursor visible."
     ],
     "summary": "CursorHide visibility reportedly fails over elevated windows; settings and restoration boundaries support a focused reproduction.",
     "information_gaps": [
       {
         "evidence_type": "module_trace",
-        "why_needed": "Avoid replacing global cursor policy or assuming all missing hook events are the cause",
-        "information": "Which restore/refresh boundary fails over an elevated window",
-        "how_to_collect": "Maintainer runs the supplied elevation/repaint matrix and records restore return/error plus visible cursor state"
+        "information": "Which restore/repaint boundary fails, with elevation and always-on-top varied independently",
+        "how_to_collect": "Maintainer runs the matrix and records restore/message return and error values plus visible cursor state before and after minimize/restore.",
+        "why_needed": "Avoid fixing a hypothetical hook failure or changing global cursor policy when a window refresh or z-order path is responsible."
       }
     ]
   },
@@ -44,7 +48,7 @@
     "rationale": "Conditional investigation/fix direction, not a demonstrated root cause or completed design."
   },
   "number": 51752,
-  "source_updated_at": "2026-10-30T13:49:14Z",
+  "source_updated_at": "2026-10-31T12:25:36Z",
   "kind": "issue",
   "proposed_fixes": [
     {
@@ -54,59 +58,55 @@
         "Disabling the module restores the configured cursor scheme; secure-desktop transition is tested separately."
       ],
       "plan": [
-        "Reproduce typing-hide then pointer movement over normal and elevated Task Manager while recording restore and refresh outcomes.",
-        "If system restoration succeeds but target repaint fails, correct the supported refresh/fallback boundary without sending privileged input; if restore fails, preserve and handle the actual error.",
-        "Add focused restoration/error-path tests and retain disable/worker-exit recovery."
+        "Reproduce on0.102.3001 with elevated and non-elevated Task Manager, each with always-on-top enabled and disabled.",
+        "Record hide/restore state, SPI_SETCURSORS and bounded refresh-message results, then minimize and restore to identify the first recovery boundary.",
+        "Repair only the demonstrated restoration/repaint/hook failure using the existing policy and add a targeted regression; distinguish the secure desktop as a separate scenario.",
+        "Verify ordinary apps, all four Task Manager combinations, disabled module and original cursor scheme restoration."
       ],
       "confidence": {
-        "level": "yellow",
-        "score": 58,
-        "rationale": "Concrete reproduction and supplied settings, but no independently executed product scenario or causal failure trace."
+        "rationale": "Concrete reproduction and recovery observations are useful, but the archive has no failing restore API and no independent runtime matrix has identified the mechanism.",
+        "score": 45,
+        "level": "red"
       },
-      "root_cause": "Hypothesis: successful global cursor restoration does not refresh the elevated target, or restoration itself fails. Timer polling is counterevidence to attributing everything to missing hook callbacks."
+      "root_cause": "Unproven hypothesis: global cursor restoration or per-window refresh leaves a stale invisible cursor; the latest always-on-top/minimize observation adds z-order/repaint as an alternative to integrity alone."
     }
   ],
   "url": "https://github.com/microsoft/PowerToys/issues/51752",
   "schemaVersion": 5,
-  "generated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "generated_at": "2026-10-31T14:46:30.9313602+00:00",
   "title": "CursorHide: no mouse cursor with elevated apps",
-  "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
+  "evaluated_at": "2026-10-31T14:46:30.9313602+00:00",
   "repository": "microsoft/PowerToys",
   "pending_author": false,
   "actions": [
     {
+      "label": "Reproduce cursor restoration and z-order matrix",
+      "id": "51752-reproduce-elevation-zorder",
       "primary": true,
-      "type": "reproduce",
-      "label": "Reproduce elevated-window cursor restoration",
-      "id": "issue-51752-reproduce",
       "reproduce": {
-        "version_requirement": "Reported0.102.3001 versus current stable/main",
         "setup": [
-          "Use hide-on-typing enabled and hide-on-idle disabled, as supplied."
-        ],
-        "attachment_urls": [
-          "https://github.com/user-attachments/files/34174622/PowerToysReport_2026-10-30-10-33-45.zip"
+          "Use the reported hide-on-typing configuration; vary elevation and Task Manager always-on-top independently."
         ],
         "prerequisites": [
-          "Controlled Windows test machine; preserve cursor scheme and module settings."
+          "Disposable interactive Windows desktop; preserve cursor scheme and PowerToys settings; permission to open Task Manager elevated."
         ],
-        "title": "Separate system-cursor restore from elevated-window repaint",
         "steps": [
-          "1. Type to hide the pointer, move over an ordinary window and record recovery.",
-          "2. Repeat over elevated Task Manager, with PowerToys non-elevated and then elevated; record which boundary fails.",
-          "3. Capture SPI_SETCURSORS result/error and refresh-message outcomes; disable CursorHide and confirm the configured cursor returns.",
-          "4. Exercise UAC secure-desktop entry/exit separately, without treating it as an ordinary elevated window."
+          "1. Test non-elevated Task Manager with always-on-top off, then on: hide by typing, move over the window and observe cursor restoration.",
+          "2. Repeat both cases elevated with PowerToys at standard integrity.",
+          "3. In each failing case minimize and restore Task Manager, recording whether visibility recovers and stays recovered.",
+          "4. Capture restore/refresh API return and error values with a maintainer diagnostic build; test UAC secure desktop separately, not as another normal window."
         ],
-        "module": "CursorHide",
-        "expected_result": "Pointer visibility recovers on movement and module disable without requiring privileged input or replacing the user cursor scheme permanently."
-      }
+        "expected_result": "Movement restores the original cursor across the four ordinary-window combinations; failures and minimize recovery identify an actual restore/repaint boundary without assuming elevation is the cause.",
+        "version_requirement": "Reported PowerToys0.102.3001",
+        "title": "Separate CursorHide elevation and always-on-top behavior",
+        "module": "CursorHide"
+      },
+      "type": "reproduce"
     },
     {
-      "note": "Lightweight direction only; reproduce and locate the failed boundary before implementation approval.",
-      "type": "approve_design",
-      "label": "Review conditional cursor-restore investigation",
-      "id": "issue-51752-approve-direction",
-      "confirm": true
+      "label": "Investigate the confirmed cursor restore boundary",
+      "id": "51752-approve-cursor-restore-investigation",
+      "type": "approve_design"
     }
   ],
   "track": "triage",
