@@ -1,0 +1,118 @@
+{
+  "number": 51796,
+  "repository": "microsoft/PowerToys",
+  "proposed_fixes": [
+    {
+      "plan": [
+        "In src/common/FilePreviewCommon/MarkdownHelper.cs, use UseEmojiAndSmiley(enableSmileys:false) rather than removing the emoji extension; retain all custom image/safety, YAML, math and line-break extensions.",
+        "Add focused MarkdownHelper/preview tests for **Version :**, **Version:**, the supplied full sample, plain :* and named :smile: shortcode. Assert valid strong tags and no stray emphasis markers in the French punctuation case.",
+        "Verify ordinary emphasis, code spans/fences, tables and both preview themes without changing resource policy or HTML/image security.",
+        "Explicitly confirm the intended compatibility change: informal smileys such as :* remain literal, while named emoji shortcodes continue to expand. If plain smileys must be preserved, investigate parser delimiter precedence rather than blindly replacing source text."
+      ],
+      "root_cause": "MarkdownHelper enables plain-text smileys. Markdig.Signed0.34.0 treats the colon/asterisk sequence in **Version :** as a kissing-face emoticon and consumes part of the closing emphasis delimiter.",
+      "confidence": {
+        "rationale": "Exact declared dependency, supplied sample and output controls prove the parser collision and narrow correction. Real Preview Pane integration and acceptance of the deliberate plain-emoticon compatibility change remain unverified.",
+        "score": 84,
+        "level": "yellow"
+      },
+      "title": "Preserve Markdown emphasis delimiters while retaining emoji shortcodes",
+      "verification": [
+        "The actual Preview Pane renders Version : in bold for the minimal and supplied sample on the reported release/test setup.",
+        "Focused parser controls retain :smile: expansion and ordinary emphasis/code behavior; compare before/after output shapes, not merely handler startup.",
+        "Run the repository Markdown preview tests and a real Explorer smoke check; current evidence is parser-only and does not claim that complete integration."
+      ]
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "The exact declared parser reproduces the collision and the shortcode-preserving option resolves the focused controls. This is a supported lightweight proposal, not a completed adversarial full design or installed-product signoff.",
+    "status": "proposed"
+  },
+  "owes": "us",
+  "source_updated_at": "2026-10-31T16:24:35Z",
+  "stage": "triaged",
+  "pending_author": false,
+  "evaluated_at": "2026-10-31T19:21:28.7016552+00:00",
+  "actions": [
+    {
+      "type": "reproduce",
+      "primary": true,
+      "label": "Verify emphasis and shortcode rendering",
+      "id": "51796-reproduce-parser-preview",
+      "reproduce": {
+        "expected_result": "Version : is rendered in bold, named emoji shortcodes still expand, and code/resource handling remains unchanged. Plain emoticon compatibility is a deliberate documented decision.",
+        "attachments": [
+          {
+            "url": "https://github.com/user-attachments/files/34220683/20261031.example.md.smiley.instead.of.bold.md",
+            "label": "Reporter supplied Markdown sample"
+          }
+        ],
+        "version_requirement": "Reported PowerToysv0.102.3001.0 and a supported build containing the proposed correction",
+        "title": "Verify the French punctuation/emoticon boundary",
+        "setup": [
+          "Prepare minimal **Version :**1.0 and **Version:**1.0 lines, plain :*, named :smile:, ordinary emphasis and code-span/fence controls. Preserve the supplied full sample without editing its punctuation."
+        ],
+        "steps": [
+          "1. Select the supplied sample and control file in Explorer with Preview Pane enabled; record the French punctuation rendering.",
+          "2. Run the same source through the repository Markdown helper tests before/after UseEmojiAndSmiley(enableSmileys:false).",
+          "3. Verify strong-tag output, no stray closing markers and preserved named emoji shortcodes; verify the deliberate plain-smiley behavior.",
+          "4. Repeat light/dark preview and code/image-policy regressions without relaxing resource restrictions."
+        ],
+        "prerequisites": [
+          "Isolated interactive Windows setup with PowerToys Markdown preview enabled; supplied sample and a disposable control file."
+        ],
+        "module": "File Explorer Markdown Preview"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Review the shortcode-preserving parser correction",
+      "id": "51796-approve-shortcode-preserving-fix"
+    }
+  ],
+  "generated_at": "2026-10-31T19:21:28.7016552+00:00",
+  "title": "Markdown Preview Handler displays emoji instead of rendering bold text when using French punctuation",
+  "kind": "issue",
+  "schemaVersion": 5,
+  "issue_context": {
+    "known_information": [
+      "The reporter supplies a complete Markdown sample, screenshots and diagnostics from PowerToysv0.102.3001.0 on French Windows11. The minimal failing text is **Version :**1.0.",
+      "The supplied Markdown handler log reports initialization success; the diagnostic configuration was inspected privately. No crashing handler or missing enablement is established by this rendering symptom.",
+      "Product MarkdownHelper explicitly enables UseEmojiAndSmiley with its default enableSmileys=true; the declared dependency is Markdig.Signed0.34.0.",
+      "The exact declared parser dependency and product extension configuration were executed against the supplied sample and five controls. With smileys enabled, **Version :** renders as literal opening markers plus an emoji. With enableSmileys=false, it renders as strong text while :smile: still expands."
+    ],
+    "analysis": "A parser-level formatting collision is reproduced independently, not inferred solely from a screenshot. The smiley matcher consumes :* from the closing bold delimiter after the French-spaced colon. A focused shortcode-preserving correction is supported; full Explorer/custom image policy/WebView integration and the intended compatibility policy for plain emoticons remain to be verified.",
+    "inferences": [
+      "The same parser collision explains the reported Preview Pane symptom, but full installed-handler integration was not executed in this investigation."
+    ],
+    "initial_investigation": [
+      "Read the complete issue body, discussion, labels, assignees and linked-work timeline; searched related Markdown emoji/bold work without an established covering fix.",
+      "Downloaded and read the supplied Markdown sample and privately inspected the supplied diagnostic configuration and Markdown handler log; no duplicate diagnostic request.",
+      "Read MarkdownHelper and the declared Markdig.Signed dependency. Executed six cases using exact0.34.0 with the configured product extensions and the enableSmileys:false comparison. The probe excludes custom image rewriting and Explorer/WebView integration; host-framework compatibility warnings were explicit, not attributed to the product.",
+      "Confirmed named shortcode expansion remains active with smileys disabled; this is not a recommendation to remove all emoji support or globally rewrite colons/asterisks."
+    ],
+    "summary": "Plain-text smiley parsing consumes the French-spaced colon/closing-bold sequence; exact parser reproduction supports a shortcode-preserving correction.",
+    "information_gaps": [
+      {
+        "how_to_collect": "Maintainer runs the supplied sample and exact minimal/shortcode controls through MarkdownHelper and the actual Explorer Preview Pane, then confirms the desired plain-smiley policy.",
+        "why_needed": "Parser proof does not replace installed handler integration or authorize an intentional change to plain :* rendering.",
+        "evidence_type": "behavior_confirmation",
+        "information": "Real Preview Pane regression result and maintainer decision on plain-emoticon compatibility"
+      }
+    ]
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/51796",
+  "track": "triage",
+  "judgment": {
+    "evaluated_at": "2026-10-31T19:21:28.7016552+00:00",
+    "status": "actionable_design",
+    "recommended_action": "Approve a scoped parser correction that disables plain-text smileys while retaining emoji shortcodes, then verify the real Preview Pane and regression controls.",
+    "rationale": "A parser-level formatting collision is reproduced independently, not inferred solely from a screenshot. The smiley matcher consumes :* from the closing bold delimiter after the French-spaced colon. A focused shortcode-preserving correction is supported; full Explorer/custom image policy/WebView integration and the intended compatibility policy for plain emoticons remain to be verified.",
+    "evidence": [
+      "The reporter supplies a complete Markdown sample, screenshots and diagnostics from PowerToysv0.102.3001.0 on French Windows11. The minimal failing text is **Version :**1.0.",
+      "The supplied Markdown handler log reports initialization success; the diagnostic configuration was inspected privately. No crashing handler or missing enablement is established by this rendering symptom.",
+      "Product MarkdownHelper explicitly enables UseEmojiAndSmiley with its default enableSmileys=true; the declared dependency is Markdig.Signed0.34.0.",
+      "The exact declared parser dependency and product extension configuration were executed against the supplied sample and five controls. With smileys enabled, **Version :** renders as literal opening markers plus an emoji. With enableSmileys=false, it renders as strong text while :smile: still expands."
+    ],
+    "source_updated_at": "2026-10-31T16:24:35Z"
+  }
+}
