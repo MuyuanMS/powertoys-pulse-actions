@@ -1645,8 +1645,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 3,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post supported inline suggestion"
+        "label": "Post supported inline suggestion",
+        "type": "post_review"
       },
       "labels": [
         "Product-Command Palette",
