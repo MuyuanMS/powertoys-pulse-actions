@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "title": "Markdown preview shows an unhandled exception when WebView2 initialization times out (0x800705B4)",
+  "url": "https://github.com/microsoft/PowerToys/issues/51783",
+  "track": "triage",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "score": 82,
+        "rationale": "The supplied stack and current callback catch establish the escaping error path. The reporter draft and disposal/overlap behavior have not been independently compiled or executed, so validation is still required.",
+        "level": "yellow"
+      },
+      "title": "Handle deferred WebView2 initialization failures in Markdown preview",
+      "verification": [
+        "Build the existing Markdown preview test project with the repository build script, then run its focused tests with vstest.",
+        "Exercise delayed initialization success, deterministic COM failure, disposal-before-completion and overlapping preview completion; verify failed WebView2 resources are released.",
+        "Repeat the reported CPU-load Explorer Markdown scenario, then preview another file and confirm recovery without an unhandled exception dialog."
+      ],
+      "root_cause": "DoPreview schedules an async-void completion callback. A COM controller-initialization failure is neither a NullReferenceException nor inside the lifetime of the outer synchronous catch, so it reaches the WinForms unhandled-exception path.",
+      "plan": [
+        "In MarkdownPreviewHandlerControl.cs, continue from the reporter draft: represent both environment and controller initialization as one Task and observe its completion inside the actual callback error boundary.",
+        "Reuse the localized MarkdownNotPreviewedError presentation and existing telemetry pattern. Dispose failed browser resources and avoid adding controls or touching a preview that was unloaded, disposed or superseded; do not silently swallow initialization errors.",
+        "In UnitTests-MarkdownPreviewHandler/MarkdownPreviewHandlerTest.cs, inject COMException0x800705B4 after initialization starts. Verify an active preview shows the localized error, no Application.ThreadException escapes, and a disposed/superseded preview receives no late controls.",
+        "Preserve normal Markdown navigation/resource restrictions and successful preview behavior; do not disable timeout reporting or merely lengthen a timeout."
+      ]
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "pending_author": false,
+  "number": 51783,
+  "source_updated_at": "2026-10-30T21:17:53Z",
+  "issue_context": {
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "why_needed": "Catching the COM failure is necessary, but an unsafe late callback could still update the wrong or disposed preview.",
+        "how_to_collect": "Maintainer runs deterministic fault-injection/completion-order tests in the existing Markdown preview test project, then the supplied CPU-load reproduction.",
+        "information": "Whether the proposed boundary safely handles delayed initialization after unload/disposal and overlapping previews while retaining successful navigation"
+      }
+    ],
+    "inferences": [
+      "A local initialization error boundary should prevent the unhandled-dialog symptom, but does not establish or repair the underlying WebView2 timeout cause."
+    ],
+    "analysis": "The stack and current source support a missed asynchronous initialization-error boundary. The reason WebView2 times out under load remains unproven, but a recoverable initialization failure should not escape into an unhandled WinForms dialog. Continue from the reporter draft instead of inventing another timeout workaround.",
+    "known_information": [
+      "The reporter reproduces Markdown preview initialization timeouts under CPU load on multiple machines, with PowerToys0.102.2933 and Windows11. The report includes exact steps, a stack and an exception attachment.",
+      "The supplied exception attachment confirms COMException0x800705B4 while WebView2 creates its controller, escaping the Markdown DoPreview async callback into the WinForms exception path.",
+      "Current main8827f848fbbac4afeedcae2907c71cd05fd5aa86 still registers an async OnCompleted callback that catches only NullReferenceException; DoPreview has an outer synchronous catch that cannot catch a later async-void failure.",
+      "The reporter already supplied a two-file draft correction and fault-injection test in the discussion. No matching repair PR was found by issue-number search or timeline; the proposed patch is not a merged or validated fix.",
+      "Related18125 concerns SVG preview timeout behavior, not proof that the Markdown error-handling defect is already fixed."
+    ],
+    "summary": "A WebView2 controller timeout during Markdown preview escapes the async callback instead of showing the existing localized preview error.",
+    "initial_investigation": [
+      "Read the entire report, all discussion and timeline, including the reporter two-file patch and proposed fault-injection test.",
+      "Read the public exception attachment and compared its controller-initialization stack with current main MarkdownPreviewHandlerControl.DoPreview callback and both exception boundaries.",
+      "Checked issue-number repair search and timeline ownership. No repair PR was discovered; no product execution, compilation or adversarially converged full design is claimed."
+    ]
+  },
+  "fix_assessment": {
+    "rationale": "The current asynchronous callback still lacks this exception boundary. A draft patch in the discussion is useful prior work, not a released or independently tested implementation.",
+    "status": "proposed"
+  },
+  "kind": "issue",
+  "evaluated_at": "2026-10-31T00:40:49.9406262+00:00",
+  "stage": "triaged",
+  "generated_at": "2026-10-31T00:40:49.9406262+00:00",
+  "judgment": {
+    "rationale": "The stack and current source support a missed asynchronous initialization-error boundary. The reason WebView2 times out under load remains unproven, but a recoverable initialization failure should not escape into an unhandled WinForms dialog. Continue from the reporter draft instead of inventing another timeout workaround.",
+    "evaluated_at": "2026-10-31T00:40:49.9406262+00:00",
+    "source_updated_at": "2026-10-30T21:17:53Z",
+    "recommended_action": "Validate and refine the reporter-provided async error-handling draft with deterministic initialization-failure and disposal tests.",
+    "status": "actionable_design",
+    "evidence": [
+      "The reporter reproduces Markdown preview initialization timeouts under CPU load on multiple machines, with PowerToys0.102.2933 and Windows11. The report includes exact steps, a stack and an exception attachment.",
+      "The supplied exception attachment confirms COMException0x800705B4 while WebView2 creates its controller, escaping the Markdown DoPreview async callback into the WinForms exception path.",
+      "Current main8827f848fbbac4afeedcae2907c71cd05fd5aa86 still registers an async OnCompleted callback that catches only NullReferenceException; DoPreview has an outer synchronous catch that cannot catch a later async-void failure.",
+      "The reporter already supplied a two-file draft correction and fault-injection test in the discussion. No matching repair PR was found by issue-number search or timeline; the proposed patch is not a merged or validated fix.",
+      "Related18125 concerns SVG preview timeout behavior, not proof that the Markdown error-handling defect is already fixed."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "id": "51783-approve-async-boundary",
+      "label": "Validate the Markdown async-error fix plan"
+    },
+    {
+      "primary": true,
+      "type": "reproduce",
+      "reproduce": {
+        "version_requirement": "Reported PowerToys0.102.2933 versus current stable and the candidate correction",
+        "prerequisites": [
+          "Windows11 with WebView2 runtime and Markdown preview enabled; an ordinary local Markdown file; controlled development/test environment."
+        ],
+        "attachments": [
+          {
+            "label": "Reporter exception stack",
+            "url": "https://github.com/user-attachments/files/34202121/exception.txt"
+          }
+        ],
+        "steps": [
+          "1. Reproduce the supplied Explorer sequence during a controlled CPU-heavy build; record whether the controller timeout becomes an unhandled dialog.",
+          "2. In the existing test project, arrange an initialization task that fails asynchronously with COMException0x800705B4 and verify the preview error UI and failed-browser disposal.",
+          "3. Complete initialization only after unload/disposal or after a replacement preview starts; ensure no stale controls, wrong-file navigation or unhandled thread exception.",
+          "4. Restore normal initialization, preview Markdown successfully, and confirm navigation/resource restrictions remain unchanged."
+        ],
+        "module": "File Explorer Markdown Preview",
+        "setup": [
+          "Enable Explorer preview pane. Use the existing Markdown preview test project for deterministic failed initialization rather than relying solely on CPU stress."
+        ],
+        "title": "Verify Markdown handles asynchronous WebView2 controller failure",
+        "expected_result": "Initialization failure produces the existing localized preview error without an unhandled dialog; disposed or superseded previews remain untouched and later previews can succeed."
+      },
+      "id": "51783-reproduce-init-timeout",
+      "label": "Reproduce initialization failure and disposal"
+    }
+  ],
+  "owes": "us"
+}
