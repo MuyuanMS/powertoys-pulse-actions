@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 5,
+  "number": 51786,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: Add fallbacks v2 API",
+  "url": "https://github.com/microsoft/PowerToys/pull/51786",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-31T09:00:13.3123801+08:00",
+  "evaluated_at": "2026-10-31T09:00:13.3124157+08:00",
+  "source_updated_at": "2026-10-30T21:27:30Z",
+  "head_sha": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "path": "src/modules/cmdpal/ext/SamplePagesExtension/SampleResultFallback.cs",
+      "disposition": "proposed",
+      "in_diff": true,
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "rationale": "Exact upstream source contract and focused candidate validation.",
+        "score": 99
+      },
+      "line": 25,
+      "body": "**Severity: high.** `FallbackResultsItem` declares the abstract overload with `FallbackQueryArgs`, but this sample declares its override with `IFallbackQueryArgs`. Those are different parameter types, not an override. If unchanged, the sample extension cannot compile, which also prevents dependent sample/UI-test packaging. Keep the public interface-taking adapter in the toolkit; correct this sample override only.\n\n```suggestion\n        FallbackQueryArgs args,\n```\n\n**Verification:** The current toolkit project builds with analyzers enabled; its original fallback suite passes 12/13 and fails on the identity assertion. The minimal candidate passes 13/13, and the sample extension project builds. No host implementation or interactive UI execution is claimed.",
+      "id": "51786-sample-override-type",
+      "title": "Match the concrete toolkit query override",
+      "side": "RIGHT"
+    },
+    {
+      "path": "src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/FallbackV2Tests.cs",
+      "disposition": "proposed",
+      "in_diff": true,
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "rationale": "Exact upstream source contract and focused candidate validation.",
+        "score": 99
+      },
+      "line": 130,
+      "body": "**Severity: medium.** The toolkit intentionally copies the host-owned query arguments before starting asynchronous work. The exact upstream test fails at `AreSame`: the values may be correct while the new object cannot be reference-equal to `args`. If unchanged, this regression test fails before checking the returned snapshot. Preserve the copy boundary and compare its fields rather than changing production behavior to satisfy the assertion.\n\n```suggestion\n        Assert.IsNotNull(fallback.LastQuery);\r\n        Assert.AreEqual(args.Query, fallback.LastQuery.Query);\r\n        Assert.AreEqual(args.QueryId, fallback.LastQuery.QueryId);\r\n        Assert.AreEqual(args.RequestedItemCount, fallback.LastQuery.RequestedItemCount);\r\n        CollectionAssert.AreEqual(args.LanguageTags, fallback.LastQuery.LanguageTags);\n```\n\n**Verification:** The current toolkit project builds with analyzers enabled; its original fallback suite passes 12/13 and fails on the identity assertion. The minimal candidate passes 13/13, and the sample extension project builds. No host implementation or interactive UI execution is claimed.",
+      "id": "51786-query-copy-test",
+      "title": "Assert copied query values rather than reference identity",
+      "side": "RIGHT"
+    },
+    {
+      "path": "src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md",
+      "disposition": "proposed",
+      "in_diff": true,
+      "kind": "inline",
+      "severity": "low",
+      "confidence": {
+        "rationale": "Exact upstream source contract and focused candidate validation.",
+        "score": 99
+      },
+      "line": 2652,
+      "body": "**Severity: low.** The added heading is `Result sources`, whose anchor is `#result-sources`; there is no `results-fallbacks` heading. If unchanged, this overview link does not navigate to the result-source contract. This is documentation navigation only, not a runtime failure.\n\n```suggestion\n| [Results](#result-sources) | `IFallbackCommandItem3` with a non-null `QueryHandler` | Call `QueryHandler.QueryAsync` and display its returned items. | Files, settings, open windows, remote search |\n```\n\n**Verification:** The current toolkit project builds with analyzers enabled; its original fallback suite passes 12/13 and fails on the identity assertion. The minimal candidate passes 13/13, and the sample extension project builds. No host implementation or interactive UI execution is claimed.",
+      "id": "51786-results-doc-anchor",
+      "title": "Point the results link to the added section",
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "commit_id": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+        "event": "COMMENT",
+        "head_sha": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+        "comment_ids": [
+          "51786-sample-override-type",
+          "51786-query-copy-test",
+          "51786-results-doc-anchor"
+        ]
+      },
+      "head_sha": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+      "type": "post_review",
+      "label": "Post supported inline suggestion",
+      "id": "51786-post-current-assessment"
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51786-sample-override-type",
+        "51786-query-copy-test",
+        "51786-results-doc-anchor"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "34b3179970a689706c3d28cd4bef7ac30c36562a",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51786-sample-override-type",
+        "51786-query-copy-test",
+        "51786-results-doc-anchor"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/ext/SamplePagesExtension/SampleResultFallback.cs",
+          "result": "passed",
+          "line_endings": "crlf"
+        },
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/FallbackV2Tests.cs",
+          "result": "passed",
+          "line_endings": "crlf"
+        },
+        {
+          "path": "src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md",
+          "result": "passed",
+          "line_endings": "crlf"
+        }
+      ]
+    }
+  }
+}

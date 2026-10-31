@@ -1515,7 +1515,8 @@ window.BOARD_INDEX = {
     51783,
     51782,
     51547,
-    50947
+    50947,
+    51786
   ],
   "items": [
     {
@@ -1531,15 +1532,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": null,
-      "stage": null,
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 3,
+      "primary_action": {
+        "label": "Post supported inline suggestion",
+        "type": "post_review"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
