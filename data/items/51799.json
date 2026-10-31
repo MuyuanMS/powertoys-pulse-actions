@@ -1,0 +1,127 @@
+{
+  "title": "Der keayboard manager zeigt Tastenumbelegungen älterer versionen an, führt sie auch aus, aber neue Umbelegungen  in dieser Form kann man nicht mehr anlegen.",
+  "evaluated_at": "2026-10-31T23:57:43.8051244+00:00",
+  "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A scoped editor collection-policy correction is supported by exact-method execution and existing chord representation. This is a lightweight proposal, not an adversarial full design or installed-product signoff."
+  },
+  "source_updated_at": "2026-10-31T23:50:09Z",
+  "judgment": {
+    "rationale": "The supplied legacy/new screenshot and exact-method controls support an editor chord-construction regression. Apps/Menu being an action key is expected in the current model; the narrower problem is that dropdown mutation cannot preserve or append a supported second action key. The reported runtime precedence and outgoing-chord semantics need independent verification and must not be silently bundled into a modifier redesign.",
+    "recommended_action": "Verify and restore incoming-chord dropdown creation/editing without classifying Apps/Menu as a modifier; test overlapping legacy/new shortcuts separately.",
+    "source_updated_at": "2026-10-31T23:50:09Z",
+    "status": "actionable_design",
+    "evaluated_at": "2026-10-31T23:57:43.8051244+00:00",
+    "evidence": [
+      "The German report supplies PowerToys0.102.3001, Windows11 build26300.9818, explicit dropdown reproduction and a screenshot showing legacy Shift(Right)+Apps/Menu+X/W/O/N/T mappings alongside a newly created Shift(Right)+Apps/Menu text mapping.",
+      "The reporter says legacy mappings remain visible, but new dropdown selections stop at Apps/Menu and the shorter new mapping takes precedence. No configuration export or installed runtime reproduction was supplied/executed.",
+      "Helpers.GetKeyType classifies only Win/Ctrl/Alt/Shift as modifiers; Apps/Menu is an action key. Shortcut.SetKeyCodes separately supports a first actionKey and a secondKey, so treating Apps/Menu as a new modifier is not required to investigate the existing chord representation.",
+      "The inspected UnifiedMappingControl has AllowChords and hook chord handling, but HandleAutoGrowShrink unconditionally removes trailing entries after selecting any action key and only grows after a modifier.",
+      "Three executed controls on the exact extracted collection-mutation method reproduce modifier growth, no extra field after Apps/Menu, and removal of X from an existing Shift(Right)+Apps/Menu+X list when Apps/Menu is selected. Key classification is stubbed from inspected native behavior; this is not installed UI/hook execution.",
+      "Related issue22752 requests Apps/Menu as a general modifier; issue31891 requests outgoing chords. Those enhancements are separate from restoring creation/editing of already representable incoming chords. Issue49085 concerns Allow chords state persistence, not this exact dropdown truncation.",
+      "The later Product-Keyboard Manager label is a routing update only; the complete refreshed body, comments and timeline contain no new reproduction or covering fix."
+    ]
+  },
+  "actions": [
+    {
+      "primary": true,
+      "id": "51799-reproduce-incoming-chord",
+      "reproduce": {
+        "attachments": [
+          {
+            "label": "Reporter legacy/new mapping screenshot",
+            "url": "https://github.com/user-attachments/assets/4e5c1c64-dc8e-4ec7-b3f5-2cc27383d8e4"
+          }
+        ],
+        "version_requirement": "Reported0.102.3001 and a supported test build with the editor correction",
+        "module": "Keyboard Manager",
+        "setup": [
+          "Prepare a legacy Shift(Right)+Apps/Menu+X mapping and a shorter Shift(Right)+Apps/Menu text mapping with visibly different harmless outputs. Keep them separately enabled until the overlap step."
+        ],
+        "steps": [
+          "1. With incoming chords enabled, select Shift(Right), Apps/Menu, then X through dropdowns; compare keyboard capture.",
+          "2. Edit Apps/Menu in an existing three-key mapping, save and reopen; check whether X is preserved.",
+          "3. Repeat with chords disabled and a normal modifier-plus-one-action shortcut; check the intended one-action behavior.",
+          "4. Execute legacy and shorter mappings separately, then together; record key press/release order and actual output without assuming simultaneous/sequence semantics.",
+          "5. Verify action-side behavior remains unchanged; do not enable outgoing chords or change modifier classification implicitly."
+        ],
+        "prerequisites": [
+          "Isolated interactive Windows setup; use disposable mappings or a backed-up test configuration, not the reporter production remaps."
+        ],
+        "title": "Verify legacy incoming chord creation and shorter-mapping overlap",
+        "expected_result": "Supported incoming chords can be created and round-tripped without silently dropping the second action; disabled/ordinary mappings retain current contracts. Any shorter-prefix precedence defect is reproduced and assessed separately."
+      },
+      "type": "reproduce",
+      "label": "Verify chord creation and overlap"
+    },
+    {
+      "id": "51799-approve-editor-chord-fix",
+      "type": "approve_design",
+      "label": "Review incoming-chord editor correction"
+    }
+  ],
+  "issue_context": {
+    "initial_investigation": [
+      "Read complete report/discussion/labels and linked timeline, inspected the supplied screenshot, and searched related Apps/Menu and chord work. No covering fix for this exact editor regression was established.",
+      "Read exact source at 67ac3d8b1f0fe78a649a59bdc74c29b40d3bb7f5 for Helpers.GetKeyType, Shortcut.SetKeyCodes, UnifiedMappingControl and key-hook chord handling. Related release tag0.102.2911 also contains this auto-grow method; exact reported0.102.3001 release-source identity was not established.",
+      "Compiled and executed the extracted HandleAutoGrowShrink method under the exclusive build lease with classification controls. Three cases confirm collection truncation without creating an installed-product execution claim.",
+      "Separated incoming chord edit regression, Apps/Menu-as-modifier enhancement, outgoing chord enhancement and same-prefix runtime behavior; no request for diagnostic ZIP or broad .NET runtime reinstall is justified by current evidence."
+    ],
+    "analysis": "The supplied legacy/new screenshot and exact-method controls support an editor chord-construction regression. Apps/Menu being an action key is expected in the current model; the narrower problem is that dropdown mutation cannot preserve or append a supported second action key. The reported runtime precedence and outgoing-chord semantics need independent verification and must not be silently bundled into a modifier redesign. Severity: medium for the editor regression; leaving it unfixed prevents recreating/editing existing chords and can silently remove a second key during editing. Runtime interception by an overlapping shorter mapping remains a separate unverified consequence.",
+    "inferences": [
+      "The unconditional action-key trimming plausibly explains inability to recreate the legacy incoming chord. The reported shorter-mapping precedence is not established by the collection probe."
+    ],
+    "summary": "The new dropdown editor truncates after Apps/Menu although legacy incoming chords have a second action key; investigate editor chord construction separately from new modifier semantics.",
+    "information_gaps": [
+      {
+        "information": "Installed incoming-chord round-trip and overlapping-shortcut precedence result",
+        "why_needed": "Collection-policy proof does not establish installed UI, serialization or hook behavior, and outgoing chord support is a separate feature decision.",
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "Maintainer uses disposable mappings on an isolated build and compares dropdown/capture/save/reopen plus separate/combined legacy and shorter mappings."
+      }
+    ],
+    "known_information": [
+      "The German report supplies PowerToys0.102.3001, Windows11 build26300.9818, explicit dropdown reproduction and a screenshot showing legacy Shift(Right)+Apps/Menu+X/W/O/N/T mappings alongside a newly created Shift(Right)+Apps/Menu text mapping.",
+      "The reporter says legacy mappings remain visible, but new dropdown selections stop at Apps/Menu and the shorter new mapping takes precedence. No configuration export or installed runtime reproduction was supplied/executed.",
+      "Helpers.GetKeyType classifies only Win/Ctrl/Alt/Shift as modifiers; Apps/Menu is an action key. Shortcut.SetKeyCodes separately supports a first actionKey and a secondKey, so treating Apps/Menu as a new modifier is not required to investigate the existing chord representation.",
+      "The inspected UnifiedMappingControl has AllowChords and hook chord handling, but HandleAutoGrowShrink unconditionally removes trailing entries after selecting any action key and only grows after a modifier.",
+      "Three executed controls on the exact extracted collection-mutation method reproduce modifier growth, no extra field after Apps/Menu, and removal of X from an existing Shift(Right)+Apps/Menu+X list when Apps/Menu is selected. Key classification is stubbed from inspected native behavior; this is not installed UI/hook execution.",
+      "Related issue22752 requests Apps/Menu as a general modifier; issue31891 requests outgoing chords. Those enhancements are separate from restoring creation/editing of already representable incoming chords. Issue49085 concerns Allow chords state persistence, not this exact dropdown truncation.",
+      "The later Product-Keyboard Manager label is a routing update only; the complete refreshed body, comments and timeline contain no new reproduction or covering fix."
+    ]
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/51799",
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "level": "yellow",
+        "rationale": "Exact extracted method, native action/second-key source and reporter screenshot support the editor mechanism. Installed editor behavior, release-source identity and overlapping-shortcut runtime precedence remain unverified.",
+        "score": 82
+      },
+      "verification": [
+        "Enabled incoming chords expose a second-action dropdown after Apps/Menu and preserve X through edit/save/reopen; disabled chords and ordinary shortcuts retain their one-action behavior.",
+        "Keyboard capture and dropdown paths produce the same native first/second action representation; no unrelated mapping or shortcut action is rewritten.",
+        "On an isolated installed/test build, replay the reporter legacy chord and shorter overlapping mapping individually/together. Distinguish held-key chords from sequential press/release gestures and record which action fires.",
+        "Run the existing Keyboard Manager editor/native tests and an interactive editor smoke check. Current proof covers the exact collection method only, not installed rendering, serialization or hook precedence."
+      ],
+      "title": "Preserve incoming shortcut chords in Keyboard Manager dropdown editing",
+      "plan": [
+        "In src/modules/keyboardmanager/KeyboardManagerEditorUI/Controls/UnifiedMappingControl.xaml.cs, make trigger-side dropdown growth/shrink respect the existing incoming-chord policy: allow one second action key when chords are enabled, preserve it when editing the first action, cap action count at two, and retain ordinary modifier-plus-one-action behavior when disabled.",
+        "Keep trigger and action-side policy explicit. Do not accidentally enable unsupported outgoing chords, globally classify Apps/Menu as a modifier, or permit repeated modifier categories as part of this fix; related enhancement22752 and outgoing-chord request31891 are separate decisions.",
+        "Keep dropdown, key-capture hook and native Shortcut.SetKeyCodes serialization consistent. Round-trip an existing Shift(Right)+Apps/Menu+X mapping and create the same mapping from scratch without silently dropping X.",
+        "Add focused collection/validation tests for enabled and disabled chords, editing first versus second action, replacing an action with a modifier, the two-action cap, standard shortcuts and untouched sibling mappings.",
+        "Verify legacy chord and the shorter Shift(Right)+Apps/Menu mapping separately, then together. Record press/release order and actual precedence; change engine conflict handling only if that separate runtime defect is reproduced."
+      ],
+      "root_cause": "UnifiedMappingControl.HandleAutoGrowShrink grows only for modifiers and trims all trailing keys when an action is selected. This bypasses the existing AllowChords/secondKey model and prevents selecting or preserving the second action key after Apps/Menu."
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "stage": "triaged",
+  "schemaVersion": 5,
+  "number": 51799,
+  "track": "triage",
+  "generated_at": "2026-10-31T23:57:43.8051244+00:00",
+  "pending_author": false,
+  "owes": "us"
+}
