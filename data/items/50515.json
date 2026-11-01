@@ -2,21 +2,22 @@
   "schemaVersion": 5,
   "number": 50515,
   "kind": "issue",
-  "generated_at": "2026-10-30T15:03:55.7448319+00:00",
-  "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
-  "source_updated_at": "2026-10-30T13:51:18Z",
+  "generated_at": "2026-11-01T04:02:39.0083130+00:00",
+  "evaluated_at": "2026-11-01T04:02:39.0083130+00:00",
+  "source_updated_at": "2026-11-01T03:31:17Z",
   "summary": "A source-supported bottom hit-region hypothesis exists, but reports now include other taskbar positions.",
   "judgment": {
-    "status": "actionable_design",
+    "status": "reproducible",
     "rationale": "Deterministic bottom-dock/taskbar reproduction plus current source inspection pinpoint an unbounded bottom-edge reveal predicate in DockWindow.IsCursorAtDockEdge. New activity says the oscillation also occurs at other taskbar positions, so cross-edge design/reproduction is needed rather than accepting a bottom-only patch.",
-    "recommended_action": "Request exact cross-edge reproduction",
+    "recommended_action": "Maintainer reproduces the stationary-pointer overlap and records reveal/collapse geometry on each edge before choosing a bounded hit region.",
     "evidence": [
       "Dock repeatedly shows/hides with pointer stationary over bottom taskbar.",
       "Current Bottom reveal predicate has no upper cursor.Y bound; collapse logic is separate.",
-      "Candidate change has not been validated in full application; latest comment reports other taskbar positions too."
+      "Candidate change has not been validated in full application; latest comment reports other taskbar positions too.",
+      "The reporter reiterates waiting for auto-hide when the taskbar and dock share an edge, but supplies no additional geometry or successful fix result. Current source still has outward-unbounded reveal predicates; full cross-edge reveal/collapse transitions remain unexecuted."
     ],
-    "evaluated_at": "2026-10-30T15:03:55.7448319+00:00",
-    "source_updated_at": "2026-10-30T13:51:18Z"
+    "evaluated_at": "2026-11-01T04:02:39.0083130+00:00",
+    "source_updated_at": "2026-11-01T03:31:17Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -47,37 +48,58 @@
     "known_information": [
       "Dock repeatedly shows/hides with pointer stationary over bottom taskbar.",
       "Current Bottom reveal predicate has no upper cursor.Y bound; collapse logic is separate.",
-      "Candidate change has not been validated in full application; latest comment reports other taskbar positions too."
+      "Candidate change has not been validated in full application; latest comment reports other taskbar positions too.",
+      "The reporter reiterates waiting for auto-hide when the taskbar and dock share an edge, but supplies no additional geometry or successful fix result. Current source still has outward-unbounded reveal predicates; full cross-edge reveal/collapse transitions remain unexecuted."
     ],
     "inferences": [
       "Reveal/collapse hit-region mismatch plausibly contributes to bottom case; broader edge report means bottom-only correction may be incomplete."
     ],
-    "analysis": "Source inspection supports a bounded hypothesis for the bottom case, but latest scope expansion requires cross-edge testing and preservation of intentional edge activation. Do not treat the suggested rectangle clamp as a converged fix.",
+    "analysis": "Source inspection supports a bounded hypothesis for the bottom case, but latest scope expansion requires cross-edge testing and preservation of intentional edge activation. Do not treat the suggested rectangle clamp as a converged fix. The latest follow-up is not a new uncertainty the reporter must resolve before the known bottom case can be reproduced. Route geometry/transition capture to a maintainer; retain cross-edge uncertainty and do not claim a bottom-only clamp is complete.",
     "initial_investigation": [
       "Read full issue and latest comment; inspected DockWindow.xaml.cs reveal and collapse paths in current PowerToys tree.",
       "Checked activity, ownership, and PR search; no linked PR or assignee surfaced.",
       "Reporter test is isolated and not end-to-end app validation.",
-      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair."
+      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair.",
+      "Reread the complete current body, comments, labels, ownership and linked-work timeline; separated new facts from label-only or unsupported community conclusions.",
+      "Rechecked current DockWindow.xaml.cs reveal polling and all four IsCursorAtDockEdge predicates on default-branch759b5ef7e5c434c532a3861315f144be35573f05; source inspection only, no installed dock/taskbar probe."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Which additional taskbar positions/edges reproduce, exact dock side and work-area geometry for each, and whether the pointer stays stationary during oscillation.",
-        "how_to_collect": "Please list each additional dock/taskbar edge that reproduces, monitor resolution/scaling, and whether the pointer remains stationary while the dock flashes.",
-        "why_needed": "Determines whether one hit-region mismatch spans edges or separate geometry/transition paths are involved."
+        "how_to_collect": "Maintainer records monitor bounds/work area, revealed and collapsed rectangles, cursor coordinates and each reveal/collapse transition on an isolated test build.",
+        "information": "Cross-edge reveal/collapse transition geometry with a stationary taskbar pointer",
+        "why_needed": "An outward-unbounded reveal predicate does not alone prove the complete animation/ownership mechanism or validate an arbitrary clamp.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   },
   "actions": [
     {
-      "label": "Approve cross-edge auto-hide hit-region design",
+      "id": "50515-approve-hit-region-design",
+      "label": "Review cross-edge auto-hide hit-region design",
       "type": "approve_design"
     },
     {
-      "label": "Request exact cross-edge reproduction",
-      "type": "request_info",
-      "comment": {
-        "body": "Thanks for the source-level observation and for confirming that the issue is not limited to the bottom taskbar. The current bottom predicate does lack an upper Y bound, but the suggested clamp has not been tested in the full app and may not explain the other positions. Please list each additional dock/taskbar edge that reproduces, the monitor resolution/scaling, and whether the pointer remains stationary while the dock flashes. This will distinguish a shared hit-region mismatch from separate geometry transitions before a fix is chosen."
+      "id": "50515-reproduce-taskbar-overlap",
+      "label": "Measure taskbar overlap transitions",
+      "primary": true,
+      "type": "reproduce",
+      "reproduce": {
+        "title": "Measure auto-hide reveal/collapse at shared taskbar edges",
+        "version_requirement": "Reported0.101.2492 versus current supported build",
+        "prerequisites": [
+          "Isolated interactive Windows test setup with Command Palette dock and taskbar; disposable dock settings and a second layout/scaling control when available."
+        ],
+        "module": "Command Palette Dock",
+        "steps": [
+          "1. Hold the cursor stationary over the bottom taskbar inside the dock horizontal span; record whether reveal/collapse repeats.",
+          "2. Record cursor coordinates, revealed/collapsed rectangles and each state transition, then move deliberately toward/away from the edge.",
+          "3. Repeat dock/taskbar same-edge versus different-edge layouts and supported top/left/right dock placements; record scaling and monitor offsets.",
+          "4. Validate a candidate region policy against the state trace: stationary overlap must not oscillate, intentional edge activation and normal collapse must still work."
+        ],
+        "expected_result": "A stable state for a stationary taskbar pointer and reliable deliberate reveal/collapse across supported edges. Choose a region policy from the proven transition, not an untested bottom-only clamp.",
+        "setup": [
+          "Start with bottom dock plus bottom taskbar and auto-hide enabled. Record taskbar auto-hide mode and monitor work area without changing the reporter configuration."
+        ]
       }
     }
   ]
