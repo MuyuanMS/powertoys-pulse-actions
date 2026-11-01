@@ -1513,7 +1513,10 @@ window.BOARD_INDEX = {
     51796,
     51799,
     51801,
-    51803
+    51803,
+    51808,
+    51810,
+    51811
   ],
   "items": [
     {
@@ -22965,28 +22968,30 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
-      "stage": "triaged",
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Consolidate with the CursorHide visibility report",
+        "type": "post_comment"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-CursorHide"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-30T09:35:50Z",
-      "updated_at": "2026-10-31T12:25:36Z",
-      "comments": 1,
+      "updated_at": "2026-11-01T14:22:14Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -26855,25 +26860,27 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-27T14:39:20Z",
-      "updated_at": "2026-10-27T14:39:20Z",
-      "comments": 0,
+      "updated_at": "2026-11-01T13:39:44Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -38308,17 +38315,19 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Close as handled by the merged CmdPal paging fixes"
+        "label": "Close as handled by the merged CmdPal paging fixes",
+        "type": "post_comment"
       },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-10-11T15:20:56Z",
-      "updated_at": "2026-10-12T01:41:06Z",
+      "updated_at": "2026-11-01T14:03:44Z",
       "comments": 1,
       "priority": null
     },
@@ -378820,6 +378829,119 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2020-05-19T21:25:41Z",
       "updated_at": "2026-10-11T16:40:57Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51808",
+      "kind": "issue",
+      "number": 51808,
+      "url": "https://github.com/microsoft/PowerToys/issues/51808",
+      "title": "Desktop composition is disabled",
+      "author": "Pandawer",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-01T13:44:36Z",
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "label": "Reply with suggested comments",
+        "type": "request_info"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback"
+      ],
+      "assignees": [
+        null
+      ],
+      "created_at": "2026-11-01T13:34:17Z",
+      "updated_at": "2026-11-01T13:44:48Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-51810",
+      "kind": "issue",
+      "number": 51810,
+      "url": "https://github.com/microsoft/PowerToys/issues/51810",
+      "title": "CmdPal: Grid view is sensitive to preview pane timing",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "label": "Reproduce CmdPal: Grid view is sensitive to preview pane timing",
+        "type": "reproduce"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-11-01T13:53:33Z",
+      "updated_at": "2026-11-01T13:53:33Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51811",
+      "kind": "issue",
+      "number": 51811,
+      "url": "https://github.com/microsoft/PowerToys/issues/51811",
+      "title": "CmdPal: Grid view and gallery icons are cropped",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "label": "Reproduce CmdPal: Grid view and gallery icons are cropped",
+        "type": "reproduce"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-11-01T13:57:45Z",
+      "updated_at": "2026-11-01T13:57:45Z",
       "comments": 0,
       "priority": null
     }
