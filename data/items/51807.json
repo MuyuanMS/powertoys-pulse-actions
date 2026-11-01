@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 5,
+  "number": 51807,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[Mouse Jump] Don't crash when SetForegroundWindow is refused, and fix keyboard focus in the preview",
+  "url": "https://github.com/microsoft/PowerToys/pull/51807",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-02T01:13:08.671277+08:00",
+  "evaluated_at": "2026-11-02T01:13:08.6713119+08:00",
+  "source_updated_at": "2026-11-01T13:29:09Z",
+  "head_sha": "46a7e39a74ebbfbf52ba51ec0ec572ea16eb722c",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "out_of_diff_reason": "Coordinated foreground-helper, focus-retry and generated API cleanup spans multiple files; a single apply-ready block would not express the complete recovery boundary safely.",
+      "body": "### Keep foreground-refusal recovery independent of another app's input queue\r\n\r\n**Severity:** `high`\r\n\r\n**Affected code:** `Helpers/ForegroundHelper.cs:TrySetForegroundWindow`, called on the UI thread by `MouseJumpXAML/PreviewWindow.xaml.cs:ShowWindowAsync`, and awaited by `Helpers/MouseJumpEventLoop.cs:RunAsyncEventHandler`.\r\n\r\n**Problem:** After the first foreground refusal, the retry attaches Mouse Jump's UI input queue to the current foreground thread, then calls `BringWindowToTop` and `SetForegroundWindow` while still attached. A slow or hung foreground app can therefore block Mouse Jump's UI thread. Microsoft documents this same attach/retry pattern hanging at the second `SetForegroundWindow` call: https://devblogs.microsoft.com/oldnewthing/20080801-00/?p=21393.\r\n\r\n**Why it matters:** If left unchanged, a refusal can become an unresponsive preview instead of a recoverable no-focus preview. Mouse Jump cannot process Escape/clicks while its UI thread is blocked, and the event-loop callback cannot complete or process the next activation. The `finally` detach and exception logging do not help if the native activation call never returns. The responsive-app and elevated-refusal tests in the description are useful, but do not cover a stuck foreground input queue.\r\n\r\n**Suggested change:** Keep the best-effort foreground path independent of an arbitrary external UI thread: remove the foreign `AttachThreadInput` retry, log refusal, and preserve the existing visible/clickable no-focus fallback. Keep the XAML `FocusHost` behavior for successful/pointer activation. If a different activation mechanism is needed, demonstrate that it cannot couple the UI thread's responsiveness to the foreground app; a pre-check for a hung window alone does not remove the race.\r\n\r\nAs part of that recovery path, also check `FocusPreviewHost`'s `DispatcherQueue.TryEnqueue` result: when enqueue is rejected, the retry callback and its warning never run. Log that rejection immediately rather than silently skipping the focus retry; do not introduce an unrelated dispatcher fallback.\r\n\r\n1. In `ForegroundHelper.TrySetForegroundWindow`, remove the foreign-thread ID/attachment and attached activation retry; retain the initial foreground attempt and return its actual result.\r\n2. Keep `ShowAndActivate`'s refusal warning and visible no-focus fallback. Remove now-unused generated API entries only after confirming no other consumer uses them.\r\n3. In `PreviewWindow.FocusPreviewHost`, test the existing `TryEnqueue` return and log failure at the call site when the dispatcher rejects it. Retain the callback's warning for a queued retry whose `Focus` call fails.\r\n\r\n**Verification:** In a controlled test environment, exercise foreground refusal while another app's UI thread is deliberately unresponsive. Mouse Jump must remain responsive and accept a subsequent activation, without forcing focus or requiring a process restart. Retain the existing elevated-window fallback, successful foreground activation, Escape, number/numpad, arrow, Home/End and click-away controls. This concern is grounded in the exact call path and the documented API behavior; a replacement implementation and local hung-window reproduction are not claimed here.",
+      "severity": "high",
+      "kind": "companion",
+      "confidence": {
+        "rationale": "Exact newly introduced UI-thread attach/activation path matches authoritative documented hang pattern. Successful responsive-window tests and finally cleanup do not bound the native call; no local hung-window reproduction is claimed.",
+        "score": 88
+      },
+      "id": "51807-foreground-input-queue-coupling",
+      "title": "Keep foreground-refusal recovery independent of foreign input"
+    }
+  ],
+  "actions": [
+    {
+      "label": "Post implementation-ready general PR comment",
+      "head_sha": "46a7e39a74ebbfbf52ba51ec0ec572ea16eb722c",
+      "id": "51807-post-current-assessment",
+      "type": "post_review",
+      "review": {
+        "commit_id": "46a7e39a74ebbfbf52ba51ec0ec572ea16eb722c",
+        "head_sha": "46a7e39a74ebbfbf52ba51ec0ec572ea16eb722c",
+        "comment_ids": [
+          "51807-foreground-input-queue-coupling"
+        ],
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {}
+}

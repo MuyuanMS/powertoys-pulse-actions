@@ -1516,7 +1516,8 @@ window.BOARD_INDEX = {
     51803,
     51808,
     51810,
-    51811
+    51811,
+    51807
   ],
   "items": [
     {
@@ -378944,6 +378945,48 @@ window.BOARD_INDEX = {
       "updated_at": "2026-11-01T13:57:45Z",
       "comments": 0,
       "priority": null
+    },
+    {
+      "id": "pr-51807",
+      "kind": "pr",
+      "number": 51807,
+      "url": "https://github.com/microsoft/PowerToys/pull/51807",
+      "title": "[Mouse Jump] Don't crash when SetForegroundWindow is refused, and fix keyboard focus in the preview",
+      "author": "L-Needham",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post implementation-ready general PR comment"
+      },
+      "labels": [
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Needs-Team-Response",
+        "Product-Mouse Jump"
+      ],
+      "assignees": [
+        null
+      ],
+      "created_at": "2026-11-01T13:19:08Z",
+      "updated_at": "2026-11-01T13:29:09Z",
+      "comments": 3,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null
     }
   ]
 };
