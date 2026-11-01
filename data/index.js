@@ -1512,7 +1512,8 @@ window.BOARD_INDEX = {
     51796,
     51799,
     51801,
-    51803
+    51803,
+    51497
   ],
   "items": [
     {
@@ -30397,14 +30398,17 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": null,
       "stage": "triage_revalidated",
-      "owes": "us",
+      "owes": null,
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": null,
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce Quick Accent arrow-navigation crash behavior"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
