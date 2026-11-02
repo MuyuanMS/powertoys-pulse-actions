@@ -1521,7 +1521,8 @@ window.BOARD_INDEX = {
     51815,
     51816,
     51819,
-    51820
+    51820,
+    51824
   ],
   "items": [
     {
@@ -340022,21 +340023,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Link DWM recovery and update guidance",
+        "type": "post_comment"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-02T05:20:32Z",
       "updated_at": "2026-11-02T05:20:32Z",
       "comments": 0,
