@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 5,
+  "number": 51814,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[UI Tests] Awake new UI tests",
+  "url": "https://github.com/microsoft/PowerToys/pull/51814",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-02T09:57:45.7559838+08:00",
+  "evaluated_at": "2026-11-02T09:57:45.7560134+08:00",
+  "source_updated_at": "2026-11-02T01:32:33Z",
+  "head_sha": "96888193f11dca22a236b997de0c20481c1deea7",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "out_of_diff_reason": "A safe correction must coordinate OnSta, constructor resource transfer and Dispose lifetime; no single replacement establishes quiescence of a blocked COM action. Kept as one implementation-ready general comment rather than a speculative multi-location suggestion.",
+      "title": "Keep timed-out clipboard work within an owned lifetime",
+      "severity": "medium",
+      "body": "### Keep timed-out clipboard work within an owned lifetime\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:**\r\n\r\n`src/modules/awake/Awake.UITests/ClipboardSnapshot.cs`: `OnSta<T>`, constructor failure cleanup, and `Dispose`.\r\n\r\n**Problem:**\r\n\r\nWhen `thread.Join(TimeSpan.FromSeconds(30))` returns `false`, `OnSta` throws while its background STA thread still executes `action`. A deterministic control using this exact helper blocked the delegate, observed the timeout, then released it and observed a late mutation. The constructor's catch and `Dispose`'s finally can therefore dispose captured resources before an in-flight clipboard operation has stopped using or adding them.\r\n\r\n**Why it matters:**\r\n\r\nIf a clipboard provider stalls, the test can report a timeout and begin cleanup or another operation while old work is still active. Leaving this unchanged risks cross-test interference, late restoration over a later clipboard value, and access to disposed snapshot resources. The control demonstrates escaped worker lifetime, not an observed system-clipboard overwrite or an Awake production defect.\r\n\r\n**Suggested change:**\r\n\r\n1. Make STA-operation ownership explicit and serialize capture/restore/cleanup so a timeout cannot release resources or start a competing clipboard operation while the prior action can still run.\r\n2. Transfer captured resources to the snapshot only after successful capture; keep incomplete-operation resources owned until that operation is quiescent. Preserve the original operation error and report cleanup failures separately.\r\n3. If a hard timeout must bound a potentially non-cancellable OLE/provider call, use a terminable isolation boundary with a defined failure/cleanup policy. A `CancellationToken` check alone cannot stop an already blocked COM call, so do not treat requesting cancellation as proof the action has ended.\r\n\r\n**Verification:**\r\n\r\nAdd a deterministic delayed-worker test with an injectable short timeout, without touching the user's clipboard. Cover successful capture/restore, capture timeout, restore timeout, and cleanup failure. Assert that no disposed resource is accessed, no cleanup races with active work, and no subsequent operation or restore overlaps an unquiesced timed-out action; preserve the primary failure and separately surface cleanup diagnostics.",
+      "confidence": {
+        "rationale": "The actual helper deterministically throws before its supplied delegate completes; constructor and disposal cleanup use the same resource list. Real clipboard consequences remain provider-dependent.",
+        "score": 94
+      },
+      "kind": "companion",
+      "id": "51814-sta-operation-lifetime"
+    },
+    {
+      "line": 158,
+      "side": "RIGHT",
+      "title": "Identify the picker when its flyout button is missing or ambiguous",
+      "confidence": {
+        "rationale": "Exact-block controls cover zero, one and multiple matches while preserving uniqueness; the affected project compiles with the literal minimal patch.",
+        "score": 92
+      },
+      "body": "### Identify the picker when its flyout button is missing or ambiguous\r\n\r\n**Severity:** `low`\r\n\r\nIn `SetPicker`, `.Single(...)` throws a generic sequence exception if the inspected tree contains zero or multiple `FlyoutButton` matches. Keep the exactly-one requirement, but include `cardId` and the inspected tree in the assertion. If left unchanged, failures are harder to diagnose; this is a test-diagnostic improvement, not a demonstrated Awake product failure.\r\n\r\n```suggestion\r\n        var buttons = Nodes(tree).Where(node => node.TryGetProperty(\"automationId\", out var id) && id.GetString() == \"FlyoutButton\").ToArray();\r\n        Assert.AreEqual(1, buttons.Length, $\"{cardId} must expose exactly one picker flyout button. Tree: {tree}\");\r\n        var button = buttons[0];\r\n```\r\n\r\nThe affected test project compiles with this minimal replacement. Synthetic zero/one/multiple-match controls verify the diagnostic and preserved unique-button selection; they do not exercise the real picker UI.",
+      "id": "51814-picker-cardinality-diagnostic",
+      "in_diff": true,
+      "path": "src/modules/awake/Awake.UITests/AwakeUi.cs",
+      "kind": "inline",
+      "severity": "low"
+    }
+  ],
+  "actions": [
+    {
+      "id": "51814-post-current-assessment",
+      "review": {
+        "head_sha": "96888193f11dca22a236b997de0c20481c1deea7",
+        "comment_ids": [
+          "51814-sta-operation-lifetime",
+          "51814-picker-cardinality-diagnostic"
+        ],
+        "event": "COMMENT",
+        "commit_id": "96888193f11dca22a236b997de0c20481c1deea7"
+      },
+      "label": "Post implementation-ready general PR comment",
+      "head_sha": "96888193f11dca22a236b997de0c20481c1deea7",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "96888193f11dca22a236b997de0c20481c1deea7",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51814-picker-cardinality-diagnostic"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "96888193f11dca22a236b997de0c20481c1deea7",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51814-picker-cardinality-diagnostic"
+      ],
+      "files": [
+        {
+          "path": "src/modules/awake/Awake.UITests/AwakeUi.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
