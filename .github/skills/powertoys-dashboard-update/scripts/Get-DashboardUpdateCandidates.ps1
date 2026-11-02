@@ -25,8 +25,8 @@ param(
         Join-Path $PSScriptRoot '..\..\..\..'
     }),
     [string]$Upstream = 'microsoft/PowerToys',
-    [ValidateRange(1, 1000)]
-    [int]$Limit = 500,
+    [ValidateRange(1, 2147483647)]
+    [int]$Limit = [int]::MaxValue,
     [string]$PullRequestsJsonPath,
     [string]$IssuesJsonPath,
     [string]$PrQueueJsonPath,
@@ -115,11 +115,24 @@ if ($PullRequestsJsonPath) {
 if ($IssuesJsonPath) {
     $issues = @(Read-JsonFile $IssuesJsonPath)
 } else {
+    $raw = & gh api --paginate --slurp "repos/$Upstream/issues?state=open&per_page=100"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Exhaustive issue discovery failed with exit code $LASTEXITCODE."
+    }
+    $pages = ($raw -join "`n") | ConvertFrom-Json -NoEnumerate
     $issues = @(
-        Invoke-GhJson @(
-            'issue', 'list', '-R', $Upstream, '--state', 'open',
-            '--json', 'number,title,labels,updatedAt,url', '--limit', "$Limit"
-        )
+        foreach ($page in $pages) {
+            foreach ($issue in $page) {
+                if ($issue.pull_request) { continue }
+                [pscustomobject]@{
+                    number = $issue.number
+                    title = $issue.title
+                    labels = $issue.labels
+                    updatedAt = $issue.updated_at
+                    url = $issue.html_url
+                }
+            }
+        }
     )
 }
 
@@ -204,7 +217,7 @@ $prInventory = foreach ($pr in $pullRequests) {
 
 $issueInventory = foreach ($issue in $issues) {
     $labels = Get-LabelNames $issue.labels
-    if (@($labels | Where-Object { $_ -like 'Issue-Bug*' }).Count -eq 0) {
+    if (@($labels | Where-Object { $_ -like 'Issue-Bug*' -or $_ -eq 'bug' }).Count -eq 0) {
         continue
     }
     $number = [int]$issue.number
