@@ -9,39 +9,39 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-31T18:05:26.4836408+08:00",
-  "evaluated_at": "2026-10-31T18:05:26.4836668+08:00",
-  "source_updated_at": "2026-10-31T05:43:11Z",
-  "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
+  "generated_at": "2026-11-03T04:26:58.5960436+08:00",
+  "evaluated_at": "2026-11-03T04:26:58.5960649+08:00",
+  "source_updated_at": "2026-11-02T19:29:08Z",
+  "head_sha": "1e8d6da4cb2c34bff1078bd1a18e9f59f194375a",
   "needs_revalidation": false,
   "proposed_comments": [
     {
       "severity": "medium",
       "id": "preserve-variant-cpp-analysis",
       "title": "Keep analysis enabled when no parallel replacement runs",
-      "body": "### Keep analysis enabled when no parallel replacement runs\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.pipelines/v2/templates/pipeline-ci-build.yml` (the build-job variables and `CppCodeAnalysis` stage), `.pipelines/v2/ci-nightly.yml`, and the WebView2/Windows App SDK variant callers.\r\n\r\n**Problem:** The build jobs now set `SkipCppCodeAnalysis: 1` unconditionally, but the replacement stage runs only when `runCppCodeAnalysis` is true, which defaults to false. `ci.yml` opts in; `ci-test-with-canary-webview2.yml` and `ci-using-the-latest-winappsdk.yml` do not. Those variant pipelines therefore lose their inline C++ analysis without receiving the parallel replacement.\r\n\r\n**Why it matters:** If left unfixed, variant builds can pass without running the analysis that previously checked them, allowing variant-specific diagnostics to go undetected. This is a coverage gap, not evidence that a particular diagnostic currently fails.\r\n\r\n**Suggested change:**\r\n1. Make the ordinary-build skip conditional on the parallel analysis stage being enabled.\r\n2. Preserve the nightly prewarm's deliberate build/cache-input parity with an explicit false-by-default override, such as `skipCppCodeAnalysisInBuild`. Set it only in `ci-nightly.yml`, and skip inline analysis when either that override or `runCppCodeAnalysis` is true.\r\n3. Keep the main PR pipeline's parallel analysis blocking, while leaving inline analysis enabled for the WebView2/Windows App SDK variants unless they explicitly gain a replacement stage. Do not remove the callee's existing `variables` template parameter or its job-variable insertion.\r\n\r\n**Verification:** Check the four callers separately: main skips inline analysis and runs the parallel stage; nightly retains its explicit cache-prewarm skip; both variants retain inline analysis. Check all four boolean combinations, validate the expanded Azure pipeline templates, and run `.pipelines/tests/mwbUiTestSelection.Tests.ps1` to preserve the adjacent selector behavior.\n\n**Current-revision reassessment:** The SDK setup simplification and ARM64 HID gating changes do not change this relationship: both variants still inherit the false analysis-stage default while the build skip remains unconditional. Earlier executable checks retain their original revision identities; this refresh rechecked the exact template and all four callers, not a new Azure run.\n\n**Latest description assessment:** The author documents the separate main-branch required-check gap and a deliberate failing-analysis experiment. Those are attributed author evidence. They do not repair the variant coverage gap in the current template. Coordinate repository-admin enforcement of the new analysis check before merging; CodeQL does not replace these compiler-analysis rules. This assessment does not claim that branch protection was independently modified or that a fresh Azure run was executed.",
+      "body": "### Keep analysis enabled when no parallel replacement runs\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `.pipelines/v2/templates/pipeline-ci-build.yml` (build-job variables and the `CppCodeAnalysis` stage), `.pipelines/v2/ci-nightly.yml`, and the WebView2/Windows App SDK variant callers.\r\n\r\n**Problem:** The build jobs set `SkipCppCodeAnalysis: 1` unconditionally, but the replacement stage runs only when `runCppCodeAnalysis` is true, which defaults to false. `ci.yml` opts in; `ci-test-with-canary-webview2.yml` and `ci-using-the-latest-winappsdk.yml` do not. Those variant pipelines therefore lose their inline C++ analysis without receiving the parallel replacement.\r\n\r\n**Why it matters:** If left unchanged, variant builds can pass without running the compiler analysis that previously checked them, allowing variant-specific diagnostics to go undetected. This is a coverage gap, not evidence that a particular diagnostic currently fails.\r\n\r\n**Suggested change:**\r\n1. Make the ordinary-build skip conditional on the parallel analysis stage being enabled.\r\n2. Preserve nightly prewarm's deliberate build/cache-input parity with an explicit false-by-default override, such as `skipCppCodeAnalysisInBuild`. Set it only in `ci-nightly.yml`, and skip inline analysis when either that override or `runCppCodeAnalysis` is true.\r\n3. Keep the main PR pipeline's parallel analysis blocking, while leaving inline analysis enabled for both variant pipelines unless they explicitly gain a replacement stage. Preserve the callee's existing `variables` template parameter and job-variable insertion.\r\n\r\n**Verification:** Check main, nightly and both variants separately; cover all four parallel-stage/explicit-prewarm boolean combinations, validate the expanded Azure templates and run the adjacent pipeline-selector tests. Main should skip inline analysis and run the parallel stage; nightly should retain its explicit cache-prewarm skip; both variants should keep inline analysis.\r\n\r\n**Current-revision assessment:** The changed head retains this exact template/caller relationship. The author's reported performance measurements and deliberate failing-analysis experiment are useful attributed evidence, not independently executed Azure results. They do not repair the variant gap. Also coordinate required-check enforcement with a repository admin before merge, as the description already identifies; CodeQL does not replace these compiler-analysis rules. No new Azure run, branch-protection change or product build is claimed here.",
       "out_of_diff_reason": "Coordinated template and nightly-caller changes must preserve cache-prewarm parity; presented as one implementation-ready general PR comment instead of separate code suggestions.",
       "kind": "companion",
       "confidence": {
         "score": 95,
-        "rationale": "Current-head template and caller source still shows the unconditional skip, false default and gated replacement. Earlier corrected-structure and 28 selector checks remain bound to their actual original inputs; live Azure expansion and execution on this rebased head were not performed."
+        "rationale": "Exact current template still unconditionally skips inline analysis, defaults the parallel stage off, and both variant callers omit its opt-in. The deliberate nightly cache-prewarm requirement is preserved in the proposed coordinated remedy."
       },
       "in_diff": false
     }
   ],
   "actions": [
     {
+      "head_sha": "1e8d6da4cb2c34bff1078bd1a18e9f59f194375a",
       "id": "51695-post-current-assessment",
-      "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
       "type": "post_review",
       "label": "Post implementation-ready general PR comment",
       "review": {
-        "event": "COMMENT",
-        "head_sha": "01ccf26e6f46a030da35a88039581de950ece0ae",
+        "commit_id": "1e8d6da4cb2c34bff1078bd1a18e9f59f194375a",
         "comment_ids": [
           "preserve-variant-cpp-analysis"
         ],
-        "commit_id": "01ccf26e6f46a030da35a88039581de950ece0ae"
+        "head_sha": "1e8d6da4cb2c34bff1078bd1a18e9f59f194375a",
+        "event": "COMMENT"
       }
     }
   ],
