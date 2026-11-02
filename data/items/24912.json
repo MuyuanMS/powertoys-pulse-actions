@@ -1,33 +1,105 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/24912",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 24912,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:13:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 0,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report describes a1-2second Screen Ruler activation delay on slower hardware.",
+      "It is a latency request as well as a bug report, not a supplied crash.",
+      "Current capture code includes monitor capture-item/device/frame-pool setup; source existence alone does not attribute the delay."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Capture stage timings for cold and warm activation using a controlled machine and monitor topology.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "Separate hotkey/process startup, overlay readiness and first capture frame. An arbitrary target or hide-on-startup change would not prove improvement. Unfixed, the measurement tool remains perceptibly slow to invoke.",
     "source_updated_at": "2024-10-13T12:13:40Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "Screen Ruler",
+        "version": "Reported0.68",
+        "prerequisites": [
+          "Representative low-end Windows test hardware with recorded monitor topology.",
+          "Maintainer stage timing instrumentation."
+        ],
+        "steps": [
+          "Measure multiple cold and warm activations from shortcut to usable ruler.",
+          "Split startup, overlay and first-frame timings.",
+          "Repeat with a single monitor and the reported-style topology while retaining measurement correctness checks."
+        ],
+        "expected": "The ruler becomes usable promptly; any proposed optimization has measured improvement without background capture/resource regressions."
+      },
+      "type": "reproduce",
+      "label": "Measure ruler activation stages",
+      "id": "issue-24912-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate ruler startup latency",
+      "id": "issue-24912-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Idea-Enhancement",
+    "Product-Screen Ruler"
+  ],
+  "title": "Screen ruler takes long to open",
+  "issue_context": {
+    "summary": "Measure cold/warm activation on the reported low-end hardware before choosing a startup optimization.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Inspected immutable ScreenCapturing initialization responsibilities and retained the reported hardware/latency distinction.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Process/graphics/capture initialization may dominate cold activation; no measured stage currently establishes the bottleneck."
+    ],
+    "known_information": [
+      "The report describes a1-2second Screen Ruler activation delay on slower hardware.",
+      "It is a latency request as well as a bug report, not a supplied crash.",
+      "Current capture code includes monitor capture-item/device/frame-pool setup; source existence alone does not attribute the delay."
+    ],
+    "analysis": "Separate hotkey/process startup, overlay readiness and first capture frame. An arbitrary target or hide-on-startup change would not prove improvement. Unfixed, the measurement tool remains perceptibly slow to invoke.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:13:40Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Report before/after distributions for cold and warm time to a usable ruler.",
+        "Verify measurement correctness, monitor transitions, repeated activation and resource cleanup."
+      ],
+      "plan": [
+        "Measure hotkey receipt, process start, overlay visible and first usable frame separately, cold and warm.",
+        "Compare monitor count/scaling and supported capture paths on the same hardware.",
+        "Optimize only the measured stage, considering resource lifetime/cancellation and avoiding permanently active capture solely to hide startup cost."
+      ],
+      "root_cause": "Process/graphics/capture initialization may dominate cold activation; no measured stage currently establishes the bottleneck.",
+      "title": "Reduce measured Screen Ruler activation latency",
+      "confidence": {
+        "level": "red",
+        "score": 45,
+        "rationale": "The latency is reported but no timings separate startup from graphics/capture readiness."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

@@ -1,33 +1,105 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/33983",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 33983,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:11:49Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 0,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report describes remote scrolling failing until the relevant application is also open on the source machine; its expected/actual fields are interchanged but the behavior is clear.",
+      "The reporter already supplies Surface5, Windows11 Home and0.82.1.",
+      "Related37037 concerns horizontal scrolling and51077 is broader context; neither establishes an exact duplicate or shipped fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Reproduce with two physical machines and distinguish source capture from destination injection.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "The reported source-application dependency is the discriminating condition. Test wheel capture, transport and destination delivery independently; do not reduce it to generic pairing failure or conflate vertical and horizontal wheel messages. Unfixed, remote pointer movement may work while scrolling silently fails.",
     "source_updated_at": "2024-10-13T12:11:49Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version": "Reported0.82.1; compare current supported build",
+        "prerequisites": [
+          "Two paired physical Windows computers and the same scrollable application on both.",
+          "Retain settings and record direction/active window for each test."
+        ],
+        "steps": [
+          "On the destination, focus a long scrollable document and move the shared pointer there.",
+          "Scroll with the corresponding source application closed, open/unfocused and focused.",
+          "Compare captured, transmitted and received wheel events, then repeat horizontal scrolling separately."
+        ],
+        "expected": "Wheel delivery to the destination does not depend on opening a matching application on the source."
+      },
+      "type": "reproduce",
+      "label": "Trace remote wheel delivery",
+      "id": "issue-33983-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate source-dependent wheel handling",
+      "id": "issue-33983-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "title": "Mouse Without Borders - Can not scroll",
+  "issue_context": {
+    "summary": "Investigate remote wheel delivery that changes when the corresponding application is open on the source computer.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Checked current InputHook wheel-delta extraction; it alone does not establish successful forwarding or receiver injection.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Source focus/application state may change wheel capture or forwarding; the thread does not identify which boundary loses the event."
+    ],
+    "known_information": [
+      "The report describes remote scrolling failing until the relevant application is also open on the source machine; its expected/actual fields are interchanged but the behavior is clear.",
+      "The reporter already supplies Surface5, Windows11 Home and0.82.1.",
+      "Related37037 concerns horizontal scrolling and51077 is broader context; neither establishes an exact duplicate or shipped fix."
+    ],
+    "analysis": "The reported source-application dependency is the discriminating condition. Test wheel capture, transport and destination delivery independently; do not reduce it to generic pairing failure or conflate vertical and horizontal wheel messages. Unfixed, remote pointer movement may work while scrolling silently fails.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:11:49Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Remote vertical and horizontal scrolling work with the source application closed and open.",
+        "Pointer, buttons, focus changes and reconnect behavior remain intact."
+      ],
+      "plan": [
+        "Compare the same remote scroll target with the source application closed, open/unfocused and focused.",
+        "Trace captured wheel delta/message, transmitted event and destination injection without recording typed content.",
+        "Correct the demonstrated wheel boundary and add vertical/horizontal regression coverage rather than changing pairing or focus policy globally."
+      ],
+      "root_cause": "Source focus/application state may change wheel capture or forwarding; the thread does not identify which boundary loses the event.",
+      "title": "Trace source-dependent remote wheel delivery",
+      "confidence": {
+        "level": "red",
+        "score": 48,
+        "rationale": "The report specifies a useful control, but no captured event trace proves the failing boundary."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

@@ -1,33 +1,105 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/34677",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 34677,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:12:16Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 2,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report describes slow Cinema4D startup, splash/quickstart windows and incorrect workspace resizing.",
+      "A maintainer acknowledges application-specific launch complexity; a mention is not a completed implementation.",
+      "Current Workspaces has separate window-creation observation, matching/placement and launcher waiting responsibilities."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Trace the actual Cinema4D window sequence and matching decision with the existing maintainer context.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "A splash or quickstart window may be matched before the final document window, or the real window may appear after the observation deadline; neither is established yet. Increasing every launch timeout can delay failures without fixing matching. Unfixed, Workspaces may arrange a transient window and leave the intended application unplaced.",
     "source_updated_at": "2024-10-13T12:12:16Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "Workspaces / Cinema4D",
+        "version": "Reported0.84.0",
+        "prerequisites": [
+          "Licensed Cinema4D test installation and a test-owned Workspaces layout.",
+          "Retain existing maintainer ownership/context and avoid a competing implementation."
+        ],
+        "steps": [
+          "Launch the layout cold and warm while recording all Cinema4D top-level windows.",
+          "Match each arrangement decision to splash/quickstart/document windows and the launch deadline.",
+          "Repeat with an already-running instance and multiple project windows."
+        ],
+        "expected": "The intended stable application window receives the saved placement within a bounded launch lifecycle."
+      },
+      "type": "reproduce",
+      "label": "Trace Cinema4D window readiness",
+      "id": "issue-34677-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate Cinema4D matching",
+      "id": "issue-34677-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "title": "Slow Launch Time and Workspace Resizing Issue",
+  "issue_context": {
+    "summary": "Coordinate the acknowledged Cinema4D multi-window startup case instead of blindly extending a launch timeout.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Inspected immutable WindowCreationHandler, WindowArranger and launcher waiting responsibilities; no Cinema4D execution is claimed.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Transient startup windows or late final-window creation may confuse the current observation/matching lifecycle."
+    ],
+    "known_information": [
+      "The report describes slow Cinema4D startup, splash/quickstart windows and incorrect workspace resizing.",
+      "A maintainer acknowledges application-specific launch complexity; a mention is not a completed implementation.",
+      "Current Workspaces has separate window-creation observation, matching/placement and launcher waiting responsibilities."
+    ],
+    "analysis": "A splash or quickstart window may be matched before the final document window, or the real window may appear after the observation deadline; neither is established yet. Increasing every launch timeout can delay failures without fixing matching. Unfixed, Workspaces may arrange a transient window and leave the intended application unplaced.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:12:16Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Cold/warm Cinema4D launches place the intended document window and do not leave splash/quickstart windows incorrectly arranged.",
+        "Existing fast applications, multiple instances, cancellation and failed launches retain bounded behavior."
+      ],
+      "plan": [
+        "Record creation/show/title/class/process and matching decisions for splash, quickstart and final windows.",
+        "Separate a wrong match from a final window arriving after the bounded launch observation.",
+        "Adjust stable-window eligibility or per-launch readiness only when the trace proves the cause; preserve bounded cancellation and multiple-instance handling."
+      ],
+      "root_cause": "Transient startup windows or late final-window creation may confuse the current observation/matching lifecycle.",
+      "title": "Match the final Cinema4D workspace window",
+      "confidence": {
+        "level": "yellow",
+        "score": 57,
+        "rationale": "The window sequence is reported and acknowledged, but the wrong match versus late arrival has not been traced."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

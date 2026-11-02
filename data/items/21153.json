@@ -1,33 +1,106 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/21153",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 21153,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:14:02Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    "stefansjfw"
+  ],
+  "comments": 5,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication."
+      "Audit-mode installation followed by sysprep/generalize fails with the Image Resizer context-menu package.",
+      "The thread has an assigned maintainer who says they are investigating; that is ownership, not a shipped correction.",
+      "The failure concerns per-user packaged shell registration during image generalization, not ordinary image resizing."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Return a reproducible package-state matrix to the existing owner; retain the unresolved status.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "Coordinate with the current owner rather than creating a parallel installer change. Reproduce package provisioning and per-user registration state in a disposable image before deciding whether audit-mode support requires installer changes or explicit unsupported-scenario guidance. Never recommend deleting protected application files.",
     "source_updated_at": "2024-10-13T12:14:02Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "Installer / Image Resizer shell package",
+        "version": "Reports0.63 and0.68; compare supported installer",
+        "prerequisites": [
+          "Disposable Windows audit-mode VM snapshots; never run sysprep on the host.",
+          "Coordinate with the currently assigned maintainer and retain installer/sysprep logs inside the test environment."
+        ],
+        "steps": [
+          "Record package provisioning and per-user registration before and after the matching installer in audit mode.",
+          "Run generalize only in the disposable VM and retain the exact rejected package/state.",
+          "Compare supported installer scope and new-user sign-in/context-menu behavior."
+        ],
+        "expected": "The supported installation contract is explicit and image generalization does not fail because of inconsistent shell-package user/provisioned state."
+      },
+      "type": "reproduce",
+      "label": "Reproduce audit-mode package state",
+      "id": "issue-21153-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Coordinate provisioning design with owner",
+      "id": "issue-21153-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Idea-Enhancement",
+    "Area-Setup/Install",
+    "Needs-Triage"
+  ],
+  "title": "Not possible to install in audit mode and subsequently sysprep /generalize the image",
+  "issue_context": {
+    "summary": "Preserve the assigned installer investigation and validate provisioning versus per-user package state across audit-mode generalization.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Read the full failure/ownership discussion and separated installer/package lifecycle from Image Resizer feature behavior.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Per-user shell-package registration may be incompatible with the image generalization state; exact provisioning/registration behavior needs a controlled image."
+    ],
+    "known_information": [
+      "Audit-mode installation followed by sysprep/generalize fails with the Image Resizer context-menu package.",
+      "The thread has an assigned maintainer who says they are investigating; that is ownership, not a shipped correction.",
+      "The failure concerns per-user packaged shell registration during image generalization, not ordinary image resizing."
+    ],
+    "analysis": "Coordinate with the current owner rather than creating a parallel installer change. Reproduce package provisioning and per-user registration state in a disposable image before deciding whether audit-mode support requires installer changes or explicit unsupported-scenario guidance. Never recommend deleting protected application files.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:14:02Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Supported deployment/generalize paths succeed in disposable VM images.",
+        "Normal per-user/all-user installation, context-menu availability and uninstall remain correct across new user sign-in."
+      ],
+      "plan": [
+        "Coordinate with the assigned maintainer and reproduce install/generalize using test-owned audit-mode images.",
+        "Compare package provisioning and per-user registration before/after installation and capture the actual sysprep package rejection.",
+        "Choose a provisioning-safe supported deployment path or explicit installer restriction with the owner; do not remove WindowsApps content or alter shared package state blindly."
+      ],
+      "root_cause": "Per-user shell-package registration may be incompatible with the image generalization state; exact provisioning/registration behavior needs a controlled image.",
+      "title": "Validate audit-mode shell package deployment with the existing owner",
+      "confidence": {
+        "level": "yellow",
+        "score": 59,
+        "rationale": "The recurring package/generalize symptom supports the investigation, but the exact supported provisioning contract and fix are not established."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

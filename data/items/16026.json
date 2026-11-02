@@ -1,33 +1,107 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/16026",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 16026,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-23T19:16:21Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 3,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "WinSCP modal windows appear behind a pinned parent.",
+      "The author corrects the original framing: WPF is also affected when Owner is unset, while owned ShowDialog works.",
+      "The0.85.1 follow-up says toggling Always On Top brings the hidden modal forward.",
+      "Current AlwaysOnTop pins the selected window with SetWindowPos(HWND_TOPMOST); that does not establish an ownership relationship for an unowned modal."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Reproduce the owner/no-owner contrast and preserve unrelated same-process windows as negative controls.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "Trace actual owner chains and foreground/topmost transitions. Automatically promoting every same-process window could expose unrelated windows or create persistent topmost state. Unfixed, a hidden blocking modal makes the pinned app appear hung.",
     "source_updated_at": "2024-10-23T19:16:21Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "Always On Top / modal windows",
+        "version": "Original report with0.85.1 follow-up",
+        "prerequisites": [
+          "WinSCP plus a test-owned WPF app with owned and unowned ShowDialog variants.",
+          "A second unrelated same-process window as a negative control."
+        ],
+        "steps": [
+          "Pin the parent and open owned then unowned dialogs.",
+          "Record owner chain, foreground/topmost and whether the parent is blocked.",
+          "Compare toggle behavior and verify cleanup after closing/unpinning."
+        ],
+        "expected": "Blocking dialogs remain usable without globally promoting unrelated windows or leaving stale topmost state."
+      },
+      "type": "reproduce",
+      "label": "Reproduce modal ownership contrast",
+      "id": "issue-16026-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate modal visibility policy",
+      "id": "issue-16026-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Team-Response"
+  ],
+  "title": "Always on Top hides some modals",
+  "issue_context": {
+    "summary": "Investigate owned versus unowned modal visibility; the thread explicitly disproves an MFC-only explanation.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Read the corrected full discussion and immutable AlwaysOnTop pin/unpin implementation; retained owned/unowned counterevidence.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "An unowned dialog can remain below the pinned parent; a safe mitigation must distinguish real modal activation from unrelated same-process windows."
+    ],
+    "known_information": [
+      "WinSCP modal windows appear behind a pinned parent.",
+      "The author corrects the original framing: WPF is also affected when Owner is unset, while owned ShowDialog works.",
+      "The0.85.1 follow-up says toggling Always On Top brings the hidden modal forward.",
+      "Current AlwaysOnTop pins the selected window with SetWindowPos(HWND_TOPMOST); that does not establish an ownership relationship for an unowned modal."
+    ],
+    "analysis": "Trace actual owner chains and foreground/topmost transitions. Automatically promoting every same-process window could expose unrelated windows or create persistent topmost state. Unfixed, a hidden blocking modal makes the pinned app appear hung.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-23T19:16:21Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Owned and relevant blocking dialogs remain reachable while unrelated same-process windows are not promoted.",
+        "Dialog closure, parent destruction, unpinning and multiple windows restore expected z-order."
+      ],
+      "plan": [
+        "Reproduce WinSCP and test-owned WPF ShowDialog cases with and without Owner.",
+        "Trace owner/root-owner, foreground, enabled state and topmost transitions including the reported unpin/repin workaround.",
+        "Choose a narrowly scoped owner/modal visibility policy or document the unsupported unowned case; never blindly mark every process window topmost."
+      ],
+      "root_cause": "An unowned dialog can remain below the pinned parent; a safe mitigation must distinguish real modal activation from unrelated same-process windows.",
+      "title": "Keep blocking modals visible without pinning every process window",
+      "confidence": {
+        "level": "yellow",
+        "score": 67,
+        "rationale": "The author supplies a strong ownership control, but robust detection/mitigation for unowned dialogs remains a design question."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

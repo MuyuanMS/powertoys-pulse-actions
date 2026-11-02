@@ -1,33 +1,106 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/34659",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 34659,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:12:14Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 0,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report gives a1-2second delay for the workspace action keyword with VS Code Insiders1.93.",
+      "Current Workspaces getter reads JSON/SQLite workspace stores and checks local path existence; Query enumerates it before filtering results.",
+      "That source path makes repeated I/O a candidate, but it does not measure the reporter delay or prove current versions still reproduce."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Profile the specific plugin query with controlled histories before designing cache invalidation or asynchronous refresh.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "Use cold/warm query timings and history/path composition to distinguish storage enumeration, unreachable paths and result scoring. A blind debounce or stale cache could hide updates without fixing slow I/O. Unfixed, every workspace query can feel blocked.",
     "source_updated_at": "2024-10-13T12:12:14Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "PowerToys Run / VS Code workspaces",
+        "version": "Reported0.84.0 and VS Code Insiders1.93",
+        "prerequisites": [
+          "VS Code Insiders with controlled workspace history and PowerToys Run.",
+          "Maintainer timing instrumentation; use test-owned paths rather than private histories."
+        ],
+        "steps": [
+          "Measure repeated workspace-keyword queries with a small local history.",
+          "Repeat with many entries and an unavailable path, separating enumeration/path/scoring times.",
+          "Compare reported and current versions where feasible and retain the slowest operation."
+        ],
+        "expected": "Lookup remains responsive and reflects current workspace history without repeated blocking work on each keystroke."
+      },
+      "type": "reproduce",
+      "label": "Profile workspace query stages",
+      "id": "issue-34659-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate workspace query caching",
+      "id": "issue-34659-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Run-Plugin"
+  ],
+  "title": "PowerToys Run is slow at looking up VS Code workspaces",
+  "issue_context": {
+    "summary": "Measure workspace enumeration and path checks before changing query responsiveness.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Read immutable current-main Main.Query and VSCodeWorkspacesApi.Workspaces, including storage enumeration and DoesPathExist.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Repeated history/database/path work may dominate workspace lookup, particularly with unavailable paths; no timing attribution exists yet."
+    ],
+    "known_information": [
+      "The report gives a1-2second delay for the workspace action keyword with VS Code Insiders1.93.",
+      "Current Workspaces getter reads JSON/SQLite workspace stores and checks local path existence; Query enumerates it before filtering results.",
+      "That source path makes repeated I/O a candidate, but it does not measure the reporter delay or prove current versions still reproduce."
+    ],
+    "analysis": "Use cold/warm query timings and history/path composition to distinguish storage enumeration, unreachable paths and result scoring. A blind debounce or stale cache could hide updates without fixing slow I/O. Unfixed, every workspace query can feel blocked.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:12:14Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Measure cold/warm query latency on the same controlled history.",
+        "Opening/removing workspaces and changing VS Code installations refresh results without stale or inaccessible entries."
+      ],
+      "plan": [
+        "Time storage enumeration, path checks and scoring separately for cold/warm Insiders queries.",
+        "Repeat with small/large histories and available/unavailable local or UNC entries.",
+        "If enumeration dominates, design bounded background refresh/cache invalidation with timely history updates, cancellation and safe disposal rather than caching indefinitely."
+      ],
+      "root_cause": "Repeated history/database/path work may dominate workspace lookup, particularly with unavailable paths; no timing attribution exists yet.",
+      "title": "Bound workspace enumeration cost per query",
+      "confidence": {
+        "level": "yellow",
+        "score": 65,
+        "rationale": "Current source has a plausible repeated-I/O path, but no profile identifies the actual delay."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }

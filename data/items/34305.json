@@ -1,33 +1,106 @@
 {
+  "url": "https://github.com/microsoft/PowerToys/issues/34305",
+  "fix_assessment": {
+    "rationale": "A bounded, issue-specific maintainer investigation is applicable; the proposed correction is conditional on its measured result, not a confirmed implementation-grade design.",
+    "status": "proposed"
+  },
+  "stage": "triage_revalidated",
   "number": 34305,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:12:26Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "comments": 3,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The complete thread supplies screenshots and a diagnostic archive.",
+      "The inspected screenshot shows only a narrow rounded vertical launcher fragment, not merely truncated result text.",
+      "A related issue link alone does not establish that the current clipping mechanism is fixed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "status": "reproducible",
+    "recommended_action": "Reproduce using the existing geometry/display evidence and preserve a copy of persisted state.",
+    "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+    "rationale": "Distinguish persisted bounds, DPI/monitor transforms and rendering before applying a width reset. A settings reset can destroy the reproducing state. Unfixed, the launcher surface may be unusable even if its process continues running.",
     "source_updated_at": "2024-10-13T12:12:26Z"
-  }
+  },
+  "actions": [
+    {
+      "primary": true,
+      "reproduce": {
+        "module": "PowerToys Run / window rendering",
+        "version": "Reported0.83",
+        "prerequisites": [
+          "Test-owned Run state and a copy of the supplied display/geometry evidence.",
+          "Maintain the original state before testing recovery."
+        ],
+        "steps": [
+          "Start Run with the reported-style persisted bounds and display scaling.",
+          "Measure window bounds and layout size while reproducing the narrow fragment.",
+          "Compare a fresh test account and controlled DPI/monitor transitions without deleting original evidence."
+        ],
+        "expected": "The launcher surface remains usable or safely recovers invalid geometry without losing valid settings."
+      },
+      "type": "reproduce",
+      "label": "Reproduce clipped launcher bounds",
+      "id": "issue-34305-reproduce-1"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate launcher geometry recovery",
+      "id": "issue-34305-approve_design-1"
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "title": "Powertoys Run show incompletely",
+  "issue_context": {
+    "summary": "Use the supplied narrow/clipped launcher screenshot and archive to reproduce layout/rendering rather than ask for them again.",
+    "initial_investigation": [
+      "Read complete issue body, discussion, labels, ownership and linked context.",
+      "Viewed the supplied screenshot and read the complete discussion; no new archive request or claimed related-issue fix is made.",
+      "This is a lightweight investigation proposal; no current product reproduction, build or shipped fix is claimed."
+    ],
+    "inferences": [
+      "Invalid persisted geometry or display/DPI conversion may collapse the launcher surface; the screenshot does not prove which one."
+    ],
+    "known_information": [
+      "The complete thread supplies screenshots and a diagnostic archive.",
+      "The inspected screenshot shows only a narrow rounded vertical launcher fragment, not merely truncated result text.",
+      "A related issue link alone does not establish that the current clipping mechanism is fixed."
+    ],
+    "analysis": "Distinguish persisted bounds, DPI/monitor transforms and rendering before applying a width reset. A settings reset can destroy the reproducing state. Unfixed, the launcher surface may be unusable even if its process continues running.",
+    "information_gaps": []
+  },
+  "generated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "evaluated_at": "2026-11-02T20:24:35.8593387+00:00",
+  "source_updated_at": "2024-10-13T12:12:26Z",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Launcher search and results remain visible after restart and display/DPI changes.",
+        "Recovery preserves valid user placement and works across mixed scaling and monitor removal."
+      ],
+      "plan": [
+        "Compare the existing report geometry/display configuration with a test account retaining a copy of persisted state.",
+        "Inspect actual launcher bounds, layout size, DPI and render output before any reset.",
+        "Correct the demonstrated bounds/transform/rendering path with safe recovery for off-screen or degenerate geometry."
+      ],
+      "root_cause": "Invalid persisted geometry or display/DPI conversion may collapse the launcher surface; the screenshot does not prove which one.",
+      "title": "Validate launcher bounds and rendering after display changes",
+      "confidence": {
+        "level": "red",
+        "score": 46,
+        "rationale": "The visual failure is demonstrated, but the causal geometry/render state has not been reproduced."
+      }
+    }
+  ],
+  "pending_author": false,
+  "owes": "maintainer",
+  "schemaVersion": 5
 }
