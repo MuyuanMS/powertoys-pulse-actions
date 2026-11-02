@@ -1,0 +1,79 @@
+{
+  "proposed_fixes": [],
+  "comments": 0,
+  "track": "triage",
+  "issue_context": {
+    "inferences": [
+      "A visible update-available badge alone is not proof of an automatic download or Action Center toast and cannot establish a policy enforcement regression."
+    ],
+    "summary": "Correct registry values and expected Settings/tray update indicators; separate Learn registry-name erratum.",
+    "information_gaps": [],
+    "analysis": "The shown registry configuration matches the shipped implementation. The observed Settings/tray availability UI is outside the two configured policy scopes, so these screenshots do not prove a broken download or Action Center-toast policy. Explain the behavior and explicitly flag the documentation registry-name erratum; do not advise renaming correct deployed values.",
+    "initial_investigation": [
+      "Compared supplied policy, registry and Settings/tray screenshots against exact shipped ADMX/ADML, gpo.h, and UpdateUtils.cpp.",
+      "Programmatically checked both ADMX policy identifiers, valueName mappings, enabled DWORD values and matching runtime constants; compared0.97.0and current constants.",
+      "Read the live Learn registry tables and distinguished GP unique names/Intune identifiers from Windows registry value names.",
+      "This is a source/template/screenshot assessment, not an end-to-end corporate GPO enforcement test. No registry, policy, PowerToys process or network configuration was changed."
+    ],
+    "known_information": [
+      "The report describes an Intune-managed GitHub installation, standard-user execution, Windows11 25H2, and an update from0.97.0 to0.102.3001. No automatic download or Action Center toast is demonstrated.",
+      "All three screenshots were inspected. Both policies are enabled; the machine registry contains DWORD1 for AutomaticUpdateDownloadDisabled and DisableNewUpdateAvailableToast. The visible indications are the Settings update-available card and tray/flyout badge, not an Action Center toast.",
+      "The exact0.102.3001ADMX defines GP unique names DisableAutomaticUpdateDownload and DisableNewUpdateToast but writes valueName AutomaticUpdateDownloadDisabled and DisableNewUpdateAvailableToast. Both names exactly match gpo.h readers.",
+      "The same runtime registry names occur in0.97.0and current source; a registry-key rename during this upgrade is not supported.",
+      "PeriodicUpdateWorker forces download_update=false for the download policy. ProcessNewVersionInfo suppresses toast calls for the toast policy but retains update discovery/state and independently sets the update-available tray badge.",
+      "The shipped ADML describes automatic download/installation and Action Center notifications, not a policy hiding every update indicator or disabling checks.",
+      "The linked Microsoft Learn page currently uses the GP unique names in these two Registry information tables. Those table entries disagree with the shipped ADMX valueName and readers; this is a documentation discrepancy, not evidence that the pictured deployed values are wrong.",
+      "Read complete report, empty discussion, label-only timeline and fork traces. No competing implementation or prior design was found. Registry and corporate policy state were not modified."
+    ]
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No PowerToys binary behavior correction is justified by the demonstrated Settings/tray indicators. The separate Learn registry tables need an erratum; policy enforcement and automatic download/toast execution were not reproduced on the managed device."
+  },
+  "title": "Update policies not working",
+  "evaluated_at": "2026-11-02T18:44:05.5761526+08:00",
+  "schemaVersion": 5,
+  "actions": [
+    {
+      "type": "post_comment",
+      "primary": true,
+      "id": "issue-51830-post_comment-1",
+      "label": "Clarify update policy and registry scope",
+      "comment": {
+        "body": "Thanks for the policy and registry screenshots. The two values shown are the ones PowerToys 0.102.3001 actually reads: `AutomaticUpdateDownloadDisabled=1` and `DisableNewUpdateAvailableToast=1` under `Software\\Policies\\PowerToys`. The ADMX policy identifiers are `DisableAutomaticUpdateDownload` and `DisableNewUpdateToast`, but their registry `valueName` fields intentionally differ. Please do not rename the deployed values to match the current Learn registry tables; those two table entries need a documentation correction. These policies disable automatic download/installation and the Action Center toast respectively. They do not disable update checks or hide the update-available card in Settings, the tray badge, or the flyout indicator shown in your screenshots. The availability indicators therefore do not by themselves demonstrate a policy failure. If an automatic download or an actual Action Center toast occurs with these policies enabled, that is a different behavior worth investigating; the current screenshots show neither."
+      }
+    }
+  ],
+  "kind": "issue",
+  "source_updated_at": "2026-11-02T09:35:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51830",
+  "stage": "triage_revalidated",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "judgment": {
+    "evidence": [
+      "The report describes an Intune-managed GitHub installation, standard-user execution, Windows11 25H2, and an update from0.97.0 to0.102.3001. No automatic download or Action Center toast is demonstrated.",
+      "All three screenshots were inspected. Both policies are enabled; the machine registry contains DWORD1 for AutomaticUpdateDownloadDisabled and DisableNewUpdateAvailableToast. The visible indications are the Settings update-available card and tray/flyout badge, not an Action Center toast.",
+      "The exact0.102.3001ADMX defines GP unique names DisableAutomaticUpdateDownload and DisableNewUpdateToast but writes valueName AutomaticUpdateDownloadDisabled and DisableNewUpdateAvailableToast. Both names exactly match gpo.h readers.",
+      "The same runtime registry names occur in0.97.0and current source; a registry-key rename during this upgrade is not supported.",
+      "PeriodicUpdateWorker forces download_update=false for the download policy. ProcessNewVersionInfo suppresses toast calls for the toast policy but retains update discovery/state and independently sets the update-available tray badge.",
+      "The shipped ADML describes automatic download/installation and Action Center notifications, not a policy hiding every update indicator or disabling checks.",
+      "The linked Microsoft Learn page currently uses the GP unique names in these two Registry information tables. Those table entries disagree with the shipped ADMX valueName and readers; this is a documentation discrepancy, not evidence that the pictured deployed values are wrong.",
+      "Read complete report, empty discussion, label-only timeline and fork traces. No competing implementation or prior design was found. Registry and corporate policy state were not modified."
+    ],
+    "recommended_action": "Clarify policy scope and correct the registry-name documentation separately; investigate only an actual automatic download or Action Center toast if reported",
+    "status": "not_actionable",
+    "rationale": "The shown registry configuration matches the shipped implementation. The observed Settings/tray availability UI is outside the two configured policy scopes, so these screenshots do not prove a broken download or Action Center-toast policy. Explain the behavior and explicitly flag the documentation registry-name erratum; do not advise renaming correct deployed values.",
+    "evaluated_at": "2026-11-02T18:44:05.5761526+08:00",
+    "source_updated_at": "2026-11-02T09:35:11Z"
+  },
+  "generated_at": "2026-11-02T18:44:05.5761526+08:00",
+  "pending_author": false,
+  "owes": "maintainer",
+  "number": 51830,
+  "assignees": [
+    null
+  ]
+}
