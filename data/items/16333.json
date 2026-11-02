@@ -1,33 +1,104 @@
 {
-  "number": 16333,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "track": "triage",
+  "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-03-17T10:46:07Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "assignees": [
+    null
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-02T23:44:37.5913321+08:00",
+  "comments": 8,
+  "issue_context": {
+    "known_information": [
+      "The original report gives precise Ctrl+Left to Ctrl+PgUp and Ctrl+Up to PgUp mappings, with a stateful failure when alternating while Ctrl remains held.",
+      "The reporter answered the old version-confirmation request and the issue was reopened; a later participant confirms a related held-modifier failure.",
+      "The later Ctrl+LeftAlt workaround explicitly does not work with AltGr and is distinct from the original Ctrl-only case.",
+      "Current shortcut handling tracks common modifiers, invocation state and a special RightAlt/AltGr path; a historical4712fix does not prove every later state transition is repaired."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-03-17T10:46:07Z"
+    "summary": "Investigate held-modifier restoration when alternating remapped action keys",
+    "initial_investigation": [
+      "Read the entire detailed sequence, all reopen/version replies and the corrected AltGr workaround.",
+      "Read current-main common-modifier and AltGr restoration/reset paths. No current regression test execution or universal fix is claimed."
+    ],
+    "analysis": "Transitioning between a target that retains Ctrl and one that releases Ctrl may leave virtual/original modifier state inconsistent. Test the original Ctrl-only sequence separately from the later AltGr variant before changing common-modifier restoration.",
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "information_gaps": []
+  },
+  "kind": "issue",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "Keyboard Manager held modifier",
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "expected": "Each configured action should remain responsive while its original modifier is held, and key-up should restore truthful state without requiring an unrelated remap to recover.",
+        "steps": [
+          "Configure exactly Ctrl+Left to Ctrl+PgUp and Ctrl+Up to PgUp; in a test browser with disposable tabs hold Ctrl and alternate Left, Up, Left.",
+          "Release Ctrl, press it again, and repeat the documented recovery sequence while tracing original and virtual key state.",
+          "Compare left/right Ctrl and a separate Ctrl+LeftAlt versus AltGr mapping; create distinct regressions rather than merging their causes."
+        ]
+      },
+      "type": "reproduce",
+      "primary": true,
+      "label": "Reproduce Keyboard Manager held modifier behavior",
+      "id": "issue-16333-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "label": "Investigate focused fix direction",
+      "id": "issue-16333-approve_design-1"
+    }
+  ],
+  "title": "[Keyboard Manager] Shortcut mapping of Ctrl+(Up|Left) to PgUp|Ctrl+PgUp stops working after alternation with Ctrl held down",
+  "schemaVersion": 5,
+  "source_updated_at": "2026-10-11T16:48:09Z",
+  "owes": "maintainer",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Configure exactly Ctrl+Left to Ctrl+PgUp and Ctrl+Up to PgUp; in a test browser with disposable tabs hold Ctrl and alternate Left, Up, Left.",
+        "Release Ctrl, press it again, and repeat the documented recovery sequence while tracing original and virtual key state.",
+        "Compare left/right Ctrl and a separate Ctrl+LeftAlt versus AltGr mapping; create distinct regressions rather than merging their causes.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build."
+      },
+      "title": "Investigate held-modifier restoration when alternating remapped action keys",
+      "verification": [
+        "Each configured action should remain responsive while its original modifier is held, and key-up should restore truthful state without requiring an unrelated remap to recover.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "root_cause": "Transitioning between a target that retains Ctrl and one that releases Ctrl may leave virtual/original modifier state inconsistent. Test the original Ctrl-only sequence separately from the later AltGr variant before changing common-modifier restoration."
+    }
+  ],
+  "number": 16333,
+  "url": "https://github.com/microsoft/PowerToys/issues/16333",
+  "judgment": {
+    "evidence": [
+      "The original report gives precise Ctrl+Left to Ctrl+PgUp and Ctrl+Up to PgUp mappings, with a stateful failure when alternating while Ctrl remains held.",
+      "The reporter answered the old version-confirmation request and the issue was reopened; a later participant confirms a related held-modifier failure.",
+      "The later Ctrl+LeftAlt workaround explicitly does not work with AltGr and is distinct from the original Ctrl-only case.",
+      "Current shortcut handling tracks common modifiers, invocation state and a special RightAlt/AltGr path; a historical4712fix does not prove every later state transition is repaired."
+    ],
+    "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-11T16:48:09Z",
+    "rationale": "Transitioning between a target that retains Ctrl and one that releases Ctrl may leave virtual/original modifier state inconsistent. Test the original Ctrl-only sequence separately from the later AltGr variant before changing common-modifier restoration."
   }
 }

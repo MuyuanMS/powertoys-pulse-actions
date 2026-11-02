@@ -1,47 +1,103 @@
 {
-  "schemaVersion": 5,
-  "number": 40012,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": true,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:19:11",
-  "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
-    "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
-    ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:19:11"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
-  },
-  "proposed_fixes": null,
+  "track": "triage",
+  "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
+  "pending_author": false,
+  "assignees": [
+    null
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-02T23:44:37.5913321+08:00",
+  "comments": 2,
   "issue_context": {
-    "summary": "[Keyboard Manager] Remapped key triggers original key function when focused on an app with administrator privileges",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:19:11",
-      "."
+      "The report maps F4toCtrl+Win+Right and describes unexpected Ctrl+Win+F4closing a virtual desktop when the foreground application is elevated.",
+      "A later participant on0.100.2cannot reproduce desktop closure but still sees no desired action; that does not establish a successful fix.",
+      "Learn documents that non-elevated Keyboard Manager cannot reliably remap an elevated foreground app. Current-main single-key injection has failure passthrough/state handling, but that is not proof of shipped behavior or atomic delivery."
     ],
-    "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
-    ],
-    "analysis": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "summary": "Investigate mixed original and injected shortcut state across elevation",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read all discussion and the conflicting later result; the reporter already supplies the exact virtual-desktop shortcut.",
+      "Read immutable current-main injection-failure/key-up handling and official elevation limitations. No desktop was closed or product runtime test executed."
     ],
-    "information_gaps": null
+    "analysis": "Integrity-boundary injection failure or partial modifier delivery may combine with original F4 passthrough. Measure the input result and key-state cleanup before changing suppression semantics. Do not treat documented elevation limits as permission to leave mixed modifiers active.",
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "information_gaps": []
   },
-  "actions": []
+  "kind": "issue",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "Keyboard Manager integrity boundary",
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "expected": "Supported same-integrity remapping should switch desktops. Unsupported injection must not strand modifiers or combine the original F4with partial injected modifiers to trigger an unintended desktop-close shortcut.",
+        "steps": [
+          "Use a disposable session with two virtual desktops and no unsaved work; configure the reported F4mapping.",
+          "Compare normal PowerToys with normal versus elevated foreground test apps, then same-account elevated PowerToys; record injected key count, original passthrough and modifier state.",
+          "Exercise key down/up, failure, repeat and recovery; compare a harmless shortcut target before repeating the desktop case."
+        ]
+      },
+      "type": "reproduce",
+      "primary": true,
+      "label": "Reproduce Keyboard Manager integrity boundary behavior",
+      "id": "issue-40012-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "label": "Investigate focused fix direction",
+      "id": "issue-40012-approve_design-1"
+    }
+  ],
+  "title": "[Keyboard Manager] Remapped key triggers original key function when focused on an app with administrator privileges",
+  "schemaVersion": 5,
+  "source_updated_at": "2026-10-11T16:48:10Z",
+  "owes": "maintainer",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Use a disposable session with two virtual desktops and no unsaved work; configure the reported F4mapping.",
+        "Compare normal PowerToys with normal versus elevated foreground test apps, then same-account elevated PowerToys; record injected key count, original passthrough and modifier state.",
+        "Exercise key down/up, failure, repeat and recovery; compare a harmless shortcut target before repeating the desktop case.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build."
+      },
+      "title": "Investigate mixed original and injected shortcut state across elevation",
+      "verification": [
+        "Supported same-integrity remapping should switch desktops. Unsupported injection must not strand modifiers or combine the original F4with partial injected modifiers to trigger an unintended desktop-close shortcut.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "root_cause": "Integrity-boundary injection failure or partial modifier delivery may combine with original F4 passthrough. Measure the input result and key-state cleanup before changing suppression semantics. Do not treat documented elevation limits as permission to leave mixed modifiers active."
+    }
+  ],
+  "number": 40012,
+  "url": "https://github.com/microsoft/PowerToys/issues/40012",
+  "judgment": {
+    "evidence": [
+      "The report maps F4toCtrl+Win+Right and describes unexpected Ctrl+Win+F4closing a virtual desktop when the foreground application is elevated.",
+      "A later participant on0.100.2cannot reproduce desktop closure but still sees no desired action; that does not establish a successful fix.",
+      "Learn documents that non-elevated Keyboard Manager cannot reliably remap an elevated foreground app. Current-main single-key injection has failure passthrough/state handling, but that is not proof of shipped behavior or atomic delivery."
+    ],
+    "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-11T16:48:10Z",
+    "rationale": "Integrity-boundary injection failure or partial modifier delivery may combine with original F4 passthrough. Measure the input result and key-state cleanup before changing suppression semantics. Do not treat documented elevation limits as permission to leave mixed modifiers active."
+  }
 }

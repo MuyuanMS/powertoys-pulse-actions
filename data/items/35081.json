@@ -1,33 +1,103 @@
 {
-  "number": 35081,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "track": "triage",
+  "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:51:05Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "assignees": [
+    null
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-02T23:44:37.5913321+08:00",
+  "comments": 0,
+  "issue_context": {
+    "known_information": [
+      "The0.84.1report configures Left Ctrl+D to text but says Left Shift+D and bare D also insert it, followed by Keyboard Manager stopping.",
+      "No mapping export or logs are supplied, but the stated positive and negative triggers form a focused maintainer reproduction.",
+      "The engine has text-remap invocation state and modifier matching; existing shortcut tests explicitly require extra-modifier mismatches not to invoke a remap."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:51:05Z"
+    "summary": "Investigate exact shortcut matching and text-remap state recovery",
+    "initial_investigation": [
+      "Read complete report and empty discussion.",
+      "Read the current text-remap invocation path and exact-modifier negative test pattern. No engine crash or reproduced state corruption is claimed."
+    ],
+    "analysis": "Incorrect modifier matching or stale invocation state could broaden text insertion and prevent recovery. The report does not prove which transition fails or whether the later stoppage is a crash; trace matching and key-up before adding a broad restart or exception workaround.",
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "information_gaps": []
+  },
+  "kind": "issue",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "Keyboard Manager text matching",
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "expected": "Only the configured shortcut should insert text; unmatched input should pass normally, and the engine should continue handling subsequent input.",
+        "steps": [
+          "Configure only Left Ctrl+D to a short harmless test string, then separately press Left Ctrl+D, Left Shift+D and bare D in a test editor.",
+          "Repeat after modifier release and alternating triggers, recording matching decision, invocation state and engine liveness.",
+          "Verify both absence of text on unmatched shortcuts and recovery after repeated valid matches; distinguish an engine exit from a stuck remap."
+        ]
+      },
+      "type": "reproduce",
+      "primary": true,
+      "label": "Reproduce Keyboard Manager text matching behavior",
+      "id": "issue-35081-reproduce-1"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "label": "Investigate focused fix direction",
+      "id": "issue-35081-approve_design-1"
+    }
+  ],
+  "title": "Keyboard-Manager inserts text on wrong shortcut then stops working",
+  "schemaVersion": 5,
+  "source_updated_at": "2026-10-11T16:48:57Z",
+  "owes": "maintainer",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Configure only Left Ctrl+D to a short harmless test string, then separately press Left Ctrl+D, Left Shift+D and bare D in a test editor.",
+        "Repeat after modifier release and alternating triggers, recording matching decision, invocation state and engine liveness.",
+        "Verify both absence of text on unmatched shortcuts and recovery after repeated valid matches; distinguish an engine exit from a stuck remap.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build."
+      },
+      "title": "Investigate exact shortcut matching and text-remap state recovery",
+      "verification": [
+        "Only the configured shortcut should insert text; unmatched input should pass normally, and the engine should continue handling subsequent input.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "root_cause": "Incorrect modifier matching or stale invocation state could broaden text insertion and prevent recovery. The report does not prove which transition fails or whether the later stoppage is a crash; trace matching and key-up before adding a broad restart or exception workaround."
+    }
+  ],
+  "number": 35081,
+  "url": "https://github.com/microsoft/PowerToys/issues/35081",
+  "judgment": {
+    "evidence": [
+      "The0.84.1report configures Left Ctrl+D to text but says Left Shift+D and bare D also insert it, followed by Keyboard Manager stopping.",
+      "No mapping export or logs are supplied, but the stated positive and negative triggers form a focused maintainer reproduction.",
+      "The engine has text-remap invocation state and modifier matching; existing shortcut tests explicitly require extra-modifier mismatches not to invoke a remap."
+    ],
+    "evaluated_at": "2026-11-02T23:44:37.5913321+08:00",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-11T16:48:57Z",
+    "rationale": "Incorrect modifier matching or stale invocation state could broaden text insertion and prevent recovery. The report does not prove which transition fails or whether the later stoppage is a crash; trace matching and key-up before adding a broad restart or exception workaround."
   }
 }
