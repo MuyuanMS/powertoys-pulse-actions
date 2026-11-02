@@ -1,0 +1,107 @@
+{
+  "evaluated_at": "2026-11-02T23:30:38.2067102+08:00",
+  "stage": "triage_revalidated",
+  "comments": 0,
+  "schemaVersion": 5,
+  "pending_author": false,
+  "assignees": [
+    null
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/51832",
+  "title": "[Bug] Run at startup toggle silently reverts when PowerToys is not elevated (task save fails with 0x80070005)",
+  "track": "triage",
+  "issue_context": {
+    "information_gaps": [],
+    "inferences": [
+      "Task/folder ownership or permission state may distinguish normal and elevated attempts; that condition has not been measured on the reporter machine."
+    ],
+    "initial_investigation": [
+      "Read the full report, supplied archive and exact-reported-release task registration/caller code, then checked the same current-main call pattern.",
+      "Separated the benign missing-folder probe from the later registration access denial. No generic logs are requested because the supplied archive already demonstrates the failure.",
+      "This is a lightweight proposed investigation/fix direction, not an implementation-grade approved design or executed runtime reproduction."
+    ],
+    "summary": "Supplied diagnostics confirm startup task-save access denial; unchecked registration result warrants a focused failure-feedback investigation.",
+    "known_information": [
+      "The report gives an explicit non-elevated reproduction and an elevated contrast on0.102.3001, with Run at startup reverting and no surviving registration.",
+      "The supplied archive was downloaded and its complete November2runner log inspected: five Error saving the Task entries with HRESULT0x80070005 and one missing-folder0x80070002 entry.",
+      "Exact v0.102.3001 auto_start_helper.cpp returns false when RegisterTaskDefinition fails. In general_settings.cpp the startup branches ignore the boolean result of create_auto_start_task_for_this_user.",
+      "Current main retains the unchecked registration call pattern. No ACL, user token or system Task Scheduler state was modified or independently reproduced."
+    ],
+    "analysis": "The missing-folder probe is not itself proof of the registration cause, but repeated task-save access denial is real. Surface the failed operation instead of allowing an apparently accepted toggle to revert without explanation. First reproduce the permission/elevation matrix; do not broaden task permissions or make permanent elevation the default."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is a specific observed failure and a verified unchecked result path; a focused proposal is warranted, but the underlying ACL cause and best UI/elevation contract remain to be established."
+  },
+  "actions": [
+    {
+      "label": "Reproduce startup registration feedback",
+      "reproduce": {
+        "prerequisites": [
+          "Windows test account with administrator membership, initially non-elevated PowerToys.",
+          "Disposable test environment; retain existing task state before any test-owned changes."
+        ],
+        "steps": [
+          "With Always run as administrator off, enable Run at startup, reopen Settings and inspect the actual per-user task state and runner HRESULT.",
+          "Repeat from an elevated process under the same account.",
+          "Repeat in a controlled environment with fresh versus pre-existing task folder/task ownership to isolate the access-denied precondition."
+        ],
+        "expected": "Successful registration keeps the toggle on; failed registration leaves it off and provides a clear localized error rather than silent reversion.",
+        "module": "General / Run at startup",
+        "version": "0.102.3001"
+      },
+      "primary": true,
+      "type": "reproduce",
+      "id": "issue-51832-reproduce-1"
+    },
+    {
+      "label": "Investigate startup failure feedback",
+      "primary": false,
+      "type": "approve_design",
+      "id": "issue-51832-approve_design-1"
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Propagate startup task-registration failure to Settings",
+      "plan": [
+        "Reproduce fresh and pre-existing task-folder/task ownership with the same account non-elevated and elevated, retaining HRESULT and actual registration state.",
+        "Have the runner report the failed registration outcome through the existing Settings response path; keep startup=false when no active task exists.",
+        "Add localized, accessible feedback for access denied and other failures; decide separately whether a one-shot elevation action is appropriate. Do not weaken task ACLs or silently enable always-elevated execution."
+      ],
+      "root_cause": "Verified feedback gap: startup task creation returns false after access denial, but apply_general_settings ignores that result. The exact permission/ownership condition causing the denial is still a hypothesis, not a proven universal administrator requirement.",
+      "confidence": {
+        "score": 74,
+        "rationale": "Archive and exact-source call path support the feedback gap; controlled ACL reproduction and response/UI design are still needed before implementation.",
+        "level": "yellow"
+      },
+      "verification": [
+        "On0.102.3001 reproduce the provided normal/elevated contrast; verify the task exists only after a successful operation.",
+        "Exercise missing folder, inaccessible existing task, successful create and disabled-by-policy cases; failed attempts must produce clear feedback and truthful toggle state.",
+        "Regression-check successful non-elevated per-user startup and startup policy behavior; review task permissions without changing them globally."
+      ]
+    }
+  ],
+  "generated_at": "2026-11-02T23:30:38.2067102+08:00",
+  "source_updated_at": "2026-11-02T11:32:57Z",
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "owes": "maintainer",
+  "number": 51832,
+  "judgment": {
+    "rationale": "The missing-folder probe is not itself proof of the registration cause, but repeated task-save access denial is real. Surface the failed operation instead of allowing an apparently accepted toggle to revert without explanation. First reproduce the permission/elevation matrix; do not broaden task permissions or make permanent elevation the default.",
+    "evaluated_at": "2026-11-02T23:30:38.2067102+08:00",
+    "source_updated_at": "2026-11-02T11:32:57Z",
+    "status": "reproducible",
+    "evidence": [
+      "The report gives an explicit non-elevated reproduction and an elevated contrast on0.102.3001, with Run at startup reverting and no surviving registration.",
+      "The supplied archive was downloaded and its complete November2runner log inspected: five Error saving the Task entries with HRESULT0x80070005 and one missing-folder0x80070002 entry.",
+      "Exact v0.102.3001 auto_start_helper.cpp returns false when RegisterTaskDefinition fails. In general_settings.cpp the startup branches ignore the boolean result of create_auto_start_task_for_this_user.",
+      "Current main retains the unchecked registration call pattern. No ACL, user token or system Task Scheduler state was modified or independently reproduced."
+    ],
+    "recommended_action": "Reproduce with controlled task-folder/task ownership, then design explicit startup registration error feedback while retaining truthful persisted startup state."
+  }
+}
