@@ -1550,7 +1550,15 @@ window.BOARD_INDEX = {
     39335,
     39988,
     40012,
-    46032
+    46032,
+    14082,
+    26410,
+    31094,
+    35218,
+    44847,
+    45452,
+    48550,
+    50368
   ],
   "items": [
     {
@@ -11245,23 +11253,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
+      "track": "triage",
       "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "feature",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Idea-Enhancement",
         "Product-Mouse Utilities",
         "Product-Find My Mouse"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2021-10-29T14:25:44Z",
       "updated_at": "2026-10-31T10:16:20Z",
       "comments": 9,
@@ -60888,22 +60901,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "awaiting_design_approval",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Advanced Paste"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-09-04T00:07:17Z",
       "updated_at": "2026-10-30T13:51:20Z",
       "comments": 2,
@@ -109683,22 +109701,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Explain modifier-only shortcut limitation"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2024-01-23T04:32:39Z",
       "updated_at": "2026-10-11T16:48:59Z",
       "comments": 0,
@@ -111533,23 +111556,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Link existing candidate fix"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Settings",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-06-12T14:50:14Z",
       "updated_at": "2026-10-27T06:13:24Z",
       "comments": 2,
@@ -185848,16 +185876,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Link existing candidate fix"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Command Palette",
@@ -197368,22 +197399,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-01-20T20:24:29Z",
       "updated_at": "2026-10-11T16:49:00Z",
       "comments": 0,
@@ -215102,23 +215138,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Priority-2",
         "Status-Reproducible",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2023-05-28T07:57:40Z",
       "updated_at": "2026-10-11T16:48:59Z",
       "comments": 0,
@@ -375777,22 +375818,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2024-10-02T18:46:34Z",
       "updated_at": "2026-10-31T20:47:43Z",
       "comments": 1,
