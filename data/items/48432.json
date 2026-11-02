@@ -1,59 +1,110 @@
 {
+  "proposed_fixes": [
+    {
+      "title": "Verify self-contained runtime deployment across installation paths",
+      "plan": [
+        "Reproduce clean install and the reported upgrade sequences separately for the trusted official installer and affected third-party packaging, retaining each distribution identity.",
+        "Compare the generated runtime manifest, root source files and final WinUI runtime copies; correlate installer custom-action results and actual apphost resolution before applying any workaround.",
+        "Correct only the demonstrated incomplete deployment path and add or extend post-install/update smoke checks for Settings and other affected self-contained applications. Preserve regular-copy isolation and idempotent repair; coordinate distribution-specific changes with its existing maintainer."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The participant trace and runtime-layout workaround support a dependency-deployment class, while exact-release code already implements copying and multiple installation methods remain unresolved."
+      },
+      "verification": [
+        "Trusted clean install, in-place update and repair start Settings and relevant WinUI applications without requiring an unrelated shared runtime installation.",
+        "Every applicable runtime-manifest entry has a valid deployed source and usable destination with correct architecture/version.",
+        "Verify Explorer preview and low-integrity loads still work; do not reintroduce shared-inode ACL coupling by replacing regular copies with blanket hardlinks."
+      ],
+      "root_cause": "The supplied Settings host trace cannot resolve its self-contained hostpolicy dependency. Missing/incomplete runtime copying is supported for that installation; skipped custom actions, update leftovers, payload omission and other package-specific paths are not yet distinguished."
+    }
+  ],
+  "evaluated_at": "2026-11-02T20:30:53.3201627+00:00",
   "schemaVersion": 5,
-  "number": 48432,
-  "kind": "issue",
-  "track": "fix",
-  "evaluated_at": "2026-10-20T16:47:17Z",
-  "source_updated_at": "2026-10-13T23:46:57Z",
-  "judgment": {
-    "evidence": [
-      "The original report uses Scoop v0.100.0 and confirms the official GitHub release installer avoids the runtime dialog.",
-      "A later commenter says a newer runtime version still triggers the prompt and a Scoop-specific hard-link workaround is needed."
-    ],
-    "source_updated_at": "2026-10-13T23:46:57Z",
-    "evaluated_at": "2026-10-20T16:47:17Z",
-    "status": "not_actionable",
-    "recommended_action": "Report the runtime-detection or hard-linking problem to the Scoop manifest maintainer; use the official installer as the documented workaround.",
-    "rationale": "The failure is specific to installing through Scoop, a community package manager, and the reporter says the official GitHub release installer resolves it. The current evidence points to package metadata/linking outside the PowerToys repository, not an official installer or application defect."
-  },
-  "fix_assessment": {
-    "rationale": "The failure is specific to installing through Scoop, a community package manager, and the reporter says the official GitHub release installer resolves it. The current evidence points to package metadata/linking outside the PowerToys repository, not an official installer or application defect.",
-    "status": "not_applicable"
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "A Scoop-installed build prompts for a .NET Desktop Runtime despite installed runtimes, while switching to the official PowerToys release installer resolves the prompt.",
-    "information_gaps": [],
-    "known_information": [
-      "The original report uses Scoop v0.100.0 and confirms the official GitHub release installer avoids the runtime dialog.",
-      "A later commenter says a newer runtime version still triggers the prompt and a Scoop-specific hard-link workaround is needed."
-    ],
-    "analysis": "The official installation path works and the failure is limited to a third-party packaging route, so no PowerToys code fix is proposed.",
-    "inferences": [
-      "Scoop manifest or packaging/link behavior is the likely ownership boundary; the evidence does not establish a PowerToys source defect."
-    ],
-    "initial_investigation": [
-      "Reviewed full issue body and latest Scoop-focused comments; compared reported official-installer workaround."
-    ]
-  },
-  "actions": [],
-  "stage": "not_actionable",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-20T16:47:17Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/48432",
-  "title": "you must install .NET Desktop Runtime torun this application.",
   "labels": [
     "Issue-Bug",
     "Area-Setup/Install",
     "Needs-Triage"
   ],
-  "assignees": [],
-  "comments": 18,
-  "status": {
-    "label": "Feature / external feedback",
-    "detail": "The issue is limited to third-party Scoop packaging and the official installer resolves the initial report; a PowerToys detailed code design is not applicable.",
-    "glyph": "⏸"
+  "assignees": [
+    null
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/48432",
+  "number": 48432,
+  "generated_at": "2026-11-02T20:30:53.3201627+00:00",
+  "source_updated_at": "2026-11-01T09:10:09Z",
+  "judgment": {
+    "recommended_action": "Run a distribution-specific clean/update deployment matrix and verify the installed runtime closure; do not recommend unreviewed hardlink scripts or mixing runtime files.",
+    "status": "reproducible",
+    "evidence": [
+      "The full thread includes Scoop, Chocolatey, manual-installer and WinGet participants; reinstalling succeeds for some but not all.",
+      "ScoopInstaller/Extras18020 is merged and specifically copies required runtime files for that distribution. It does not prove every later participant is fixed.",
+      "A supplied Settings apphost trace treats the app as self-contained, then fails to locate hostpolicy.dll in the resolved runtime directory. Installed shared Desktop Runtime versions alone do not repair that deployment state.",
+      "Participants report a manual runtime-file hardlink workaround, but results vary and the latest discussion still reports failures.",
+      "Exact0.102.3001 installer source already deduplicates matching WinUI runtime files and recreates regular copies through the historically named CreateWinAppSDKHardlinksCA. It explicitly avoids shared-inode hardlinks because of Explorer preview/DACL consequences."
+    ],
+    "evaluated_at": "2026-11-02T20:30:53.3201627+00:00",
+    "source_updated_at": "2026-11-01T09:10:09Z",
+    "rationale": "The thread is not universally resolved by the Scoop PR or by installing another Desktop Runtime version. The provided trace establishes a dependency-layout failure for that participant, not one universal cause for every runtime prompt. Current installer code already contains a copy path and trailing-separator normalization, so proposing those changes again would ignore counterevidence. Reproduce the actual distribution/update sequence and verify manifest entries, source payload and completed copy operation before correcting a remaining path. Unfixed, affected self-contained applications cannot launch."
   },
-  "next_action": "Report runtime-detection or hard-linking behavior to the Scoop manifest maintainer; use the official installer workaround."
+  "actions": [
+    {
+      "label": "Reproduce runtime deployment matrix",
+      "reproduce": {
+        "steps": [
+          "Compare a clean0.102.3001 official install with reported older-to-current update paths and the affected third-party package lane.",
+          "Inspect runtime manifest/source/destination completeness and custom-action outcomes, then launch Settings and retain apphost resolution on failures.",
+          "Test repair only after preserving the failing state, and compare actual launch results rather than the presence of a shared Desktop Runtime alone."
+        ],
+        "prerequisites": [
+          "Disposable Windows VM snapshots and trusted official installers; separate third-party package test lane.",
+          "Preserve package identity, original runtime files and installer logs before attempting repair."
+        ],
+        "module": "Installer / Settings self-contained runtime",
+        "expected": "Supported package/install/update paths deploy a complete usable self-contained runtime; a failed distribution path is identified without blanket DLL mixing or manual hardlink advice.",
+        "version": "Reported0.100 through0.102.3001"
+      },
+      "primary": true,
+      "id": "issue-48432-reproduce-1",
+      "type": "reproduce"
+    },
+    {
+      "label": "Investigate distribution runtime closure",
+      "primary": false,
+      "id": "issue-48432-approve_design-1",
+      "type": "approve_design"
+    }
+  ],
+  "comments": 18,
+  "title": "you must install .NET Desktop Runtime torun this application.",
+  "owes": "maintainer",
+  "kind": "issue",
+  "issue_context": {
+    "analysis": "The thread is not universally resolved by the Scoop PR or by installing another Desktop Runtime version. The provided trace establishes a dependency-layout failure for that participant, not one universal cause for every runtime prompt. Current installer code already contains a copy path and trailing-separator normalization, so proposing those changes again would ignore counterevidence. Reproduce the actual distribution/update sequence and verify manifest entries, source payload and completed copy operation before correcting a remaining path. Unfixed, affected self-contained applications cannot launch.",
+    "inferences": [
+      "A failed or bypassed distribution/update copy operation may explain some later failures, but the supplied trace does not prove which installer stage caused it."
+    ],
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the complete long discussion through the latest failure reports and verified the merged state/scope of ScoopInstaller/Extras18020.",
+      "Inspected immutable current-main and exact0.102.3001 custom-action/manifest-generation code; confirmed regular copies, trailing-separator normalization and root-payload eligibility are already present.",
+      "Did not execute the community script, modify the host installation or claim that a developer-source inspection validates a release installer payload."
+    ],
+    "summary": "Separate the merged Scoop deployment repair from unresolved official/other-distribution reports; the supplied host trace demonstrates an incomplete self-contained runtime layout.",
+    "known_information": [
+      "The full thread includes Scoop, Chocolatey, manual-installer and WinGet participants; reinstalling succeeds for some but not all.",
+      "ScoopInstaller/Extras18020 is merged and specifically copies required runtime files for that distribution. It does not prove every later participant is fixed.",
+      "A supplied Settings apphost trace treats the app as self-contained, then fails to locate hostpolicy.dll in the resolved runtime directory. Installed shared Desktop Runtime versions alone do not repair that deployment state.",
+      "Participants report a manual runtime-file hardlink workaround, but results vary and the latest discussion still reports failures.",
+      "Exact0.102.3001 installer source already deduplicates matching WinUI runtime files and recreates regular copies through the historically named CreateWinAppSDKHardlinksCA. It explicitly avoids shared-inode hardlinks because of Explorer preview/DACL consequences."
+    ]
+  },
+  "fix_assessment": {
+    "rationale": "There is a demonstrated startup dependency-layout failure and unresolved non-Scoop coverage, but the currently failing distribution/update path must be isolated before a new implementation change.",
+    "status": "proposed"
+  },
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "pending_author": false
 }
