@@ -1,59 +1,102 @@
 {
-  "schemaVersion": 3,
-  "number": 9300,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-05-13T18:33:27Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/9300",
   "title": "Keyboard Manager caps lock still activates sometimes",
-  "author": "samwzlim",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Keyboard Shortcut Manager"
-  ],
-  "comments": 30,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
-    "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager",
-      "Candidate sources: hot_comments",
-      "Missing: numbered reliable reproduction steps, fresh PowerToys bug-report ZIP."
-    ],
-    "recommended_action": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-05-13T18:33:27Z"
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/9300",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
   },
   "actions": [
     {
-      "id": "request-info-9300",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "issue-9300-reproduce-1",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 9300,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
+      "type": "reproduce",
+      "reproduce": {
+        "steps": [
+          "Use a disposable session with test text and CapsLock to Esc; record toggle state on the normal desktop.",
+          "Open a standard UAC prompt, press CapsLock, dismiss the prompt normally and compare toggle/remap state after return; do not attempt to hook the secure desktop.",
+          "Separately repeat ordinary-app held-key/focus transitions without UAC; distinguish protected-desktop toggle changes from hook loss or injection failure before designing recovery."
+        ],
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "expected": "Protected-desktop limitations must remain intact. Returning to the normal desktop should have a clearly understood, recoverable toggle/remap state, and ordinary-desktop failures need their own regression rather than a blanket elevation workaround.",
+        "module": "Keyboard Manager Caps Lock transitions"
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "label": "Reproduce Keyboard Manager Caps Lock transitions behavior"
+    },
+    {
+      "id": "issue-9300-approve_design-1",
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate focused fix direction"
     }
-  ]
+  ],
+  "owes": "maintainer",
+  "track": "triage",
+  "comments": 30,
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "pending_author": false,
+  "judgment": {
+    "evidence": [
+      "The long thread includes different mappings, supplied archives, elevated/non-elevated contrasts and independent ordinary-app reports; these do not all establish one cause.",
+      "The latest precise reproduction toggles Caps Lock during a Windows UAC prompt while CapsLock is mapped to Esc.",
+      "Official documentation says Keyboard Manager does not run on password/Run As Admin screens. Earlier reports also describe failures outside that protected context, including while PowerToys is already elevated."
+    ],
+    "evaluated_at": "2026-11-02T23:50:25.3643259+08:00",
+    "source_updated_at": "2026-10-11T16:48:56Z",
+    "rationale": "A protected-desktop keypress can change the OS Caps Lock toggle while the normal-desktop hook cannot intercept it; returning to a remapped key then makes toggling it back awkward. Investigate transition/state reconciliation separately from ordinary-desktop hook or injection failures; never propose intercepting the secure desktop or claim elevation universally fixes the issue.",
+    "status": "reproducible",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design."
+  },
+  "number": 9300,
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Protected-desktop limitations must remain intact. Returning to the normal desktop should have a clearly understood, recoverable toggle/remap state, and ordinary-desktop failures need their own regression rather than a blanket elevation workaround.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "title": "Separate protected-desktop Caps Lock toggles from ordinary remap state failures",
+      "plan": [
+        "Use a disposable session with test text and CapsLock to Esc; record toggle state on the normal desktop.",
+        "Open a standard UAC prompt, press CapsLock, dismiss the prompt normally and compare toggle/remap state after return; do not attempt to hook the secure desktop.",
+        "Separately repeat ordinary-app held-key/focus transitions without UAC; distinguish protected-desktop toggle changes from hook loss or injection failure before designing recovery.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "confidence": {
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build.",
+        "level": "yellow",
+        "score": 60
+      },
+      "root_cause": "A protected-desktop keypress can change the OS Caps Lock toggle while the normal-desktop hook cannot intercept it; returning to a remapped key then makes toggling it back awkward. Investigate transition/state reconciliation separately from ordinary-desktop hook or injection failures; never propose intercepting the secure desktop or claim elevation universally fixes the issue."
+    }
+  ],
+  "generated_at": "2026-11-02T23:50:25.3643259+08:00",
+  "evaluated_at": "2026-11-02T23:50:25.3643259+08:00",
+  "stage": "triage_revalidated",
+  "issue_context": {
+    "known_information": [
+      "The long thread includes different mappings, supplied archives, elevated/non-elevated contrasts and independent ordinary-app reports; these do not all establish one cause.",
+      "The latest precise reproduction toggles Caps Lock during a Windows UAC prompt while CapsLock is mapped to Esc.",
+      "Official documentation says Keyboard Manager does not run on password/Run As Admin screens. Earlier reports also describe failures outside that protected context, including while PowerToys is already elevated."
+    ],
+    "summary": "Separate protected-desktop Caps Lock toggles from ordinary remap state failures",
+    "analysis": "A protected-desktop keypress can change the OS Caps Lock toggle while the normal-desktop hook cannot intercept it; returning to a remapped key then makes toggling it back awkward. Investigate transition/state reconciliation separately from ordinary-desktop hook or injection failures; never propose intercepting the secure desktop or claim elevation universally fixes the issue.",
+    "information_gaps": [],
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "initial_investigation": [
+      "Read every supplied reply and relevant cross-reference, including the latest UAC sequence and already-elevated counterexamples.",
+      "Read official secure-screen limitations and current single-key passthrough/key-up behavior. Existing archives are acknowledged, not claimed inspected."
+    ]
+  },
+  "source_updated_at": "2026-10-11T16:48:56Z"
 }

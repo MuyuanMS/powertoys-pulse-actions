@@ -1,33 +1,103 @@
 {
-  "number": 44875,
+  "title": "Keyboard Manager: Remapping Left Alt and Left Ctrl triggers both keys simultaneously",
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "url": "https://github.com/microsoft/PowerToys/issues/44875",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
+  },
+  "actions": [
+    {
+      "id": "issue-44875-reproduce-1",
+      "primary": true,
+      "type": "reproduce",
+      "reproduce": {
+        "steps": [
+          "Configure only LeftAlt to LeftCtrl on a disposable Windows11profile and compare OSK highlighting with delivered key state in a test application.",
+          "Repeat with the optional reverse mapping, then test release, ordinary Alt shortcuts and an AltGr layout separately.",
+          "Record physical source, injected target and application-observed modifier state before changing reset or suppression logic."
+        ],
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "expected": "Applications should receive the configured target behavior with correct release state; any OSK-only discrepancy must be distinguished from genuine combined modifiers or AltGr regression.",
+        "module": "Keyboard Manager modifier visibility"
+      },
+      "label": "Reproduce Keyboard Manager modifier visibility behavior"
+    },
+    {
+      "id": "issue-44875-approve_design-1",
+      "primary": false,
+      "type": "approve_design",
+      "label": "Investigate focused fix direction"
+    }
+  ],
   "owes": "maintainer",
+  "track": "triage",
+  "comments": 1,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:57:44Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report supplies LeftAlt to LeftCtrl, an optional reverse mapping, and an On-Screen Keyboard screenshot showing Alt and Ctrl highlighted.",
+      "A later participant confirms the same environment and also reports AltGr becoming LeftAlt.",
+      "An OSK highlight alone is not a complete delivered-key trace; current single-key remapping explicitly resets modifier state for lower-level handlers."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:57:44Z"
-  }
+    "evaluated_at": "2026-11-02T23:50:25.3643259+08:00",
+    "source_updated_at": "2026-10-11T16:48:58Z",
+    "rationale": "Source and target modifier visibility may diverge across hook, OSK and application state, with a possible AltGr side effect. Compare actual application shortcut delivery and key-up cleanup before concluding which reset path is wrong; do not treat OSK presentation alone as proof every application receives both modifiers.",
+    "status": "reproducible",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design."
+  },
+  "number": 44875,
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Applications should receive the configured target behavior with correct release state; any OSK-only discrepancy must be distinguished from genuine combined modifiers or AltGr regression.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "title": "Investigate original-versus-target modifier state with a Left Alt to Ctrl mapping",
+      "plan": [
+        "Configure only LeftAlt to LeftCtrl on a disposable Windows11profile and compare OSK highlighting with delivered key state in a test application.",
+        "Repeat with the optional reverse mapping, then test release, ordinary Alt shortcuts and an AltGr layout separately.",
+        "Record physical source, injected target and application-observed modifier state before changing reset or suppression logic.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "confidence": {
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build.",
+        "level": "yellow",
+        "score": 55
+      },
+      "root_cause": "Source and target modifier visibility may diverge across hook, OSK and application state, with a possible AltGr side effect. Compare actual application shortcut delivery and key-up cleanup before concluding which reset path is wrong; do not treat OSK presentation alone as proof every application receives both modifiers."
+    }
+  ],
+  "generated_at": "2026-11-02T23:50:25.3643259+08:00",
+  "evaluated_at": "2026-11-02T23:50:25.3643259+08:00",
+  "stage": "triage_revalidated",
+  "issue_context": {
+    "known_information": [
+      "The report supplies LeftAlt to LeftCtrl, an optional reverse mapping, and an On-Screen Keyboard screenshot showing Alt and Ctrl highlighted.",
+      "A later participant confirms the same environment and also reports AltGr becoming LeftAlt.",
+      "An OSK highlight alone is not a complete delivered-key trace; current single-key remapping explicitly resets modifier state for lower-level handlers."
+    ],
+    "summary": "Investigate original-versus-target modifier state with a Left Alt to Ctrl mapping",
+    "analysis": "Source and target modifier visibility may diverge across hook, OSK and application state, with a possible AltGr side effect. Compare actual application shortcut delivery and key-up cleanup before concluding which reset path is wrong; do not treat OSK presentation alone as proof every application receives both modifiers.",
+    "information_gaps": [],
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "initial_investigation": [
+      "Read all discussion and inspected the original On-Screen Keyboard screenshot.",
+      "Read immutable current-main modifier reset and single-key injection branches; no current OSK/application trace was executed."
+    ]
+  },
+  "source_updated_at": "2026-10-11T16:48:58Z"
 }
