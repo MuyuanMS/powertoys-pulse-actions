@@ -1,0 +1,105 @@
+{
+  "track": "triage",
+  "judgment": {
+    "rationale": "The report has enough reproduction detail and configuration to move to maintainer testing, not another generic log request. Alternating hide/restore is a supported candidate mechanism; profiling is needed to distinguish cursor reload cost, queued work and other software. If unfixed, simultaneous typing/movement can make input visibly stutter.",
+    "source_updated_at": "2026-11-02T19:08:16Z",
+    "recommended_action": "Reproduce with typing-only versus idle-only settings and trace transitions before deciding whether coalescing or a different visibility strategy is necessary.",
+    "evidence": [
+      "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
+      "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
+      "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
+      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation."
+    ],
+    "status": "reproducible",
+    "evaluated_at": "2026-11-02T20:20:11.0573730+00:00"
+  },
+  "title": "CursorHide make mouse lag when holding keyboard button.",
+  "assignees": [
+    null
+  ],
+  "pending_author": false,
+  "source_updated_at": "2026-11-02T19:08:16Z",
+  "actions": [
+    {
+      "label": "Profile held-key cursor transitions",
+      "type": "reproduce",
+      "id": "issue-51858-reproduce-1",
+      "reproduce": {
+        "version": "0.102.3001",
+        "prerequisites": [
+          "Windows desktop with CursorHide available; record current cursor scheme.",
+          "Maintainer tracing of transition counts/durations and input latency."
+        ],
+        "steps": [
+          "Enable typing hiding only, hold a nonmodifier key and continuously move the mouse; compare single key presses.",
+          "Repeat with idle hiding only and then both options with5000ms idle delay.",
+          "Trace actual Hide/Show queue and operation durations; repeat without other pointer utilities if the first run reproduces."
+        ],
+        "module": "Mouse utilities / CursorHide",
+        "expected": "Pointer movement remains responsive and restores a visible cursor; cursor operations do not accumulate obsolete work."
+      },
+      "primary": true
+    },
+    {
+      "label": "Investigate cursor transition churn",
+      "type": "approve_design",
+      "id": "issue-51858-approve_design-1",
+      "primary": false
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "The transition path supplies a focused investigation, but latency and the safe corrective policy are not proven.",
+    "status": "proposed"
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/51858",
+  "schemaVersion": 5,
+  "number": 51858,
+  "comments": 0,
+  "evaluated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "proposed_fixes": [
+    {
+      "title": "Bound cursor-hide work during simultaneous keyboard and mouse input",
+      "root_cause": "Key repeat and intentional movement can alternate Hide/Show requests. Repeated system-cursor replacement/restoration may cause the observed lag; no timing proof exists yet.",
+      "verification": [
+        "Exercise held-key movement, isolated typing, clicks, wheel, modifier-only input, idle expiry and module shutdown.",
+        "Compare transition counts and pointer latency before/after on the same machine; confirm all user cursors restore after disable, crash recovery and failed cursor operations."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The configured input sequence matches a real state transition path, but no profiler measurement or reproduced latency establishes the expensive operation."
+      },
+      "plan": [
+        "Reproduce typing-only, idle-only and combined configurations with single key presses versus held-key repeat while continuously moving.",
+        "Measure queued action count, Hide/Show duration and pointer latency; distinguish transition churn from injected-input or third-party interference.",
+        "If churn is confirmed, coalesce obsolete pending visibility work or reduce repeated system-cursor mutation while preserving immediate pointer restoration, idle behavior and original cursor schemes."
+      ]
+    }
+  ],
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "kind": "issue",
+  "issue_context": {
+    "known_information": [
+      "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
+      "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
+      "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
+      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation."
+    ],
+    "summary": "The archive confirms typing and idle hiding were enabled; alternating key-repeat and pointer movement is a concrete maintainer reproduction, not yet a profiled root cause.",
+    "information_gaps": [],
+    "analysis": "The report has enough reproduction detail and configuration to move to maintainer testing, not another generic log request. Alternating hide/restore is a supported candidate mechanism; profiling is needed to distinguish cursor reload cost, queued work and other software. If unfixed, simultaneous typing/movement can make input visibly stutter.",
+    "inferences": [
+      "Alternating key-repeat/movement may produce avoidable system-cursor churn; this remains a hypothesis."
+    ],
+    "initial_investigation": [
+      "Read complete issue and supplied archive settings; checked immutable State, Worker and SystemCursorHider code.",
+      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed."
+    ]
+  },
+  "owes": "maintainer",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ]
+}

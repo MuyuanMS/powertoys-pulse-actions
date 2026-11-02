@@ -1,121 +1,107 @@
 {
-  "comments": 0,
-  "source_updated_at": "2026-11-01T22:37:11Z",
-  "track": "fix",
-  "number": 51820,
-  "title": "Zoomit Record did anyone test it?",
+  "track": "triage",
   "judgment": {
-    "source_updated_at": "2026-11-01T22:37:11Z",
-    "evaluated_at": "2026-11-02T01:35:48.5533613+00:00",
-    "status": "reproducible",
-    "rationale": "The reported order explains why the crop shortcut does not resize an already active full-screen recording. It does not resolve whether stop/save or a fresh idle-state region selection works over this RDP session. Separate interaction guidance from a possible capture/input failure, using controlled maintainer reproduction rather than another generic log request.",
+    "rationale": "The border alone does not demonstrate a failed region selector, and changing a shortcut without confirming which machine receives it does not identify a ZoomIt defect. The unresolved issue is whether the same configured capture hotkeys work on the local desktop versus inside RDP, including starting a fresh crop session rather than trying to resize an active full-screen recording. Do not prescribe a speculative RDP registry tweak.",
+    "source_updated_at": "2026-11-02T19:36:33Z",
+    "recommended_action": "Request a local-versus-RDP fresh-session comparison and the exact Windows build; retain existing version and log evidence.",
     "evidence": [
-      "Reporter supplies0.102.3001 via auto-update, Windows10 and an RDP session. The stated sequence starts Record from the tray, sees a gold/yellow full-display border, then tries Ctrl+Shift+5 and expects to resize the existing border.",
-      "The attached log was downloaded and read completely. It contains only two zoom-it logger initialization entries; it has no recording, capture, stop, save or error entries and cannot prove success or failure.",
-      "Microsoft Learn documents Ctrl+5 as the default recording toggle and Ctrl+Shift+5 as selection of a screen region. It also describes the trim editor after recording finishes; it does not describe dragging the active recording border to resize capture.",
-      "Exact shipped tagv0.102.3001 Zoomit.cpp handles RECORD_CROP_HOTKEY by returning while g_RecordToggle is already true. Starting region selection requires an idle recording state; the ordinary record hotkey calls StopRecording on its second activation.",
-      "The shipped code creates a full-monitor recording border before StartRecordingAsync completes. Seeing that border alone does not establish that captured frames exist or that the file can be finalized.",
-      "Full report, empty comments and timeline were read. A focused RDP/ZoomIt recording issue search did not identify a covering report. No posted maintainer evidence request, assignee or linked fix is present."
+      "The full discussion reports a yellow full-screen recording border and ineffective default/custom shortcuts in an RDP session.",
+      "The supplied ZoomIt log contains logger initialization only, not a capture error or hotkey failure.",
+      "Official ZoomIt documentation distinguishes Ctrl+5 full-screen start/stop, Ctrl+Shift+5 crop recording and Ctrl+Alt+5 window recording; the yellow capture border is not documented as a draggable crop editor.",
+      "Current-main registration uses separate record/crop/window hotkey IDs. Documentation requires Windows10 May2019 or later for recording."
     ],
-    "recommended_action": "Compare idle-region selection with tray-started recording over RDP"
+    "status": "needs_information",
+    "evaluated_at": "2026-11-02T20:20:11.0573730+00:00"
   },
+  "title": "Zoomit Record did anyone test it?",
+  "assignees": [
+    null
+  ],
+  "pending_author": false,
+  "source_updated_at": "2026-11-02T19:36:33Z",
+  "actions": [
+    {
+      "comment": {
+        "body": "Thanks for the supplied log and additional shortcut tests. The log contains initialization only, so it does not identify a recording failure. ZoomIt documents separate shortcuts for full-screen start/stop (Ctrl+5 by default), crop recording (Ctrl+Shift+5) and window recording (Ctrl+Alt+5); the yellow capture border is not a draggable crop editor. Please provide these two discriminating details:\n\n1. Stop any current recording, then compare fresh full-screen and fresh crop activation using your configured shortcuts on the local desktop and inside RDP. Which computer/process responds in each case?\n2. Copy the exact Windows version/build from winver on the computer running ZoomIt.\n\nThis distinguishes remote key delivery from a general hotkey or capture problem; the supplied evidence is retained."
+      },
+      "label": "Request local/RDP recording comparison",
+      "type": "request_info",
+      "id": "issue-51820-request_info-1",
+      "primary": true
+    },
+    {
+      "label": "Investigate recording hotkey delivery",
+      "type": "approve_design",
+      "id": "issue-51820-approve_design-1",
+      "primary": false
+    }
+  ],
+  "fix_assessment": {
+    "rationale": "Hotkey/capture-routing investigation remains applicable, but there is no supported implementation correction without the discriminating comparison.",
+    "status": "proposed"
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/51820",
+  "schemaVersion": 5,
+  "number": 51820,
+  "comments": 1,
+  "evaluated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "proposed_fixes": [
+    {
+      "title": "Identify recording hotkey routing versus crop-mode behavior",
+      "root_cause": "Remote key routing, hotkey registration or capture-state behavior could explain ineffective shortcuts. Existing evidence does not distinguish them; a visible full-screen capture border is not itself a crop-mode defect.",
+      "verification": [
+        "Configured full-screen shortcut starts/stops recording; a fresh crop shortcut enters the documented region flow.",
+        "Local/RDP comparisons identify the receiving process and recording output; confirm customized shortcuts and stop/restart behavior."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The log has no failing operation and the remote/local and active/fresh mode boundaries remain unresolved."
+      },
+      "plan": [
+        "Compare fresh full-screen and crop activation locally and inside the same RDP session, confirming the process and computer receiving each configured chord.",
+        "Trace registration and received hotkey IDs only on a reproducing maintainer setup; compare supported recording builds.",
+        "Fix the demonstrated routing/state defect or clarify the documented mode interaction, without treating the capture border as an editable selection."
+      ]
+    }
+  ],
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "kind": "issue",
+  "issue_context": {
+    "known_information": [
+      "The full discussion reports a yellow full-screen recording border and ineffective default/custom shortcuts in an RDP session.",
+      "The supplied ZoomIt log contains logger initialization only, not a capture error or hotkey failure.",
+      "Official ZoomIt documentation distinguishes Ctrl+5 full-screen start/stop, Ctrl+Shift+5 crop recording and Ctrl+Alt+5 window recording; the yellow capture border is not documented as a draggable crop editor.",
+      "Current-main registration uses separate record/crop/window hotkey IDs. Documentation requires Windows10 May2019 or later for recording."
+    ],
+    "summary": "Separate documented full-screen/crop recording behavior from the reported ineffective hotkeys inside an RDP session.",
+    "information_gaps": [
+      {
+        "information": "Do fresh full-screen and crop recording shortcuts work locally but fail inside RDP, or fail in both?",
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "Stop any current recording first, test the configured full-screen and crop shortcuts separately locally and inside RDP, and report which computer/process records.",
+        "why_needed": "Separates remote key delivery from a general ZoomIt registration/capture problem."
+      },
+      {
+        "information": "Exact Windows version/build for the computer running ZoomIt.",
+        "evidence_type": "windows_version",
+        "how_to_collect": "Copy the version and OS build from winver on the recording computer.",
+        "why_needed": "Recording has a documented Windows10 May2019 minimum and the report gives only the Windows family."
+      }
+    ],
+    "analysis": "The border alone does not demonstrate a failed region selector, and changing a shortcut without confirming which machine receives it does not identify a ZoomIt defect. The unresolved issue is whether the same configured capture hotkeys work on the local desktop versus inside RDP, including starting a fresh crop session rather than trying to resize an active full-screen recording. Do not prescribe a speculative RDP registry tweak.",
+    "inferences": [
+      "RDP may receive or intercept the shortcut differently from the local desktop, but this is not yet established."
+    ],
+    "initial_investigation": [
+      "Read the full report/discussion and supplied two-line log.",
+      "Checked current hotkey registration and official ZoomIt shortcut documentation; no recording or RDP execution is claimed."
+    ]
+  },
+  "owes": "maintainer",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
-  ],
-  "owes": "maintainer",
-  "generated_at": "2026-11-02T01:35:48.5533613+00:00",
-  "evaluated_at": "2026-11-02T01:35:48.5533613+00:00",
-  "kind": "issue",
-  "fix_assessment": {
-    "rationale": "Conditional lightweight direction: improve mode/stop feedback if confusion is reproduced, or fix the specific confirmed idle-selection/capture failure. Existing evidence does not establish an RDP or encoder defect or justify resizable active recording.",
-    "status": "proposed"
-  },
-  "proposed_fixes": [
-    {
-      "plan": [
-        "On a controlled Windows10 RDP test session, compare the exact tray-start sequence with Ctrl+Shift+5 while idle; explicitly stop the first recording before attempting region selection.",
-        "If both paths work, propose minimal localized recording-mode/start-stop guidance consistent with Microsoft Learn, without making the capture border draggable or changing toggle semantics.",
-        "If fresh region selection or stop/trim/save actually fails, isolate hotkey delivery, selection, first captured frame and finalization separately, then design a focused correction for the demonstrated stage."
-      ],
-      "confidence": {
-        "rationale": "The shipped guard directly explains the reported mode sequence, but no runtime evidence confirms successful capture/save or an additional RDP failure. This is not an implementation-ready fix design.",
-        "score": 62,
-        "level": "yellow"
-      },
-      "verification": [
-        "Idle Ctrl+Shift+5 permits a selected region; an active recording is stopped with the configured record toggle; the completed clip opens the expected trim/save flow.",
-        "Repeat local-console and RDP controls with the same version and hotkey configuration; a visible border must not be used as evidence of captured frames or saved output."
-      ],
-      "title": "Clarify recording state and isolate any idle-selection or finalization failure",
-      "root_cause": "The active-recording guard explains the reported crop shortcut after tray Record. Missing or unclear state guidance may contribute to confusion; an additional RDP capture/input failure is possible but unproven."
-    }
-  ],
-  "actions": [
-    {
-      "primary": true,
-      "type": "reproduce",
-      "label": "Separate active recording from idle region selection",
-      "id": "issue-51820-reproduce-1",
-      "reproduce": {
-        "version_requirement": "Reported0.102.3001 on Windows10 over RDP; compare a pinned current build separately.",
-        "steps": [
-          "1. With ZoomIt idle, select Record in its tray menu. Record when the full-monitor border appears. Press the configured record toggle once (Ctrl+5 by default) to stop, and observe whether trim/save opens and produces a playable sample.",
-          "2. Return to an idle recording state. Press the configured region shortcut (Ctrl+Shift+5 by default), select a rectangle, record a short sample, and stop with the record toggle. Do not start tray Record before this step.",
-          "3. Separately repeat Ctrl+Shift+5 while a full-screen recording is active. Confirm the shipped active-recording guard leaves it unchanged; this is not a request to drag the indicator.",
-          "4. Repeat the two idle-start paths at the local console with the same settings. If RDP alone fails, distinguish shortcut delivery from selection, first-frame capture and stop/trim/save before requesting additional diagnostics or changing code."
-        ],
-        "expected_result": "Idle region recording supports selection; active recording has a clear stop route and finalization produces the expected clip. Record actual observed results rather than treating the border or initialization log as success.",
-        "title": "Compare the two recording sequences",
-        "setup": [],
-        "module": "ZoomIt",
-        "prerequisites": [
-          "Controlled Windows10 RDP target and local-console comparison; record the configured recording hotkey and RDP keyboard routing. Use non-sensitive sample content."
-        ]
-      }
-    },
-    {
-      "type": "approve_design",
-      "id": "issue-51820-approve_design-2",
-      "confirm": true,
-      "primary": false,
-      "label": "Review conditional recording-feedback investigation",
-      "note": "Lightweight direction only. Resolve the isolated sequence/runtime gaps before implementation approval."
-    }
-  ],
-  "issue_context": {
-    "analysis": "The reported order explains why the crop shortcut does not resize an already active full-screen recording. It does not resolve whether stop/save or a fresh idle-state region selection works over this RDP session. Separate interaction guidance from a possible capture/input failure, using controlled maintainer reproduction rather than another generic log request.",
-    "inferences": [
-      "The gold/yellow frame is consistent with the recording indicator, not an editable crop rectangle. An RDP hotkey-delivery or capture failure cannot be inferred from its appearance."
-    ],
-    "summary": "Recording-mode confusion is source-explained; idle region selection and stop/save over RDP still need a controlled check.",
-    "information_gaps": [
-      {
-        "how_to_collect": "Maintainer runs the two separate sequences below on a controlled RDP session and local-console control, recording key delivery and resulting selection/trim/save state.",
-        "information": "Idle-state crop selection and stop/finalization behavior",
-        "why_needed": "Distinguish the intentionally ignored active-recording crop shortcut from a real fresh-selection, capture or save defect.",
-        "evidence_type": "behavior_confirmation"
-      }
-    ],
-    "known_information": [
-      "Reporter supplies0.102.3001 via auto-update, Windows10 and an RDP session. The stated sequence starts Record from the tray, sees a gold/yellow full-display border, then tries Ctrl+Shift+5 and expects to resize the existing border.",
-      "The attached log was downloaded and read completely. It contains only two zoom-it logger initialization entries; it has no recording, capture, stop, save or error entries and cannot prove success or failure.",
-      "Microsoft Learn documents Ctrl+5 as the default recording toggle and Ctrl+Shift+5 as selection of a screen region. It also describes the trim editor after recording finishes; it does not describe dragging the active recording border to resize capture.",
-      "Exact shipped tagv0.102.3001 Zoomit.cpp handles RECORD_CROP_HOTKEY by returning while g_RecordToggle is already true. Starting region selection requires an idle recording state; the ordinary record hotkey calls StopRecording on its second activation.",
-      "The shipped code creates a full-monitor recording border before StartRecordingAsync completes. Seeing that border alone does not establish that captured frames exist or that the file can be finalized.",
-      "Full report, empty comments and timeline were read. A focused RDP/ZoomIt recording issue search did not identify a covering report. No posted maintainer evidence request, assignee or linked fix is present."
-    ],
-    "initial_investigation": [
-      "Read complete issue/discussion/timeline and both lines of the supplied log.",
-      "Inspected exact shipped recording hotkey, crop guard, indicator creation and stop paths; compared current759b5ef7 source and official Learn usage documentation.",
-      "Searched related RDP/recording reports. No product UI, RDP capture, encoder or trim execution was performed; no full design/adversarial pass is claimed."
-    ]
-  },
-  "stage": "triage_revalidated",
-  "schemaVersion": 5,
-  "pending_author": false,
-  "url": "https://github.com/microsoft/PowerToys/issues/51820",
-  "assignees": [
-    null
   ]
 }
