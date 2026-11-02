@@ -1,0 +1,104 @@
+{
+  "comments": 0,
+  "issue_context": {
+    "information_gaps": [],
+    "summary": "Investigate stale extension query updates overwriting newer typed input",
+    "inferences": [
+      "The proposed mechanism is provisional and is not an executed runtime result or evidence that the old report is fixed."
+    ],
+    "known_information": [
+      "The0.102.3001report states that text disappears while first-load extension results arrive, without the reporter pressing Backspace.",
+      "Downloaded and inspected the supplied23.57second recording: the Colors page has rapidly changing typed queries and delayed/mismatched result states. The recording has no key-event overlay, so the no-Backspace assertion remains reporter evidence.",
+      "Exact current-main ListViewModel serializes outgoing dynamic SearchText updates but also accepts model SearchText property updates. SearchBar.Page_PropertyChanged then assigns differing list.SearchText into FilterBox.Text and moves the caret.",
+      "That establishes a real incoming/outgoing synchronization boundary, not proof whether this extension emits stale values or the host incorrectly orders them."
+    ],
+    "analysis": "An older extension SearchText notification may overwrite a later user edit during asynchronous loading. Correlate user-edit sequence, provider request/result and incoming property notification before deciding whether host freshness tracking or extension behavior needs correction. Preserve intentional provider-driven query replacement.",
+    "initial_investigation": [
+      "Read the complete report/empty discussion and inspected twelve evenly spaced full-frame samples from the supplied video.",
+      "Read immutable origin/main ListViewModel.cs and SearchBar.xaml.cs, rather than relying on the dirty shared checkout versions. No provider runtime trace or fixed build is claimed."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An observable failure is reported and a specific investigation boundary is identified. The proposed direction remains conditional on controlled reproduction."
+  },
+  "source_updated_at": "2026-11-02T14:58:48Z",
+  "actions": [
+    {
+      "id": "issue-51834-reproduce-1",
+      "type": "reproduce",
+      "label": "Reproduce Command Palette dynamic query input behavior",
+      "primary": true,
+      "reproduce": {
+        "prerequisites": [
+          "Use a disposable test environment and test-owned documents/configuration; preserve existing user data."
+        ],
+        "steps": [
+          "Use the shown Colors extension and a test dynamic provider with controlled first-query latency; type successive distinct queries while the first result is pending.",
+          "Record ordered user edits, outgoing SearchText assignments, result completion and incoming SearchText notifications; distinguish result-list lag from actual textbox rollback.",
+          "Complete old requests out of order and verify whether stale notifications replace the latest text; separately exercise intentional query reset, page navigation and provider-driven replacement."
+        ],
+        "module": "Command Palette dynamic query input",
+        "expected": "Late results or stale query echoes must not erase a newer user edit; intentional provider-driven query replacements and navigation must continue to work."
+      }
+    },
+    {
+      "id": "issue-51834-approve_design-1",
+      "type": "approve_design",
+      "label": "Investigate focused fix direction",
+      "primary": false
+    }
+  ],
+  "track": "triage",
+  "assignees": [
+    null
+  ],
+  "generated_at": "2026-11-02T23:40:27.9282099+08:00",
+  "owes": "maintainer",
+  "evaluated_at": "2026-11-02T23:40:27.9282099+08:00",
+  "title": "Command Palette - Input is rejected while plugin results load",
+  "schemaVersion": 5,
+  "kind": "issue",
+  "pending_author": false,
+  "url": "https://github.com/microsoft/PowerToys/issues/51834",
+  "number": 51834,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "judgment": {
+    "status": "reproducible",
+    "evidence": [
+      "The0.102.3001report states that text disappears while first-load extension results arrive, without the reporter pressing Backspace.",
+      "Downloaded and inspected the supplied23.57second recording: the Colors page has rapidly changing typed queries and delayed/mismatched result states. The recording has no key-event overlay, so the no-Backspace assertion remains reporter evidence.",
+      "Exact current-main ListViewModel serializes outgoing dynamic SearchText updates but also accepts model SearchText property updates. SearchBar.Page_PropertyChanged then assigns differing list.SearchText into FilterBox.Text and moves the caret.",
+      "That establishes a real incoming/outgoing synchronization boundary, not proof whether this extension emits stale values or the host incorrectly orders them."
+    ],
+    "evaluated_at": "2026-11-02T23:40:27.9282099+08:00",
+    "rationale": "An older extension SearchText notification may overwrite a later user edit during asynchronous loading. Correlate user-edit sequence, provider request/result and incoming property notification before deciding whether host freshness tracking or extension behavior needs correction. Preserve intentional provider-driven query replacement.",
+    "source_updated_at": "2026-11-02T14:58:48Z",
+    "recommended_action": "Execute the focused maintainer reproduction before choosing an implementation; the proposal is a hypothesis, not an approved detailed design."
+  },
+  "stage": "triage_revalidated",
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Use the shown Colors extension and a test dynamic provider with controlled first-query latency; type successive distinct queries while the first result is pending.",
+        "Record ordered user edits, outgoing SearchText assignments, result completion and incoming SearchText notifications; distinguish result-list lag from actual textbox rollback.",
+        "Complete old requests out of order and verify whether stale notifications replace the latest text; separately exercise intentional query reset, page navigation and provider-driven replacement.",
+        "Use the failing trace to isolate the responsible state/coordinate transition, then design the smallest correction without changing unrelated behavior."
+      ],
+      "title": "Investigate stale extension query updates overwriting newer typed input",
+      "verification": [
+        "Late results or stale query echoes must not erase a newer user edit; intentional provider-driven query replacements and navigation must continue to work.",
+        "Retest a matching unaffected control and the originally reported workflow on a current supported build."
+      ],
+      "root_cause": "An older extension SearchText notification may overwrite a later user edit during asynchronous loading. Correlate user-edit sequence, provider request/result and incoming property notification before deciding whether host freshness tracking or extension behavior needs correction. Preserve intentional provider-driven query replacement.",
+      "confidence": {
+        "rationale": "The report and source boundary support investigation, but the exact historical failure has not been independently reproduced on the current build.",
+        "level": "yellow",
+        "score": 66
+      }
+    }
+  ]
+}
