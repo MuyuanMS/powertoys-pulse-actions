@@ -3873,7 +3873,9 @@ window.BOARD_INDEX = {
         "Product-Mouse Without Borders",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-28T05:51:36Z",
       "updated_at": "2026-11-03T18:04:05Z",
       "comments": 5,
