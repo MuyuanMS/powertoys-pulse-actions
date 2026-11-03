@@ -18,6 +18,16 @@ Public PR data must not contain operational `blockers`, `workflow`,
 Never substitute a request-limit/build/service diagnostic for an author-facing
 review. Preserve supported comments/actions when checkpointing unrelated work.
 
+Review actions must request an actionable author change. Do not publish standalone
+"qualified assessment", "validation scope" or "no additional change requested"
+reviews as suggested actions. A standalone general finding must use the existing
+implementation-ready sections (Affected code, Problem, Why it matters, Suggested
+change, Verification). An incomplete review has neutral pending metadata and no
+posting/approval/merge suggestion; retain its assessment and recovery notes privately.
+The sanitizer and direct publication validator share this content gate, including
+instructions disguised inside proposed comments or review bodies. Never bypass it
+by putting operator prose into `actions.review.body_prefix`.
+
 ## Generate, sanitize, validate
 
 Publish initial inventory before heavy work, each completed result immediately,

@@ -79,6 +79,63 @@ try {
     $failure = ''
     try { & $validator -Dashboard $dashboard -Numbers 123 2>$null } catch { $failure = $_.Exception.Message }
     Assert-True ($failure -match 'validation failed') 'publication gate rejects operational data even if sanitizer was skipped'
+    $assessment = [pscustomobject]@{
+        number = 50740; kind = 'pr'; track = 'review'; stage = 'awaiting_review_approval'
+        head_sha = $head; generated_at = '2026-10-22T00:00:00Z'
+        evaluated_at = '2026-10-22T00:00:00Z'; source_updated_at = '2026-10-22T00:00:00Z'
+        needs_revalidation = $false; proposed_comments = @()
+        owes = 'author'; pending_author = $true
+        actions = @(@{
+            id = 'post-assessment'; type = 'post_review'; label = 'Post qualified assessment summary'
+            review = @{ event = 'COMMENT'; head_sha = $head; comment_ids = @()
+                body_prefix = 'No additional code change is requested. Tests were inspected, not executed.' }
+        })
+    }
+    Assert-True (@(Get-PublicPrReviewContentErrors $assessment).Count -eq 1) 'assessment-only review action is not actionable'
+    $assessment | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $items '50740.json')
+    $failure = ''
+    try { & $validator -Dashboard $dashboard -Numbers 50740 2>$null } catch { $failure = $_.Exception.Message }
+    Assert-True ($failure -match 'validation failed') 'direct publication rejects assessment-only action'
+    @{ items = @(@{ number=50740; kind='pr'; stage='awaiting_review_approval'
+        owes='author'; pending_author=$true
+        proposed_open=0; primary_action=@{type='post_review'} }) } |
+        ConvertTo-Json -Depth 20 | Set-Content (Join-Path $dashboard 'data\index.json')
+    'old index' | Set-Content (Join-Path $dashboard 'data\index.js')
+    & $sanitizer -DataPath (Join-Path $dashboard 'data') -PrivateStatePath $private
+    $cleanAssessment = Get-Content (Join-Path $items '50740.json') -Raw | ConvertFrom-Json
+    Assert-True (@($cleanAssessment.actions).Count -eq 0 -and
+        $cleanAssessment.stage -eq 'review_in_progress' -and $cleanAssessment.needs_revalidation) 'unsafe assessment is neutral pending metadata, never an approval'
+    Assert-True ($cleanAssessment.owes -eq 'us' -and -not $cleanAssessment.pending_author) 'removed assessment cannot leave an unjustified author wait'
+    Assert-True (@(Get-ChildItem (Join-Path $private '50740') -File).Count -eq 1) 'assessment body is preserved privately before removal'
+    $cleanIndex = Get-Content (Join-Path $dashboard 'data\index.json') -Raw | ConvertFrom-Json
+    Assert-True ($null -eq $cleanIndex.items[0].primary_action -and
+        $cleanIndex.items[0].stage -eq 'review_in_progress') 'index action and availability stay aligned'
+    Assert-True ($cleanIndex.items[0].owes -eq 'us' -and -not $cleanIndex.items[0].pending_author) 'index does not retain an unjustified author wait'
+    Assert-True ((Get-Content (Join-Path $dashboard 'data\index.js') -Raw) -notmatch 'post_review') 'index.js does not retain the removed action'
+    $operator = $assessment | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+    $operator.proposed_comments = @(@{id='operator';kind='inline';in_diff=$true
+        body='Resume the worker after the cloud request cap; use the shared build slot.'})
+    Assert-True (@(Get-PublicPrReviewContentErrors $operator).Count -gt 0) 'operator instructions cannot be disguised as a finding'
+    $actionable = $assessment | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+    $actionable.actions[0].review.body_prefix = @'
+**Affected code:** `src/example.cs:Save`.
+**Problem:** Save reports success before writing.
+**Why it matters:** Callers receive a false success.
+**Suggested change:**
+1. Return success only after the write completes.
+**Verification:** Assert that a failed write does not report success.
+'@
+    Assert-True (@(Get-PublicPrReviewContentErrors $actionable).Count -eq 0) 'standalone implementation-ready author finding remains valid'
+    $actionable.actions[0].type = 'request_changes'
+    $actionable.actions[0].review.body_prefix = @'
+**Affected code:** Required test jobs `x64 Win10`, `x64 Win11`, and `arm64`.
+**Problem:** The required upstream tests are failing.
+**Why it matters:** Required platform coverage is unverified.
+**Suggested change:**
+1. Inspect the current-head logs, fix or substantiate the failures, and rerun the jobs.
+**Verification:** Confirm all three required jobs pass on the updated head.
+'@
+    Assert-True (@(Get-PublicPrReviewContentErrors $actionable).Count -eq 0) 'structured CI remediation request is preserved as author-facing feedback'
     $loop = Get-Content (Join-Path $PSScriptRoot '..\..\powertoys-pr-review\references\copilot-review-loop.md') -Raw
     $worker = Get-Content (Join-Path $PSScriptRoot '..\..\powertoys-pr-review\SKILL.md') -Raw
     Assert-True ($worker -match '`post_review`' -and $loop -match 'Assess ALL saved findings' -and

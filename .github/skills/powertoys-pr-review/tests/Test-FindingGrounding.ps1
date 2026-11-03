@@ -139,7 +139,14 @@ try {
     @{ prs = @(@{ number = 50472; findingGrounding = $evidence }) } | ConvertTo-Json -Depth 30 | Set-Content $dossierPath
     $output = & pwsh -NoProfile -File $validator -Dashboard $temp -Numbers 50472 -RequireFindingGrounding -SourceRepository $temp 2>&1
     Assert-True ($LASTEXITCODE -ne 0 -and "$output" -match 'exactly one private grounding record') 'Processed proposals require dossier; missing disposition is still proposed.'
-    $artifact.actions[0].review.body_prefix = 'An additional overall claim.'
+    $artifact.actions[0].review.body_prefix = @'
+**Affected code:** `src/test.cpp`.
+**Problem:** The reviewed source contains the grounded defect.
+**Why it matters:** The affected path produces an incorrect result.
+**Suggested change:**
+1. Correct the grounded path in the affected source.
+**Verification:** Run the focused regression for that path.
+'@
     $artifact | ConvertTo-Json -Depth 30 | Set-Content $artifactPath
     $output = & pwsh -NoProfile -File $validator -Dashboard $temp -Numbers 50472 -RequireFindingGrounding -GroundingPath $dossierPath -SourceRepository $temp 2>&1
     Assert-True ($LASTEXITCODE -ne 0 -and "$output" -match 'IDs must match') 'Review bodies cannot bypass grounding.'

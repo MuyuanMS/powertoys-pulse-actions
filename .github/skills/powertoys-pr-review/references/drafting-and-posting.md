@@ -233,6 +233,13 @@ observation unless those changes are independently actionable.
 
 Store author-facing text only in `publicPayload`. Store fork links, worktrees, build evidence, internal thread URLs, and convergence notes only in `internalEvidence`. Never concatenate internal evidence into a public body.
 
+Do not create a standalone `post_review` action for a qualified assessment,
+validation-scope report, or no-change summary. With no actionable finding and
+incomplete clean-review evidence, retain the assessment privately and return
+neutral pending metadata, not an approval or an author wait. A standalone
+code finding must use the five companion sections above with concrete change
+steps; `review.body_prefix` is not an escape hatch for operational prose.
+
 Before presenting the dashboard, run:
 
 ```powershell

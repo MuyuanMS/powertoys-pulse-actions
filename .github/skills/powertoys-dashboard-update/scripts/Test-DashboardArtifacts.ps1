@@ -13,6 +13,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'PublicPrArtifact.ps1')
 $Dashboard = (Resolve-Path $Dashboard).Path
 $itemsPath = Join-Path $Dashboard 'data\items'
 if (-not (Test-Path $itemsPath)) {
@@ -161,6 +162,9 @@ foreach ($path in @($paths)) {
   Require-Date $artifact.evaluated_at 'evaluated_at' $prefix
   Require-Date $artifact.source_updated_at 'source_updated_at' $prefix
   if ($artifact.kind -eq 'pr') {
+    foreach ($reason in @(Get-PublicPrReviewContentErrors $artifact)) {
+      $errors.Add($reason)
+    }
     foreach ($field in @('blockers', 'workflow', 'summary', 'status', 'next_action', 'fork_pr', 'fork_branch', 'fork_issue')) {
       if ($artifact.PSObject.Properties[$field]) {
         $errors.Add("$prefix contains private PR operator field '$field'; run Sanitize-ActionData.ps1 before publication")

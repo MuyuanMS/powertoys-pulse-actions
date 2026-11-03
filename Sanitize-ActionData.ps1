@@ -24,18 +24,6 @@ $blockedProperties = @(
   'evidenceDirectory'
 )
 
-function Test-ActionableCompanionBody {
-  param([string]$Body)
-
-  foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
-    if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
-      return $false
-    }
-  }
-  return $Body -match '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*' -and
-    $Body -match '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)'
-}
-
 function Convert-PublicValue {
   param($Value)
 
@@ -123,6 +111,9 @@ function Get-PublicActions {
       $_.type -in @('post_review', 'request_changes')
     })
     $invalidReviewReasons = [System.Collections.Generic.List[string]]::new()
+    foreach ($reason in @(Get-PublicPrReviewContentErrors $Artifact)) {
+      $invalidReviewReasons.Add($reason)
+    }
     if ($Artifact.stage -eq 'review_ready' -and
         ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
       $invalidReviewReasons.Add("PR $($Artifact.number) stage review_ready cannot contain proposed comments or review actions")
@@ -222,16 +213,19 @@ function Get-PublicActions {
       }
     }
     if ($invalidReviewReasons.Count -gt 0) {
+      Save-PrivatePrArtifact $Artifact $dashboardRoot $PrivateStatePath
       foreach ($reason in $invalidReviewReasons) {
         Write-Warning $reason
       }
       $actions = @($actions | Where-Object {
-        $_.type -notin @('post_review', 'request_changes')
+        $_.type -notin @('post_review', 'request_changes', 'approve', 'merge_pr')
       })
       $Artifact.proposed_comments = @($Artifact.proposed_comments | Where-Object {
         [string]$_.disposition -in @('posted', 'withdrawn')
       })
       $Artifact.stage = 'review_in_progress'
+      if ($Artifact.PSObject.Properties['owes']) { $Artifact.owes = 'us' }
+      if ($Artifact.PSObject.Properties['pending_author']) { $Artifact.pending_author = $false }
       if ($Artifact.PSObject.Properties['needs_revalidation']) {
         $Artifact.needs_revalidation = $true
       } else {
@@ -311,6 +305,8 @@ if ($downgradedPrs.Count -gt 0 -or $proposedCommentCounts.Count -gt 0) {
       }
       if ($downgradedPrs.Contains($number)) {
         $row.stage = 'review_in_progress'
+        if ($row.PSObject.Properties['owes']) { $row.owes = 'us' }
+        if ($row.PSObject.Properties['pending_author']) { $row.pending_author = $false }
         if ($row.PSObject.Properties['needs_revalidation']) {
           $row.needs_revalidation = $true
         } else {

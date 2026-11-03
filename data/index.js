@@ -2212,7 +2212,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2220,10 +2220,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Keyboard Manager",
         "Ready for review"
@@ -2235,7 +2232,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51789",
@@ -2250,7 +2248,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2258,10 +2256,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -2273,7 +2268,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51787",
@@ -2288,7 +2284,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2296,10 +2292,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -2311,7 +2304,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51786",
@@ -2923,7 +2917,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2931,10 +2925,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "CmdPal - All Apps",
@@ -2949,7 +2940,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": null,
       "ci_state": null,
-      "merge_state": "CLEAN"
+      "merge_state": "CLEAN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51760",
@@ -2964,7 +2956,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2972,10 +2964,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "CmdPal - All Apps",
@@ -2990,7 +2979,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51756",
@@ -3151,7 +3141,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3159,10 +3149,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Utilities",
         "Product-Mouse Jump",
@@ -3175,7 +3162,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51705",
@@ -3190,7 +3178,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3198,10 +3186,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified source assessment"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -3213,7 +3198,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51695",
@@ -3414,7 +3400,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3422,10 +3408,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3437,7 +3420,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": null,
       "ci_state": null,
-      "merge_state": "CLEAN"
+      "merge_state": "CLEAN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51672",
@@ -3452,7 +3436,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3460,10 +3444,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Product-General",
@@ -3476,7 +3457,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51671",
@@ -3562,7 +3544,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3570,10 +3552,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
@@ -3584,7 +3563,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51654",
@@ -3599,7 +3579,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3607,10 +3587,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Post qualified assessment summary",
-        "type": "post_review"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Shortcut Guide",
         "Product-Image Resizer",
@@ -3628,7 +3605,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51649",
@@ -3681,7 +3659,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3689,10 +3667,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -3704,7 +3679,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51647",
@@ -3719,7 +3695,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3727,10 +3703,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -3742,7 +3715,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51646",
@@ -3757,7 +3731,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3765,10 +3739,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -3780,7 +3751,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51645",
@@ -3795,7 +3767,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3803,10 +3775,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Post qualified assessment summary",
-        "type": "post_review"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Product-Keyboard Manager",
@@ -3819,7 +3788,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN"
+      "merge_state": "CLEAN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51643",
@@ -3868,7 +3838,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3876,10 +3846,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3893,7 +3860,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51627",
@@ -3908,7 +3876,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3916,10 +3884,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3931,7 +3896,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51625",
@@ -3984,7 +3950,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": null,
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3992,10 +3958,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Post qualified assessment summary",
-        "type": "post_review"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-PowerToys Run",
@@ -4021,7 +3984,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51602",
@@ -4074,7 +4038,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4082,10 +4046,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4099,7 +4060,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51579",
@@ -4188,7 +4150,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4196,10 +4158,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Utilities",
         "Product-Mouse Pointer Crosshairs",
@@ -4212,7 +4171,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51539",
@@ -4295,7 +4255,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4303,10 +4263,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4320,7 +4277,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51501",
@@ -4406,7 +4364,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_author",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5084,7 +5042,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5092,10 +5050,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "label": "Post qualified assessment summary",
-        "type": "post_review"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Shortcut Guide",
         "Product-PowerToys Run",
@@ -5131,7 +5086,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNSTABLE"
+      "merge_state": "UNSTABLE",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51321",
@@ -5290,7 +5246,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5298,10 +5254,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-General",
         "Ready for review"
@@ -5315,7 +5268,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51222",
@@ -5368,7 +5322,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5376,10 +5330,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -5391,7 +5342,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51220",
@@ -5825,7 +5777,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5833,10 +5785,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (no code changes requested)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -5850,7 +5799,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51198",
@@ -6225,7 +6175,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6233,10 +6183,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -6248,7 +6195,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51109",
@@ -6485,7 +6433,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6493,10 +6441,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-PowerDisplay",
         "Ready for review"
@@ -6508,7 +6453,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-51051",
@@ -6706,7 +6652,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6714,10 +6660,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6731,7 +6674,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-50968",
@@ -7043,7 +6987,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_author",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -7316,7 +7260,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -7324,10 +7268,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (general comment)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -7339,7 +7280,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-50739",
@@ -7354,7 +7296,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -7362,10 +7304,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary (general comment)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -7377,7 +7316,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "UNKNOWN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-50730",

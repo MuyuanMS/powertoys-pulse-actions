@@ -1,3 +1,37 @@
+function Test-ActionableCompanionBody {
+    param([string]$Body)
+
+    foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
+        if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) { return $false }
+    }
+    return $Body -match '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*' -and
+        $Body -match '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)'
+}
+
+function Get-PublicPrReviewContentErrors {
+    param($Artifact)
+
+    if ($Artifact.kind -ne 'pr') { return }
+    $comments = @($Artifact.proposed_comments | Where-Object {
+        $_ -and [string]$_.disposition -notin @('posted', 'withdrawn')
+    })
+    $operatorPattern = '(?i)dashboard maintainer|coordinator (?:approval|permission|toolchain)|(?:cloud|copilot|review) (?:request|iteration)[ -](?:cap|limit)|(?:exclusive|shared) build slot|resume (?:the )?(?:worker|drain)|permission packet|install (?:the |a )?(?:missing )?(?:compiler|toolchain)'
+    foreach ($comment in $comments) {
+        if ("$($comment.title) $($comment.body)" -match $operatorPattern) {
+            "PR $($Artifact.number) comment $($comment.id) contains operator-facing instructions"
+        }
+    }
+    foreach ($action in @($Artifact.actions | Where-Object { $_.type -in @('post_review', 'request_changes') })) {
+        if ("$($action.label) $($action.note) $($action.review.body_prefix)" -match $operatorPattern) {
+            "PR $($Artifact.number) review action $($action.id) contains operator-facing instructions"
+        }
+        if ($comments.Count -eq 0 -and
+            -not (Test-ActionableCompanionBody ([string]$action.review.body_prefix))) {
+            "PR $($Artifact.number) review action $($action.id) has no actionable author-facing finding"
+        }
+    }
+}
+
 function Get-PrivatePrStatePath {
     param([string]$Dashboard, [string]$PrivateStatePath)
 
