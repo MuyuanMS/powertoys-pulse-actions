@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 218,
     "open_issues": 11117,
     "community": 10233,
-    "artifacts": 1412
+    "artifacts": 1483
   },
   "impact": {
     "as_of": "2026-11-04T06:19:46.8819813+08:00",
@@ -5768,7 +5768,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 6,
+      "proposed_open": 5,
       "primary_action": {
         "type": "post_review",
         "label": "Post 6 inline suggestions"
