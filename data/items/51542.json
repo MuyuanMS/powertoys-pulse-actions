@@ -1,57 +1,108 @@
 {
-  "source_updated_at": "2026-10-29T16:09:00Z",
-  "judgment": {
-    "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
-    "evidence": [
-      "Earlier evidence isolates elevated Task Manager/PowerShell while PowerToys runs non-elevated, with a diagnostic archive already supplied.",
-      "A new report adds Windows Services and recovery after pressing the Windows key.",
-      "Another report describes a UAC-prompt occurrence even with inactivity hiding disabled; this is not the same proved trigger as the original report.",
-      "PR 51547 remains open and draft on the retained revision; it is not a shipped fix.",
-      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
-      "Read both new replies, rechecked PR 51547 lifecycle/head, and retained the prior hook/timer observation assessment. The draft's documented supervised checks do not prove the new secure-desktop case."
-    ],
-    "recommended_action": "Consolidate the new evidence with the linked existing work; no competing implementation or shipped-fix claim.",
-    "status": "duplicate_or_handled",
-    "rationale": "Route the elevated-window evidence to the current draft owner. Preserve the UAC/disabled-setting report as an additional acceptance boundary rather than a confirmed identical root cause or independent full validation. Do not repeat the already supplied diagnostics request or start competing work.",
-    "source_updated_at": "2026-10-29T16:09:00Z"
-  },
-  "stage": "triaged",
-  "number": 51542,
-  "track": "triage",
-  "schemaVersion": 5,
-  "generated_at": "2026-10-30T03:54:32.2816919+08:00",
-  "owes": "us",
-  "evaluated_at": "2026-10-30T03:54:32.2816919+08:00",
-  "title": "Bug with CursorHide",
+  "actions": [
+    {
+      "reproduce": {
+        "prerequisites": [
+          "Controlled Windows interactive desktop.",
+          "Record CursorHide hide-after-inactivity setting and start PowerToys non-elevated."
+        ],
+        "version": "0.102.3001",
+        "module": "CursorHide",
+        "expected": "Pointer visibility restores on activity across privilege boundaries; disabling/exiting never strands the system cursor.",
+        "steps": [
+          "Enable hide-after-inactivity and verify restoration over a normal application.",
+          "Open elevated Task Manager, wait past the hide delay and move/click; repeat with always-on-top off and on.",
+          "Switch to elevated CMD and move/click, then a normal app. Record visible cursor separately from working input.",
+          "Repeat with elevated PowerToys as a control, then disable CursorHide and verify cleanup."
+        ]
+      },
+      "label": "Reproduce elevated-window cursor visibility",
+      "id": "issue-51542-reproduce-1",
+      "type": "reproduce",
+      "primary": true
+    },
+    {
+      "label": "Investigate CursorHide restore path",
+      "id": "issue-51542-approve_design-1",
+      "type": "approve_design",
+      "primary": false
+    }
+  ],
+  "generated_at": "2026-11-04T06:17:25.8372961+08:00",
   "url": "https://github.com/microsoft/PowerToys/issues/51542",
-  "actions": [],
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-04T06:17:25.8372961+08:00",
   "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "Route the elevated-window evidence to the current draft owner. Preserve the UAC/disabled-setting report as an additional acceptance boundary rather than a confirmed identical root cause or independent full validation. Do not repeat the already supplied diagnostics request or start competing work.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/51547"
-    ]
+    "rationale": "A real reproducible visibility failure warrants focused investigation; the specific hook/state/restore mechanism is not yet demonstrated.",
+    "status": "proposed"
   },
   "issue_context": {
-    "analysis": "Route the elevated-window evidence to the current draft owner. Preserve the UAC/disabled-setting report as an additional acceptance boundary rather than a confirmed identical root cause or independent full validation. Do not repeat the already supplied diagnostics request or start competing work.",
     "known_information": [
-      "Earlier evidence isolates elevated Task Manager/PowerShell while PowerToys runs non-elevated, with a diagnostic archive already supplied.",
-      "A new report adds Windows Services and recovery after pressing the Windows key.",
-      "Another report describes a UAC-prompt occurrence even with inactivity hiding disabled; this is not the same proved trigger as the original report.",
-      "PR 51547 remains open and draft on the retained revision; it is not a shipped fix."
+      "Original report supplies0.102.2933, non-elevated operation, a diagnostic ZIP and a Task Manager reproduction.",
+      "A0.102.3001participant confirms elevated Task Manager/PowerShell loses visible cursor, normal-window activation restores it, and elevated PowerToys does not reproduce.",
+      "Other replies report Services, UAC, and latest elevated CMD;51752 adds that always-on-top is not required and pointer input itself remains operational.",
+      "Current AutoHideCursorWorker routes low-level mouse activity into State.OnMouseInput and restores via the cursor hider. Source inspection does not prove which stage fails on the reported release."
     ],
-    "information_gaps": [],
+    "summary": "The thread supplies a concrete privilege-dependent cursor visibility matrix; maintainer reproduction is more useful than another reporter archive.",
     "initial_investigation": [
-      "Read the report, all current comments, labels, assignees and linked-work timeline; checked for existing coverage before proposing work.",
-      "Read both new replies, rechecked PR 51547 lifecycle/head, and retained the prior hook/timer observation assessment. The draft's documented supervised checks do not prove the new secure-desktop case."
+      "Read every supplied reply and related51752evidence, including the new elevated-CMD report.",
+      "Inspected current AutoHideCursorWorker MouseHookProc/OnMouseInput and QueueAction/Restore flow; this is source-based investigation, not executed reproduction or a certified release fix."
     ],
     "inferences": [
-      "The Services report is consistent with the existing elevated-window recovery case. Secure-desktop/UAC and disabled-setting behavior may be a separate path and must not be declared fixed by the draft."
+      "Privilege-sensitive delivery/restoration is a testable hypothesis; always-on-top is not a sufficient explanation."
     ],
-    "summary": "CursorHide recovery over elevated windows has an existing draft; new secure-desktop reports broaden the validation scope."
+    "analysis": "The supplied evidence already distinguishes visibility from input failure and supplies the key privilege contrast. Reproduce in a controlled desktop while recording whether activity arrives and restoration succeeds; do not prescribe permanent elevation or replace system cursors based on an unproven mechanism.",
+    "information_gaps": []
   },
-  "kind": "issue",
   "pending_author": false,
-  "proposed_fixes": [],
-  "repository": "microsoft/PowerToys"
+  "schemaVersion": 5,
+  "judgment": {
+    "evidence": [
+      "Original report supplies0.102.2933, non-elevated operation, a diagnostic ZIP and a Task Manager reproduction.",
+      "A0.102.3001participant confirms elevated Task Manager/PowerShell loses visible cursor, normal-window activation restores it, and elevated PowerToys does not reproduce.",
+      "Other replies report Services, UAC, and latest elevated CMD;51752 adds that always-on-top is not required and pointer input itself remains operational.",
+      "Current AutoHideCursorWorker routes low-level mouse activity into State.OnMouseInput and restores via the cursor hider. Source inspection does not prove which stage fails on the reported release."
+    ],
+    "status": "reproducible",
+    "rationale": "The supplied evidence already distinguishes visibility from input failure and supplies the key privilege contrast. Reproduce in a controlled desktop while recording whether activity arrives and restoration succeeds; do not prescribe permanent elevation or replace system cursors based on an unproven mechanism.",
+    "source_updated_at": "2026-11-03T11:18:19Z",
+    "recommended_action": "Run the supplied normal/elevated matrix and distinguish activity observation from cursor restoration before designing a patch.",
+    "evaluated_at": "2026-11-04T06:17:25.8372961+08:00"
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "level": "red",
+        "score": 45,
+        "rationale": "Multiple concrete reports and a privilege control support reproduction, but no instrumented run identifies the failing stage."
+      },
+      "verification": [
+        "Non-elevated PowerToys with normal versus elevated foreground apps, and elevated PowerToys control.",
+        "After hide delay, mouse movement restores visible cursor while input remains functional; switching between two elevated apps must not strand it.",
+        "Disable CursorHide and exit PowerToys to verify restoration; do not alter secure-desktop policy."
+      ],
+      "root_cause": "Hypothesis: elevated foreground interaction interrupts activity observation or cursor restoration while the worker remains non-elevated. The exact failing stage is not established by the current reports.",
+      "title": "Isolate privilege-dependent CursorHide restore failure",
+      "plan": [
+        "Reproduce the supplied privilege matrix with Task Manager always-on-top both off and on, then repeat elevated CMD.",
+        "In a maintainer test build, record activity delivery, State action and cursor-restore result at the transition; keep hot-path instrumentation test-only.",
+        "Repair only the demonstrated observation/state/restore failure and add a focused regression without requiring permanent elevation."
+      ]
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-CursorHide"
+  ],
+  "assignees": [
+    null
+  ],
+  "comments": 4,
+  "owes": "maintainer",
+  "source_updated_at": "2026-11-03T11:18:19Z",
+  "title": "Bug with CursorHide",
+  "number": 51542,
+  "track": "triage"
 }

@@ -1,0 +1,97 @@
+{
+  "actions": [
+    {
+      "label": "Request all-modules-off control",
+      "id": "issue-51882-request_info-1",
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for the clear result that exiting PowerToys restores input. The supplied details do not yet identify a module, and a temporary change after toggling one is not enough to assign ownership. Could you turn off every module in Settings, exit PowerToys completely, reopen it with the modules still disabled, and report whether the same key sequence still fails in the same editor? No new ZIP or raw logs are needed for this single control."
+      },
+      "primary": true
+    },
+    {
+      "label": "Investigate isolated input owner",
+      "id": "issue-51882-approve_design-1",
+      "type": "approve_design",
+      "primary": false
+    }
+  ],
+  "generated_at": "2026-11-04T06:17:25.8372961+08:00",
+  "url": "https://github.com/microsoft/PowerToys/issues/51882",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-04T06:17:25.8372961+08:00",
+  "fix_assessment": {
+    "rationale": "A product-linked input regression is applicable to investigation; the consuming module and mechanism must be established before a code fix.",
+    "status": "proposed"
+  },
+  "issue_context": {
+    "known_information": [
+      "Reporter gives0.102.3001, Windows11 26H2, German language, exact SHIFT+backtick then SPACE sequence and output0x20.",
+      "Exiting PowerToys reliably restores behavior. Temporarily disabling Advanced Paste or FancyZones does not remain effective; no isolated module is established."
+    ],
+    "summary": "German dead-key sequence SHIFT+backtick then SPACE yields a space instead of backtick; isolate whether the failure survives a fresh run with all modules disabled before attributing a hook.",
+    "initial_investigation": [
+      "Read complete report and empty discussion/timeline cross-references; retained all supplied environment and sequence details.",
+      "Inspected current PowerAccent KeyboardListener.LowLevelKeyboardProc: OnKeyDown/OnKeyUp can consume input, otherwise CallNextHookEx is used. This only motivates isolation and is not proof of responsibility."
+    ],
+    "inferences": [
+      "The two German-layout reports may be related, but distinct missing-character/dead-key symptoms and no common isolated owner are insufficient to declare duplicates."
+    ],
+    "analysis": "The PowerToys on/off contrast is useful, but disabling one module temporarily does not identify a stable owner. Current Quick Accent has a low-level keyboard hook that can consume key-down/up decisions, making module isolation a useful discriminator, not proof that Quick Accent is responsible.",
+    "information_gaps": [
+      {
+        "how_to_collect": "Turn off every module in PowerToys Settings, exit PowerToys completely, reopen it with modules still disabled, and try the same key sequence in the same editor. Report only whether the original failure remains.",
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same input still fails after a fresh PowerToys restart with every module disabled",
+        "why_needed": "This distinguishes a module-specific interception path from process-wide or non-module behavior before choosing code to investigate."
+      }
+    ]
+  },
+  "pending_author": false,
+  "schemaVersion": 5,
+  "judgment": {
+    "evidence": [
+      "Reporter gives0.102.3001, Windows11 26H2, German language, exact SHIFT+backtick then SPACE sequence and output0x20.",
+      "Exiting PowerToys reliably restores behavior. Temporarily disabling Advanced Paste or FancyZones does not remain effective; no isolated module is established."
+    ],
+    "status": "needs_information",
+    "rationale": "The PowerToys on/off contrast is useful, but disabling one module temporarily does not identify a stable owner. Current Quick Accent has a low-level keyboard hook that can consume key-down/up decisions, making module isolation a useful discriminator, not proof that Quick Accent is responsible.",
+    "source_updated_at": "2026-11-03T13:35:41Z",
+    "recommended_action": "Ask only for the all-modules-disabled restart control; do not ask for raw logs, blame FancyZones from a transient toggle, or merge distinct key symptoms.",
+    "evaluated_at": "2026-11-04T06:17:25.8372961+08:00"
+  },
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "level": "red",
+        "score": 35,
+        "rationale": "Reporter establishes a PowerToys process contrast, but no stable module isolation or hook trace establishes root cause."
+      },
+      "verification": [
+        "Same editor, layout and key sequence across PowerToys stopped, running/all-modules-off, and minimal owner-on controls.",
+        "Verify both ordinary character entry and modifier/dead-key pass-through without disabling unrelated product behavior."
+      ],
+      "root_cause": "Unverified hypothesis: an enabled module consumes part of the keyboard/dead-key sequence. The existing on/off contrast does not identify a specific module or prove a shared cause with other German-layout reports.",
+      "title": "Isolate the PowerToys input interception owner",
+      "plan": [
+        "Compare the same sequence in the same editor with all PowerToys modules disabled after a fresh restart.",
+        "If that control passes, enable one input-affecting module at a time and allow the failure interval to elapse; identify the minimal enabled module/settings combination.",
+        "Trace only the confirmed owner input pass-through path and add a regression for the exact layout/sequence."
+      ]
+    }
+  ],
+  "kind": "issue",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [
+    null
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "source_updated_at": "2026-11-03T13:35:41Z",
+  "title": "PowerToys interferes with German keyboard dead key (backtick produces space)",
+  "number": 51882,
+  "track": "triage"
+}

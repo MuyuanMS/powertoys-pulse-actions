@@ -1,33 +1,106 @@
 {
-  "number": 9119,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T01:44:53Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "number": 9119,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Define remaining non-finite calculator conversion behavior",
+      "plan": [
+        "Add a current evaluator matrix for historical expressions, positive/negative infinity-producing inputs and finite decimal overflow.",
+        "If infinity reaches conversion, handle it through an explicit localized result/error contract before conversion; preserve valid decimal arithmetic.",
+        "Keep finite overflow and unsupported complex results distinct rather than using a broad catch or fabricated numeric value."
+      ],
+      "verification": [
+        "Historical log(-1)/arcsin(2), NaN, both infinity signs, finite overflow and ordinary arithmetic.",
+        "No unhandled conversion failure or silent empty result for supported diagnostics; valid decimal precision/rounding stays unchanged.",
+        "Verify localized messages and culture-sensitive entry separately from numeric result classification."
+      ],
+      "root_cause": "Hypothesis: evaluator infinity results still reach decimal conversion because TransformResult special-cases NaN/Complex but not infinity. Historical sample expressions may now use different handled result types.",
+      "confidence": {
+        "score": 68,
+        "rationale": "Current source proves partial supersession and the remaining conversion boundary; exact current evaluator outputs and final infinity UX need focused execution.",
+        "level": "yellow"
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Priority-3",
+    "Run-Plugin"
+  ],
+  "schemaVersion": 5,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original0.29.3report supplies log(-1),arcsin(2), expected non-finite diagnostics and a Convert.ToDecimal explanation. There are no later replies.",
+      "Current calculator TransformResult handles NaN and Complex results before conversion, and Interpret returns localized string errors instead of attempting decimal conversion for those results.",
+      "Other numeric values still flow into Convert.ToDecimal, whose decimal domain cannot represent positive/negative infinity. Current evaluator outputs for the historical expressions were not independently executed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T01:44:53Z"
-  }
+    "recommended_action": "Test current NaN/complex/infinity/finite-overflow behavior separately, then decide localized diagnostic semantics without broadening the decimal result contract blindly.",
+    "rationale": "Do not repeat the historical assertion that all NaN/complex inputs still reach decimal conversion: current source contradicts it. The remaining non-finite/overflow boundary is specific enough for a maintainer test matrix, but product behavior and desired infinity presentation are not yet established.",
+    "status": "reproducible",
+    "source_updated_at": "2024-10-25T01:44:53Z",
+    "evaluated_at": "2026-11-04T06:21:35.8256898+08:00"
+  },
+  "stage": "triage_revalidated",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An unguarded non-finite-to-decimal boundary remains applicable; historical NaN behavior is already handled in current source."
+  },
+  "comments": 0,
+  "actions": [
+    {
+      "label": "Run current non-finite calculator matrix",
+      "id": "issue-9119-reproduce-1",
+      "reproduce": {
+        "steps": [
+          "Evaluate the supplied log(-1) and arcsin(2) and record actual result/error type.",
+          "Exercise current evaluator inputs that yield positive/negative infinity and a separate finite decimal overflow.",
+          "Compare ordinary arithmetic and rounding controls; distinguish visible localized error from an empty result."
+        ],
+        "prerequisites": [
+          "Record calculator angle mode and input culture.",
+          "Use current Calculator unit tests or an interactive current build."
+        ],
+        "module": "PowerToys Run / Calculator",
+        "version": "Current build",
+        "expected": "Unsupported numeric domains produce intentional localized diagnostics without unhandled decimal conversion, while valid decimal behavior remains unchanged."
+      },
+      "primary": true,
+      "type": "reproduce"
+    },
+    {
+      "label": "Investigate non-finite conversion contract",
+      "id": "issue-9119-approve_design-1",
+      "primary": false,
+      "type": "approve_design"
+    }
+  ],
+  "title": "[Run][Calculator Plugin] Infinity, -Infinity and NaN are not supported",
+  "generated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "evaluated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "pending_author": false,
+  "issue_context": {
+    "analysis": "Do not repeat the historical assertion that all NaN/complex inputs still reach decimal conversion: current source contradicts it. The remaining non-finite/overflow boundary is specific enough for a maintainer test matrix, but product behavior and desired infinity presentation are not yet established.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read complete historical report and linked source explanation; no later reporter evidence exists.",
+      "Read current CalculateEngine.Interpret and TransformResult, including localized string errors, Complex/NaN handling and final decimal conversion. No old version was executed or current evaluator result invented."
+    ],
+    "summary": "Historical NaN claim is partly superseded by current handling; infinity still lacks a separate guard before decimal conversion and needs a current evaluator matrix.",
+    "known_information": [
+      "Original0.29.3report supplies log(-1),arcsin(2), expected non-finite diagnostics and a Convert.ToDecimal explanation. There are no later replies.",
+      "Current calculator TransformResult handles NaN and Complex results before conversion, and Interpret returns localized string errors instead of attempting decimal conversion for those results.",
+      "Other numeric values still flow into Convert.ToDecimal, whose decimal domain cannot represent positive/negative infinity. Current evaluator outputs for the historical expressions were not independently executed."
+    ],
+    "inferences": [
+      "A true infinity reaching conversion cannot be represented as decimal, but whether a particular expression currently returns infinity, Complex or another error must be measured."
+    ]
+  },
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/9119",
+  "source_updated_at": "2024-10-25T01:44:53Z"
 }

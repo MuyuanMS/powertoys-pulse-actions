@@ -1,33 +1,109 @@
 {
-  "number": 7699,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-28T16:20:05Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "number": 7699,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Keep Color Picker magnifier inside the target display",
+      "plan": [
+        "Define whether magnifier containment uses full display bounds or work area and retain physical-pixel coordinates.",
+        "Clamp the desired rectangle before the existing target-display placement helper; handle displays smaller than the desired window without negative clamp bounds.",
+        "Preserve captured center/selected pixel and verify capture padding separately instead of changing the shared helper for all callers."
+      ],
+      "verification": [
+        "All four edges/corners at100%,150%,200% scaling, including negative monitor coordinates and mixed-DPI transitions.",
+        "Window bounds remain inside the chosen target bounds and the selected color/sample is unchanged.",
+        "Repeat zoom-in/out and reopen sessions; check taskbar overlap contract and small-display behavior."
+      ],
+      "root_cause": "The final zoom rectangle is centered on the cursor without a display-bound clamp, so edge/corner positions place part of the window off-screen.",
+      "confidence": {
+        "score": 80,
+        "rationale": "The unbounded current rectangle and non-clamping callee are direct evidence; interactive sample anchoring and DPI regressions remain unexecuted.",
+        "level": "yellow"
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Repro",
+    "Priority-2",
+    "Product-Color Picker",
+    "Planning-Consideration"
+  ],
+  "schemaVersion": 5,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original report supplies an edge/scroll reproduction and screenshot; maintainer independently confirmed clipped content.",
+      "The discussion distinguishes off-screen magnifier placement from black capture padding and confirms persistence after a later needinfo request.",
+      "Current ZoomWindowHelper.ShowZoomedImage computes left/top as cursor minus half the physical window size and passes that rectangle to FlyoutWindowHelper.MoveAndResizeOnDisplay.",
+      "The shared helper performs target-display DPI teleport and uses the final rectangle unchanged; it does not clamp its edges. No interactive mixed-DPI run was performed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-28T16:20:05Z"
-  }
+    "recommended_action": "Reproduce current edge/corner placement, then design a monitor-bound clamp that preserves the selected pixel and existing DPI transition behavior.",
+    "rationale": "A cursor at a display edge yields an off-display rectangle by inspection, and the final helper does not repair it. Placement and capture padding are distinct: moving the window alone must not silently change the sampled pixel or claim to fix pixels outside the source display.",
+    "status": "reproducible",
+    "source_updated_at": "2024-10-28T16:20:05Z",
+    "evaluated_at": "2026-11-04T06:21:35.8256898+08:00"
+  },
+  "stage": "triage_revalidated",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current placement/callee flow supports a bounded fix direction; cursor/sample anchoring and mixed-DPI behavior still require UI verification."
+  },
+  "comments": 7,
+  "actions": [
+    {
+      "label": "Check magnifier edge containment",
+      "id": "issue-7699-reproduce-1",
+      "reproduce": {
+        "steps": [
+          "Start Color Picker at each display edge and corner, then scroll to zoom.",
+          "Record magnifier bounds, selected pixel/color and whether content or only capture padding is off-screen.",
+          "Repeat after crossing to a differently scaled monitor and after closing/reopening zoom."
+        ],
+        "prerequisites": [
+          "Interactive desktop with known monitor bounds/scaling.",
+          "Prefer a second monitor with a different scale and negative desktop coordinates."
+        ],
+        "module": "Color Picker",
+        "version": "Current build",
+        "expected": "The magnifier remains visible within the selected display bounds while the sampled pixel and zoom behavior remain correct."
+      },
+      "primary": true,
+      "type": "reproduce"
+    },
+    {
+      "label": "Design bounded magnifier placement",
+      "id": "issue-7699-approve_design-1",
+      "primary": false,
+      "type": "approve_design"
+    }
+  ],
+  "title": "[Color Picker] if you scroll in on the edge of the display, half of the pixel window is not visible.",
+  "generated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "evaluated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "pending_author": false,
+  "issue_context": {
+    "analysis": "A cursor at a display edge yields an off-display rectangle by inspection, and the final helper does not repair it. Placement and capture padding are distinct: moving the window alone must not silently change the sampled pixel or claim to fix pixels outside the source display.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read full original report, all replies and maintainer evidence; no repeat generic needinfo request.",
+      "Traced current ZoomWindowHelper placement into shared FlyoutWindowHelper.MoveAndResizeOnDisplay. Separated window placement from off-display image capture padding."
+    ],
+    "summary": "Current magnifier still centers a fixed-size physical rectangle on an edge cursor without final placement clamping; old reporter confirmation is already present.",
+    "known_information": [
+      "Original report supplies an edge/scroll reproduction and screenshot; maintainer independently confirmed clipped content.",
+      "The discussion distinguishes off-screen magnifier placement from black capture padding and confirms persistence after a later needinfo request.",
+      "Current ZoomWindowHelper.ShowZoomedImage computes left/top as cursor minus half the physical window size and passes that rectangle to FlyoutWindowHelper.MoveAndResizeOnDisplay.",
+      "The shared helper performs target-display DPI teleport and uses the final rectangle unchanged; it does not clamp its edges. No interactive mixed-DPI run was performed."
+    ],
+    "inferences": [
+      "The current geometry reproduces off-display placement mathematically; physical monitor/UI behavior has not been independently executed."
+    ]
+  },
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/7699",
+  "source_updated_at": "2024-10-28T16:20:05Z"
 }

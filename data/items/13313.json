@@ -1,33 +1,108 @@
 {
-  "number": 13313,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T12:41:13Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "triage",
+  "number": 13313,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Resolve extensionless batch commands using executable-extension semantics",
+      "plan": [
+        "Add controlled tests for the existing Find-and-run branch with batch names, arguments, whitespace and explicit extensions.",
+        "Resolve executable extensions consistently with Windows/PATHEXT expectations without changing explicit paths, quoting, RunAs or shell-selection behavior.",
+        "Keep the command/argument boundary intact and retain existing executable and leave-shell-open behavior."
+      ],
+      "verification": [
+        "Inert fixture lookup: extensionless .bat/.cmd, explicit .bat, extensionless .exe, absent name and quoted/path-with-space cases.",
+        "Controlled harmless batch writes received arguments into a test-owned file; compare extensionless/explicit forms with and without args in Find-and-run and pwsh modes.",
+        "No reporter eject/sync command or arbitrary PATH program is executed."
+      ],
+      "root_cause": "ExistInPath checks only the literal name and .exe, so an extensionless PATH batch file is routed differently from its explicit .bat form when arguments are present.",
+      "confidence": {
+        "score": 82,
+        "rationale": "Exact source compilation proves the lookup gap; full invocation/quoting behavior and desired PATHEXT contract still need maintainer regression execution.",
+        "level": "yellow"
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Priority-2",
+    "Run-Plugin"
+  ],
+  "schemaVersion": 5,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original report gives the precise matrix: extensionless batch plus arguments fails, explicit .bat or no arguments works.",
+      "Latest reply confirms the issue and narrows it to Find and run the executable file; pwsh execution works. The requested author confirmation has been answered.",
+      "Current Shell.Main.ExistInPath probes filename and filename+.exe in PATH, not the configured executable extensions.",
+      "Compiled the exact current ExistInPath method and tested a private PATH containing inert fixtures: extensionless batch=false, explicit batch=true, extensionless executable=true. No batch or executable was launched."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T12:41:13Z"
-  }
+    "recommended_action": "Investigate executable-extension-aware lookup and add the supplied mode/argument matrix; do not request the already answered confirmation or execute the reporter drive-ejection script.",
+    "rationale": "The current method reproduces the lookup discriminator. This supports a focused lookup fix, not a broad shell-command rewrite. Full invocation, quoting and argument preservation still need controlled regression tests before claiming the complete user scenario repaired.",
+    "status": "reproducible",
+    "source_updated_at": "2024-10-25T12:41:13Z",
+    "evaluated_at": "2026-11-04T06:21:35.8256898+08:00"
+  },
+  "stage": "triage_revalidated",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Exact current lookup proof and execution-mode evidence support a localized proposal; full command execution remains to validate."
+  },
+  "comments": 5,
+  "actions": [
+    {
+      "label": "Validate extensionless batch invocation",
+      "id": "issue-13313-reproduce-1",
+      "reproduce": {
+        "steps": [
+          "Choose Find and run the executable file and invoke >probe arg1, then >probe.bat arg1.",
+          "Repeat both names without arguments, then repeat in pwsh execution mode.",
+          "Verify exact received arguments and compare a normal executable control."
+        ],
+        "prerequisites": [
+          "Test-owned PATH directory with a harmless batch that records only its arguments.",
+          "Record Shell command-execution and leave-shell-open settings."
+        ],
+        "module": "PowerToys Run / Shell plugin",
+        "version": "Current build and reported0.85.1control",
+        "expected": "Extensionless batch lookup respects supported executable-extension semantics, arguments remain intact, and no unrelated command is selected."
+      },
+      "primary": true,
+      "type": "reproduce"
+    },
+    {
+      "label": "Design executable-extension lookup fix",
+      "id": "issue-13313-approve_design-1",
+      "primary": false,
+      "type": "approve_design"
+    }
+  ],
+  "title": "[PowerToys Run] Shell execution of batch files with args fails",
+  "generated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "evaluated_at": "2026-11-04T06:21:35.8256898+08:00",
+  "pending_author": false,
+  "issue_context": {
+    "analysis": "The current method reproduces the lookup discriminator. This supports a focused lookup fix, not a broad shell-command rewrite. Full invocation, quoting and argument preservation still need controlled regression tests before claiming the complete user scenario repaired.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read complete issue and every reply; the latest author already answered needinfo and supplied the distinguishing execution mode.",
+      "Read current Shell.Main command splitting/ExistInPath branch and compiled the actual lookup method in an isolated fixture. Temporary PATH was restored and inert fixtures removed; no shell payload was run."
+    ],
+    "summary": "Current exact PATH lookup still recognizes explicit .bat and extensionless .exe but not extensionless .bat; reporter already supplied the decisive execution-mode contrast.",
+    "known_information": [
+      "Original report gives the precise matrix: extensionless batch plus arguments fails, explicit .bat or no arguments works.",
+      "Latest reply confirms the issue and narrows it to Find and run the executable file; pwsh execution works. The requested author confirmation has been answered.",
+      "Current Shell.Main.ExistInPath probes filename and filename+.exe in PATH, not the configured executable extensions.",
+      "Compiled the exact current ExistInPath method and tested a private PATH containing inert fixtures: extensionless batch=false, explicit batch=true, extensionless executable=true. No batch or executable was launched."
+    ],
+    "inferences": [
+      "The lookup gap explains the documented branch difference; it is not a claim that every shell failure or every extension is repaired by appending .bat."
+    ]
+  },
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/13313",
+  "source_updated_at": "2024-10-25T12:41:13Z"
 }
