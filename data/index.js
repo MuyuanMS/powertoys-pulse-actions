@@ -1602,7 +1602,9 @@ window.BOARD_INDEX = {
     51841,
     51842,
     51843,
-    51867
+    51867,
+    51567,
+    51832
   ],
   "items": [
     {
@@ -22432,17 +22434,22 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Area-Runner",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-02T11:32:57Z",
       "updated_at": "2026-11-03T01:15:54Z",
       "comments": 0,
@@ -29792,17 +29799,22 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Retain service-mode regression with signer fix"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-25T17:15:15Z",
       "updated_at": "2026-11-03T04:47:37Z",
       "comments": 22,
