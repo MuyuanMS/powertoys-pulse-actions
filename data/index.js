@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 225,
     "open_issues": 11102,
     "community": 10219,
-    "artifacts": 1511
+    "artifacts": 1512
   },
   "impact": {
     "as_of": "2026-11-03T09:07:01.3634407+08:00",
@@ -1608,7 +1608,8 @@ window.BOARD_INDEX = {
     51860,
     51853,
     51403,
-    51880
+    51880,
+    51855
   ],
   "items": [
     {
@@ -1767,29 +1768,31 @@ window.BOARD_INDEX = {
       "title": "[UI Tests] Power Display driver backed tests",
       "author": "khmyznikov",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Area-Tests",
-        "Product-PowerDisplay"
+        "Product-Grab And Move",
+        "Product-PowerDisplay",
+        "Ready for review"
       ],
       "assignees": [
         "khmyznikov"
       ],
       "created_at": "2026-11-02T18:02:29Z",
-      "updated_at": "2026-11-02T23:44:28Z",
+      "updated_at": "2026-11-03T16:39:47Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
