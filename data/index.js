@@ -3644,7 +3644,9 @@ window.BOARD_INDEX = {
         "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-28T11:46:26Z",
       "updated_at": "2026-11-03T19:22:58Z",
       "comments": 1,
