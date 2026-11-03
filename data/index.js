@@ -1983,7 +1983,7 @@ window.BOARD_INDEX = {
       "title": "[UI Tests] Power Display driver backed tests",
       "author": "khmyznikov",
       "state": "open",
-      "is_draft": false,
+      "is_draft": true,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -2008,7 +2008,7 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-11-02T18:02:29Z",
-      "updated_at": "2026-11-03T21:22:16Z",
+      "updated_at": "2026-11-03T22:14:22Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
