@@ -6867,18 +6867,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-02T22:51:09Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post qualified assessment summary"
-      },
+      "primary_action": null,
       "labels": [
         "Area-Tests",
         "Product-Command Palette",
@@ -6888,7 +6885,7 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-10-02T00:22:43Z",
-      "updated_at": "2026-11-02T23:02:07Z",
+      "updated_at": "2026-11-03T01:11:07Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
