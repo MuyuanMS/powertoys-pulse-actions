@@ -6,15 +6,46 @@
   "title": "Give Quick Access the same transition as the System Shell",
   "url": "https://github.com/microsoft/PowerToys/pull/51672",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-29T16:20:15.4031828+08:00",
-  "evaluated_at": "2026-10-29T16:20:15.4032119+08:00",
+  "generated_at": "2026-11-03T17:08:51.5998097+08:00",
+  "evaluated_at": "2026-11-03T17:08:51.5998314+08:00",
   "source_updated_at": "2026-10-28T12:31:37Z",
   "head_sha": "1d5ac057aacdbc6160e2f0acfff3f231a431ab1d",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "title": "Log unavailable named events without changing startup semantics",
+      "disposition": "proposed",
+      "in_diff": false,
+      "id": "51672-recovered-event-open-diagnostics",
+      "body": "### Log unavailable named events without changing startup semantics\n\n**Severity:** `low` (non-blocking diagnostic improvement)\n\n**Affected code:** `src/settings-ui/QuickAccess.UI/Services/QuickAccessFlyoutHost.cs`, the hide/show/exit `EventWaitHandle.OpenExisting` catch blocks.\n\n**Problem:** Each `WaitHandleCannotBeOpenedException` is silently ignored. If a supplied event name cannot be opened, these paths do not identify which event failed.\n\n**Why it matters:** A diagnostic would help distinguish unavailable event wiring from a host that successfully registered all supplied events. A missing event can be expected during teardown; this does not establish a normal runner-launch failure or require making optional event initialization fatal.\n\n**Suggested change:**\n\n1. Add a contextual `Logger.LogDebug` message in each of the three existing catches, following the Quick Access logging pattern and identifying the event type and attempted name.\n2. Preserve the current non-fatal behavior, successful listener startup, and handle cleanup. Do not start a new listener merely because logging is added.\n3. Keep the diagnostic at initialization rather than in a polling loop, so an unavailable event does not generate repeated messages.\n\n**Verification:** Exercise initialization with unique nonexistent show/hide/exit event names and confirm contextual diagnostics without an unhandled exception. Then verify that valid runner-created events still drive show, hide, and exit as before.",
+      "kind": "companion",
+      "confidence": {
+        "score": 89,
+        "rationale": "Exact current source supports this non-blocking coverage/diagnostic improvement; existing functional behavior and the strongest prior counterevidence are retained."
+      },
+      "severity": "low",
+      "out_of_diff_reason": "A consolidated general request coordinates targeted coverage or observability across the related implementation and verification paths; no uncompiled literal patch is offered."
+    }
+  ],
+  "actions": [
+    {
+      "id": "51672-post-recovered",
+      "type": "post_review",
+      "review": {
+        "head_sha": "1d5ac057aacdbc6160e2f0acfff3f231a431ab1d",
+        "comment_ids": [
+          "51672-recovered-event-open-diagnostics"
+        ],
+        "event": "COMMENT"
+      },
+      "label": "Post general non-blocking improvement comment",
+      "requires_confirmation": true,
+      "head_sha": "1d5ac057aacdbc6160e2f0acfff3f231a431ab1d",
+      "source_updated_at": "2026-10-28T12:31:37Z"
+    }
+  ],
   "validation": {}
 }
