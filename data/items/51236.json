@@ -6,15 +6,46 @@
   "title": "[Runner] Fix false-positive Win+Shift+C shortcut conflict on Windows 11",
   "url": "https://github.com/microsoft/PowerToys/pull/51236",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-30T23:08:07.0061827+08:00",
-  "evaluated_at": "2026-10-30T23:08:07.0062156+08:00",
+  "generated_at": "2026-11-03T16:53:01.5474518+08:00",
+  "evaluated_at": "2026-11-03T16:53:01.5475157+08:00",
   "source_updated_at": "2026-10-30T15:02:57Z",
   "head_sha": "449b133d45552c5c9729816ef8cb2a1d55864b6f",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "confidence": {
+        "rationale": "Exact current test returns without assertions on Windows 10; the production OS guard itself is correct and is not alleged to fail.",
+        "score": 90
+      },
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "low",
+      "body": "### Make the OS-specific bypass coverage explicit and deterministic\r\n\r\n**Severity:** `low` (non-blocking test coverage)\r\n\r\n**Affected code:** `src/runner/UnitTests/HotkeyConflictTests.cpp`, `HasConflict_LegacyWinShiftC_OnWindows11_NoConflict`, and the Windows-version bypass in `src/runner/hotkey_conflict_detector.cpp`.\r\n\r\n**Problem:** On Windows 10 the test returns without an assertion, so a passing result does not mean the OS-specific bypass was checked. On Windows 11 it exercises the real manager, but it does not check the Windows 10 decision.\r\n\r\n**Why it matters:** The production exception is deliberately Windows-11-specific. Explicit coverage of both decisions would protect that boundary without depending on which Windows version the test machine runs. This is a coverage improvement, not a claim that the current production predicate is wrong.\r\n\r\n**Suggested change:**\r\n\r\n1. Factor the small bypass predicate into a testable helper taking the hotkey and a Windows-11-or-greater Boolean; have production supply the actual OS result.\r\n2. Test that Win+Shift+C bypasses only when that Boolean is true, and that another chord does not bypass.\r\n3. Keep the existing real-manager integration check separately; if it is restricted to Windows 11, report the other OS as inconclusive rather than returning a successful test. Do not assert that every Windows 10 machine must fail `RegisterHotKey`, since that depends on the environment.\r\n\r\n**Verification:** Run the focused `HotkeyConflictTests` after the change. The pure predicate cases should exercise both OS decisions on the same host; the integration result should explicitly distinguish an executed assertion from an unsupported-OS skip.",
+      "out_of_diff_reason": "The deterministic coverage remedy coordinates the production bypass predicate and its integration/unit tests; this general implementation request avoids presenting an uncompiled multi-location patch.",
+      "id": "51236-recovered-os-test-coverage",
+      "kind": "companion",
+      "title": "Make the OS-specific bypass coverage explicit and deterministic"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "51236-recovered-os-test-coverage"
+        ],
+        "head_sha": "449b133d45552c5c9729816ef8cb2a1d55864b6f"
+      },
+      "id": "51236-post-recovered",
+      "head_sha": "449b133d45552c5c9729816ef8cb2a1d55864b6f",
+      "source_updated_at": "2026-10-30T15:02:57Z",
+      "requires_confirmation": true,
+      "label": "Post general non-blocking test-coverage comment",
+      "type": "post_review"
+    }
+  ],
   "validation": {}
 }
