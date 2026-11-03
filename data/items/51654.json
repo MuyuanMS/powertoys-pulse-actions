@@ -1,20 +1,53 @@
 {
+  "schemaVersion": 5,
   "number": 51654,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "Upgrade CsWinRT to 2.3.1 and Windows SDK .NET ref pack to 10.0.26100.87",
   "url": "https://github.com/microsoft/PowerToys/pull/51654",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-03T07:46:52.3143719Z",
-  "evaluated_at": "2026-11-03T02:44:55.267369Z",
+  "generated_at": "2026-11-03T18:08:34.7764533+08:00",
+  "evaluated_at": "2026-11-03T18:08:34.7764835+08:00",
   "source_updated_at": "2026-11-03T07:09:04Z",
   "head_sha": "6d380eb08e5128db38920e448fd8fb2834eb2f9c",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-11-03T07:46:52.3143719Z",
-    "checkpoint_at": "2026-11-03T07:46:52.3143719Z"
-  }
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51654-shared-default-update-isolation",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/ListSettingTests.cs",
+      "line": 59,
+      "in_diff": true,
+      "disposition": "proposed",
+      "side": "RIGHT",
+      "title": "Protect shared list defaults with a cross-instance regression",
+      "severity": "low",
+      "kind": "inline",
+      "body": "### Protect shared list defaults with a cross-instance regression\r\n\r\n**Severity:** `low` (non-blocking regression coverage)\r\n\r\nThe sample now passes shared default arrays to its list settings. The current SDK correctly reads those defaults as `IReadOnlyList<string>` and replaces `Value` with parsed items on both persisted and form updates; this is not a claim that today's edits mutate the shared arrays.\r\n\r\nAdd focused coverage in `ListSettingTests.cs` for that isolation contract:\r\n\r\n1. Construct two `StringListSetting` instances from the same default array, with each registered in its own `Settings` collection. Submit a different value to the first instance through `Settings.UpdateFromForm`, using the existing `CardValue` helper to form the payload.\r\n2. Assert that the first value changes, while both the second setting's value and the original default array retain their original contents. Repeat for `Settings.Update` with the persisted-array payload.\r\n3. Cover `FilePathListSetting` in the same way, using a distinct path list. Keep the existing shared defaults and production replacement behavior unchanged; no defensive-copy redesign is required.\r\n\r\n**Verification:** Run the toolkit `ListSettingTests`. The new cases should pass with the current replacement implementation and fail if either update route starts modifying the supplied default array in place.",
+      "confidence": {
+        "rationale": "Exact sample shares two default arrays and actual update methods replace Value. Existing tests exercise updates but do not assert isolation between two settings initialized from one array.",
+        "score": 92
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "51654-post-default-isolation",
+      "head_sha": "6d380eb08e5128db38920e448fd8fb2834eb2f9c",
+      "requires_confirmation": true,
+      "label": "Post non-blocking isolation test request",
+      "type": "post_review",
+      "source_updated_at": "2026-11-03T07:09:04Z",
+      "review": {
+        "head_sha": "6d380eb08e5128db38920e448fd8fb2834eb2f9c",
+        "event": "COMMENT",
+        "comment_ids": [
+          "51654-shared-default-update-isolation"
+        ]
+      }
+    }
+  ],
+  "validation": {}
 }
