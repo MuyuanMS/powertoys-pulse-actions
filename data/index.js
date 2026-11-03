@@ -1696,20 +1696,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "label": "Post non-blocking review suggestions",
+        "type": "post_review"
+      },
       "labels": [
         "Product-File Locksmith",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-02T20:07:58Z",
       "updated_at": "2026-11-02T20:13:35Z",
       "comments": 2,
