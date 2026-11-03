@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 218,
     "open_issues": 11117,
     "community": 10233,
-    "artifacts": 1484
+    "artifacts": 1507
   },
   "impact": {
     "as_of": "2026-11-04T06:19:46.8819813+08:00",
@@ -1655,7 +1655,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
