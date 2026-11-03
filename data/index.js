@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 225,
     "open_issues": 11102,
     "community": 10219,
-    "artifacts": 1510
+    "artifacts": 1511
   },
   "impact": {
     "as_of": "2026-11-03T09:07:01.3634407+08:00",
@@ -1607,7 +1607,8 @@ window.BOARD_INDEX = {
     51864,
     51860,
     51853,
-    51403
+    51403,
+    51880
   ],
   "items": [
     {
@@ -380565,6 +380566,43 @@ window.BOARD_INDEX = {
       "state": "open",
       "author": "AceAryan",
       "track": "review"
+    },
+    {
+      "id": "pr-51880",
+      "kind": "pr",
+      "number": 51880,
+      "url": "https://github.com/microsoft/PowerToys/pull/51880",
+      "title": "[Awake] Let users keep “Keep screen on” enabled while Windows is locked",
+      "author": "Meister1977",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-03T10:27:31Z",
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-Awake"
+      ],
+      "assignees": [
+        null
+      ],
+      "created_at": "2026-11-03T10:27:07Z",
+      "updated_at": "2026-11-03T10:28:22Z",
+      "comments": 2,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null
     }
   ]
 };
