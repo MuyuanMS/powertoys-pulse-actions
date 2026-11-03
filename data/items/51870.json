@@ -1,20 +1,70 @@
 {
+  "schemaVersion": 5,
   "number": 51870,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[Awake] Longer tray intervals and Settings editor for tray time shortcuts",
   "url": "https://github.com/microsoft/PowerToys/pull/51870",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-03T07:46:59.7131213Z",
-  "evaluated_at": "2026-11-03T07:46:59.7131213Z",
+  "generated_at": "2026-11-03T15:54:28.0263688+08:00",
+  "evaluated_at": "2026-11-03T15:54:28.0264427+08:00",
   "source_updated_at": "2026-11-03T05:51:01Z",
   "head_sha": "d2898d89add0cada494a69af885b4d4426968cd1",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-11-03T07:46:59.7131213Z",
-    "checkpoint_at": "2026-11-03T07:46:59.7131213Z"
-  }
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "path": "src/settings-ui/Settings.UI/ViewModels/AwakeViewModel.cs",
+      "disposition": "proposed",
+      "kind": "inline",
+      "body": "### Preserve saved tray shortcuts when labels collide\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `CanAddTrayTime` and `SaveTrayTimes` in `src/settings-ui/Settings.UI/ViewModels/AwakeViewModel.cs`.\r\n\r\n**Problem:** Addition checks duplicate seconds but not the dictionary key generated from the duration. With a persisted label `3600s` containing 600 seconds, adding 3600 seconds reports success but silently drops the new shortcut. If the same label contains 7200 seconds, sorting puts the new item first and silently replaces the existing duration. `TryAdd` ignores the duplicate after the persisted dictionary has already been cleared.\r\n\r\n**Why it matters:** Existing custom labels are supported configuration, so a valid legacy label can cause a successful-looking edit to lose saved data.\r\n\r\n**Suggested change:** Check both duration uniqueness and ordinal equality with the generated label in `CanAddTrayTime`. In `SaveTrayTimes`, construct and validate the complete duration-ordered dictionary before changing persisted settings, then clear and explicitly add its entries to the existing dictionary. Preserve historical labels and the init-only `CustomTrayTimes` dictionary identity; do not assign a replacement dictionary or silently ignore duplicate keys.\r\n\r\n**Verification:** Add both regression cases above and assert that addition is rejected and the existing value/count remain unchanged. Both cases fail on the original implementation and pass with this correction. The affected Settings build and all 14 Awake tests pass with the coordinated correction; live tray/IPC interaction has not been exercised.",
+      "severity": "medium",
+      "side": "RIGHT",
+      "confidence": {
+        "score": 99,
+        "rationale": "Two real original-source Settings regressions fail and pass with the localized correction; dictionary identity is retained."
+      },
+      "line": 356,
+      "id": "51870-preserve-label-collisions",
+      "title": "Preserve saved tray shortcuts when labels collide",
+      "in_diff": true
+    },
+    {
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/AwakePage.xaml",
+      "disposition": "proposed",
+      "kind": "inline",
+      "body": "### Disable deletion when only one tray shortcut remains\r\n\r\n**Severity:** `low`\r\n\r\n**Affected code:** The `AwakeTrayTimeItem` template in `AwakePage.xaml`, `AwakeTrayTimeItem.cs`, and `AwakeViewModel.RefreshTrayTimes`.\r\n\r\n**Problem:** The delete button has no enabled-state binding, while `RemoveTrayTime` rejects removal of the last item. Users can still activate a button that then does nothing.\r\n\r\n**Why it matters:** The visible and accessibility-enabled action should agree with the last-shortcut safeguard.\r\n\r\n**Suggested change:** Add a read-only `CanRemove` value to each tray item, preserving the existing two-argument constructor compatibility. Set it from the complete refreshed item count when rebuilding `TrayTimes`, and bind the template button's `IsEnabled` to `CanRemove` with `Mode=OneTime`. Each refresh recreates the immutable items, so their bound state is refreshed after deletion, addition and reset. Do not bind `ViewModel.CanRemoveTrayTime` directly inside this template: its compiled data type is `AwakeTrayTimeItem`, not the page.\r\n\r\n**Verification:** Cover two-to-one, one-to-two and reset transitions, including the single-item removal rejection. The actual Settings XAML build and all 14 affected Awake tests pass with the coordinated item/refresh/template correction. Interactive keyboard, screen-reader and tray behavior have not been exercised.",
+      "severity": "low",
+      "side": "RIGHT",
+      "confidence": {
+        "score": 94,
+        "rationale": "Original button is unbound while removal is guarded; compiled typed-template correction and all count transitions pass. No interactive UI claim."
+      },
+      "line": 111,
+      "id": "51870-disable-last-delete",
+      "title": "Disable deletion of the final tray shortcut",
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "head_sha": "d2898d89add0cada494a69af885b4d4426968cd1",
+      "source_updated_at": "2026-11-03T05:51:01Z",
+      "label": "Post two implementation-ready review comments",
+      "type": "post_review",
+      "id": "51870-post-two-findings",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "d2898d89add0cada494a69af885b4d4426968cd1",
+        "comment_ids": [
+          "51870-preserve-label-collisions",
+          "51870-disable-last-delete"
+        ],
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {}
 }
