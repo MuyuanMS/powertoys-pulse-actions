@@ -6,15 +6,46 @@
   "title": "CmdPal: Move global keyboard handling to a dedicated thread",
   "url": "https://github.com/microsoft/PowerToys/pull/50982",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-31T08:46:36.2348971+08:00",
-  "evaluated_at": "2026-10-31T08:46:36.2349214+08:00",
+  "generated_at": "2026-11-03T17:00:36.3047278+08:00",
+  "evaluated_at": "2026-11-03T17:00:36.3081959+08:00",
   "source_updated_at": "2026-10-30T21:10:17Z",
   "head_sha": "a2a967b17dd67e97a0d277f2a1ef03e203514a9f",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "out_of_diff_reason": "The request coordinates the fatal-notification error-reporting path with its fake-dispatcher test; it is implementation guidance rather than an uncompiled literal patch.",
+      "kind": "companion",
+      "in_diff": false,
+      "title": "Add diagnostics when the hook-failure notification is rejected",
+      "id": "50982-recovered-dispatch-diagnostic",
+      "confidence": {
+        "rationale": "The exact current source ignores the false return but reports thrown dispatch failures. This is explicitly optional observability, not evidence that fallback fails during normal operation.",
+        "score": 86
+      },
+      "disposition": "proposed",
+      "severity": "low",
+      "body": "### Add diagnostics when the hook-failure notification is rejected\r\n\r\n**Severity:** `low` (non-blocking diagnostic improvement)\r\n\r\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/GlobalKeyboardListener.cs`, the fatal message-loop failure notification, and its focused `GlobalKeyboardListenerTests`.\r\n\r\n**Problem:** This path catches and reports an exception thrown by `_tryEnqueue`, but ignores a normal `false` return. A rejected hook-failure notification therefore has no dispatch-rejection diagnostic from this path.\r\n\r\n**Why it matters:** A diagnostic would distinguish failure to deliver the notification from an accepted UI callback. Queue rejection can be expected during shutdown; this does not demonstrate a non-shutdown failure or require running fallback registration off the UI thread.\r\n\r\n**Suggested change:**\r\n\r\n1. Check `_tryEnqueue`'s Boolean result in this fatal-notification path.\r\n2. On rejection, use the existing asynchronous `QueueErrorReport` channel to report a contextual exception, retaining the original failure as its inner exception. Keep `_hookFailed` UI-only and retain the existing owner-thread check.\r\n3. Extend the fake-dispatcher test for a `false` return to expect the diagnostic while still asserting that the rejected callback does not run. Preserve the accepted-dispatch and thrown-dispatch coverage.\r\n\r\n**Verification:** Run the focused listener tests. The rejected-notification case should produce the expected diagnostic without invoking `_hookFailed` off-thread; accepted delivery, teardown, and hook disposal should remain unchanged. No new UI fallback or shutdown-race behavior is requested."
+    }
+  ],
+  "actions": [
+    {
+      "source_updated_at": "2026-10-30T21:10:17Z",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "a2a967b17dd67e97a0d277f2a1ef03e203514a9f",
+        "comment_ids": [
+          "50982-recovered-dispatch-diagnostic"
+        ]
+      },
+      "id": "50982-post-recovered",
+      "head_sha": "a2a967b17dd67e97a0d277f2a1ef03e203514a9f",
+      "label": "Post general non-blocking diagnostic comment",
+      "requires_confirmation": true,
+      "type": "post_review"
+    }
+  ],
   "validation": {}
 }
