@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 5,
+  "number": 51861,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: add support for fallbackv2 commands",
+  "url": "https://github.com/microsoft/PowerToys/pull/51861",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-03T11:42:51.3604026+08:00",
+  "evaluated_at": "2026-11-03T11:42:51.3604407+08:00",
+  "source_updated_at": "2026-11-02T20:43:14Z",
+  "head_sha": "e359cd72bbea67cb9e6832e1b9e69dbde3ea3dbe",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "Compiled exact upstream view-model reproduced both state/notification failures; localized corrected repository build and ten real fallback-settings tests passed."
+      },
+      "id": "51861-fallback-toggle-normalization",
+      "title": "Preserve explicit fallback disable and notify dependent flags",
+      "out_of_diff_reason": "One coordinated normalization/notification correction plus two persistence/notification regressions spans separated Update locations and the test file; the prompt specifies the tested localized changes together rather than exposing a partial condition-only correction.",
+      "body": "### Preserve explicit fallback disable and notify dependent flags\r\n\r\n**Severity:** `high`\r\n\r\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/FallbackSettingsViewModel.cs:Update` (lines 84-103), its `IsEnabled`/`IncludeInGlobalResults` setters, and their bindings in `src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/ExtensionPage.xaml`. Regression tests belong in `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ProviderFallbackSettingsTests.cs`.\r\n\r\n**Problem:** Starting with both flags `true`, setting `IsEnabled = false` enters this normalization branch and sets it back to `true`. The normalized record then equals the existing record, so the method returns without saving or notifying. The refactor therefore makes the off switch ineffective for a fallback included in global results; the previous setter explicitly cleared global inclusion on disable.\r\n\r\n**Why it matters:** Users cannot disable these fallbacks through the setting. In the opposite transition, setting global inclusion on a disabled fallback changes both flags but notifies only `IncludeInGlobalResults`, leaving `IsEnabled` bindings without the dependent update.\r\n\r\n**Suggested change:**\r\n1. Keep this centralized update method, but let an explicit disable win. Add `propertyName != nameof(IsEnabled)` to the enable-normalization condition so the following branch can clear `IncludeInGlobalResults` when the user turns the fallback off.\r\n2. Capture the previous record before replacing `_fallbackSettings`; after the existing notification, notify each of `IsEnabled` and `IncludeInGlobalResults` whose value changed and whose name is not already `propertyName`.\r\n3. Persist the normalized record once and retain the existing single reload message. Add the two transition regressions to `ProviderFallbackSettingsTests`, asserting persisted flags, exactly one write and notifications for both changed properties.\r\n\r\n**Verification:** The exact original view-model reproduced an ignored disable with zero writes/notifications and an inclusion transition missing the dependent notification. The localized correction built successfully and all ten focused fallback-settings tests passed, including new regressions verifying persisted flags and both notifications. Add those two transition regressions to `ProviderFallbackSettingsTests`, retain the existing defaults/persistence tests, and verify the settings toggle and checkbox stay consistent interactively.",
+      "in_diff": false,
+      "kind": "companion"
+    }
+  ],
+  "actions": [
+    {
+      "id": "51861-post-current-assessment",
+      "review": {
+        "event": "COMMENT",
+        "commit_id": "e359cd72bbea67cb9e6832e1b9e69dbde3ea3dbe",
+        "comment_ids": [
+          "51861-fallback-toggle-normalization"
+        ],
+        "head_sha": "e359cd72bbea67cb9e6832e1b9e69dbde3ea3dbe"
+      },
+      "label": "Post implementation-ready general PR comment",
+      "type": "post_review",
+      "head_sha": "e359cd72bbea67cb9e6832e1b9e69dbde3ea3dbe"
+    }
+  ],
+  "validation": {}
+}
