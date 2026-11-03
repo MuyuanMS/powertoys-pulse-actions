@@ -1,91 +1,105 @@
 {
-  "number": 46349,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "design_queued",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-20T16:50:55Z",
-  "evaluated_at": "2026-10-20T16:50:55Z",
-  "source_updated_at": "2026-10-12T20:15:22Z",
-  "status": {
-    "glyph": "🎯",
-    "detail": "For an explicit --expire-at date/time that is already past, SetExpirableKeepAwake cancels existing state, logs an error, and returns before establishing an expirable state; the CLI does not surface a failure result. Preserve time-only rollover to the next day (#41205).",
-    "label": "Design candidate"
-  },
-  "next_action": "Reject an absolute past expiry as a CLI error before changing Awake state; preserve time-only next-day semantics.",
-  "actions": [
-    {
-      "primary": true,
-      "note": "Queues a design for maintainer approval; no upstream write occurs.",
-      "confirm": true,
-      "label": "Review Awake expired-CLI input fix",
-      "type": "approve_design"
-    }
-  ],
-  "confidence": "High",
-  "judgment": {
-    "source_updated_at": "2026-10-12T20:15:22Z",
-    "rationale": "For an explicit --expire-at date/time that is already past, SetExpirableKeepAwake cancels existing state, logs an error, and returns before establishing an expirable state; the CLI does not surface a failure result. Preserve time-only rollover to the next day (#41205).",
-    "evidence": [
-      "The issue gives an explicit past date/time and expects Awake to report expiry and exit.",
-      "Manager.SetExpirableKeepAwake calls CancelExistingThread, logs a past-target error, and returns before scheduling.",
-      "The time-only case is separately expected to roll to tomorrow per #41205."
-    ],
-    "evaluated_at": "2026-10-20T16:50:55Z",
-    "recommended_action": "Reject an absolute past expiry as a CLI error before changing Awake state; preserve time-only next-day semantics.",
-    "status": "actionable_design"
-  },
-  "schemaVersion": 5,
-  "url": "https://github.com/microsoft/PowerToys/issues/46349",
-  "title": "[Awake] Awake should exit if a past expiry time is provided",
   "labels": [
     "Issue-Bug",
     "Product-Awake"
   ],
-  "assignees": [],
-  "comments": 0,
-  "fix_assessment": {
-    "rationale": "Source confirms an early-return path for past explicit expiry; a narrow CLI validation/error path is directly testable.",
-    "status": "proposed"
-  },
-  "proposed_fixes": [
-    {
-      "title": "Reject expired absolute Awake CLI expiry values",
-      "root_cause": "An absolute past expiry reaches SetExpirableKeepAwake, which cancels current state, logs, and returns without a clear CLI failure result.",
-      "plan": [
-        "Distinguish time-only expiry from explicit date-and-time expiry during CLI parsing.",
-        "For an explicit absolute expiry at or before now, report an error and return nonzero before changing Awake mode.",
-        "Leave time-only expiry rollover-to-next-day behavior unchanged.",
-        "Add tests for past absolute, future absolute, past time-only, and malformed expiry values."
-      ],
-      "verification": [
-        "Run with a past explicit date and verify error, nonzero exit, and no non-expiring Awake state.",
-        "Run --expire-at=00:00:00 after midnight and verify next-day scheduling remains intact.",
-        "Verify future explicit expiry still enters expirable mode."
-      ],
-      "confidence": {
-        "score": 89,
-        "level": "green",
-        "rationale": "The source early-return and reported absolute-date case align; tests isolate it from time-only rollover."
-      }
-    }
-  ],
   "issue_context": {
     "initial_investigation": [
-      "Inspected Awake/Core/Manager.cs SetExpirableKeepAwake: CancelExistingThread precedes past-time check; branch logs and returns before scheduling.",
-      "Issue explicitly cross-references #41205 for time-only rollover; preserve that distinct behavior."
+      [
+        "Read the full report and volunteered correction, then traced current CLI precedence, monitor startup and complete past-target return.",
+        "No Awake process, expiry timer, settings or system sleep policy was changed; source evidence is not executed CLI validation."
+      ],
+      "Source investigation pinned to main revision 454ac1a581f3e3b9645eb31e5623e83f86ab5ea6; historical reporter/maintainer reproduction is attributed, not an executed current-build result."
     ],
-    "analysis": "Validate an explicit absolute timestamp before changing Awake state and return a CLI error; keep time-only rollover separate.",
+    "summary": "Reject expired absolute CLI targets before creating Awake lifetime resources",
     "known_information": [
-      "The report lists an absolute past timestamp and a time-only past value as separate cases.",
-      "For explicit past date/time the reporter expects a message and exit; time-only past should roll to tomorrow per #41205.",
-      "Manager.SetExpirableKeepAwake logs and returns when expireAt <= DateTimeOffset.Now after cancelling existing state."
-    ],
-    "inferences": [
-      "The early return explains lack of explicit error result; exact resulting mode depends on caller/state lifecycle."
+      "The report gives time-only and full date/time inputs and distinguishes next-day time-only intent from a past absolute target.",
+      "The latest participant volunteered an early validation/exit plan and referenced41205; no new implementation or competing PR is opened here.",
+      "Pinned current Program.cs starts Manager.StartMonitor before parsing/dispatching expire-at. StartMonitor explicitly creates a foreground thread; the past-target branch in SetExpirableKeepAwake logs and returns without terminating that monitor."
     ],
     "information_gaps": [],
-    "summary": "Awake CLI accepts an explicit past expiry timestamp, logs the condition in the manager, and returns without a clear failure result; the user expects the CLI to exit rather than leave non-expiring behavior."
-  }
+    "analysis": "The source supports a process-lifetime rejection gap. The past branch returns before enqueueing its expirable execution state, so the report must not be upgraded into an unproven claim that this current path actively switches to indefinite keep-awake. Contribute scoped verification to the volunteered plan, preserving config/PID argument precedence.",
+    "inferences": [
+      "The past-target setter returns after a foreground monitor has already been created, leaving lifetime resources alive; active indefinite execution state is not established by this source path."
+    ]
+  },
+  "schemaVersion": 5,
+  "title": "[Awake] Awake should exit if a past expiry time is provided",
+  "pending_author": false,
+  "actions": [
+    {
+      "id": "issue-46349-reproduce-1",
+      "label": "Reproduce Awake CLI scenario",
+      "primary": true,
+      "type": "reproduce",
+      "reproduce": {
+        "expected": "An expired absolute target reports a localized error and exits nonzero without leaving an unintended standalone process; agreed time-only rollover behavior does not silently create indefinite mode. Valid future/config/PID modes remain unchanged.",
+        "version": "Historical0.98; current-main source examined",
+        "prerequisites": [
+          "Current released PowerToys in a test environment; preserve existing user settings and record the exact build."
+        ],
+        "steps": [
+          "In a test environment compare an explicitly past absolute date/time with a future absolute target and a time-only value earlier today.",
+          "Record exit code, process lifetime, reported mode and actual sleep/display state separately.",
+          "Repeat current-culture time formats, ISO date/time offsets, invalid input and date rollover; verify config/PID-scoped argument precedence."
+        ],
+        "module": "Awake CLI"
+      }
+    },
+    {
+      "id": "issue-46349-approve_design-1",
+      "label": "Investigate scoped fix direction",
+      "primary": false,
+      "type": "approve_design"
+    }
+  ],
+  "comments": 1,
+  "track": "triage",
+  "evaluated_at": "2026-11-03T09:34:59.7394024+08:00",
+  "generated_at": "2026-11-03T09:34:59.7394024+08:00",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A focused investigation and conditional fix direction are applicable; this is not a proven repair, completed reproduction or implementation-grade design."
+  },
+  "stage": "triage_revalidated",
+  "judgment": {
+    "recommended_action": "Maintainer reproduction and mechanism isolation before implementation; do not ask for evidence already supplied.",
+    "evaluated_at": "2026-11-03T09:34:59.7394024+08:00",
+    "source_updated_at": "2026-11-02T21:04:41Z",
+    "rationale": "The source supports a process-lifetime rejection gap. The past branch returns before enqueueing its expirable execution state, so the report must not be upgraded into an unproven claim that this current path actively switches to indefinite keep-awake. Contribute scoped verification to the volunteered plan, preserving config/PID argument precedence.",
+    "evidence": [
+      "The report gives time-only and full date/time inputs and distinguishes next-day time-only intent from a past absolute target.",
+      "The latest participant volunteered an early validation/exit plan and referenced41205; no new implementation or competing PR is opened here.",
+      "Pinned current Program.cs starts Manager.StartMonitor before parsing/dispatching expire-at. StartMonitor explicitly creates a foreground thread; the past-target branch in SetExpirableKeepAwake logs and returns without terminating that monitor."
+    ],
+    "status": "reproducible"
+  },
+  "assignees": [
+    null
+  ],
+  "kind": "issue",
+  "source_updated_at": "2026-11-02T21:04:41Z",
+  "number": 46349,
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Support the volunteered correction with early standalone-CLI parsing/validation before monitor/tray lifetime creation, while preserving higher-priority config and PID modes.",
+        "Distinguish time-only input from an absolute timestamp without interpreting ISO dates as time-only; settle the41205 rollover contract explicitly.",
+        "Regression-test exit codes, future expiry, culture/offset/DST boundaries and cleanup; do not add a broad catch or silently fall back to indefinite mode."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "rationale": "The source supports a process-lifetime rejection gap. The past branch returns before enqueueing its expirable execution state, so the report must not be upgraded into an unproven claim that this current path actively switches to indefinite keep-awake. Contribute scoped verification to the volunteered plan, preserving config/PID argument precedence.",
+        "score": 83
+      },
+      "verification": [
+        "An expired absolute target reports a localized error and exits nonzero without leaving an unintended standalone process; agreed time-only rollover behavior does not silently create indefinite mode. Valid future/config/PID modes remain unchanged.",
+        "Retain successful baseline behavior and record whether the current build reproduces; validate the identified mechanism before implementing."
+      ],
+      "title": "Reject expired absolute CLI targets before creating Awake lifetime resources",
+      "root_cause": "The past-target setter returns after a foreground monitor has already been created, leaving lifetime resources alive; active indefinite execution state is not established by this source path."
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/46349",
+  "owes": "maintainer"
 }
