@@ -1,0 +1,106 @@
+{
+  "evaluated_at": "2026-11-03T09:18:01.2215546+08:00",
+  "issue_context": {
+    "known_information": [
+      "The reporter supplies a recording link and a diagnostic ZIP for top/side taskbar placement; no new generic archive is required.",
+      "The ZIP inventory was read; it includes monitor information and an ARM64 per-user0.102.3001 installer log. No taskbar relocation was independently executed.",
+      "Current QuickAccess MainWindow calls PositionWindowBottomRight. The complete shared helper derives x/y from the bottom-right of the cursor monitor work area and preserves DPI-aware clamping."
+    ],
+    "initial_investigation": [
+      [
+        "Read complete report and supplied ZIP inventory without executing archived content.",
+        "Read current QuickAccess positioning call sites and complete shared FlyoutWindowHelper bottom-right calculation."
+      ],
+      "Source investigation pinned to main revision 454ac1a581f3e3b9645eb31e5623e83f86ab5ea6; historical reporter/maintainer reproduction is attributed, not an executed current-build result."
+    ],
+    "summary": "Anchor Quick Access to the active taskbar edge rather than always bottom-right",
+    "inferences": [
+      "The Quick Access caller always chooses a bottom-right anchor even when the tray is elsewhere; taskbar/tray edge detection and supported Windows-build behavior still need measurement."
+    ],
+    "information_gaps": [],
+    "analysis": "The current placement mechanism does not choose an edge based on tray/taskbar position. Preserve its work-area bounds and mixed-DPI handling; this is an anchoring request, not evidence that all work-area coordinates are wrong. The recording has not been independently inspected."
+  },
+  "generated_at": "2026-11-03T09:18:01.2215546+08:00",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Quick Access flyout scenario",
+      "reproduce": {
+        "expected": "Quick Access opens adjacent to the clicked tray/taskbar edge and stays inside the correct monitor work area without DPI double-scaling; bottom-taskbar behavior remains unchanged.",
+        "steps": [
+          "In a supported test Windows build place the taskbar at bottom, top, left and right and open Quick Access from its tray icon.",
+          "Repeat on a secondary monitor with negative origin and different DPI, including auto-hide.",
+          "Record tray/taskbar bounds, work area and popup bounds before/after reopening and resizing."
+        ],
+        "module": "Quick Access flyout",
+        "prerequisites": [
+          "Current released PowerToys in a test environment; preserve existing user settings and record the exact build."
+        ],
+        "version": "0.102.3001"
+      },
+      "id": "issue-51863-reproduce-1",
+      "primary": true
+    },
+    {
+      "type": "approve_design",
+      "label": "Investigate scoped fix direction",
+      "id": "issue-51863-approve_design-1",
+      "primary": false
+    }
+  ],
+  "schemaVersion": 5,
+  "title": "Quick Access flyout - Top or side Task Bar integration",
+  "track": "triage",
+  "number": 51863,
+  "pending_author": false,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A focused investigation and conditional fix direction are applicable; this is not a proven repair, completed reproduction or implementation-grade design."
+  },
+  "judgment": {
+    "evidence": [
+      "The reporter supplies a recording link and a diagnostic ZIP for top/side taskbar placement; no new generic archive is required.",
+      "The ZIP inventory was read; it includes monitor information and an ARM64 per-user0.102.3001 installer log. No taskbar relocation was independently executed.",
+      "Current QuickAccess MainWindow calls PositionWindowBottomRight. The complete shared helper derives x/y from the bottom-right of the cursor monitor work area and preserves DPI-aware clamping."
+    ],
+    "rationale": "The current placement mechanism does not choose an edge based on tray/taskbar position. Preserve its work-area bounds and mixed-DPI handling; this is an anchoring request, not evidence that all work-area coordinates are wrong. The recording has not been independently inspected.",
+    "recommended_action": "Maintainer reproduction and mechanism isolation before implementation; do not ask for evidence already supplied.",
+    "status": "reproducible",
+    "source_updated_at": "2026-11-03T01:03:03Z",
+    "evaluated_at": "2026-11-03T09:18:01.2215546+08:00"
+  },
+  "stage": "triage_revalidated",
+  "source_updated_at": "2026-11-03T01:03:03Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51863",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Area-Flyout"
+  ],
+  "owes": "maintainer",
+  "comments": 0,
+  "proposed_fixes": [
+    {
+      "root_cause": "The Quick Access caller always chooses a bottom-right anchor even when the tray is elsewhere; taskbar/tray edge detection and supported Windows-build behavior still need measurement.",
+      "plan": [
+        "Resolve the clicked tray/taskbar edge on the target monitor using existing shell/window helpers.",
+        "Select Quick Access placement for that edge while reusing existing DPI conversion, two-step monitor move and clamping; do not change every shared bottom-right caller.",
+        "Test all four edges, auto-hide, mixed DPI and non-primary origins."
+      ],
+      "verification": [
+        "Quick Access opens adjacent to the clicked tray/taskbar edge and stays inside the correct monitor work area without DPI double-scaling; bottom-taskbar behavior remains unchanged.",
+        "Retain successful baseline behavior and record whether the current build reproduces; validate the identified mechanism before implementing."
+      ],
+      "title": "Anchor Quick Access to the active taskbar edge rather than always bottom-right",
+      "confidence": {
+        "rationale": "The current placement mechanism does not choose an edge based on tray/taskbar position. Preserve its work-area bounds and mixed-DPI handling; this is an anchoring request, not evidence that all work-area coordinates are wrong. The recording has not been independently inspected.",
+        "score": 82,
+        "level": "yellow"
+      }
+    }
+  ],
+  "kind": "issue",
+  "assignees": [
+    null
+  ]
+}

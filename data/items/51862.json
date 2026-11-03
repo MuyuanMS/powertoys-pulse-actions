@@ -1,0 +1,106 @@
+{
+  "evaluated_at": "2026-11-03T09:18:01.2215546+08:00",
+  "issue_context": {
+    "known_information": [
+      "The reporter supplies exact Run Program/Focus app shortcuts, successful Chrome/Code activation and a persistent Default IME not-responding dialog.",
+      "The supplied ZIP and actual Keyboard Manager remap/engine log coverage were inspected. The November2 engine log contains195focus-path trace markers, including fallback FindWindow show-all attempts across multiple Code processes; no Default IME text or TSF deadlock stack was found in those engine logs.",
+      "Current TryShowExistingProgram first selects a visible ownerless window; its fallback enumerates target-process windows with nonempty titles and calls ShowWindow/SetForegroundWindow. A title alone does not prove an eligible app main window."
+    ],
+    "initial_investigation": [
+      [
+        "Read full report, downloaded the supplied ZIP and read matching remap metadata and engine focus traces without exposing executable paths in the public artifact.",
+        "Read current FindMainWindow, both enumeration callbacks and full TryShowExistingProgram fallback. No live Chrome/Code/IME reproduction or hang-dump analysis performed."
+      ],
+      "Source investigation pinned to main revision 454ac1a581f3e3b9645eb31e5623e83f86ab5ea6; historical reporter/maintainer reproduction is attributed, not an executed current-build result."
+    ],
+    "summary": "Identify app-focus target windows before attributing the IME hang to TSF",
+    "inferences": [
+      "The broad titled-window fallback may surface an auxiliary target-process window; alternatively an independent IME/hook interaction may hang. The supplied engine traces do not distinguish these yet."
+    ],
+    "information_gaps": [],
+    "analysis": "The diagnostics establish the requested focus operation, not the claimed TSF-thread deadlock. Hidden/auxiliary-window activation is a discriminating candidate, but no exact Default IME HWND or blocked stack is demonstrated. Use maintainer reproduction and target-window classification rather than another generic ZIP or speculative global hook redesign."
+  },
+  "generated_at": "2026-11-03T09:18:01.2215546+08:00",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager / app focus scenario",
+      "reproduce": {
+        "expected": "Only a legitimate target application window is restored/focused; no auxiliary IME window is surfaced or left hung. A genuine TSF hang, if present, has a captured causal stack rather than an inferred label.",
+        "steps": [
+          "Using the supplied Focus app operation on a test Windows11 account, trigger Chrome and Code with the app closed, open, minimized and hidden.",
+          "Capture the actual HWND/class/owner/visibility selected by normal and fallback paths; correlate with the Default IME dialog appearance.",
+          "Compare direct taskbar activation and Run Program without focus-existing behavior. If a hang reproduces, collect the relevant target/IME thread stack in the maintainer environment."
+        ],
+        "module": "Keyboard Manager / app focus",
+        "prerequisites": [
+          "Current released PowerToys in a test environment; preserve existing user settings and record the exact build."
+        ],
+        "version": "0.102.3001 / Windows11"
+      },
+      "id": "issue-51862-reproduce-1",
+      "primary": true
+    },
+    {
+      "type": "approve_design",
+      "label": "Investigate scoped fix direction",
+      "id": "issue-51862-approve_design-1",
+      "primary": false
+    }
+  ],
+  "schemaVersion": 5,
+  "title": "Keyboard Manager: App Launch/Focus shortcut leaves a hanging \"Default IME is not responding\" error window",
+  "track": "triage",
+  "number": 51862,
+  "pending_author": false,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A focused investigation and conditional fix direction are applicable; this is not a proven repair, completed reproduction or implementation-grade design."
+  },
+  "judgment": {
+    "evidence": [
+      "The reporter supplies exact Run Program/Focus app shortcuts, successful Chrome/Code activation and a persistent Default IME not-responding dialog.",
+      "The supplied ZIP and actual Keyboard Manager remap/engine log coverage were inspected. The November2 engine log contains195focus-path trace markers, including fallback FindWindow show-all attempts across multiple Code processes; no Default IME text or TSF deadlock stack was found in those engine logs.",
+      "Current TryShowExistingProgram first selects a visible ownerless window; its fallback enumerates target-process windows with nonempty titles and calls ShowWindow/SetForegroundWindow. A title alone does not prove an eligible app main window."
+    ],
+    "rationale": "The diagnostics establish the requested focus operation, not the claimed TSF-thread deadlock. Hidden/auxiliary-window activation is a discriminating candidate, but no exact Default IME HWND or blocked stack is demonstrated. Use maintainer reproduction and target-window classification rather than another generic ZIP or speculative global hook redesign.",
+    "recommended_action": "Maintainer reproduction and mechanism isolation before implementation; do not ask for evidence already supplied.",
+    "status": "reproducible",
+    "source_updated_at": "2026-11-03T01:03:13Z",
+    "evaluated_at": "2026-11-03T09:18:01.2215546+08:00"
+  },
+  "stage": "triage_revalidated",
+  "source_updated_at": "2026-11-03T01:03:13Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51862",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "owes": "maintainer",
+  "comments": 0,
+  "proposed_fixes": [
+    {
+      "root_cause": "The broad titled-window fallback may surface an auxiliary target-process window; alternatively an independent IME/hook interaction may hang. The supplied engine traces do not distinguish these yet.",
+      "plan": [
+        "Measure exact target HWND and blocked thread before selecting a fix.",
+        "If fallback picks an auxiliary window, restrict selection using established app-window eligibility and owner/root rules, preserving intentionally hidden app restoration.",
+        "If the real app window is selected, investigate the captured hook/IME stack instead; test multi-process apps, minimized/hidden windows and IME layouts."
+      ],
+      "verification": [
+        "Only a legitimate target application window is restored/focused; no auxiliary IME window is surfaced or left hung. A genuine TSF hang, if present, has a captured causal stack rather than an inferred label.",
+        "Retain successful baseline behavior and record whether the current build reproduces; validate the identified mechanism before implementing."
+      ],
+      "title": "Identify app-focus target windows before attributing the IME hang to TSF",
+      "confidence": {
+        "rationale": "The diagnostics establish the requested focus operation, not the claimed TSF-thread deadlock. Hidden/auxiliary-window activation is a discriminating candidate, but no exact Default IME HWND or blocked stack is demonstrated. Use maintainer reproduction and target-window classification rather than another generic ZIP or speculative global hook redesign.",
+        "score": 66,
+        "level": "yellow"
+      }
+    }
+  ],
+  "kind": "issue",
+  "assignees": [
+    null
+  ]
+}
