@@ -1,33 +1,111 @@
 {
-  "number": 20695,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "assignees": [
+    null
+  ],
+  "proposed_fixes": [
+    {
+      "plan": [
+        "Trace the actual upgrade/repair custom-action scheduling and effective provider values to establish the first destructive transition and registry scope.",
+        "Make removal of shared shell-extension bindings ownership-aware; delete only values that still identify PowerToys, while retaining appropriate cleanup of PowerToys-private registration.",
+        "Add isolated registry/installer regressions with a third-party value, a PowerToys-owned value and an already absent value; keep PDF toggles off throughout the third-party case."
+      ],
+      "title": "Preserve third-party PDF handlers during PowerToys cleanup",
+      "verification": [
+        "Compare provider values and real PDF thumbnails before/after upgrade, repair and uninstall in a disposable VM.",
+        "Verify per-user/per-machine precedence, concurrent third-party ownership changes and normal PowerToys registration cleanup."
+      ],
+      "root_cause": "Source-supported hypothesis: all-module cleanup includes the shared PDF association and ValueChange::unApply unconditionally deletes its value, potentially removing a third-party owner during upgrade cleanup.",
+      "confidence": {
+        "score": 82,
+        "rationale": "Current source identifies unconditional deletion at the shared association boundary, but a current installer trace and migration-safe correction have not been executed.",
+        "level": "yellow"
+      }
+    }
+  ],
+  "stage": "triage_revalidated",
   "source_updated_at": "2024-10-25T12:39:56Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "owes": "maintainer",
+  "issue_context": {
+    "inferences": [
+      "If upgrade cleanup traverses the shared PDF association after Sumatra owns it, unconditional deletion can remove another provider even while the PowerToys toggle remains off.",
+      "The exact current MSI scheduling, HKCU/HKLM precedence and upgrade/repair behavior remain to be measured; provider cache effects must be distinguished from actual association loss."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "information_gaps": [],
+    "analysis": "The sequence is maintainer-ready and source identifies a narrow potential loss-of-ownership boundary. Trace shared association values through the actual upgrade; preserve another provider rather than merely reinstalling it after each update or re-enabling a disabled feature.",
+    "initial_investigation": [
+      "Read the complete report, both replies and timeline; acknowledged the author already confirmed recurrence instead of asking the same question.",
+      "Read exact custom-action apply/unapply functions, default/all module lists, PDF change-set generation, ValueChange deletion and runtime settings registration at67ac3d8b.",
+      "Kept the current default-on exclusion as counterevidence to the reporter enable-then-disable hypothesis; no installer or third-party binary was run."
+    ],
+    "known_information": [
+      "The original0.62.1 report supplies a detailed disabled-PowerToys/Sumatra provider/update sequence. The original reporter answered the maintainer retest request with0.85.1 recurrence and Sumatra reinstall recovery.",
+      "Current ApplyModulesRegistryChangeSetsCA applies only the default-on set, which excludes PDF; therefore a blanket claim that the current installer always enables the PDF provider is not supported.",
+      "Current UnApplyModulesRegistryChangeSetsCA iterates all module change sets, including PDF. PDF thumbnail generation includes the shared .pdf shell-extension association.",
+      "Current registry::ValueChange::unApply deletes its named/default value without comparing the current value to the PowerToys-owned value. This supplies a concrete ownership-check lead at cleanup, distinct from thumbnail caching.",
+      "Runtime PowerPreview settings application separately compares module state and applies/unapplies registration; no upgrade, registry modification or Sumatra installation was executed in this investigation."
+    ],
+    "summary": "The installer cleanup path has a concrete shared-association ownership lead; a current upgrade trace is needed before assigning the full failure."
+  },
+  "generated_at": "2026-11-04T18:57:04.3271657+08:00",
+  "repository": "microsoft/PowerToys",
+  "comments": 2,
+  "kind": "issue",
+  "track": "triage",
+  "judgment": {
+    "status": "actionable_design",
+    "evidence": [
+      "The original0.62.1 report supplies a detailed disabled-PowerToys/Sumatra provider/update sequence. The original reporter answered the maintainer retest request with0.85.1 recurrence and Sumatra reinstall recovery.",
+      "Current ApplyModulesRegistryChangeSetsCA applies only the default-on set, which excludes PDF; therefore a blanket claim that the current installer always enables the PDF provider is not supported.",
+      "Current UnApplyModulesRegistryChangeSetsCA iterates all module change sets, including PDF. PDF thumbnail generation includes the shared .pdf shell-extension association.",
+      "Current registry::ValueChange::unApply deletes its named/default value without comparing the current value to the PowerToys-owned value. This supplies a concrete ownership-check lead at cleanup, distinct from thumbnail caching.",
+      "Runtime PowerPreview settings application separately compares module state and applies/unapplies registration; no upgrade, registry modification or Sumatra installation was executed in this investigation."
+    ],
+    "recommended_action": "Verify ownership before and after the current upgrade/repair cleanup, then scope an ownership-safe removal of only PowerToys association values.",
+    "evaluated_at": "2026-11-04T18:57:04.3271657+08:00",
+    "rationale": "The sequence is maintainer-ready and source identifies a narrow potential loss-of-ownership boundary. Trace shared association values through the actual upgrade; preserve another provider rather than merely reinstalling it after each update or re-enabling a disabled feature.",
     "source_updated_at": "2024-10-25T12:39:56Z"
+  },
+  "title": "PDF thumbnail feature is still meddling even when deactivated, only when Power Toys updates",
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Product-File Explorer"
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/20695",
+  "actions": [
+    {
+      "reproduce": {
+        "steps": [
+          "Record effective .pdf thumbnail and preview provider bindings, their HKCU/HKLM sources, toggle values and a controlled PDF thumbnail before upgrading.",
+          "Perform the normal PowerToys update and record the MSI custom-action sequence plus those exact association values before first launch and after settings reconciliation.",
+          "Distinguish a deleted/replaced binding from a valid provider with a stale Explorer cache; compare thumbnail and preview separately.",
+          "Cover upgrade, repair and uninstall while another provider owns the shared value, then repeat when PowerToys genuinely owns it."
+        ],
+        "expected_result": "A disabled PowerToys PDF feature does not remove another provider association; cleanup removes only PowerToys-owned values and preserves expected repair/uninstall behavior.",
+        "module": "File Explorer PDF thumbnail and preview registration",
+        "prerequisites": [
+          "Use a disposable Windows VM with a snapshot; install Sumatra and a consistent PowerToys version; disable both PowerToys PDF toggles before establishing the third-party provider."
+        ],
+        "version_requirement": "Current stable and current development build"
+      },
+      "primary": true,
+      "type": "reproduce",
+      "label": "Trace disabled PDF provider through upgrade",
+      "id": "issue-20695-reproduce-boundary"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "label": "Design ownership-safe PDF association cleanup",
+      "id": "issue-20695-design-boundary"
+    }
+  ],
+  "pending_author": false,
+  "number": 20695,
+  "evaluated_at": "2026-11-04T18:57:04.3271657+08:00",
+  "fix_assessment": {
+    "rationale": "The unconditional shared-value deletion is visible in current source; correlation to the complete current upgrade sequence and safe migration behavior still requires isolated execution.",
+    "status": "proposed"
   }
 }
