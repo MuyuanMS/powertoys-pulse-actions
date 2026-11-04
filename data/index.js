@@ -4057,25 +4057,24 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-04T06:27:10Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Review the nullable-context compile fix"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Keyboard Manager",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        "MuyuanMS"
+      ],
       "created_at": "2026-10-27T02:29:11Z",
-      "updated_at": "2026-10-27T02:29:30Z",
+      "updated_at": "2026-11-04T06:27:14Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
