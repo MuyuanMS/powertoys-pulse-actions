@@ -85,9 +85,9 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 211,
+    "open_prs": 210,
     "open_issues": 11127,
-    "community": 10242,
+    "community": 10241,
     "artifacts": 1537
   },
   "impact": {
@@ -2427,45 +2427,6 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51789",
-      "kind": "pr",
-      "number": 51789,
-      "url": "https://github.com/microsoft/PowerToys/pull/51789",
-      "title": "fix: allow Mouse Without Borders pairing across valid Microsoft signer certificates",
-      "author": "mvanhorn",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Settings",
-        "Product-Mouse Without Borders",
-        "Ready for review"
-      ],
-      "assignees": [
-        "yeelam-gordon",
-        "LegendaryBlair"
-      ],
-      "created_at": "2026-10-31T05:29:34Z",
-      "updated_at": "2026-11-04T15:00:30Z",
-      "comments": 5,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "pending",
       "merge_state": "BLOCKED"
     },
     {
