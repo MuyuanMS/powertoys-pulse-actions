@@ -1,0 +1,102 @@
+{
+  "source_updated_at": "2026-11-04T04:10:39Z",
+  "assignees": [
+    null
+  ],
+  "stage": "triage_revalidated",
+  "title": "Sometime Missing Taskbar and Windows Explorer",
+  "schemaVersion": 5,
+  "actions": [
+    {
+      "type": "request_info",
+      "id": "issue-51904-request-visual-isolation",
+      "primary": true,
+      "label": "Identify missing pointer or overlay",
+      "comment": {
+        "body": "Thanks for the supplied report. It shows Auto Hide Cursor disabled, Mouse Highlighter enabled, and no attributable process-crash event, so it does not yet identify the component. Could you clarify whether the normal mouse arrow disappears, only the click highlight disappears, or the taskbar/Explorer tab content itself disappears? Please include a short recording with cursor capture enabled showing the exact trigger, and say whether the same behavior occurs after fully exiting PowerToys from its tray menu. There is no need to upload the same report again for this distinction."
+      }
+    },
+    {
+      "type": "approve_design",
+      "id": "issue-51904-design-visual-isolation",
+      "primary": false,
+      "label": "Investigate identified visual-state path"
+    }
+  ],
+  "judgment": {
+    "recommended_action": "Ask for the exact missing visual, a cursor-visible recording and the result of fully exiting PowerToys; investigate only the resulting discriminated path.",
+    "status": "needs_information",
+    "source_updated_at": "2026-11-04T04:10:39Z",
+    "evidence": [
+      "The0.102.3001 report says cursor function continues while its display is missing over taskbar/tab areas, and supplies two links with the same report filename.",
+      "Inspected the supplied report as data: the root settings and November4 runner log explicitly disable AutoHideCursor; MouseHighlighter is enabled and MousePointerCrosshairs disabled.",
+      "The per-process EventViewer exports are empty. AutoHideCursor module-interface logs only initialize the logger; they do not prove that the disabled worker hid the cursor.",
+      "The report has no steps, visual example or stated result after fully exiting PowerToys."
+    ],
+    "evaluated_at": "2026-11-04T13:56:34.8252991+08:00",
+    "rationale": "Do not assign this to Auto Hide Cursor merely because the symptom mentions a cursor. The smallest useful next evidence distinguishes the native pointer from an overlay and establishes whether PowerToys must be running. Re-requesting the same archive would not resolve that ambiguity."
+  },
+  "track": "triage",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "proposed_fixes": [
+    {
+      "title": "Isolate native-pointer versus PowerToys overlay loss",
+      "root_cause": "Unverified hypothesis: a mouse overlay/window composition interaction may differ from native pointer rendering. The supplied snapshot contradicts an active AutoHideCursor assumption.",
+      "verification": [
+        "Reproduce the exact taskbar/tab transition with clicks and cursor movement visible.",
+        "Compare native pointer visibility and overlay visibility separately with PowerToys exited and with one feature enabled.",
+        "Verify the normal pointer and shell remain usable after the feature is disabled and after a PowerToys restart."
+      ],
+      "plan": [
+        "Identify exactly which native pointer, highlight or Explorer region disappears and capture the trigger.",
+        "Compare the same workflow with PowerToys fully exited, then enable only the implicated mouse feature.",
+        "Trace the demonstrated feature/window state and correct only the proven rendering or restoration boundary; do not change global cursor state speculatively."
+      ],
+      "confidence": {
+        "rationale": "Diagnostics establish enabled-feature state but not the missing visual, trigger or causal component.",
+        "score": 28,
+        "level": "red"
+      }
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/51904",
+  "evaluated_at": "2026-11-04T13:56:34.8252991+08:00",
+  "pending_author": false,
+  "number": 51904,
+  "generated_at": "2026-11-04T13:56:34.8252991+08:00",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted visual-state/overlay investigation is applicable, but there is no attributable root cause or ready patch."
+  },
+  "kind": "issue",
+  "issue_context": {
+    "information_gaps": [
+      {
+        "how_to_collect": "Describe whether the normal arrow, click highlight or taskbar/tab content disappears; provide a short recording with cursor capture enabled and state whether fully exiting PowerToys changes it.",
+        "information": "Exact missing visual and trigger, plus result after fully exiting PowerToys",
+        "evidence_type": "gif_video",
+        "why_needed": "These distinguish a native pointer/shell issue from a particular PowerToys overlay and prevent blaming a disabled module."
+      }
+    ],
+    "summary": "Supplied diagnostics do not identify whether the missing visual is the native pointer, a mouse overlay or Explorer/taskbar content; Auto Hide Cursor is disabled in this snapshot.",
+    "analysis": "Do not assign this to Auto Hide Cursor merely because the symptom mentions a cursor. The smallest useful next evidence distinguishes the native pointer from an overlay and establishes whether PowerToys must be running. Re-requesting the same archive would not resolve that ambiguity.",
+    "initial_investigation": [
+      "Read full report and empty discussion/timeline; downloaded the supplied report and inspected relevant settings, current runner logs and event-export sizes without executing contents.",
+      "Explicitly separated logger initialization from active worker execution. No observed crash, screen reproduction or universal cursor failure is claimed."
+    ],
+    "inferences": [
+      "The missing visual might be the native pointer, MouseHighlighter or shell content; the current text does not select among them."
+    ],
+    "known_information": [
+      "The0.102.3001 report says cursor function continues while its display is missing over taskbar/tab areas, and supplies two links with the same report filename.",
+      "Inspected the supplied report as data: the root settings and November4 runner log explicitly disable AutoHideCursor; MouseHighlighter is enabled and MousePointerCrosshairs disabled.",
+      "The per-process EventViewer exports are empty. AutoHideCursor module-interface logs only initialize the logger; they do not prove that the disabled worker hid the cursor.",
+      "The report has no steps, visual example or stated result after fully exiting PowerToys."
+    ]
+  }
+}

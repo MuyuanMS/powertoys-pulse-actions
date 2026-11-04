@@ -1,65 +1,109 @@
 {
-  "schemaVersion": 5,
-  "number": 27945,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-20T16:43:07Z",
-  "evaluated_at": "2026-10-20T16:43:07Z",
-  "source_updated_at": "2026-10-17T05:34:31Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/27945",
+  "source_updated_at": "2026-10-31T14:37:05Z",
+  "assignees": [
+    null
+  ],
+  "stage": "triage_revalidated",
   "title": "Mouse Without Borders KeysNotMatched Error",
+  "schemaVersion": 5,
+  "actions": [
+    {
+      "type": "reproduce",
+      "id": "issue-27945-reproduce-reload",
+      "primary": true,
+      "label": "Test pairing key edit and reload",
+      "reproduce": {
+        "expected_result": "Accepted changes persist and reconnect; rejected changes preserve old state and expose the actual failure instead of appearing accepted.",
+        "module": "Mouse Without Borders",
+        "prerequisites": [
+          "Two disposable Windows endpoints with matching PowerToys versions and test-owned pairing settings.",
+          "Retain existing configuration; record equality and operation outcome only, not key values."
+        ],
+        "steps": [
+          "Connect the endpoints using the supported UI and a test-owned key.",
+          "Apply a different valid key through the supported UI; confirm whether the operation is accepted before checking persistence.",
+          "Reload settings and fully restart both endpoints; verify the accepted key remains effective.",
+          "Repeat invalid input and a deliberately rejected pairing operation; confirm existing state remains unchanged."
+        ],
+        "version_requirement": "Reported/current release and current development build"
+      }
+    },
+    {
+      "type": "approve_design",
+      "id": "issue-27945-design-persistence",
+      "primary": false,
+      "label": "Investigate any surviving persistence divergence"
+    }
+  ],
+  "judgment": {
+    "recommended_action": "Run a two-endpoint key edit/reload regression on a disposable setup, then identify the exact surviving producer before designing a new change.",
+    "status": "reproducible",
+    "source_updated_at": "2026-10-31T14:37:05Z",
+    "evidence": [
+      "The complete discussion reports that editing a key can leave the persisted value stale and that manual replacement/reset has mixed results across versions. No secret keys are needed to reproduce this contract.",
+      "The contributor linked51377 and described the live Encryption.MyKey versus stored Settings.MyKey mismatch. Live51377 is closed/unmerged; its author says it was superseded without naming a replacement in that reply.",
+      "Current main no longer has the cited classic UpdateKey producer; ConnectToMachine assigns both Setting.Values.MyKey and Encryption.MyKey. That source observation does not establish a released fix for every historical failure.",
+      "Some participants report the standalone legacy MWB product and others report later generic pairing failures; those are not automatically the same producer defect."
+    ],
+    "evaluated_at": "2026-11-04T13:56:34.8252991+08:00",
+    "rationale": "Do not advertise the closed PR as active or shipped, and do not duplicate its obsolete classic-form patch. Test key acceptance, persistence and reload on the reported/current product while separating a stale key from an IPC/signer rejection. Preserve user configuration and never request actual keys."
+  },
+  "track": "triage",
   "labels": [
     "Issue-Bug",
     "Status-In progress",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
-  "status": {
-    "detail": "Open PR #51377 explicitly closes this issue and documents the Settings.MyKey persistence defect and its correction through TryApplySecurityKey, with valid/invalid edit tests. Treat the issue as owned by that fix attempt; do not generate a competing plan.",
-    "label": "Existing fix in progress",
-    "glyph": "🔗"
-  },
-  "next_action": "Monitor PR #51377 through review and validation; keep the issue linked to that implementation.",
-  "judgment": {
-    "source_updated_at": "2026-10-17T05:34:31Z",
-    "recommended_action": "Monitor PR #51377 through review and validation; keep the issue linked to that implementation.",
-    "evaluated_at": "2026-10-20T16:43:07Z",
-    "rationale": "Open PR #51377 explicitly closes this issue and documents the Settings.MyKey persistence defect and its correction through TryApplySecurityKey, with valid/invalid edit tests. Treat the issue as owned by that fix attempt; do not generate a competing plan.",
-    "evidence": [
-      "PR #51377 is OPEN and explicitly lists Closes #27945.",
-      "The PR summary identifies stale Settings.MyKey as the reason the old key returns after settings reload.",
-      "The PR changes the stored and live key together and adds valid/invalid key reload tests; its checklist says tests are not yet marked complete."
-    ],
-    "status": "duplicate_or_handled"
-  },
+  "comments": 19,
+  "owes": "maintainer",
+  "proposed_fixes": [
+    {
+      "title": "Verify MWB pairing-key persistence across reload",
+      "root_cause": "Historical evidence supports live-versus-persisted key divergence; current main uses a different coordinated update path, so persistence failure in that path is unproven.",
+      "verification": [
+        "A valid accepted key stays equal in stored/runtime state after reload and both endpoints reconnect.",
+        "Invalid input leaves both stored and live values unchanged.",
+        "Existing protected/service-mode and rejected IPC requests must not silently overwrite pairing state."
+      ],
+      "plan": [
+        "Use test-owned endpoints and keys; record only equality/outcome, never actual keys.",
+        "Exercise accepted key update, settings reload and full restart on each endpoint; distinguish rejection before apply from accepted-but-not-persisted state.",
+        "If divergence survives on current code, correct its identified update/persistence transaction and add valid/invalid/reload coverage; do not restore a removed classic producer."
+      ],
+      "confidence": {
+        "rationale": "Multiple detailed historical persistence reports exist, but the old producer changed and current-version recurrence is not independently demonstrated.",
+        "score": 57,
+        "level": "yellow"
+      }
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/27945",
+  "evaluated_at": "2026-11-04T13:56:34.8252991+08:00",
+  "pending_author": false,
+  "number": 27945,
+  "generated_at": "2026-11-04T13:56:34.8252991+08:00",
   "fix_assessment": {
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/51377"
-    ],
-    "status": "existing_fix",
-    "rationale": "Open PR #51377 directly covers the reported issue; no competing plan is justified."
+    "status": "proposed",
+    "rationale": "A specific persistence contract and source evolution warrant reproduction, but the old implementation target is obsolete and no active covering replacement was established."
   },
+  "kind": "issue",
   "issue_context": {
-    "known_information": [
-      "The issue reports two machines failing to match security keys after a key update.",
-      "Open PR #51377 explicitly closes this issue and describes storing the edited key to Settings.MyKey and Encryption.MyKey together.",
-      "PR #51377 includes tests but reports that validation has not yet been completed."
+    "information_gaps": [],
+    "summary": "Historical key-persistence reports have a concrete reload regression to test; the linked old candidate closed unmerged as superseded.",
+    "analysis": "Do not advertise the closed PR as active or shipped, and do not duplicate its obsolete classic-form patch. Test key acceptance, persistence and reload on the reported/current product while separating a stale key from an IPC/signer rejection. Preserve user configuration and never request actual keys.",
+    "initial_investigation": [
+      "Read every issue reply and cross-reference, the full51377description, current closed/unmerged metadata and its superseded reply.",
+      "Inspected current frmMatrix and ConnectToMachine source instead of assuming the2023producer remains. No endpoint settings, services or keys were changed."
     ],
     "inferences": [
-      "The proposed code path directly addresses the reported stale-key reload behavior, but the open PR is not yet merged or validated."
+      "The visible KeysNotMatched message can arise after a genuine persistence mismatch, a rejected update or a different product; those need separate evidence."
     ],
-    "information_gaps": [],
-    "summary": "The Mouse Without Borders security-key mismatch is being addressed by open PR #51377, which identifies and fixes a persistence mismatch.",
-    "initial_investigation": [
-      "Fetched live issue details and verified PR #51377 is open, explicitly closes #27945, and documents the persistence fix and test coverage."
-    ],
-    "analysis": "The issue has a specific active fix attempt that names it as closing work; preserve ownership and avoid duplicate design."
-  },
-  "actions": [],
-  "assignees": [],
-  "comments": 19,
-  "proposed_fixes": []
+    "known_information": [
+      "The complete discussion reports that editing a key can leave the persisted value stale and that manual replacement/reset has mixed results across versions. No secret keys are needed to reproduce this contract.",
+      "The contributor linked51377 and described the live Encryption.MyKey versus stored Settings.MyKey mismatch. Live51377 is closed/unmerged; its author says it was superseded without naming a replacement in that reply.",
+      "Current main no longer has the cited classic UpdateKey producer; ConnectToMachine assigns both Setting.Values.MyKey and Encryption.MyKey. That source observation does not establish a released fix for every historical failure.",
+      "Some participants report the standalone legacy MWB product and others report later generic pairing failures; those are not automatically the same producer defect."
+    ]
+  }
 }
