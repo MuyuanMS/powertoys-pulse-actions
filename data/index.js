@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 214,
     "open_issues": 11136,
     "community": 10251,
-    "artifacts": 1539
+    "artifacts": 1543
   },
   "impact": {
     "as_of": "2026-11-05T04:29:46.1722307+08:00",
@@ -1636,7 +1636,11 @@ window.BOARD_INDEX = {
     51893,
     51888,
     51914,
-    51917
+    51917,
+    48432,
+    49205,
+    9337,
+    9748
   ],
   "items": [
     {
@@ -116431,17 +116435,22 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Compare runtime materialization by install path",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Area-Setup/Install",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-06-10T12:00:48Z",
       "updated_at": "2026-11-04T15:05:54Z",
       "comments": 19,
@@ -119237,21 +119246,26 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "triage",
-      "stage": "needs_information",
-      "owes": "author",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Start fixing",
+        "type": "approve_design"
+      },
       "labels": [
         "Issue-Bug",
         "Priority-3",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2021-02-16T18:00:11Z",
       "updated_at": "2026-10-11T16:48:53Z",
       "comments": 3,
@@ -207370,22 +207384,27 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Compare RDP clients and reconnect lifecycle",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Planning-Consideration",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2021-01-27T21:45:08Z",
       "updated_at": "2026-10-11T16:48:55Z",
       "comments": 3,
@@ -218643,23 +218662,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "fix",
-      "stage": "design_queued",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Separate pin identity from monitor targeting",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette",
         "CmdPal - Dock"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-07-08T14:07:17Z",
       "updated_at": "2026-11-04T12:41:39Z",
       "comments": 6,
