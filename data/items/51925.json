@@ -6,16 +6,47 @@
   "title": "CmdPal: Show the item icon on the primary context menu entry",
   "url": "https://github.com/microsoft/PowerToys/pull/51925",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-05T04:37:12.3537611+08:00",
-  "evaluated_at": "2026-11-05T04:37:12.3537858+08:00",
+  "generated_at": "2026-11-05T04:53:39.5232201+08:00",
+  "evaluated_at": "2026-11-05T04:53:39.523274+08:00",
   "source_updated_at": "2026-11-04T19:39:55Z",
   "head_sha": "7e7c29110c812cf574ecf28c443faa5feeaf3f91",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "kind": "inline",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandItemViewModel.cs",
+      "title": "Keep primary icon fallback valid for the active theme",
+      "id": "51925-theme-aware-primary-fallback",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 565,
+      "body": "**Severity: Medium.**\r\n\r\n**Affected code:** `UpdateDefaultContextItemIcon` selects the entire `Command.Icon` using `HasAnyIcon`; `IconInfoViewModel.IconForTheme` and `IconProvider.SourceRequestedCore` subsequently select only the active theme.\r\n\r\n**Problem:** A command with a Light image but no Dark image passes `HasAnyIcon`. In Dark mode the primary entry therefore receives that empty Dark image instead of the item's available Dark icon. The reverse occurs for a Dark-only command in Light mode. This leaves an iconless primary entry in a supported partial-icon case even though the item supplies a usable fallback.\r\n\r\n**Why it matters:** The new predicate distinguishes an empty object from an image in either theme, but cannot establish that the image used by this entry is present. The current theme consumer does not retry the item's icon. This is a remaining coverage gap in the fallback behavior, not a claim that the PR introduced all one-theme icon limitations.\r\n\r\n**Suggested change:** Make the primary entry's command-versus-item fallback effective for each theme, either by composing the two themed values or by using the existing theme-aware lookup with the corresponding refresh on theme changes. Preserve command precedence whenever its selected theme has an image; do not hardcode a Light-only check or replace a missing command theme with another empty object.\r\n\r\n**Verification:** Add cases for an entirely empty command icon, a Light-only command, a Dark-only command, and a complete command icon against an item with both images. Assert both rendered theme inputs and repeat after initialization and a theme switch. The current added tests assert only Light. This finding is based on the exact selection/consumer path; no interactive theme-switch pass or replacement implementation is claimed.",
+      "severity": "medium",
+      "confidence": {
+        "score": 89,
+        "rationale": "Exact selection uses an either-theme predicate, while the actual consumer selects one theme and does not consult the item fallback. Null theme data remains empty. No current UI reproduction or replacement implementation is claimed."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "commit_id": "7e7c29110c812cf574ecf28c443faa5feeaf3f91",
+        "head_sha": "7e7c29110c812cf574ecf28c443faa5feeaf3f91",
+        "event": "COMMENT",
+        "comment_ids": [
+          "51925-theme-aware-primary-fallback"
+        ]
+      },
+      "label": "Post consolidated theme fallback finding",
+      "head_sha": "7e7c29110c812cf574ecf28c443faa5feeaf3f91",
+      "id": "51925-post-theme-fallback",
+      "type": "post_review"
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "7e7c29110c812cf574ecf28c443faa5feeaf3f91",
