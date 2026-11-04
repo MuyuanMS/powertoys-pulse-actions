@@ -2538,10 +2538,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
+      "proposed_open": 2,
       "primary_action": {
         "type": "post_review",
-        "label": "Post non-blocking test diagnostic suggestion"
+        "label": "Post supported signer-test improvements"
       },
       "labels": [
         "Product-Settings",
