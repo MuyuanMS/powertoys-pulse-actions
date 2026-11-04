@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "pending_author": false,
+  "issue_context": {
+    "inferences": [
+      "For a Latin initial query against a pure Chinese title, a positive pinyin score can remain Fuzzy and be removed by the short-query gate. Full installed-release reproduction and the chosen strong-match policy remain to be verified.",
+      "Exempting every secondary-path match would also admit weak pinyin fuzzy tails and could defeat the existing short-query noise policy."
+    ],
+    "known_information": [
+      "The reporter supplies zh-CN Windows,0.102.3001 and exact two-letter versus longer-query examples; there are no missing reproduction steps or attachments to request.",
+      "The author recreated51906 as51908 through the bug template and explicitly says to continue here;51908 is not a competing duplicate to close in favor of51906.",
+      "Exact inspected CmdPal source at39d28478 retains the <=2-character app filter with AcronymWordBoundary minimum and passes raw title/query plus only a matchedLexically boolean to MainListRanker.",
+      "ClassifyLexicalTier tests raw ordinal title equality, prefix and word initials before falling back to Fuzzy. PrecomputedFuzzyMatcherWithPinyin separately stores a transliterated secondary target, but the ranker receives no transliteration match-strength classification.",
+      "Existing pinyin matcher tests include two-letter initial patterns. No open pinyin fix was identified by the focused repository-scoped search; that search is not proof of absence.",
+      "The reported v0.103.3062 tag was not available in the local object database. The independent source assessment is pinned to39d28478; no installed-release or UI execution is claimed."
+    ],
+    "analysis": "The report and independent source trace support a focused fix direction, not a blanket filter removal. Establish a strong transliterated initial/prefix signal at the matcher/ranker boundary, preserve ordinal Latin tiers and weak-tail suppression, and validate culture/query-length controls.",
+    "initial_investigation": [
+      "Read the full report, empty discussion/timeline and original51906 including the author continuation note.",
+      "Read the exact MainListPage filter/scoring call, MainListRanker tier/word-boundary implementation, pinyin precomputation and existing matcher tests; checked for existing open pinyin ownership.",
+      "No bug-report request, product source change, matcher execution or full implementation-grade design was performed."
+    ],
+    "information_gaps": [],
+    "summary": "The source supports a mismatch between pinyin matching and raw-title short-query tiering; preserve strong transliteration matches without admitting every fuzzy tail."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "owes": "maintainer",
+  "judgment": {
+    "recommended_action": "Reproduce the exact initial queries and develop a scoped matcher-to-ranker signal with integration tests; do not ask the reporter to repeat the supplied analysis.",
+    "evaluated_at": "2026-11-04T18:46:46.6942885+08:00",
+    "source_updated_at": "2026-11-04T08:37:46Z",
+    "rationale": "The report and independent source trace support a focused fix direction, not a blanket filter removal. Establish a strong transliterated initial/prefix signal at the matcher/ranker boundary, preserve ordinal Latin tiers and weak-tail suppression, and validate culture/query-length controls.",
+    "evidence": [
+      "The reporter supplies zh-CN Windows,0.102.3001 and exact two-letter versus longer-query examples; there are no missing reproduction steps or attachments to request.",
+      "The author recreated51906 as51908 through the bug template and explicitly says to continue here;51908 is not a competing duplicate to close in favor of51906.",
+      "Exact inspected CmdPal source at39d28478 retains the <=2-character app filter with AcronymWordBoundary minimum and passes raw title/query plus only a matchedLexically boolean to MainListRanker.",
+      "ClassifyLexicalTier tests raw ordinal title equality, prefix and word initials before falling back to Fuzzy. PrecomputedFuzzyMatcherWithPinyin separately stores a transliterated secondary target, but the ranker receives no transliteration match-strength classification.",
+      "Existing pinyin matcher tests include two-letter initial patterns. No open pinyin fix was identified by the focused repository-scoped search; that search is not proof of absence.",
+      "The reported v0.103.3062 tag was not available in the local object database. The independent source assessment is pinned to39d28478; no installed-release or UI execution is claimed."
+    ],
+    "status": "actionable_design"
+  },
+  "repository": "microsoft/PowerToys",
+  "actions": [
+    {
+      "primary": true,
+      "id": "issue-51908-reproduce-tier-boundary",
+      "reproduce": {
+        "module": "Command Palette",
+        "expected_result": "Strong pinyin initials survive the <=2-character app filter when enabled; weak tails stay suppressed and existing Latin ranking and longer queries retain their behavior.",
+        "prerequisites": [
+          "Use a zh-CN UI culture with pinyin matching active; install or provide deterministic Chinese-titled app fixtures corresponding to the report."
+        ],
+        "steps": [
+          "Run the supplied db/wx/zd/zp queries against their Chinese app titles and record matcher score, RankTier and final filtered list.",
+          "Compare three-plus-letter and four-initial controls from the report, as well as Latin prefix/acronym and weak fuzzy-tail controls.",
+          "Repeat with pinyin disabled or a non-zh-CN auto-mode culture to isolate transliteration behavior.",
+          "Add an integration regression through scoring and FilterAppsForShortQueries, not only a matcher score assertion."
+        ],
+        "version_requirement": "Reported0.102.3001 and current development build"
+      },
+      "type": "reproduce",
+      "label": "Verify pinyin tier and short-query boundary"
+    },
+    {
+      "primary": false,
+      "id": "issue-51908-design-pinyin-tier",
+      "type": "approve_design",
+      "label": "Design strong-pinyin tier propagation"
+    }
+  ],
+  "stage": "triage_revalidated",
+  "source_updated_at": "2026-11-04T08:37:46Z",
+  "evaluated_at": "2026-11-04T18:46:46.6942885+08:00",
+  "assignees": [
+    null
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The source-supported boundary mismatch is actionable; the exact strong-pinyin matching representation and installed-release behavior still require focused validation."
+  },
+  "number": 51908,
+  "kind": "issue",
+  "comments": 0,
+  "track": "triage",
+  "url": "https://github.com/microsoft/PowerToys/issues/51908",
+  "generated_at": "2026-11-04T18:46:46.6942885+08:00",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Run focused matcher, ranker and MainListPage filter tests under zh-CN and pinyin-off controls.",
+        "Reproduce the supplied query matrix in the affected release and repaired build; confirm no increase in unrelated short-query noise."
+      ],
+      "plan": [
+        "Define and expose a strong transliterated initial/prefix match signal using the existing precomputed target; avoid per-keystroke full transliteration and preserve culture/schema invalidation.",
+        "Feed that signal through ScoreTopLevelItem into tier classification so only agreed strong pinyin matches reach the short-query minimum; retain all existing exact/alias/Latin priorities.",
+        "Add deterministic scoring-to-filter cases for two-letter initials, longer queries, weak tails, mixed titles and pinyin off; verify result ordering as well as presence."
+      ],
+      "title": "Carry strong pinyin match quality into app relevance tiers",
+      "root_cause": "Supported hypothesis: secondary pinyin matching produces a positive lexical score, but raw-title tiering loses the distinction between strong transliteration initials and weak fuzzy matches before the short-query gate.",
+      "confidence": {
+        "score": 78,
+        "rationale": "Exact source confirms the loss of match-quality information and the tier gate; culture-aware end-to-end execution and the minimal safe signal design remain unvalidated.",
+        "level": "yellow"
+      }
+    }
+  ],
+  "title": "[Bug][CmdPal]: 2-letter pinyin initials never match Chinese-named apps (short-query app filter)"
+}
