@@ -1631,7 +1631,10 @@ window.BOARD_INDEX = {
     51905,
     51909,
     51908,
-    51912
+    51912,
+    22053,
+    23245,
+    51911
   ],
   "items": [
     {
@@ -20134,24 +20137,31 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "author",
+      "pending_author": true,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Verify existing Dock customization guidance",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Author-Feedback",
+        "Product-Command Palette",
+        "CmdPal - Dock"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-04T12:43:12Z",
-      "updated_at": "2026-11-04T12:43:12Z",
-      "comments": 0,
+      "updated_at": "2026-11-04T15:42:28Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -273785,22 +273795,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Start fixing",
+        "type": "approve_design"
+      },
       "labels": [
         "Issue-Bug",
         "Product-PowerRename",
         "Priority-2"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2023-01-10T09:17:49Z",
       "updated_at": "2024-10-28T16:21:18Z",
       "comments": 3,
@@ -296399,22 +296414,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Link historical requery repair",
+        "type": "post_comment"
+      },
       "labels": [
         "Issue-Bug",
         "Product-PowerToys Run",
         "Priority-2"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2022-11-13T12:27:36Z",
       "updated_at": "2024-10-25T16:41:56Z",
       "comments": 2,

@@ -1,33 +1,112 @@
 {
+  "schemaVersion": 5,
+  "stage": "triage_revalidated",
+  "assignees": [
+    null
+  ],
   "number": 23245,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-28T16:21:18Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "fix_assessment": {
+    "rationale": "Current source and the arithmetic control support an unclamped/coordinate-consistency hypothesis. The final implementation must validate WinUI minimum-size behavior and actual DPI transitions.",
+    "status": "proposed"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "source_updated_at": "2024-10-28T16:21:18Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report supplies an image with its title bar offscreen, an original diagnostic ZIP and a later author confirmation. The related21964 was closed by stale policy, not by an evidenced repair.",
+      "The archived settings lack last-window dimensions, the event export is empty, and the monitor report records one active display without useful dimensions/DPI. These do not identify the reporter device geometry.",
+      "Current-main PowerRename MainWindow restores/scales dimensions, centers with the unscaled width/height and calls MoveAndResize without a work-area size clamp in that path.",
+      "LastRunSettings defaults to1400x800, persists AppWindow.Size on close and applies at least those defaults on updates; loading uses the saved values or defaults without a work-area cap.",
+      "A source-arithmetic control with a1280x720 work area and default1400x800 at equal DPI places the window at(-60,-40), so an unreachable title bar is possible without requiring multiple monitors. This is not a current WinUI runtime reproduction.",
+      "MainWindow identity and exact Settings source were verified/read at current-main86a3c4e6. A focused open-PR search returned no matching window fix; that search is not proof of absence."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-28T16:21:18Z"
-  }
+    "status": "actionable_design",
+    "evaluated_at": "2026-11-04T23:55:14.4151958+08:00",
+    "recommended_action": "Reproduce default and persisted oversized states on small and mixed-DPI work areas, then bound final physical geometry so title-bar controls remain reachable.",
+    "rationale": "The evidence supports a narrow placement fix direction rather than blaming monitor count or treating stale closure as resolution. Normalize size into one coordinate system, respect the actual work area and reconcile the1400x800 minimum/default policy with smaller displays before centering."
+  },
+  "evaluated_at": "2026-11-04T23:55:14.4151958+08:00",
+  "comments": 3,
+  "kind": "issue",
+  "source_updated_at": "2024-10-28T16:21:18Z",
+  "track": "triage",
+  "issue_context": {
+    "analysis": "The evidence supports a narrow placement fix direction rather than blaming monitor count or treating stale closure as resolution. Normalize size into one coordinate system, respect the actual work area and reconcile the1400x800 minimum/default policy with smaller displays before centering.",
+    "information_gaps": [],
+    "inferences": [
+      "Unclamped saved/default dimensions can produce a negative top coordinate; using unscaled dimensions for centering can add misplacement when the DPI ratio differs.",
+      "The archive does not prove which size/DPI condition occurred on this device, so the exact trigger and runtime constraints remain unverified."
+    ],
+    "summary": "A bounded restore-geometry/DPI hypothesis explains how the title bar can leave the available work area; validate the real placement path before fixing it.",
+    "initial_investigation": [
+      "Read the report, author follow-up, linked21964 closure and supplied screenshot; inspected the ZIP settings, monitor report, empty events and relevant PowerRename log entries as data.",
+      "Read the exact current constructor/MoveAndResize path, size capture and LastRunSettings load/save/default rules; verified source identities and calculated an oversized-work-area control. No installed-app, DPI or user-setting change performed."
+    ],
+    "known_information": [
+      "The report supplies an image with its title bar offscreen, an original diagnostic ZIP and a later author confirmation. The related21964 was closed by stale policy, not by an evidenced repair.",
+      "The archived settings lack last-window dimensions, the event export is empty, and the monitor report records one active display without useful dimensions/DPI. These do not identify the reporter device geometry.",
+      "Current-main PowerRename MainWindow restores/scales dimensions, centers with the unscaled width/height and calls MoveAndResize without a work-area size clamp in that path.",
+      "LastRunSettings defaults to1400x800, persists AppWindow.Size on close and applies at least those defaults on updates; loading uses the saved values or defaults without a work-area cap.",
+      "A source-arithmetic control with a1280x720 work area and default1400x800 at equal DPI places the window at(-60,-40), so an unreachable title bar is possible without requiring multiple monitors. This is not a current WinUI runtime reproduction.",
+      "MainWindow identity and exact Settings source were verified/read at current-main86a3c4e6. A focused open-PR search returned no matching window fix; that search is not proof of absence."
+    ]
+  },
+  "pending_author": false,
+  "repository": "microsoft/PowerToys",
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Add geometry-level tests for a smaller-than-default work area and non-unit DPI ratio.",
+        "Run real PowerRename placement and resize/close/reopen controls on isolated single- and mixed-DPI display setups."
+      ],
+      "title": "Bound restored PowerRename geometry to the active work area",
+      "root_cause": "Supported hypothesis: default/persisted dimensions are not capped to the target work area, and the restore path centers with unscaled rather than final dimensions. Exact reporter geometry and runtime constraints are not yet reproduced.",
+      "plan": [
+        "Establish physical-versus-logical units for saved AppWindow.Size and the target display before applying DPI conversion.",
+        "Bound final size/position against DisplayArea.WorkArea and center using final dimensions; reconcile minimum/default policy with genuinely smaller work areas rather than persisting an impossible size.",
+        "Exercise default, oversized saved, moved-monitor and mixed-DPI cases with reachable title bar and stable subsequent persistence."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "score": 80,
+        "rationale": "Current exact source and numeric control support the failure path; actual WinUI/DPI execution and the reporter-specific trigger remain unvalidated."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Priority-2"
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/23245",
+  "actions": [
+    {
+      "type": "reproduce",
+      "primary": true,
+      "id": "issue-23245-reproduce-restore-geometry",
+      "label": "Validate PowerRename restore geometry",
+      "reproduce": {
+        "version_requirement": "Current development build and the reported affected release where available",
+        "module": "PowerRename",
+        "prerequisites": [
+          "Use an isolated test profile; record actual display work-area pixels and DPI. Preserve normal user settings."
+        ],
+        "steps": [
+          "Launch with no saved last-run size on a1280x720 work area; record default size, applied rectangle and title-bar reachability.",
+          "Save a large window on a larger monitor, reopen on a smaller work area, and compare equal-DPI and mixed-DPI transitions.",
+          "Inspect the final rectangle before MoveAndResize, including scaled size versus centering inputs.",
+          "After a candidate repair, verify small-display scrolling/minimum constraints, title-bar buttons, subsequent size persistence and normal large-monitor centering."
+        ],
+        "expected_result": "The final rectangle uses one consistent coordinate system, fits the supported work area and leaves title-bar controls reachable without regressing normal saved sizing."
+      }
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-23245-design-placement",
+      "label": "Design bounded restore placement"
+    }
+  ],
+  "owes": "maintainer",
+  "title": "The size of the PowerRename window is too big",
+  "generated_at": "2026-11-04T23:55:14.4151958+08:00"
 }
