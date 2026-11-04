@@ -1,33 +1,109 @@
 {
-  "number": 21740,
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "Current source identifies a meaningful handoff boundary, but no current browser execution or isolated root cause has been established.",
+        "level": "yellow",
+        "score": 58
+      },
+      "verification": [
+        "Use identical harmless URL/query controls with two disposable profiles.",
+        "Run focused browser-command/escaping tests and compare the selected profile before and after the targeted change."
+      ],
+      "plan": [
+        "Measure the registered command, generated search arguments and selected profile against a normal external URL using disposable profiles.",
+        "If Run causes the divergence, adjust only its web-search handoff to preserve registered/default-browser semantics without hard-coded profile directories.",
+        "Cover already-open/closed Edge, explicit search keyword, URL Handler and non-Edge handlers; keep argument escaping and shell error reporting intact."
+      ],
+      "title": "Preserve external-link profile routing during web search",
+      "root_cause": "Hypothesis: explicit browser executable/search arguments take a different profile-selection path from the registered external-URL handoff; the exact divergence is not yet demonstrated."
+    }
+  ],
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T12:43:23Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/21740",
+  "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "actions": [
+    {
+      "reproduce": {
+        "prerequisites": [
+          "Use disposable Edge profilesAandB; makeA the default for external links andB the most recently active; retain the registered default-browser handler."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "steps": [
+          "Open the same harmless HTTPS URL through a normal Windows external-link action and record the selected profile.",
+          "Open that URL through Run URL Handler, then run a Web Search using its explicit activation keyword.",
+          "Capture the resolved browser executable/argument pattern and compare direct search-string launch with normal URL handoff.",
+          "Repeat with Edge initially closed and already open, and regression-check a non-Edge default browser."
+        ],
+        "expected_result": "Run follows the intended registered browser/profile behavior; a divergence is assigned to the measured launch path rather than guessed profile arguments.",
+        "module": "PowerToys Run Web Search"
+      },
+      "type": "reproduce",
+      "primary": true,
+      "id": "issue-21740-reproduce-boundary",
+      "label": "Compare browser profile handoff paths"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-21740-design-boundary",
+      "label": "Investigate external-profile handoff correction"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Priority-2"
+  ],
+  "issue_context": {
+    "inferences": [
+      "Launching an executable search command may enter a different Edge profile-routing path than opening an external URL. The current evidence does not establish whether the defect is in Run, registered arguments or Edge handling."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T12:43:23Z"
-  }
+    "analysis": "The missing distinction is a maintainer launch-path comparison, not another generic still-happening question. Preserve user-selected browser/default-profile behavior and avoid hard-coding an Edge profile or changing every browser launch before the divergence is measured.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read complete issue, both comments and timeline; inspected both supplied screenshots and acknowledged the author response.",
+      "Read exact Web Search action and DefaultBrowserInfo command extraction/fallback. No profile directory was guessed, registry modified or browser launched into a personal profile."
+    ],
+    "known_information": [
+      "The reporter supplied the Edge external-links profile preference and Run Web Search screenshots; both were inspected without reproducing account information.",
+      "A maintainer asked whether the issue still occurs. The original reporter explicitly confirmed it on PowerToys0.85.1 and Edge130, so that request was answered.",
+      "Current WebSearch.Main passes BrowserInfo.Path, BrowserInfo.ArgumentsPattern and a question-mark search string to Helper.OpenCommandInShell.",
+      "DefaultBrowserInfo reads the registered browser command and separates executable/argument pattern; its Edge fallback uses --single-argument. It does not itself select an Edge profile.",
+      "The exact current browser handoff was inspected at67ac3d8b; no current Edge profile experiment or installed-release reproduction was performed."
+    ],
+    "summary": "The author answered the retest request; compare direct browser-search launch with external-URL handoff before choosing a profile fix."
+  },
+  "source_updated_at": "2024-10-25T12:43:23Z",
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
+  "track": "triage",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A browser handoff correction is plausible, but its exact ownership and minimal change require the concrete launch-path comparison."
+  },
+  "title": "PowerToys Run does not use the correct Edge profile when performing a search",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "pending_author": false,
+  "judgment": {
+    "rationale": "The missing distinction is a maintainer launch-path comparison, not another generic still-happening question. Preserve user-selected browser/default-profile behavior and avoid hard-coding an Edge profile or changing every browser launch before the divergence is measured.",
+    "recommended_action": "Run matched URL/search/profile controls and correct only the demonstrated handoff mismatch.",
+    "evidence": [
+      "The reporter supplied the Edge external-links profile preference and Run Web Search screenshots; both were inspected without reproducing account information.",
+      "A maintainer asked whether the issue still occurs. The original reporter explicitly confirmed it on PowerToys0.85.1 and Edge130, so that request was answered.",
+      "Current WebSearch.Main passes BrowserInfo.Path, BrowserInfo.ArgumentsPattern and a question-mark search string to Helper.OpenCommandInShell.",
+      "DefaultBrowserInfo reads the registered browser command and separates executable/argument pattern; its Edge fallback uses --single-argument. It does not itself select an Edge profile.",
+      "The exact current browser handoff was inspected at67ac3d8b; no current Edge profile experiment or installed-release reproduction was performed."
+    ],
+    "source_updated_at": "2024-10-25T12:43:23Z",
+    "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+    "status": "reproducible"
+  },
+  "assignees": [
+    null
+  ],
+  "number": 21740,
+  "comments": 2
 }

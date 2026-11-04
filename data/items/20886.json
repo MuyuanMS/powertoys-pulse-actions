@@ -1,33 +1,110 @@
 {
-  "number": 20886,
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "There is a concrete report and supplied configuration, but no correlated failing API or current execution evidence.",
+        "level": "red",
+        "score": 42
+      },
+      "verification": [
+        "Run the Task Manager/ordinary-window and custom/default-hotkey matrix.",
+        "Check errors and pin state against the same timestamped operation rather than archived unrelated failures."
+      ],
+      "plan": [
+        "Reproduce with the recorded Alt+Q configuration and instrument the existing pin/error path with process integrity and target-handle lifetime.",
+        "Correct the proven pin-state or notification mismatch without bypassing Windows privilege boundaries; preserve ordinary-window behavior.",
+        "Add same/different-integrity and stale-target controls, separating topmost state from border rendering."
+      ],
+      "title": "Correct the measured Task Manager pinning boundary or its feedback",
+      "root_cause": "Unproved hypothesis: the operation fails across a target privilege/window-state boundary or the configured hotkey path; supplied logs do not identify the failing pin call."
+    }
+  ],
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T17:52:47Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/20886",
+  "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "actions": [
+    {
+      "reproduce": {
+        "prerequisites": [
+          "Use a disposable test session; record PowerToys and Task Manager elevation; preserve custom Alt+Q and test a default-hotkey control."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "steps": [
+          "Pin an ordinary application and Task Manager with the configured hotkey; distinguish absent hotkey delivery, error sound, topmost state and border state.",
+          "Compare matching-integrity and elevated-target/unelevated-PowerToys cases, noting any elevation warning.",
+          "Correlate the attempt with SetProp/SetWindowPos return and error values; do not use an unrelated unpin entry as the pin failure.",
+          "Compare Task Manager own Always on top setting and restart controls without changing process identity mid-observation."
+        ],
+        "expected_result": "Supported same-integrity pinning works, and unsupported or failed operations yield the correct actionable explanation without stale pinned state.",
+        "module": "Always On Top"
+      },
+      "type": "reproduce",
+      "primary": true,
+      "id": "issue-20886-reproduce-boundary",
+      "label": "Isolate Task Manager pinning failure"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-20886-design-boundary",
+      "label": "Investigate demonstrated pinning or feedback failure"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-1",
+    "Status-Reproducible"
+  ],
+  "issue_context": {
+    "inferences": [
+      "A privilege boundary, target-handle state or custom-hotkey interaction could account for the error; none is correlated to the old failed-unpin entry."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T17:52:47Z"
-  }
+    "analysis": "The existing reproduction and archive support a maintainer matrix. Use the actual Alt+Q configuration, record target/process integrity and distinguish hotkey delivery, pinning and border rendering before choosing a correction.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the full report, reply and timeline; inventoried the supplied archive and read all module logs/settings plus empty EventViewer export without executing any contents.",
+      "Read current topmost pinning, error and elevation-notification paths. Did not ask for the already supplied archive or claim that an administrator-account anecdote proves a repaired defect."
+    ],
+    "known_information": [
+      "The original0.62.1 report describes Task Manager pin failure with an error sound while PowerToys is not elevated; a later participant reports success when launching Task Manager from an administrator account.",
+      "The supplied archive was downloaded as data and all AlwaysOnTop module logs/settings were read: Windows build22000, custom Alt+Q hotkey, empty excluded-app list and game-mode suppression disabled.",
+      "The module EventViewer export is empty. The only module error is an older failed-unpin entry, not a correlated pin failure identifying the reported Task Manager attempt.",
+      "Current PinTopmostWindow calls SetProp and SetWindowPos with explicit error logging; foreground handling has a specific elevation-required notification path.",
+      "The archive and participant anecdote do not establish the Task Manager token/integrity state at the failed attempt or prove a universal elevation-only cause."
+    ],
+    "summary": "Supplied diagnostics narrow the pinning case but do not establish a Task Manager integrity mismatch as the cause."
+  },
+  "source_updated_at": "2024-10-25T17:52:47Z",
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
+  "track": "triage",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An applicable pinning/feedback correction remains a hypothesis; current diagnostics do not identify a correlated failing call."
+  },
+  "title": "Inability to display the Task Manager on top of other windows",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "pending_author": false,
+  "judgment": {
+    "rationale": "The existing reproduction and archive support a maintainer matrix. Use the actual Alt+Q configuration, record target/process integrity and distinguish hotkey delivery, pinning and border rendering before choosing a correction.",
+    "recommended_action": "Reproduce pinning across Task Manager and ordinary-window controls at matching and differing integrity levels, then fix only the demonstrated failure or missing actionable feedback.",
+    "evidence": [
+      "The original0.62.1 report describes Task Manager pin failure with an error sound while PowerToys is not elevated; a later participant reports success when launching Task Manager from an administrator account.",
+      "The supplied archive was downloaded as data and all AlwaysOnTop module logs/settings were read: Windows build22000, custom Alt+Q hotkey, empty excluded-app list and game-mode suppression disabled.",
+      "The module EventViewer export is empty. The only module error is an older failed-unpin entry, not a correlated pin failure identifying the reported Task Manager attempt.",
+      "Current PinTopmostWindow calls SetProp and SetWindowPos with explicit error logging; foreground handling has a specific elevation-required notification path.",
+      "The archive and participant anecdote do not establish the Task Manager token/integrity state at the failed attempt or prove a universal elevation-only cause."
+    ],
+    "source_updated_at": "2024-10-25T17:52:47Z",
+    "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+    "status": "reproducible"
+  },
+  "assignees": [
+    null
+  ],
+  "number": 20886,
+  "comments": 1
 }

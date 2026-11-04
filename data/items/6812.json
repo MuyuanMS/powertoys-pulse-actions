@@ -1,33 +1,109 @@
 {
-  "number": 6812,
+  "proposed_fixes": [
+    {
+      "confidence": {
+        "rationale": "The source confirms registration failure is logged, but current input/control behavior and error propagation have not been executed.",
+        "level": "yellow",
+        "score": 64
+      },
+      "verification": [
+        "Run capture/persistence/registration/activation controls for supported and conflicting chords.",
+        "Verify error feedback, working-binding recovery and restart consistency."
+      ],
+      "plan": [
+        "Measure saved key data and native registration result for working/conflicting controls to distinguish input-control defects from OS ownership.",
+        "Propagate a confirmed registration failure through existing localized feedback and preserve or clearly restore a known working binding.",
+        "Cover reconfiguration, conflict resolution, restart and unsupported OS-owned combinations without introducing an unconditional low-level hook."
+      ],
+      "title": "Report editor-hotkey registration failures accurately",
+      "root_cause": "Hypothesis: Settings capture can succeed while native RegisterHotKey fails for an OS-owned/conflicting chord; the current registration path only logs failure."
+    }
+  ],
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T02:02:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/6812",
+  "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "actions": [
+    {
+      "reproduce": {
+        "prerequisites": [
+          "Use a disposable configuration and record Windows build; establish an unused working editor chord first."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "steps": [
+          "Capture and save a reported chord and verify the persisted modifier/key values.",
+          "Record RegisterHotKey success or its exact error after Settings applies the change, then activate outside the shortcut input.",
+          "Compare an unused chord and the Windows Search/Magnifier-associated cases with PowerToys elevated and unelevated.",
+          "Restore the working chord and verify failed registration does not leave misleading Settings state or silently lose editor access."
+        ],
+        "expected_result": "Supported chords persist and activate; conflicts are distinguished from capture errors and explained without claiming ownership of every Windows chord.",
+        "module": "FancyZones editor activation"
+      },
+      "type": "reproduce",
+      "primary": true,
+      "id": "issue-6812-reproduce-boundary",
+      "label": "Trace editor shortcut registration"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-6812-design-boundary",
+      "label": "Design confirmed shortcut-failure feedback"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Editor",
+    "FancyZones-Settings",
+    "Product-FancyZones",
+    "Priority-3"
+  ],
+  "issue_context": {
+    "inferences": [
+      "An OS-owned or already-registered chord can fail after Settings accepts its text; a control capture problem is also possible and must be separated by saved-key and registration observations."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T02:02:03Z"
-  }
+    "analysis": "The report needs a focused maintainer comparison of captured value, saved value, registration result and actual activation. A useful fix follows the demonstrated boundary and must not silently steal Windows shortcuts or discard a working binding.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the complete report, nine replies and timeline, including the maintainer distinction between shortcut control and Windows ownership.",
+      "Inspected current editor-hotkey observer and RegisterHotKey failure logging; did not assume the old low-level-hook proposal was implemented or appropriate."
+    ],
+    "known_information": [
+      "The original0.20.1 report and nine replies identify Win+Q, Win+Z and Win+Esc editor shortcuts; participants observe Windows Search and a maintainer notes the Magnifier binding.",
+      "Current FancyZones::UpdateHotkey unregisters the previous binding, calls RegisterHotKey and logs its failure; setting-change observation invokes this registration path.",
+      "The current source therefore has a concrete registration-failure boundary; it does not prove which historical shortcut failed registration or that all reported chords are unconditionally reservable.",
+      "No current Windows hotkey-registration or Settings persistence experiment was executed."
+    ],
+    "summary": "Separate shortcut capture/persistence from OS registration, and expose an observed conflict instead of promising to override reserved Windows keys."
+  },
+  "source_updated_at": "2024-10-25T02:02:03Z",
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
+  "track": "triage",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The source exposes a diagnostic/registration boundary, but current behavior and the appropriate UI propagation require validation."
+  },
+  "title": "[FancyZones] Open editor does not work for Win+Q (and other) shortcut",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-11-04T18:52:58.1061152+08:00",
+  "pending_author": false,
+  "judgment": {
+    "rationale": "The report needs a focused maintainer comparison of captured value, saved value, registration result and actual activation. A useful fix follows the demonstrated boundary and must not silently steal Windows shortcuts or discard a working binding.",
+    "recommended_action": "Compare an unused editor chord with the reported OS-associated chords; surface an actual registration failure through the existing Settings/notification path if confirmed.",
+    "evidence": [
+      "The original0.20.1 report and nine replies identify Win+Q, Win+Z and Win+Esc editor shortcuts; participants observe Windows Search and a maintainer notes the Magnifier binding.",
+      "Current FancyZones::UpdateHotkey unregisters the previous binding, calls RegisterHotKey and logs its failure; setting-change observation invokes this registration path.",
+      "The current source therefore has a concrete registration-failure boundary; it does not prove which historical shortcut failed registration or that all reported chords are unconditionally reservable.",
+      "No current Windows hotkey-registration or Settings persistence experiment was executed."
+    ],
+    "source_updated_at": "2024-10-25T02:02:03Z",
+    "evaluated_at": "2026-11-04T18:52:58.1061152+08:00",
+    "status": "reproducible"
+  },
+  "assignees": [
+    null
+  ],
+  "number": 6812,
+  "comments": 9
 }
