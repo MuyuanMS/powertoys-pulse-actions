@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 216,
     "open_issues": 11124,
     "community": 10240,
-    "artifacts": 1457
+    "artifacts": 1528
   },
   "impact": {
     "as_of": "2026-11-04T18:42:44.7005531+08:00",
@@ -1897,10 +1897,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-03T00:50:16Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -1910,7 +1910,9 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-02T21:48:00Z",
       "updated_at": "2026-11-04T03:37:15Z",
       "comments": 3,
