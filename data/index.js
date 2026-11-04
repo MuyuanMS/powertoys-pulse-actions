@@ -20943,16 +20943,16 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "triage",
       "stage": "triage_revalidated",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-04T01:53:21Z",
       "has_artifact": true,
       "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Start fixing",
+        "type": "approve_design"
       },
       "labels": [
         "Issue-Bug",
@@ -20962,8 +20962,8 @@ window.BOARD_INDEX = {
         null
       ],
       "created_at": "2026-11-03T16:05:47Z",
-      "updated_at": "2026-11-03T16:05:47Z",
-      "comments": 0,
+      "updated_at": "2026-11-04T01:53:21Z",
+      "comments": 1,
       "priority": null
     },
     {
