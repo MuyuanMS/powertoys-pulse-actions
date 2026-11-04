@@ -6,85 +6,20 @@
   "title": "fix: allow Mouse Without Borders pairing across valid Microsoft signer certificates",
   "url": "https://github.com/microsoft/PowerToys/pull/51789",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-04T14:03:18.5621882+08:00",
-  "evaluated_at": "2026-11-04T14:03:18.5622124+08:00",
-  "source_updated_at": "2026-11-04T03:15:51Z",
-  "head_sha": "ef626bf5fe87823213f5b966b324db121d4d5414",
+  "generated_at": "2026-11-04T18:49:29.4111491+08:00",
+  "evaluated_at": "2026-11-04T18:49:29.4111699+08:00",
+  "source_updated_at": "2026-11-04T08:28:32Z",
+  "head_sha": "104ec12e97af778b7df9a2254c069b558740e943",
   "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "disposition": "proposed",
-      "body": "### Identify the actual signer-fixture search locations\r\n\r\n**Severity:** `low` (non-blocking test diagnostics)\r\n\r\nThe helper probes curated Windows system executables as well as dependencies in the test-output directory, but its failure message says only \"beside\" the known signed dependency. Include both search locations and identify that dependency as the certificate comparison baseline, so a failed run points to the fixture sources that were actually examined.\r\n\r\nKeep the hard failure and all existing identity, certificate and signature checks unchanged; this is only a diagnostic improvement, not a request to skip this regression.\n\n```suggestion\n            Assert.Fail($\"No trusted Microsoft-signed peer with a leaf certificate distinct from {knownSignedPath} was found among the Windows system candidates in {Environment.SystemDirectory} or dependencies in {AppContext.BaseDirectory}.\");\n```",
-      "confidence": {
-        "score": 93,
-        "rationale": "Exact helper searches Windows system candidates and test-output DLLs, whereas its failure message mentions only beside the baseline dependency."
-      },
-      "id": "51789-signer-search-diagnostic",
-      "side": "RIGHT",
-      "path": "src/settings-ui/Settings.UI.UnitTests/MouseWithoutBordersIpcSecurityTests.cs",
-      "severity": "low",
-      "in_diff": true,
-      "title": "Identify the actual signer-fixture search locations",
-      "line": 1002,
-      "kind": "inline"
-    },
-    {
-      "title": "Let Release end-to-end tests exercise mixed product signers",
-      "body": "**Severity: Medium — the Release end-to-end harness rejects the configuration this PR is intended to support.**\r\n\r\n**Affected code:** `Assert-MwbEndpointSignatures` in `src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/Scripts/MwbTestSigning.ps1`, called by `Scripts/Initialize-AutonomousHost.ps1` and `Payload/EndpointWorker.ps1` before product startup.\r\n\r\n**Problem:** Production `MeetsSigningPolicy` now permits independently trusted Microsoft leaf certificates, but the Release harness still unconditionally requires identical MWB/Settings certificate hashes. A consistent signed product build with distinct legitimate leaves therefore fails provisioning before the pairing test can run.\r\n\r\n**Why it matters:** The new unit regression can pass while the two-endpoint suite cannot exercise the real mixed-signer product scenario. This is a test-harness compatibility gap, not evidence that the production repair itself has run end to end.\r\n\r\n**Suggested change:** Align the normal signed-product gate with the independently verified product-signer policy:\r\n1. In `Assert-MwbEndpointSignatures`, remove only the final unconditional MWB/Settings raw-certificate equality clause and retain the Runner/Settings file-version comparison.\r\n2. Keep the loop's valid-signature/expected-publisher checks and its per-component `$TestCertificate.RawDataSha256` pin unchanged. That existing pin must still require every component to use the explicitly supplied test certificate.\r\n3. Update the final error message to describe a version mismatch, and add separate normal-product mixed-leaf and explicitly pinned test-certificate cases. Do not remove all hash checks or relax test-certificate pinning globally.\r\n\r\n**Verification:** Cover a normal Release set with distinct valid product leaves, invalid/tampered signatures, mismatched Runner/Settings versions, and a supplied test certificate with one wrongly signed component. Then run the two-endpoint pairing regression on a signed mixed-leaf product build. The current gate's same-leaf control, mixed-leaf rejection and invalid-signature rejection were exercised with controlled signature objects; this is branch evidence, not real-signature or VM execution.",
-      "severity": "medium",
-      "kind": "companion",
-      "out_of_diff_reason": "The failing Release gate and its tests are outside the current PR diff; changing the production signature-policy hunk would not repair test provisioning.",
-      "id": "51789-release-harness-mixed-signers",
-      "in_diff": false,
-      "confidence": {
-        "rationale": "Both Release startup callers execute the exact unconditional leaf-equality gate; controlled execution confirms rejection even when all preceding signature/publisher checks pass. Real signed-product VM validation remains required.",
-        "score": 95
-      }
-    }
-  ],
-  "actions": [
-    {
-      "head_sha": "ef626bf5fe87823213f5b966b324db121d4d5414",
-      "id": "51789-post-search-diagnostic",
-      "requires_confirmation": true,
-      "label": "Post supported signer-test improvements",
-      "review": {
-        "head_sha": "ef626bf5fe87823213f5b966b324db121d4d5414",
-        "event": "COMMENT",
-        "comment_ids": [
-          "51789-signer-search-diagnostic",
-          "51789-release-harness-mixed-signers"
-        ]
-      },
-      "source_updated_at": "2026-10-31T05:29:54Z",
-      "type": "post_review"
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "validation": {
-    "suggestion_patch": {
-      "head_sha": "ef626bf5fe87823213f5b966b324db121d4d5414",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "51789-signer-search-diagnostic"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "ef626bf5fe87823213f5b966b324db121d4d5414",
-      "result": "passed",
-      "checked_comment_ids": [
-        "51789-signer-search-diagnostic"
-      ],
-      "files": [
-        {
-          "path": "src/settings-ui/Settings.UI.UnitTests/MouseWithoutBordersIpcSecurityTests.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
+    "upstream_head": {
+      "head_sha": "104ec12e97af778b7df9a2254c069b558740e943",
+      "result": "passed"
     }
   }
 }
