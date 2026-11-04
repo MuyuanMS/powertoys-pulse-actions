@@ -1,33 +1,109 @@
 {
-  "number": 21737,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T02:13:01Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "FancyZones native overlay",
+        "expected_result": "Editor and overlay have a deliberate consistent corner policy while snapping, hit testing and accessible contrast remain unchanged.",
+        "steps": [
+          "Compare the same layout in editor and Shift-drag overlay.",
+          "Exercise highlighted/nonhighlighted and multi-zone selection at mixed DPI.",
+          "Check high contrast, Windows10/11 and tiny-zone corner clamping.",
+          "Confirm a visual-only change leaves snapped rectangles and selection targets unchanged."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "prerequisites": [
+          "Use a disposable layout with large, tiny and overlapping zones; preserve existing layouts."
+        ]
+      },
+      "primary": true,
+      "label": "Compare editor and activation overlay corners",
+      "type": "reproduce",
+      "id": "issue-21737-reproduce-boundary"
+    },
+    {
+      "primary": false,
+      "label": "Design rendering-only zone corner parity",
+      "type": "approve_design",
+      "id": "issue-21737-design-boundary"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Scope a normal-overlay rendering-only change with editor parity and accessibility controls.",
+    "rationale": "The mismatch is understandable and has a narrow renderer owner. Treat it as visual-consistency work, preserve snap/hit-test behavior and decide the radius/accessibility policy before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Read the complete0.64.0 report, empty comments and timeline; inspected both supplied screenshots.",
+      "The editor view shows rounded zone outlines while the Shift-drag activation overlay has square corners; the request is about rendering, not failure to snap.",
+      "Current native ZonesOverlay zone drawing uses FillRectangle/DrawRectangle for zone fills and outlines; separate rounded ghost animation rendering is not the normal zone draw path.",
+      "A focused open-issue search returned no additional owner, which is not proof no related work exists; no current installed overlay was exercised."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T02:13:01Z"
-  }
+    "source_updated_at": "2024-10-25T02:13:01Z",
+    "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+    "status": "actionable_design"
+  },
+  "track": "triage",
+  "kind": "issue",
+  "proposed_fixes": [
+    {
+      "title": "Align normal zone-overlay corners with editor visuals",
+      "plan": [
+        "Agree on editor/native radius policy and small-zone/DPI clamping.",
+        "Apply rounded drawing to normal highlighted and inactive zone fill/outline paths, not only animation ghosts.",
+        "Keep layout rectangles, hit testing and snapping coordinates unchanged."
+      ],
+      "root_cause": "Current normal zone fills/outlines are rectangular; use a deliberate visual corner policy rather than changing snap geometry.",
+      "confidence": {
+        "level": "yellow",
+        "score": 83,
+        "rationale": "The screenshot difference and current drawing boundary are clear; runtime visuals and policy approval remain outstanding."
+      },
+      "verification": [
+        "Compare editor/overlay at mixed DPI and high contrast.",
+        "Retain tiny/overlapping/multizone snap and selection tests."
+      ]
+    }
+  ],
+  "title": "Zone corners not rounded when activating (with shift key)",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current normal zone drawing is rectangular and matches the historical visual difference; visual policy and runtime acceptance are not yet approved or executed."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-3"
+  ],
+  "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+  "source_updated_at": "2024-10-25T02:13:01Z",
+  "stage": "triage_revalidated",
+  "schemaVersion": 5,
+  "number": 21737,
+  "assignees": [
+    null
+  ],
+  "issue_context": {
+    "known_information": [
+      "Read the complete0.64.0 report, empty comments and timeline; inspected both supplied screenshots.",
+      "The editor view shows rounded zone outlines while the Shift-drag activation overlay has square corners; the request is about rendering, not failure to snap.",
+      "Current native ZonesOverlay zone drawing uses FillRectangle/DrawRectangle for zone fills and outlines; separate rounded ghost animation rendering is not the normal zone draw path.",
+      "A focused open-issue search returned no additional owner, which is not proof no related work exists; no current installed overlay was exercised."
+    ],
+    "inferences": [
+      "Rounded visual corners can be introduced without changing the rectangular snapping and hit-test geometry.",
+      "Desired radius, Windows-version policy, high-contrast rendering and tiny-zone clamping require a maintainer decision."
+    ],
+    "information_gaps": [],
+    "initial_investigation": [
+      "Inspected both reporter screenshots rather than asking for replacement images.",
+      "Read exact normal zone draw calls at67ac3d8b and distinguished them from rounded animation-only geometry.",
+      "Did not claim a current-release reproduction, broken snapping, or a full approved design."
+    ],
+    "analysis": "The mismatch is understandable and has a narrow renderer owner. Treat it as visual-consistency work, preserve snap/hit-test behavior and decide the radius/accessibility policy before implementation.",
+    "summary": "The supplied editor-versus-drag-overlay screenshots show a cosmetic consistency request, with a matching native rendering boundary."
+  },
+  "comments": 0,
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/21737",
+  "pending_author": false,
+  "generated_at": "2026-11-04T19:04:52.791137+08:00",
+  "owes": "maintainer"
 }

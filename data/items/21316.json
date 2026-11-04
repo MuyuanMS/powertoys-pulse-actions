@@ -1,33 +1,111 @@
 {
-  "number": 21316,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T12:40:36Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "Always On Top FrameDrawer and WindowBorder",
+        "expected_result": "A configured1px border remains visibly consistent on all intended edges at rest and after motion without covering application content or creating a gap.",
+        "steps": [
+          "At1px and2px record extended-frame bounds, border HWND rectangle, draw geometry and exposed ring on every edge.",
+          "Compare stationary rendering with move/resize and settle, including top edge and rounded corners.",
+          "Move between mixed-DPI displays and compare rectangular/rounded and maximized/restored windows.",
+          "Check that any correction preserves no-gap/no-overlap behavior and does not change target topmost state."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "prerequisites": [
+          "Use disposable normal and legacy/custom-frame windows at100%,125%,150% and200% DPI; include Skype for Business where available."
+        ]
+      },
+      "primary": true,
+      "label": "Measure exposed1px topmost border geometry",
+      "type": "reproduce",
+      "id": "issue-21316-reproduce-boundary"
+    },
+    {
+      "primary": false,
+      "label": "Design measured thin-border geometry correction",
+      "type": "approve_design",
+      "id": "issue-21316-design-boundary"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Validate1px/2px bounds and exposed-ring geometry across window types and DPI, then correct the demonstrated inset/scaling mismatch.",
+    "rationale": "There is enough evidence for a maintainer-owned geometry test and narrow correction. Measure the exposed physical-pixel ring at rest and during motion; preserve the reason for the existing inset and prevent border overlap regressions.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Read the original0.63.0 report, all three replies and timeline; inspected the original two and later five screenshots.",
+      "The reporter confirmed recurrence on0.85.1 across PCs, partially missing top edges on other windows and no stable 1px border on Skype for Business.",
+      "Both the report and supplied images distinguish 1px from the2px workaround and describe all sides becoming visible during movement before settling behind the target.",
+      "Current GetFrameRect expands DWM extended-frame bounds by configured thickness; UpdateBorderProperties separately DPI-scales the rendered thickness.",
+      "Both FrameDrawer::ConvertRect overloads add a fixed1px inset, and border positioning intentionally places the border behind the target; geometry and occlusion need to be measured together."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T12:40:36Z"
-  }
+    "source_updated_at": "2024-10-25T12:40:36Z",
+    "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+    "status": "actionable_design"
+  },
+  "track": "triage",
+  "kind": "issue",
+  "proposed_fixes": [
+    {
+      "title": "Preserve the visible1px ring outside tracked window bounds",
+      "plan": [
+        "Measure target/border/draw bounds at rest and while moving to identify the first clipping or scaling mismatch.",
+        "Correct the demonstrated physical-pixel relationship in both rectangular and rounded draw paths, retaining the original gap-prevention intent.",
+        "Add1px/2px, mixed-DPI and legacy/custom-frame geometry regressions without globally moving the border above application content."
+      ],
+      "root_cause": "Hypothesis: the fixed inward pixel adjustment and behind-target placement consume the exposed1px ring; compare configured frame expansion with DPI-scaled rendering before changing either.",
+      "confidence": {
+        "level": "yellow",
+        "score": 79,
+        "rationale": "All supplied images and the exact fixed-inset/scaling/z-order source support a narrow geometry lead; current runtime attribution and acceptance remain unexecuted."
+      },
+      "verification": [
+        "Assert exposed-ring dimensions and inspect stationary/moving visual results.",
+        "Retain rounded/maximized, border toggle, focus and pin-state controls."
+      ]
+    }
+  ],
+  "title": "Border around pinned window is not visible on some windows when using 1px border",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The visual1px/2px discriminator and exact fixed-inset/behind-target code are concrete, but no current geometry trace or regression-safe correction has been executed."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-3"
+  ],
+  "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+  "source_updated_at": "2024-10-25T12:40:36Z",
+  "stage": "triage_revalidated",
+  "schemaVersion": 5,
+  "number": 21316,
+  "assignees": [
+    null
+  ],
+  "issue_context": {
+    "known_information": [
+      "Read the original0.63.0 report, all three replies and timeline; inspected the original two and later five screenshots.",
+      "The reporter confirmed recurrence on0.85.1 across PCs, partially missing top edges on other windows and no stable 1px border on Skype for Business.",
+      "Both the report and supplied images distinguish 1px from the2px workaround and describe all sides becoming visible during movement before settling behind the target.",
+      "Current GetFrameRect expands DWM extended-frame bounds by configured thickness; UpdateBorderProperties separately DPI-scales the rendered thickness.",
+      "Both FrameDrawer::ConvertRect overloads add a fixed1px inset, and border positioning intentionally places the border behind the target; geometry and occlusion need to be measured together."
+    ],
+    "inferences": [
+      "At1px, the fixed inset, frame expansion and z-order can leave insufficient exposed border; mixed DPI adds a separate dimension-consistency control.",
+      "The source lead does not establish one universal replacement offset or justify placing the overlay above all application content."
+    ],
+    "information_gaps": [],
+    "initial_investigation": [
+      "Acknowledged the author already answered needinfo with a retest and inspected all seven supplied images.",
+      "Read exact DWM bounds expansion, behind-target positioning, DPI thickness conversion and both drawing inset overloads at67ac3d8b.",
+      "Did not execute Skype for Business, reproduce current rendering, remove the gap-elimination inset blindly or turn the workaround into a claimed fix."
+    ],
+    "analysis": "There is enough evidence for a maintainer-owned geometry test and narrow correction. Measure the exposed physical-pixel ring at rest and during motion; preserve the reason for the existing inset and prevent border overlap regressions.",
+    "summary": "The reporter already confirmed0.85.1 recurrence and supplied seven screenshots; investigate 1px geometry/occlusion rather than repeat the retest request."
+  },
+  "comments": 3,
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/21316",
+  "pending_author": false,
+  "generated_at": "2026-11-04T19:04:52.791137+08:00",
+  "owes": "maintainer"
 }

@@ -1,33 +1,111 @@
 {
-  "number": 21971,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-25T02:27:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "reproduce": {
+        "module": "Always On Top border and Windows taskbar",
+        "expected_result": "No orphan outline overlays another app during Peek; the pinned target stays pinned and its border returns correctly afterward.",
+        "steps": [
+          "Hover another taskbar thumbnail then enter its Peek preview; record target/border visibility, DWM attributes and z-order.",
+          "Leave the thumbnail and verify the original border is restored without repinning or stealing focus.",
+          "Compare previewing the pinned window itself, another app, minimize/restore and virtual-desktop transitions.",
+          "Check relevant Windows shell versions with Peek enabled and disabled."
+        ],
+        "version_requirement": "Current stable and current development build",
+        "prerequisites": [
+          "Pin a disposable normal window with a visible border; keep another application foreground."
+        ]
+      },
+      "primary": true,
+      "label": "Trace pinned border through taskbar Peek",
+      "type": "reproduce",
+      "id": "issue-21971-reproduce-boundary"
+    },
+    {
+      "primary": false,
+      "label": "Design tracked-window Peek border visibility",
+      "type": "approve_design",
+      "id": "issue-21971-design-boundary"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Trace Peek enter/leave for tracked and border windows, then restore border visibility without changing the pin state.",
+    "rationale": "The reporter supplied the trigger and visual proof. A maintainer can trace the target and border HWND visibility through Peek and choose the narrow visibility policy; removing topmost or repeatedly recreating unrelated windows is not justified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Read the complete0.64.1 report, empty comments and timeline and inspected both supplied images.",
+      "The first screenshot shows the pinned Calculator border; the second shows that border remaining over another app while a taskbar thumbnail is hovered.",
+      "Current WindowBorder initialization marks the separate border window DWMWA_EXCLUDED_FROM_PEEK and positions it behind its tracked window.",
+      "Current timer refreshes border position/properties; foreground RefreshBorders handles current virtual desktop ownership, not an explicit Peek lifecycle.",
+      "No current taskbar Peek session was executed; the attribute and screenshot are a concrete investigation lead, not proof that simply removing the attribute is safe."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-25T02:27:32Z"
-  }
+    "source_updated_at": "2024-10-25T02:27:32Z",
+    "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+    "status": "reproducible"
+  },
+  "track": "triage",
+  "kind": "issue",
+  "proposed_fixes": [
+    {
+      "title": "Track the pinned border visibility across taskbar Peek",
+      "plan": [
+        "Measure target/border HWND state through Peek before choosing between DWM policy and explicit visibility handling.",
+        "Apply the narrow visibility correction without altering target topmost state or activation.",
+        "Restore normal border behavior on Peek exit, minimize/restore and desktop switches."
+      ],
+      "root_cause": "Hypothesis: the separate border window remains visible when its tracked window is suppressed by Peek; current code explicitly excludes the border from Peek.",
+      "confidence": {
+        "level": "yellow",
+        "score": 72,
+        "rationale": "Screenshots and exact current DWM/refresh source support the lead; no current shell trace or safe correction was executed."
+      },
+      "verification": [
+        "Exercise other-app and pinned-app thumbnail previews.",
+        "Verify no orphan or permanently hidden borders, focus theft or lost pin state."
+      ]
+    }
+  ],
+  "title": "The top window still displays the window border when move the mouse to the preview window over the app icon on the taskbar，",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The independent border and explicit Peek exclusion identify the ownership boundary; current Windows shell behavior and a safe lifecycle correction need runtime validation."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-3"
+  ],
+  "evaluated_at": "2026-11-04T19:04:52.791137+08:00",
+  "source_updated_at": "2024-10-25T02:27:32Z",
+  "stage": "triage_revalidated",
+  "schemaVersion": 5,
+  "number": 21971,
+  "assignees": [
+    null
+  ],
+  "issue_context": {
+    "known_information": [
+      "Read the complete0.64.1 report, empty comments and timeline and inspected both supplied images.",
+      "The first screenshot shows the pinned Calculator border; the second shows that border remaining over another app while a taskbar thumbnail is hovered.",
+      "Current WindowBorder initialization marks the separate border window DWMWA_EXCLUDED_FROM_PEEK and positions it behind its tracked window.",
+      "Current timer refreshes border position/properties; foreground RefreshBorders handles current virtual desktop ownership, not an explicit Peek lifecycle.",
+      "No current taskbar Peek session was executed; the attribute and screenshot are a concrete investigation lead, not proof that simply removing the attribute is safe."
+    ],
+    "inferences": [
+      "The separate border visibility policy may not track the target during Peek; shell-version behavior and event timing must be measured.",
+      "A visibility correction must never unpin the target or leave a stale hidden border after Peek ends."
+    ],
+    "information_gaps": [],
+    "initial_investigation": [
+      "Inspected both images and distinguished the orphan outline from a thumbnail border or lost topmost state.",
+      "Read exact border initialization, DWMWA_EXCLUDED_FROM_PEEK, timer and foreground/desktop refresh paths at67ac3d8b.",
+      "Searched for an existing open Peek-border owner without finding one; did not interpret empty search as exhaustive proof or change shell settings."
+    ],
+    "analysis": "The reporter supplied the trigger and visual proof. A maintainer can trace the target and border HWND visibility through Peek and choose the narrow visibility policy; removing topmost or repeatedly recreating unrelated windows is not justified.",
+    "summary": "The taskbar Peek screenshot shows an orphan pinned-window outline; investigate border visibility separately from pinning."
+  },
+  "comments": 0,
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/21971",
+  "pending_author": false,
+  "generated_at": "2026-11-04T19:04:52.791137+08:00",
+  "owes": "maintainer"
 }
