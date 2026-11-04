@@ -6652,8 +6652,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post non-blocking inline correction"
+        "label": "Post non-blocking inline correction",
+        "type": "post_review"
       },
       "labels": [
         "Area-Tests",
