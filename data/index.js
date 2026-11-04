@@ -4381,7 +4381,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "11/04/2026 20:00:13",
+      "waiting_since": "2026-11-04T08:36:35Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
