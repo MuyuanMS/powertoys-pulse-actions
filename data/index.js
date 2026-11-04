@@ -1623,7 +1623,8 @@ window.BOARD_INDEX = {
     41262,
     44866,
     45118,
-    45168
+    45168,
+    48096
   ],
   "items": [
     {
@@ -125805,23 +125806,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "fix",
-      "stage": "waiting_on_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "10/26/2026 18:11:59",
-      "has_artifact": false,
-      "agent_status": "none",
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette",
         "CmdPal-Keyboard"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-05-24T18:56:22Z",
       "updated_at": "2026-10-26T18:11:59Z",
       "comments": 0,
