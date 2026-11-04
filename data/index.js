@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 211,
     "open_issues": 11127,
     "community": 10242,
-    "artifacts": 1461
+    "artifacts": 1532
   },
   "impact": {
     "as_of": "2026-11-04T23:41:15.8653902+08:00",
@@ -6700,13 +6700,15 @@ window.BOARD_INDEX = {
       "proposed_open": 1,
       "primary_action": {
         "type": "post_review",
-        "label": "Post inline review comment"
+        "label": "Request culture regression tests"
       },
       "labels": [
         "Product-Awake",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-09-30T10:32:07Z",
       "updated_at": "2026-11-04T12:20:31Z",
       "comments": 3,
