@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 211,
     "open_issues": 11127,
     "community": 10242,
-    "artifacts": 1532
+    "artifacts": 1534
   },
   "impact": {
     "as_of": "2026-11-04T23:41:15.8653902+08:00",
@@ -6625,16 +6625,18 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 9,
+      "proposed_open": 5,
       "primary_action": {
         "type": "post_review",
-        "label": "Post nine inline suggestions"
+        "label": "Post grouped seconds-handling suggestions"
       },
       "labels": [
         "Product-Awake",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-09-30T15:26:44Z",
       "updated_at": "2026-11-04T13:33:37Z",
       "comments": 6,
