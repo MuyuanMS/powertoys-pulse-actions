@@ -1,33 +1,107 @@
 {
-  "number": 47280,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-14T20:25:36Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "issue_context": {
+    "known_information": [
+      "The original Keyboard Manager case maps the Copilot chord to an application/context-menu key; after using it, NVDA+t stops responding until NVDA restarts.",
+      "The author tried the requested0.99update and explicitly said it did not resolve the issue.",
+      "The new0.102.3001participant describes a different Quick Accent case: the picker opens, selected characters are not announced and insertion fails while NVDA is active; disabling/suspending NVDA changes the result.",
+      "Current Quick Accent source separates its native low-level keyboard listener from managed SendInput-based insertion. It can therefore display a picker without proving successful insertion or accessibility announcements."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-14T20:25:36Z"
-  }
+    "analysis": "Keep the two module-specific paths separate instead of treating a guessed Windows hook priority as a proven cause. This is accessibility interoperability work, not an instruction to stop using a screen reader or run permanently elevated. The text is sufficient for controlled maintainer reproduction.",
+    "summary": "The thread now contains two NVDA interoperability regressions in different modules; the earlier update request was answered and must not be repeated.",
+    "initial_investigation": [
+      "Read all replies, including the answered update request and the new different-module scenario. Inspected current Quick Accent keyboard listener and SendInput producer locations.",
+      "Did not accept an external AI hook-priority explanation as evidence; no NVDA runtime, hardware Copilot-key or screen-reader test was executed."
+    ],
+    "information_gaps": [],
+    "inferences": [
+      "Picker visibility proves activation only, not character injection or screen-reader announcement. The Copilot/NVDA shortcut failure need not share the Quick Accent cause."
+    ]
+  },
+  "pending_author": false,
+  "proposed_fixes": [
+    {
+      "root_cause": "Unverified hypotheses: Keyboard Manager synthetic modifier state may disrupt later NVDA shortcuts, while Quick Accent may separately fail insertion or announcement. A shared hook-priority explanation is not proven.",
+      "confidence": {
+        "rationale": "Detailed contrasting reproductions support investigation, but the two mechanisms and exact failing input/announcement producers remain unmeasured.",
+        "level": "yellow",
+        "score": 60
+      },
+      "plan": [
+        "Run the two reported sequences independently, recording input routing and resulting NVDA shortcut/announcement behavior.",
+        "For Keyboard Manager compare the Copilot chord remap with direct context-menu input and inspect modifier down/up state.",
+        "For Quick Accent distinguish successful selection, successful SendInput delivery and UIA announcement; correct only the demonstrated boundary and preserve assistive-technology operation."
+      ],
+      "title": "Isolate NVDA input and announcement interoperability by module",
+      "verification": [
+        "NVDA+t works before and after the remapped context-menu action without restarting NVDA.",
+        "Quick Accent inserts the selected character with NVDA running and exposes a meaningful selection announcement.",
+        "Other mappings and ordinary typing retain balanced modifier events; no elevated-process requirement or global screen-reader bypass is introduced."
+      ]
+    }
+  ],
+  "assignees": [
+    null
+  ],
+  "source_updated_at": "2026-10-30T03:42:03Z",
+  "actions": [
+    {
+      "type": "reproduce",
+      "primary": true,
+      "reproduce": {
+        "steps": [
+          "Confirm NVDA+t reads the title, invoke the Copilot-to-context-menu remap, then retry NVDA+t without restarting either program.",
+          "In a separate Quick Accent test, hold R, activate the picker, change selection and release R; record insertion and announcement independently.",
+          "Use module on/off and direct-input controls to identify the failing event/announcement boundary; do not infer hook priority from picker visibility."
+        ],
+        "version_requirement": "0.102.3001and current development build, with recorded NVDA version",
+        "expected_result": "The original shortcut remains usable after remapping; the selected accent is inserted and accessible without restarting or suspending NVDA.",
+        "prerequisites": [
+          "Windows test desktop with NVDA running, a Copilot-key-capable keyboard for the original case, and the reported Polish/other layout recorded.",
+          "Use a test-owned text document; preserve screen-reader accessibility and existing mappings."
+        ],
+        "module": "Keyboard Manager and Quick Accent"
+      },
+      "id": "issue-47280-reproduce-nvda",
+      "label": "Reproduce both NVDA module interactions"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-47280-design-nvda",
+      "label": "Investigate demonstrated NVDA boundary"
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Both reports provide discriminating sequences and a screen-reader contrast, but no exact swallowed/synthetic event or announcement defect has been established."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Keep the two module-specific paths separate instead of treating a guessed Windows hook priority as a proven cause. This is accessibility interoperability work, not an instruction to stop using a screen reader or run permanently elevated. The text is sufficient for controlled maintainer reproduction.",
+    "recommended_action": "Reproduce the original Keyboard Manager/NVDA shortcut sequence and the separate Quick Accent insertion/announcement sequence with NVDA active throughout the supported test.",
+    "source_updated_at": "2026-10-30T03:42:03Z",
+    "evidence": [
+      "The original Keyboard Manager case maps the Copilot chord to an application/context-menu key; after using it, NVDA+t stops responding until NVDA restarts.",
+      "The author tried the requested0.99update and explicitly said it did not resolve the issue.",
+      "The new0.102.3001participant describes a different Quick Accent case: the picker opens, selected characters are not announced and insertion fails while NVDA is active; disabling/suspending NVDA changes the result.",
+      "Current Quick Accent source separates its native low-level keyboard listener from managed SendInput-based insertion. It can therefore display a picker without proving successful insertion or accessibility announcements."
+    ],
+    "evaluated_at": "2026-11-04T14:04:03.1281422+08:00"
+  },
+  "generated_at": "2026-11-04T14:04:03.1281422+08:00",
+  "owes": "maintainer",
+  "evaluated_at": "2026-11-04T14:04:03.1281422+08:00",
+  "track": "triage",
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/47280",
+  "title": "Conflict between NVDA and PowerToys key hook",
+  "stage": "triage_revalidated",
+  "number": 47280,
+  "comments": 4,
+  "schemaVersion": 5,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ]
 }

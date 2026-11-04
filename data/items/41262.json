@@ -1,33 +1,108 @@
 {
-  "number": 41262,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-18T18:06:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "issue_context": {
+    "known_information": [
+      "The reporter wants a PowerShell profile function such as bri30, rather than only a filesystem executable. A profile-defined function need not resolve through executable lookup.",
+      "The maintainer explicitly states that47642made Run commands match Windows Run and removed the old run-this-string-in-a-shell capability; restoring that feature was accepted as separate work.",
+      "The latest participant says the gap remains on0.102.",
+      "Current shell helpers normalize executable/arguments and use executable/path resolution. A bare profile function is not itself a verified executable path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-18T18:06:40Z"
-  }
+    "analysis": "Preserve the accepted feature request and distinguish shell evaluation/profile loading from ordinary executable launch. Do not patch search debounce or silently send every failed executable lookup through a shell. The missing mode requires an explicit execution contract.",
+    "summary": "This is an acknowledged shell-command capability gap after the Run-style redesign, not an executable-search debounce diagnosis.",
+    "initial_investigation": [
+      "Read complete report and every reply, especially the maintainer correction of the title/scope and latest0.102confirmation. Inspected current executable/path normalization boundary.",
+      "No supplied user profile, monitor-control function or screenshot-derived command was executed; no new competing implementation or linked covering PR was established."
+    ],
+    "information_gaps": [],
+    "inferences": [
+      "A function available only after loading a PowerShell profile will not be made executable by search debounce changes alone."
+    ]
+  },
+  "pending_author": false,
+  "proposed_fixes": [
+    {
+      "root_cause": "The Run-style redesign intentionally resolves executable/path commands rather than evaluating arbitrary input in a configured shell; profile-only functions are outside that contract.",
+      "confidence": {
+        "rationale": "The missing contract and maintainer intent are explicit; the selected UI/shell/profile integration and runtime test matrix remain to be designed.",
+        "level": "yellow",
+        "score": 80
+      },
+      "plan": [
+        "Define an explicit shell action/mode and supported shell/profile-loading behavior with the maintainer; retain current normal executable resolution.",
+        "Pass the command through the existing shell argument-building/launch helpers with correct quoting, rather than splitting/rejoining shell expressions as executable arguments.",
+        "Add harmless profile-function, built-in command, ordinary executable and quoting/cancellation tests for each supported shell."
+      ],
+      "title": "Restore explicit shell execution without changing ordinary Run semantics",
+      "verification": [
+        "A test-owned profile function writes a harmless marker only when the explicit shell mode is selected.",
+        "Normal executable launch and directory/URL behaviors remain unchanged; invalid normal lookup does not silently execute arbitrary shell text.",
+        "Verify spaces, quotes and non-ASCII arguments, profile enabled/disabled behavior, selected shell and visible errors."
+      ]
+    }
+  ],
+  "assignees": [
+    null
+  ],
+  "source_updated_at": "2026-10-24T22:21:29Z",
+  "actions": [
+    {
+      "type": "reproduce",
+      "primary": true,
+      "reproduce": {
+        "steps": [
+          "Confirm the harmless function works in the configured shell after its profile loads.",
+          "Try the bare function in current Run commands and compare a normal executable.",
+          "For the proposed explicit shell action, verify the function executes with the documented profile behavior while normal Run semantics remain unchanged."
+        ],
+        "version_requirement": "0.102and current development build",
+        "expected_result": "The capability gap is isolated to deliberate shell evaluation; approved restoration invokes the configured shell without silently changing ordinary command resolution.",
+        "prerequisites": [
+          "Disposable PowerShell profile defining a harmless marker-writing function, and a known ordinary executable.",
+          "Do not use the reporter monitor-control profile or modify display settings."
+        ],
+        "module": "Command Palette / Run commands"
+      },
+      "id": "issue-41262-reproduce-shell-contract",
+      "label": "Confirm explicit shell-function contract"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-41262-design-shell-mode",
+      "label": "Design explicit shell execution"
+    }
+  ],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The maintainer confirms the capability gap and intended restoration; exact UX, profile semantics and argument handling still need design approval."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Preserve the accepted feature request and distinguish shell evaluation/profile loading from ordinary executable launch. Do not patch search debounce or silently send every failed executable lookup through a shell. The missing mode requires an explicit execution contract.",
+    "recommended_action": "Design an explicit shell-execution action/mode with configured shell/profile semantics, leaving normal Run-style resolution unchanged.",
+    "source_updated_at": "2026-10-24T22:21:29Z",
+    "evidence": [
+      "The reporter wants a PowerShell profile function such as bri30, rather than only a filesystem executable. A profile-defined function need not resolve through executable lookup.",
+      "The maintainer explicitly states that47642made Run commands match Windows Run and removed the old run-this-string-in-a-shell capability; restoring that feature was accepted as separate work.",
+      "The latest participant says the gap remains on0.102.",
+      "Current shell helpers normalize executable/arguments and use executable/path resolution. A bare profile function is not itself a verified executable path."
+    ],
+    "evaluated_at": "2026-11-04T14:04:03.1281422+08:00"
+  },
+  "generated_at": "2026-11-04T14:04:03.1281422+08:00",
+  "owes": "maintainer",
+  "evaluated_at": "2026-11-04T14:04:03.1281422+08:00",
+  "track": "triage",
+  "kind": "issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/41262",
+  "title": "CmdPal: Allow running **CLI shell** commands",
+  "stage": "triage_revalidated",
+  "number": 41262,
+  "comments": 4,
+  "schemaVersion": 5,
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette",
+    "CmdPal-Inbox Extensions",
+    "CmdPal - Shell"
+  ]
 }
