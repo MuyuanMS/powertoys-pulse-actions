@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-04T13:56:52.9850921+08:00",
+  "generated_at": "2026-11-04T18:42:44.7005531+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 216,
     "open_issues": 11124,
     "community": 10240,
-    "artifacts": 1528
+    "artifacts": 1457
   },
   "impact": {
-    "as_of": "2026-11-04T13:56:52.9850921+08:00",
+    "as_of": "2026-11-04T18:42:44.7005531+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -240,6 +240,7 @@ window.BOARD_INDEX = {
     19812,
     19821,
     19845,
+    19848,
     20008,
     20036,
     20117,
@@ -355,6 +356,7 @@ window.BOARD_INDEX = {
     27612,
     27771,
     27897,
+    27945,
     28027,
     28028,
     28143,
@@ -677,6 +679,7 @@ window.BOARD_INDEX = {
     40876,
     40954,
     41003,
+    41262,
     41371,
     41638,
     41656,
@@ -706,10 +709,13 @@ window.BOARD_INDEX = {
     44673,
     44758,
     44847,
+    44866,
     44875,
     44914,
     44948,
     45107,
+    45118,
+    45168,
     45349,
     45445,
     45452,
@@ -749,6 +755,8 @@ window.BOARD_INDEX = {
     47238,
     47245,
     47264,
+    47277,
+    47280,
     47337,
     47359,
     47430,
@@ -763,6 +771,7 @@ window.BOARD_INDEX = {
     47829,
     47871,
     47892,
+    47922,
     47940,
     47959,
     48003,
@@ -771,6 +780,7 @@ window.BOARD_INDEX = {
     48062,
     48093,
     48094,
+    48096,
     48097,
     48107,
     48109,
@@ -1599,7 +1609,9 @@ window.BOARD_INDEX = {
     51868,
     51869,
     51870,
+    51873,
     51875,
+    51877,
     51878,
     51880,
     51882,
@@ -1610,22 +1622,10 @@ window.BOARD_INDEX = {
     51888,
     51893,
     51895,
+    51896,
     51902,
-    51905,
-    51877,
-    51873,
     51904,
-    27945,
-    19848,
-    47277,
-    47922,
-    47280,
-    41262,
-    44866,
-    45118,
-    45168,
-    48096,
-    51896
+    51905
   ],
   "items": [
     {
@@ -1685,16 +1685,14 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 1,
       "primary_action": {
-        "label": "Post non-blocking documentation suggestion",
-        "type": "post_review"
+        "type": "post_review",
+        "label": "Post non-blocking documentation suggestion"
       },
       "labels": [
         "Product-General",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-03T21:59:34Z",
       "updated_at": "2026-11-03T22:36:04Z",
       "comments": 2,
@@ -1729,9 +1727,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-03T21:25:54Z",
       "updated_at": "2026-11-03T23:16:41Z",
       "comments": 2,
@@ -1839,9 +1835,7 @@ window.BOARD_INDEX = {
         "Product-Awake",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-03T10:27:07Z",
       "updated_at": "2026-11-04T03:31:27Z",
       "comments": 4,
@@ -3961,9 +3955,7 @@ window.BOARD_INDEX = {
         "Product-Mouse Without Borders",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-28T05:51:36Z",
       "updated_at": "2026-11-03T23:48:53Z",
       "comments": 5,
@@ -6711,9 +6703,7 @@ window.BOARD_INDEX = {
         "Product-Keyboard Manager",
         "Ready for review"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-10-02T02:47:05Z",
       "updated_at": "2026-11-04T01:32:17Z",
       "comments": 5,
@@ -20503,9 +20493,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-04T04:59:50Z",
       "updated_at": "2026-11-04T04:59:50Z",
       "comments": 0,
@@ -20540,9 +20528,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-04T04:10:39Z",
       "updated_at": "2026-11-04T04:10:39Z",
       "comments": 0,
@@ -21360,9 +21346,7 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Needs-Triage"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-03T08:28:32Z",
       "updated_at": "2026-11-04T04:48:02Z",
       "comments": 1,
@@ -125831,9 +125815,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "CmdPal-Keyboard"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-05-24T18:56:22Z",
       "updated_at": "2026-10-26T18:11:59Z",
       "comments": 0,
@@ -130827,9 +130809,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Grab And Move"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-05-15T18:12:32Z",
       "updated_at": "2026-10-22T16:37:01Z",
       "comments": 1,
@@ -148113,9 +148093,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-04-28T11:24:44Z",
       "updated_at": "2026-10-30T03:42:03Z",
       "comments": 4,
@@ -148217,9 +148195,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-04-28T10:56:35Z",
       "updated_at": "2026-10-26T08:21:34Z",
       "comments": 2,
@@ -186374,9 +186350,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Mouse Without Borders"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2023-08-11T03:24:47Z",
       "updated_at": "2026-10-31T14:37:05Z",
       "comments": 19,
@@ -192714,9 +192688,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-01-29T01:28:03Z",
       "updated_at": "2026-10-11T16:48:55Z",
       "comments": 0,
@@ -193620,9 +193592,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-01-27T12:57:38Z",
       "updated_at": "2026-10-11T16:48:56Z",
       "comments": 0,
@@ -197927,9 +197897,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-01-21T03:01:40Z",
       "updated_at": "2026-10-11T16:48:59Z",
       "comments": 1,
@@ -264794,9 +264762,7 @@ window.BOARD_INDEX = {
         "CmdPal-Inbox Extensions",
         "CmdPal - Shell"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2025-08-19T16:32:04Z",
       "updated_at": "2026-10-24T22:21:29Z",
       "comments": 4,
@@ -337524,9 +337490,7 @@ window.BOARD_INDEX = {
         "Priority-3",
         "Area-App Compat"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2022-08-10T08:54:23Z",
       "updated_at": "2026-10-26T15:52:02Z",
       "comments": 10,
@@ -369321,9 +369285,7 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [
-        null
-      ],
+      "assignees": [],
       "created_at": "2026-11-03T07:22:28Z",
       "updated_at": "2026-11-04T04:26:11Z",
       "comments": 0,
