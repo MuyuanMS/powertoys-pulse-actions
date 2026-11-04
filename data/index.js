@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 216,
     "open_issues": 11124,
     "community": 10240,
-    "artifacts": 1513
+    "artifacts": 1528
   },
   "impact": {
     "as_of": "2026-11-04T13:56:52.9850921+08:00",
@@ -1624,7 +1624,8 @@ window.BOARD_INDEX = {
     44866,
     45118,
     45168,
-    48096
+    48096,
+    51896
   ],
   "items": [
     {
@@ -1674,21 +1675,26 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "label": "Post non-blocking documentation suggestion",
+        "type": "post_review"
+      },
       "labels": [
         "Product-General",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-11-03T21:59:34Z",
       "updated_at": "2026-11-03T22:36:04Z",
       "comments": 2,
