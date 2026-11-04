@@ -2,23 +2,26 @@
   "track": "triage",
   "judgment": {
     "rationale": "The report has enough reproduction detail and configuration to move to maintainer testing, not another generic log request. Alternating hide/restore is a supported candidate mechanism; profiling is needed to distinguish cursor reload cost, queued work and other software. If unfixed, simultaneous typing/movement can make input visibly stutter.",
-    "source_updated_at": "2026-11-02T19:08:16Z",
+    "source_updated_at": "2026-11-03T01:09:52Z",
     "recommended_action": "Reproduce with typing-only versus idle-only settings and trace transitions before deciding whether coalescing or a different visibility strategy is necessary.",
     "evidence": [
       "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
       "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
       "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
-      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation."
+      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation.",
+      "Re-read the full current report and empty comments/timeline cross-reference set; the supplied sequence remains holding a key while moving the pointer.",
+      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit.",
+      "Inspected current main 99537d3f: State::OnKeyboardInput hides, intentional movement shows, and hook callbacks queue actions outside the callbacks. SystemCursorHider::Hide replaces 13 system cursors; Restore uses SPI_SETCURSORS and bounded cursor refresh messages. This supports investigating transition churn, not a claim that the hook directly performs those mutations."
     ],
     "status": "reproducible",
-    "evaluated_at": "2026-11-02T20:20:11.0573730+00:00"
+    "evaluated_at": "2026-11-04T09:47:43.8759828+08:00"
   },
   "title": "CursorHide make mouse lag when holding keyboard button.",
   "assignees": [
     null
   ],
   "pending_author": false,
-  "source_updated_at": "2026-11-02T19:08:16Z",
+  "source_updated_at": "2026-11-03T01:09:52Z",
   "actions": [
     {
       "label": "Profile held-key cursor transitions",
@@ -55,7 +58,7 @@
   "schemaVersion": 5,
   "number": 51858,
   "comments": 0,
-  "evaluated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "evaluated_at": "2026-11-04T09:47:43.8759828+08:00",
   "proposed_fixes": [
     {
       "title": "Bound cursor-hide work during simultaneous keyboard and mouse input",
@@ -77,14 +80,15 @@
     }
   ],
   "stage": "triage_revalidated",
-  "generated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "generated_at": "2026-11-04T09:47:43.8759828+08:00",
   "kind": "issue",
   "issue_context": {
     "known_information": [
       "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
       "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
       "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
-      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation."
+      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation.",
+      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit."
     ],
     "summary": "The archive confirms typing and idle hiding were enabled; alternating key-repeat and pointer movement is a concrete maintainer reproduction, not yet a profiled root cause.",
     "information_gaps": [],
@@ -94,12 +98,16 @@
     ],
     "initial_investigation": [
       "Read complete issue and supplied archive settings; checked immutable State, Worker and SystemCursorHider code.",
-      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed."
+      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed.",
+      "Re-read the full current report and empty comments/timeline cross-reference set; the supplied sequence remains holding a key while moving the pointer.",
+      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit.",
+      "Inspected current main 99537d3f: State::OnKeyboardInput hides, intentional movement shows, and hook callbacks queue actions outside the callbacks. SystemCursorHider::Hide replaces 13 system cursors; Restore uses SPI_SETCURSORS and bounded cursor refresh messages. This supports investigating transition churn, not a claim that the hook directly performs those mutations."
     ]
   },
   "owes": "maintainer",
   "labels": [
     "Issue-Bug",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-CursorHide"
   ]
 }

@@ -1,87 +1,84 @@
 {
-  "schemaVersion": 5,
-  "number": 51497,
-  "kind": "issue",
-  "title": "[0.102] Quick Accent often stops responding",
-  "url": "https://github.com/microsoft/PowerToys/issues/51497",
-  "generated_at": "2026-11-01T12:42:15.5512388+00:00",
-  "evaluated_at": "2026-11-01T12:42:15.5512388+00:00",
-  "source_updated_at": "2026-11-01T11:33:23Z",
-  "stage": "triage_revalidated",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
-    "evidence": [
-      "The report isolates repeated accented input under load on 0.102.2933; Space activation works around the arrow-trigger failure, and 0.100.2 is reported unaffected.",
-      "The existing ZIP was compared by the maintainer with #49150 and #51311; the maintainer reports ucrtbase c0000409 events after Next toolbar position.",
-      "The maintainer assigned moooyo and proposed a symbolized dump plus bounded callback/UI work. The exact escaping call remains a hypothesis.",
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs: RunOnUiThread executes inline when the hook already has UI-thread access; the current selector uses SetSelectedIndex and ScrollSelectedIntoView, so the older literal ListView call description must not be copied as exact current code.",
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs: The NextChar delegate calls ProcessNextChar through the supplied dispatcher action, which can run synchronously.",
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp: OnKeyDown is noexcept, making attribution of an escaping managed/native callback failure important.",
-      "Read the maintainer's full cross-issue comparison and uncertainty distinction between fail-fast and slow-hook removal; no crash dump or stress run was executed.",
-      "Re-read the current report, both comments and every timeline event. The report still has two comments and the same moooyo assignment. The latest public updated_at advanced without any additional visible comment, diagnostic, fix, or author response; the source of that metadata-only change is not exposed by the timeline. Preserve the existing attributed maintainer evidence and reproduction action, not a new competing design, duplicate ZIP request, or claim of recovery."
-    ],
-    "recommended_action": "Reproduce Quick Accent arrow-navigation crash behavior",
-    "evaluated_at": "2026-11-01T12:42:15.5512388+00:00",
-    "source_updated_at": "2026-11-01T11:33:23Z"
-  },
-  "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/51497#issuecomment-6365020439",
-      "https://github.com/microsoft/PowerToys/issues/49150",
-      "https://github.com/microsoft/PowerToys/issues/51311"
-    ]
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "Quick Accent's repeated arrow navigation is already under an assigned crash investigation.",
-    "known_information": [
-      "The report isolates repeated accented input under load on 0.102.2933; Space activation works around the arrow-trigger failure, and 0.100.2 is reported unaffected.",
-      "The existing ZIP was compared by the maintainer with #49150 and #51311; the maintainer reports ucrtbase c0000409 events after Next toolbar position.",
-      "The maintainer assigned moooyo and proposed a symbolized dump plus bounded callback/UI work. The exact escaping call remains a hypothesis."
-    ],
-    "inferences": [],
-    "analysis": "Preserve the active maintainer-owned investigation rather than create a competing design or ask for another generic ZIP. The reported failure class and synchronous callback risk are supported, but no dump in this pass proves ScrollIntoView as the throwing call or proves the current implementation fixed.",
-    "initial_investigation": [
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs: RunOnUiThread executes inline when the hook already has UI-thread access; the current selector uses SetSelectedIndex and ScrollSelectedIntoView, so the older literal ListView call description must not be copied as exact current code.",
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs: The NextChar delegate calls ProcessNextChar through the supplied dispatcher action, which can run synchronously.",
-      "Upstream main 9e6593c34949: src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp: OnKeyDown is noexcept, making attribution of an escaping managed/native callback failure important.",
-      "Read the maintainer's full cross-issue comparison and uncertainty distinction between fail-fast and slow-hook removal; no crash dump or stress run was executed.",
-      "Re-read the current report, both comments and every timeline event. The report still has two comments and the same moooyo assignment. The latest public updated_at advanced without any additional visible comment, diagnostic, fix, or author response; the source of that metadata-only change is not exposed by the timeline. Preserve the existing attributed maintainer evidence and reproduction action, not a new competing design, duplicate ZIP request, or claim of recovery."
-    ],
-    "information_gaps": []
-  },
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce Quick Accent arrow-navigation crash behavior",
+      "id": "issue-51497-confirm-fix",
       "primary": true,
-      "reproduce": {
-        "title": "Validate Quick Accent arrow-navigation crash report",
-        "module": "Quick Accent arrow-navigation crash",
-        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
-        "prerequisites": [
-          "Use a disposable test account or controlled test machine; preserve existing user data."
-        ],
-        "setup": [],
-        "steps": [
-          "Follow the assigned maintainer's repeated-arrow scenario with mixed normal/accent input and a CPU-heavy target; retain Space as a control.",
-          "Correlate process liveness, last navigation entry and a symbolized crash stack on the controlled test machine.",
-          "Distinguish a fail-fast exception from silent hook removal, then stress repeated arrow navigation and a subsequent fresh activation."
-        ],
-        "expected_result": "Attribute the actual failing callback or hook loss while keeping the existing assigned investigation as owner."
-      }
+      "comment": {
+        "body": "Thanks for the arrow-versus-Space comparison and the attached crash evidence. As @moooyo notes, #51583 is now merged and addresses initial arrow selection being applied to the preceding character list. Could you repeat your original arrow-activation workflow on a build confirmed to contain that change, and report the exact PowerToys version/build and whether Quick Accent still stops? A merged PR is not necessarily in your installed release, so please do not treat a retest of the same older build as testing the fix. No replacement ZIP is needed for this confirmation."
+      },
+      "type": "request_info",
+      "label": "Confirm Quick Accent fix result"
     }
   ],
+  "issue_context": {
+    "information_gaps": [
+      {
+        "why_needed": "The maintainer requests a retest, but no reporter result establishes recovery or whether their installed build includes the merged change.",
+        "evidence_type": "behavior_confirmation",
+        "information": "Result of the original arrow-activation workload on a build containing #51583, with exact version/build",
+        "how_to_collect": "Use a release or maintainer-provided build confirmed to contain #51583, repeat the original arrow-activation workflow, and report exact build and whether it still fails. No new archive is needed for this first confirmation."
+      }
+    ],
+    "summary": "The assigned maintainer now links merged Quick Accent fix #51583 and asks for a retest; the supplied crash evidence does not establish reporter recovery.",
+    "initial_investigation": [
+      "Read the complete report, all three comments and timeline; compared the prior investigation with the new maintainer response.",
+      "Inspected the supplied archive event rather than relying only on the maintainer summary; read the complete current covering PR description and verified merged status. No local crash reproduction or release-inclusion test was performed."
+    ],
+    "inferences": [
+      "The retained-list selection correction plausibly covers the reported arrow-trigger crash, but it does not prove that every hook removal or random stop is fixed."
+    ],
+    "known_information": [
+      "The supplied report isolates arrow activation under CPU load on 0.102.2933; Space activation avoids the reported failure.",
+      "The supplied archive contains an October 22 Application Error for PowerToys.PowerAccent.exe 0.102.2933 in ucrtbase.dll, exception c0000409.",
+      "The November 3 maintainer reply explicitly links #51583 and asks the reporter to try again.",
+      "Live #51583 is merged as of October 27. Its description identifies initial selection against a retained, previous character list and defers selection until the current list is ready. This is more specific than the earlier unconfirmed ScrollIntoView hypothesis.",
+      "There is no subsequent reporter response confirming whether the original workload succeeds with a build containing that change."
+    ],
+    "analysis": "Route to the existing merged fix and the outstanding maintainer retest, not a competing UI-dispatch redesign. The original archive proves the older crash signature, not that every CPU-load-related non-response shares that cause. Confirm the exact tested version/build before treating this report as resolved."
+  },
+  "source_updated_at": "2026-11-03T06:41:03Z",
+  "judgment": {
+    "status": "waiting_on_author",
+    "evaluated_at": "2026-11-04T09:47:43.8759828+08:00",
+    "recommended_action": "Confirm the original arrow-activation workflow on a build containing #51583, recording exact version and result.",
+    "source_updated_at": "2026-11-03T06:41:03Z",
+    "evidence": [
+      "The supplied report isolates arrow activation under CPU load on 0.102.2933; Space activation avoids the reported failure.",
+      "The supplied archive contains an October 22 Application Error for PowerToys.PowerAccent.exe 0.102.2933 in ucrtbase.dll, exception c0000409.",
+      "The November 3 maintainer reply explicitly links #51583 and asks the reporter to try again.",
+      "Live #51583 is merged as of October 27. Its description identifies initial selection against a retained, previous character list and defers selection until the current list is ready. This is more specific than the earlier unconfirmed ScrollIntoView hypothesis.",
+      "There is no subsequent reporter response confirming whether the original workload succeeds with a build containing that change."
+    ],
+    "rationale": "Route to the existing merged fix and the outstanding maintainer retest, not a competing UI-dispatch redesign. The original archive proves the older crash signature, not that every CPU-load-related non-response shares that cause. Confirm the exact tested version/build before treating this report as resolved."
+  },
+  "kind": "issue",
+  "title": "[0.102] Quick Accent often stops responding",
+  "fix_assessment": {
+    "status": "existing_fix",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51583",
+      "https://github.com/microsoft/PowerToys/issues/51497#issuecomment-6597220381"
+    ],
+    "rationale": "The assigned maintainer identifies merged #51583 as the likely fix. Reporter verification and inclusion in their installed build are not established."
+  },
+  "comments": 3,
+  "proposed_fixes": [],
+  "url": "https://github.com/microsoft/PowerToys/issues/51497",
+  "track": "triage",
+  "assignees": [
+    "moooyo"
+  ],
+  "stage": "triage_revalidated",
+  "owes": "author",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Quick Accent"
   ],
-  "assignees": [
-    "moooyo"
-  ],
-  "comments": 2
+  "evaluated_at": "2026-11-04T09:47:43.8759828+08:00",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-04T09:47:43.8759828+08:00",
+  "pending_author": true,
+  "number": 51497,
+  "waiting_since": "2026-11-03T06:41:03Z"
 }

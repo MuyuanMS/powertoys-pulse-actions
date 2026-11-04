@@ -1,25 +1,36 @@
 {
   "track": "triage",
   "judgment": {
-    "rationale": "There is enough evidence to investigate deployment/dependency loading without requesting another ZIP. The failing dependency is an application assembly, not proof that the shared .NET Desktop Runtime is missing. Compare trusted installer payload, update result and actual installed assembly/deps resolution before choosing a packaging correction; local removal/quarantine remains possible. An unfixed failure prevents Run from completing startup.",
-    "source_updated_at": "2026-11-02T19:43:18Z",
-    "recommended_action": "Reproduce a clean install versus an update and inspect the shipped dependency closure; preserve settings and distinguish a packaging omission from local file removal.",
+    "rationale": "The current fatal stack supports dependency loading, not the separate recoverable Copilot-icon warning. The latest maintainer has already requested reinstall; await that bounded result before choosing a packaging correction. A reinstall may restore files but does not by itself prove a universal installer omission, .NET runtime problem, or successful repair.",
+    "source_updated_at": "2026-11-03T01:11:37Z",
+    "recommended_action": "Confirm the result of the existing maintainer reinstall request; retain conditional deployment reproduction if the issue persists.",
     "evidence": [
       "The supplied archive contains a November 2 log for PowerToys Run0.102.3001, not just historical logs.",
       "Its fatal UI-thread exception is FileNotFoundException for System.Reactive6.0.0.0 in MainWindow.SetupSearchTextBoxReactiveness during OnLoaded.",
       "The same log labels the separate Copilot package-icon lookup failure as ignorable; that warning is not the demonstrated fatal exception.",
-      "Current-main PowerLauncher.csproj references System.Reactive, and SetupSearchTextBoxReactiveness uses Observable.FromEventPattern/Throttle."
+      "Current-main PowerLauncher.csproj references System.Reactive, and SetupSearchTextBoxReactiveness uses Observable.FromEventPattern/Throttle.",
+      "Read the full latest maintainer comment: it identifies System.Reactive 6.0.0.0 in SetupSearchTextBoxReactiveness and requests reinstall with /needinfo. No reply is present.",
+      "Re-inspected the supplied November 2 Run log; retained the separation between missing dependency and ignorable package-icon warnings. No installer was run or local installed files modified."
     ],
-    "status": "reproducible",
-    "evaluated_at": "2026-11-02T20:20:11.0573730+00:00"
+    "status": "waiting_on_author",
+    "evaluated_at": "2026-11-04T09:47:43.8759828+08:00"
   },
   "title": "\"Something went wrong\"",
   "assignees": [
     null
   ],
-  "pending_author": false,
-  "source_updated_at": "2026-11-02T19:43:18Z",
+  "pending_author": true,
+  "source_updated_at": "2026-11-03T01:11:37Z",
   "actions": [
+    {
+      "id": "issue-51859-confirm-reinstall",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the supplied startup evidence. @jiripolasek has already identified the missing System.Reactive dependency and requested a reinstall. Could you confirm the exact version installed afterward and whether PowerToys Run now starts? Please use the official installer for your existing installation scope and preserve your settings; do not download loose DLLs. If it still fails, report the new occurrence time. There is no need to re-upload the same ZIP or repeat the unrelated Copilot icon warning."
+      },
+      "type": "request_info",
+      "label": "Confirm Run reinstall result"
+    },
     {
       "label": "Reproduce missing Run dependency",
       "type": "reproduce",
@@ -54,8 +65,8 @@
   "url": "https://github.com/microsoft/PowerToys/issues/51859",
   "schemaVersion": 5,
   "number": 51859,
-  "comments": 0,
-  "evaluated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "comments": 1,
+  "evaluated_at": "2026-11-04T09:47:43.8759828+08:00",
   "proposed_fixes": [
     {
       "title": "Validate and preserve the Run System.Reactive deployment dependency",
@@ -78,29 +89,42 @@
     }
   ],
   "stage": "triage_revalidated",
-  "generated_at": "2026-11-02T20:20:11.0573730+00:00",
+  "generated_at": "2026-11-04T09:47:43.8759828+08:00",
   "kind": "issue",
   "issue_context": {
     "known_information": [
       "The supplied archive contains a November 2 log for PowerToys Run0.102.3001, not just historical logs.",
       "Its fatal UI-thread exception is FileNotFoundException for System.Reactive6.0.0.0 in MainWindow.SetupSearchTextBoxReactiveness during OnLoaded.",
       "The same log labels the separate Copilot package-icon lookup failure as ignorable; that warning is not the demonstrated fatal exception.",
-      "Current-main PowerLauncher.csproj references System.Reactive, and SetupSearchTextBoxReactiveness uses Observable.FromEventPattern/Throttle."
+      "Current-main PowerLauncher.csproj references System.Reactive, and SetupSearchTextBoxReactiveness uses Observable.FromEventPattern/Throttle.",
+      "Read the full latest maintainer comment: it identifies System.Reactive 6.0.0.0 in SetupSearchTextBoxReactiveness and requests reinstall with /needinfo. No reply is present.",
+      "Re-inspected the supplied November 2 Run log; retained the separation between missing dependency and ignorable package-icon warnings. No installer was run or local installed files modified."
     ],
-    "summary": "The supplied current-version Run log identifies a missing System.Reactive dependency during startup; the reason the installation lacks the loadable assembly is not yet established.",
-    "information_gaps": [],
-    "analysis": "There is enough evidence to investigate deployment/dependency loading without requesting another ZIP. The failing dependency is an application assembly, not proof that the shared .NET Desktop Runtime is missing. Compare trusted installer payload, update result and actual installed assembly/deps resolution before choosing a packaging correction; local removal/quarantine remains possible. An unfixed failure prevents Run from completing startup.",
+    "summary": "The supplied Run startup failure is a missing System.Reactive assembly; a maintainer already requested reinstall and awaits its result.",
+    "information_gaps": [
+      {
+        "why_needed": "The supplied stack identifies the dependency but does not distinguish an incomplete local installation from a repeatable package/update problem.",
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the maintainer-requested reinstall restores Run startup, with exact installed version",
+        "how_to_collect": "Use the official PowerToys installer for the same installation scope, preserve settings, and report exact version and whether Run starts after reinstall. If it persists, give the new failure time; the existing ZIP need not be resubmitted."
+      }
+    ],
+    "analysis": "The current fatal stack supports dependency loading, not the separate recoverable Copilot-icon warning. The latest maintainer has already requested reinstall; await that bounded result before choosing a packaging correction. A reinstall may restore files but does not by itself prove a universal installer omission, .NET runtime problem, or successful repair.",
     "inferences": [
       "A repair install might restore the assembly, but its success and the original deployment cause are not established by this archive."
     ],
     "initial_investigation": [
       "Read the full report and inspected supplied archive entries, then selected the actual0.102.3001 November2 Run log rather than older release logs.",
-      "Read the fatal exception separately from recoverable plugin warnings and checked immutable current-main project/setup code. No installer or runtime reproduction is claimed."
+      "Read the fatal exception separately from recoverable plugin warnings and checked immutable current-main project/setup code. No installer or runtime reproduction is claimed.",
+      "Read the full latest maintainer comment: it identifies System.Reactive 6.0.0.0 in SetupSearchTextBoxReactiveness and requests reinstall with /needinfo. No reply is present.",
+      "Re-inspected the supplied November 2 Run log; retained the separation between missing dependency and ignorable package-icon warnings. No installer was run or local installed files modified."
     ]
   },
-  "owes": "maintainer",
+  "owes": "author",
   "labels": [
     "Issue-Bug",
-    "Needs-Triage"
-  ]
+    "Needs-Author-Feedback",
+    "Product-PowerToys Run"
+  ],
+  "waiting_since": "2026-11-03T01:11:24Z"
 }
