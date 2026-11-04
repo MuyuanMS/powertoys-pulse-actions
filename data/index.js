@@ -2530,7 +2530,9 @@ window.BOARD_INDEX = {
         "Product-Command Palette",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-10-30T21:24:00Z",
       "updated_at": "2026-11-04T11:57:49Z",
       "comments": 1,
