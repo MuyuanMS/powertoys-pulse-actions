@@ -1622,7 +1622,8 @@ window.BOARD_INDEX = {
     47280,
     41262,
     44866,
-    45118
+    45118,
+    45168
   ],
   "items": [
     {
@@ -192683,22 +192684,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2026-01-29T01:28:03Z",
       "updated_at": "2026-10-11T16:48:55Z",
       "comments": 0,
