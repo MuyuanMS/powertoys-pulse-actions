@@ -1,0 +1,105 @@
+{
+  "proposed_fixes": [
+    {
+      "verification": [
+        "On the recorded version, change the reported option and compare caption X, Alt+F4 and navigation.",
+        "Verify the repaired window closes normally and the Awake setting persists without disrupting the selected Awake mode."
+      ],
+      "root_cause": "Unconfirmed: the caption close path may not receive/process the close request, or a Settings callback may block UI responsiveness after an Awake change.",
+      "plan": [
+        "Record the exact Awake option changed and distinguish X-only failure from Alt+F4/navigation failure.",
+        "Reproduce that settings transition and trace Settings window close/event handling and its settings/IPC callback, without assuming the separate Awake process is responsible.",
+        "Correct only the demonstrated lifecycle, hit-test or blocking callback and add coverage for closing immediately after the affected option change."
+      ],
+      "confidence": {
+        "level": "red",
+        "rationale": "The screenshot identifies the owning window, but no exact transition or response comparison identifies the fault.",
+        "score": 32
+      },
+      "title": "Isolate Settings close failure after changing Awake options"
+    }
+  ],
+  "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "source_updated_at": "2026-11-03T15:07:24Z",
+  "comments": 0,
+  "fix_assessment": {
+    "rationale": "A Settings lifecycle/input correction may be warranted, but the report does not yet identify a blocked callback or close-specific cause.",
+    "status": "proposed"
+  },
+  "owes": "maintainer",
+  "schemaVersion": 5,
+  "issue_context": {
+    "information_gaps": [
+      {
+        "why_needed": "This distinguishes a close-specific issue from a globally unresponsive Settings UI and supplies the triggering transition.",
+        "information": "Exact changed Awake option and X/Alt+F4/navigation comparison",
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "State the option changed, try Alt+F4 and selecting another Settings page while the X fails, and report which still responds."
+      },
+      {
+        "why_needed": "No archive is supplied, so settings/IPC errors around the failed close cannot be correlated.",
+        "information": "Fresh failure-time PowerToys diagnostics",
+        "evidence_type": "bugreport_zip",
+        "how_to_collect": "Reproduce and comment /bugreport immediately afterward; if Settings/tray cannot open, run BugReportTool.exe from the PowerToys installation directory."
+      }
+    ],
+    "initial_investigation": [
+      "Read full report and empty discussion/timeline, viewed the supplied image, searched related Awake close issues, and inspected the Settings window close owner.",
+      "The title does not establish a defect in the Awake execution-state manager. No runtime reproduction or thread trace was performed."
+    ],
+    "inferences": [
+      "If Alt+F4 and page navigation also fail, a blocked Settings UI is more plausible than an isolated caption hit-test issue; this is not yet observed."
+    ],
+    "summary": "The supplied image shows the main Settings window on Awake; it does not establish whether only caption close is broken or the whole window is unresponsive.",
+    "known_information": [
+      "On 0.102.3001 the reporter says the close X stops working after changing Awake settings. No exact changed option, diagnostic ZIP or additional discussion is supplied.",
+      "Viewed the supplied screenshot: it is the Settings Awake page with the standard caption close button highlighted, not a separate Awake configuration dialog.",
+      "Current SettingsXAML/MainWindow.xaml.cs owns Settings window close/placement handling, while Awake runs separately. The still image cannot establish UI-thread responsiveness or a title-bar hit-test failure."
+    ],
+    "analysis": "Investigate the actual Settings close path. A bounded comparison of caption X, Alt+F4 and navigation distinguishes a close-specific interaction from a blocked Settings window; the changed option and fresh report can then locate the callback. Do not prescribe terminating Awake or resetting all settings without evidence."
+  },
+  "assignees": [
+    null
+  ],
+  "stage": "triage_revalidated",
+  "url": "https://github.com/microsoft/PowerToys/issues/51884",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "title": "Awake config screen won't close",
+  "generated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "track": "triage",
+  "actions": [
+    {
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for the screenshot; it shows the main Settings window on the Awake page, rather than a separate Awake dialog. To distinguish an unresponsive Settings window from a close-button problem:\n\n1. Which Awake option did you change immediately before this happened? While X does not work, does Alt+F4 close the window, and can you navigate to another Settings page?\n2. Reproduce once and comment /bugreport immediately afterward. If Settings and the tray cannot open, run BugReportTool.exe from the PowerToys installation directory.\n\nPlease keep the existing screenshot; no duplicate image or settings reset is needed."
+      },
+      "primary": true,
+      "id": "issue-51884-close-response",
+      "label": "Request Settings close response"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-51884-investigate-settings",
+      "label": "Investigate Settings close transition"
+    }
+  ],
+  "pending_author": false,
+  "judgment": {
+    "source_updated_at": "2026-11-03T15:07:24Z",
+    "status": "needs_information",
+    "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+    "rationale": "Investigate the actual Settings close path. A bounded comparison of caption X, Alt+F4 and navigation distinguishes a close-specific interaction from a blocked Settings window; the changed option and fresh report can then locate the callback. Do not prescribe terminating Awake or resetting all settings without evidence.",
+    "evidence": [
+      "On 0.102.3001 the reporter says the close X stops working after changing Awake settings. No exact changed option, diagnostic ZIP or additional discussion is supplied.",
+      "Viewed the supplied screenshot: it is the Settings Awake page with the standard caption close button highlighted, not a separate Awake configuration dialog.",
+      "Current SettingsXAML/MainWindow.xaml.cs owns Settings window close/placement handling, while Awake runs separately. The still image cannot establish UI-thread responsiveness or a title-bar hit-test failure."
+    ],
+    "recommended_action": "Request the changed option, close-versus-navigation behavior, and one fresh captured failure report."
+  },
+  "number": 51884,
+  "kind": "issue"
+}

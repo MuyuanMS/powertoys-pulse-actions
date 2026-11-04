@@ -1,0 +1,108 @@
+{
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Compare Home and provider icons at multiple display scales and light/dark themes, including reload and cache reuse.",
+        "Confirm Calculator results, extension loading and other SVG/raster icons remain correct."
+      ],
+      "root_cause": "Hypothesis: the SVG intrinsic size or its shadow filtering interacts with icon rasterization/scaling to produce softness in the Home row. Artwork softness and cached decode size must be distinguished.",
+      "plan": [
+        "Trace the selected SVG through IconHelpers and the displayed provider/Home icon model, recording target size, decode size and display scale.",
+        "Compare direct vector rendering and the current pipeline at 100%, 150% and 200%, with another built-in extension as control.",
+        "If rasterization is undersized, correct target-aware loading/cache sizing; if the artwork is the cause, use an approved crisp asset without changing command identity or unrelated icon rendering."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "rationale": "The image and exact chosen asset are established, but no measured decode pipeline or DPI comparison proves the corrective mechanism.",
+        "score": 61
+      },
+      "title": "Render Calculator icons sharply at the actual display size"
+    }
+  ],
+  "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "source_updated_at": "2026-11-03T02:31:57Z",
+  "comments": 0,
+  "fix_assessment": {
+    "rationale": "A focused asset/decoding correction may improve clarity, but the screenshot and source do not yet isolate scaling, artwork filtering or cache size.",
+    "status": "proposed"
+  },
+  "owes": "maintainer",
+  "schemaVersion": 5,
+  "issue_context": {
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read complete report and empty discussion/timeline, viewed the supplied screenshot, searched covering icon fixes, and inspected the current Calculator provider, Icons.cs and SVG.",
+      "No physical-DPI/UI run, asset replacement or completed design is claimed."
+    ],
+    "inferences": [
+      "Intrinsic SVG dimensions or shadow filters may contribute to perceived softness; the public evidence does not prove a low-resolution PNG is being enlarged."
+    ],
+    "summary": "The screenshot supports a soft Calculator home icon; current source selects an SVG, so replacing an assumed low-resolution PNG is not yet justified.",
+    "known_information": [
+      "The reporter sees the Calculator home icon blurred in 0.102 and current main/development build and supplies an image.",
+      "Viewed the supplied image: the small Calculator icon looks soft relative to the surrounding row; a screenshot alone cannot identify its decode size or scaling path.",
+      "CalculatorCommandProvider uses Icons.CalculatorIcon, which resolves Assets/Calculator.svg through IconHelpers.FromRelativePath.",
+      "The SVG declares width 16 and height 17 with vector paths and shadow filters. Its intrinsic dimensions may matter to rasterization, but the presence of a 16x17 SVG is not proof of a 16x17 cached bitmap or a particular rendering bug."
+    ],
+    "analysis": "A maintainer can reproduce the visible issue without asking for another screenshot or diagnostic ZIP. Trace the actual SVG decode/rasterization size, displayed icon slot and DPI before choosing a higher-resolution asset or loader correction. Preserve icon identity and other extension icons."
+  },
+  "assignees": [
+    "jiripolasek"
+  ],
+  "stage": "triage_revalidated",
+  "url": "https://github.com/microsoft/PowerToys/issues/51868",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "title": "CmdPal: Calculator icon is blurred",
+  "generated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "track": "triage",
+  "actions": [
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "Calculator is rendered sharply at its intended physical size without changing its command or neighboring icons.",
+        "steps": [
+          "Open Home and capture Calculator beside a known sharp built-in extension icon.",
+          "Trace actual asset, target slot and decode/rasterization sizes; compare direct rendering of the supplied SVG.",
+          "Repeat at each scale and light/dark theme, including reload/cache reuse."
+        ],
+        "version_requirement": "0.102 and current development build; record exact build",
+        "prerequisites": [
+          "Display scales of 100%, 150% and 200% available in a controlled desktop session."
+        ],
+        "module": "Command Palette / Calculator",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/issues/51868"
+        ]
+      },
+      "primary": true,
+      "id": "issue-51868-reproduce-icon",
+      "label": "Compare Calculator icon rasterization"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-51868-design-icon-fix",
+      "label": "Investigate Calculator icon rendering"
+    }
+  ],
+  "pending_author": false,
+  "judgment": {
+    "source_updated_at": "2026-11-03T02:31:57Z",
+    "status": "reproducible",
+    "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+    "rationale": "A maintainer can reproduce the visible issue without asking for another screenshot or diagnostic ZIP. Trace the actual SVG decode/rasterization size, displayed icon slot and DPI before choosing a higher-resolution asset or loader correction. Preserve icon identity and other extension icons.",
+    "evidence": [
+      "The reporter sees the Calculator home icon blurred in 0.102 and current main/development build and supplies an image.",
+      "Viewed the supplied image: the small Calculator icon looks soft relative to the surrounding row; a screenshot alone cannot identify its decode size or scaling path.",
+      "CalculatorCommandProvider uses Icons.CalculatorIcon, which resolves Assets/Calculator.svg through IconHelpers.FromRelativePath.",
+      "The SVG declares width 16 and height 17 with vector paths and shadow filters. Its intrinsic dimensions may matter to rasterization, but the presence of a 16x17 SVG is not proof of a 16x17 cached bitmap or a particular rendering bug."
+    ],
+    "recommended_action": "Compare Calculator home/provider icon rendering at supported scale factors and measure the actual rasterization path."
+  },
+  "number": 51868,
+  "kind": "issue"
+}

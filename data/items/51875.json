@@ -1,0 +1,108 @@
+{
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Verify first and repeated snaps for both reported applications at the supplied topology.",
+        "Check adjacent zones, maximized restore and a scaled-display case; no new gaps, offscreen title bars or overlap may be introduced."
+      ],
+      "root_cause": "Hypothesis: application frame geometry or initialization differs at the first snap, leaving a visible top strip despite disabled zone spacing. Existing margin compensation is asymmetric, but blindly subtracting a top margin could move title bars offscreen.",
+      "plan": [
+        "Reproduce the supplied one-display 3840x1080, 100%, two-column layout with zone spacing disabled and record first/subsequent snaps of VS Code and Outlook.",
+        "Compare target zone, work area, GetWindowRect and extended frame bounds before/after snapping; compare a standard application and any app-drawn border.",
+        "If the target-to-visible-frame discrepancy is in FancyZones, correct that measured sizing path without unconditional one-pixel offsets or changes to intentional layout spacing."
+      ],
+      "confidence": {
+        "level": "yellow",
+        "rationale": "Images establish configuration and symptom, and source identifies frame compensation, but measured bounds and app-specific rendering remain unresolved.",
+        "score": 62
+      },
+      "title": "Align snapped top edges using measured visible-frame geometry"
+    }
+  ],
+  "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "source_updated_at": "2026-11-03T07:41:00Z",
+  "comments": 0,
+  "fix_assessment": {
+    "rationale": "A specific frame/zone alignment investigation is justified, but no measured rectangle or runtime comparison yet proves a FancyZones compensation defect.",
+    "status": "proposed"
+  },
+  "owes": "maintainer",
+  "schemaVersion": 5,
+  "issue_context": {
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the full report and empty discussion/timeline, viewed all six images, searched related gap reports and read #2151 original report as related context, not a proven duplicate.",
+      "Inspected the current WindowUtils.cpp frame adjustment. No source patch, runtime measurement or physical display test was performed."
+    ],
+    "inferences": [
+      "A top-margin discrepancy is plausible; a normal visible application border or first-window initialization could instead explain the strip."
+    ],
+    "summary": "Supplied screenshots show a thin top-edge strip after FancyZones snapping with zone spacing disabled; measure visible frame bounds before adding pixel compensation.",
+    "known_information": [
+      "The report describes 0.102.3001, Shift-drag snapping, VS Code/Outlook, and a first-window distinction.",
+      "Viewed all six supplied screenshots. They show a two-column layout with Space around zones disabled, one 3840x1080 display at 100%, and arrow-marked thin strips above snapped content.",
+      "Current FancyZonesWindowUtils::AdjustRectForSizeWindowToRect compensates left/right/bottom margins using DWMWA_EXTENDED_FRAME_BOUNDS; it does not apply the same top-margin subtraction. That is a relevant comparison, not proof the missing subtraction is a bug.",
+      "Older open #2151 concerns one-pixel gaps between adjacent windows; its original report does not establish this newer top-edge/first-window scenario has the same cause."
+    ],
+    "analysis": "The report is concrete enough for a maintainer reproduction without another monitor inventory or generic ZIP request. Compare zone bounds, GetWindowRect and DWM visible frame at first versus subsequent snaps; distinguish an ordinary app-drawn border from actual unoccupied work-area pixels before changing geometry."
+  },
+  "assignees": [
+    null
+  ],
+  "stage": "triage_revalidated",
+  "url": "https://github.com/microsoft/PowerToys/issues/51875",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "title": "FancyZones pixel-gap issue",
+  "generated_at": "2026-11-04T09:49:53.3368892+08:00",
+  "track": "triage",
+  "actions": [
+    {
+      "type": "reproduce",
+      "reproduce": {
+        "expected_result": "The snapped visible frame aligns with its target zone without unintended uncovered top pixels, while normal application borders remain correct.",
+        "steps": [
+          "Start a reported application and Shift-drag the first window into a column; capture the top strip.",
+          "Repeat the snap and open a second window; compare the first-window distinction.",
+          "Record target zone/work-area bounds, GetWindowRect and DWM extended frame bounds; compare a standard local application."
+        ],
+        "version_requirement": "0.102.3001 and current development build; record exact version",
+        "prerequisites": [
+          "One display at 3840x1080 and 100% scaling, matching supplied screenshots.",
+          "Two-column layout with Space around zones disabled; VS Code and Outlook available."
+        ],
+        "module": "FancyZones",
+        "attachments": [
+          "https://github.com/microsoft/PowerToys/issues/51875"
+        ]
+      },
+      "primary": true,
+      "id": "issue-51875-reproduce-bounds",
+      "label": "Measure FancyZones top-edge gap"
+    },
+    {
+      "type": "approve_design",
+      "primary": false,
+      "id": "issue-51875-design-frame-fix",
+      "label": "Investigate measured frame alignment"
+    }
+  ],
+  "pending_author": false,
+  "judgment": {
+    "source_updated_at": "2026-11-03T07:41:00Z",
+    "status": "reproducible",
+    "evaluated_at": "2026-11-04T09:49:53.3368892+08:00",
+    "rationale": "The report is concrete enough for a maintainer reproduction without another monitor inventory or generic ZIP request. Compare zone bounds, GetWindowRect and DWM visible frame at first versus subsequent snaps; distinguish an ordinary app-drawn border from actual unoccupied work-area pixels before changing geometry.",
+    "evidence": [
+      "The report describes 0.102.3001, Shift-drag snapping, VS Code/Outlook, and a first-window distinction.",
+      "Viewed all six supplied screenshots. They show a two-column layout with Space around zones disabled, one 3840x1080 display at 100%, and arrow-marked thin strips above snapped content.",
+      "Current FancyZonesWindowUtils::AdjustRectForSizeWindowToRect compensates left/right/bottom margins using DWMWA_EXTENDED_FRAME_BOUNDS; it does not apply the same top-margin subtraction. That is a relevant comparison, not proof the missing subtraction is a bug.",
+      "Older open #2151 concerns one-pixel gaps between adjacent windows; its original report does not establish this newer top-edge/first-window scenario has the same cause."
+    ],
+    "recommended_action": "Reproduce the supplied 100% two-column layout and measure the first-snap top-edge gap, then choose the smallest proven geometry correction."
+  },
+  "number": 51875,
+  "kind": "issue"
+}
