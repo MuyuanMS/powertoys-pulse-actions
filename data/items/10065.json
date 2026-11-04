@@ -1,120 +1,86 @@
 {
-  "schemaVersion": 5,
-  "number": 10065,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "Combinacijus",
-  "confidence": "Yellow",
-  "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Overlapping action-key ownership is a focused engine-state candidate."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Add deterministic overlap coverage before changing suppression."
-  },
-  "generated_at": "2026-09-12T01:02:28.326191Z",
-  "evaluated_at": "2026-09-12T01:02:28.326191Z",
-  "source_updated_at": "2022-10-21T15:46:03Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue provides a deterministic overlap sequence and a second confirmation. Current Keyboard Manager has a complex per-shortcut started/remap state machine, making action-key overlap and pass-through suppression a focused, testable hypothesis.",
-    "evidence": [
-      "With Win+Ctrl held, rapidly overlapping A and D causes unmodified A/D characters while slower alternating presses remap correctly.",
-      "The reporter explicitly narrowed the trigger to both action keys being down briefly, not raw speed.",
-      "Current KeyboardEventHandlers.cpp tracks started shortcuts, action-key key-up, and reset behavior separately across overlapping remaps."
-    ],
-    "recommended_action": "Reproduce with deterministic overlapping key events and add state-machine coverage before changing suppression logic.",
-    "evaluated_at": "2026-09-12T01:02:28.326191Z",
-    "source_updated_at": "2022-10-21T15:46:03Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No linked fix exists; the event overlap provides a concrete engine test and likely ownership boundary."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Keep overlapping action keys suppressed until each remap chord resolves",
-      "root_cause": "When a second shortcut action key arrives while another remap with the same held modifiers is still active, the state machine can resolve one mapping and pass the other physical action key through before its own remap state is established.",
-      "plan": [
-        "Create an engine test that injects Win+Ctrl down, A down, D down, A up, D up with both remaps configured.",
-        "Track suppression/ownership per physical action key rather than treating the shared modifier chord as a single active shortcut.",
-        "Release injected targets and reset each action key independently when its physical key-up arrives."
-      ],
-      "verification": [
-        "Run KeyboardManagerEngine tests for overlapping Win+Ctrl+A/D remaps.",
-        "Verify slow and overlapping sequences emit only Left/Right and never literal A/D.",
-        "Cover reversed release order and auto-repeat."
-      ],
-      "confidence": {
-        "score": 55,
-        "level": "yellow",
-        "rationale": "The event overlap is explicit, but a current engine test is needed to confirm which reset branch leaks the second key after substantial Keyboard Manager changes."
-      }
-    }
+  "track": "triage",
+  "source_updated_at": "2026-10-11T16:48:52Z",
+  "proposed_fixes": [],
+  "assignees": [
+    null
   ],
+  "comments": 1,
   "issue_context": {
-    "summary": "Two remapped shortcuts sharing held modifiers can leak the second action key when the next chord begins before the first action key is fully released.",
+    "summary": "Retain the explicit overlapping-key sequence with the established16140 regression investigation; duplicate closure is not repair.",
+    "analysis": "Use the actual overlapping down/up order already supplied instead of asking the reporter to time faster keystrokes or repeat generic diagnostics. Keep this older Win+Ctrl variant as an explicit control in16140, without claiming that historical duplicate cleanup fixed it.",
     "known_information": [
-      "The exact mappings and event sequence are documented.",
-      "The failure depends on A and D overlapping while Win+Ctrl remain held.",
-      "A second user reproduced the same behavior with Ctrl+A/Ctrl+E remaps."
+      "The author explicitly corrected the speed-only explanation: A and D briefly overlap while Win+Ctrl remains held; Ctrl+A/Ctrl+E->Home/End has independent confirmation.",
+      "16140 reports the corresponding Alt+J/L navigation leakage, includes later persistence reports and is the maintainer-selected duplicate target of18414.",
+      "Exact current invoked shortcut-to-key Case5 passes another key through while the target remains held, with intentional target-modifier composition as counterevidence to a blanket reset.",
+      "A source-backed direction is recorded with16140. There is no claimed merged or shipped overlap repair, and adjacent49748 is a different recursion-guard concern."
+    ],
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read the complete report and its confirmation,16140 discussion,18414 duplicate history, exact current transition branch and existing control tests.",
+      "No current keyboard runtime or unit-test result is claimed, and no new competing implementation or closure request is proposed."
     ],
     "inferences": [
-      "Shortcut state is likely being reset at chord scope rather than preserving independent ownership for simultaneously held action keys."
-    ],
-    "analysis": "The original report already contains the key discriminator. A synthetic low-level input test can reproduce this without asking the reporter for generic logs.",
-    "initial_investigation": [
-      "Read the complete issue and confirmation through 2022-10-21T15:46:03Z.",
-      "Reviewed current KeyboardEventHandlers.cpp started-chord, action-key, suppression, and reset branches.",
-      "No linked fix or duplicate is present in the live timeline."
-    ],
-    "information_gaps": []
+      "The common overlap discriminator makes a shared regression investigation useful, while the Win+Ctrl and Alt variants must both remain acceptance cases rather than assuming every shortcut failure is identical."
+    ]
   },
+  "repository": "microsoft/PowerToys",
   "actions": [
     {
-      "id": "design-10065",
-      "type": "approve_design",
-      "label": "Design fix",
       "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
-    },
-    {
       "type": "reproduce",
-      "label": "Reproduce overlapping shortcut keys",
+      "id": "issue-10065-reproduce-overlap-control",
       "reproduce": {
-        "title": "Replay overlapping Keyboard Manager chords",
-        "module": "Keyboard Manager",
-        "version_requirement": "Current development build",
         "prerequisites": [
-          "Configure Win+Ctrl+A → Left and Win+Ctrl+D → Right",
-          "Open a text editor containing text"
+          "Use disposable mappings in a plain editor and the existing mocked-input unit harness. Keep the modifier physically held and explicitly control key-up order."
         ],
-        "setup": [],
         "steps": [
-          "Hold Win+Ctrl.",
-          "Press A down, then D down before releasing A.",
-          "Release A, then D; repeat with the release order reversed.",
-          "Inspect both resulting cursor movement and low-level emitted key events."
+          "Configure Alt+J->Left and Alt+L->Right. Compare J-down/J-up/L-down with J-down/L-down/J-up/L-up while Alt remains held; repeat both action-key release orders and reversed navigation.",
+          "Repeat Ctrl+A/Ctrl+E->Home/End and Win+Ctrl+A/Win+Ctrl+D->Left/Right; record target output, leaked literal letters and final physical/virtual modifier state.",
+          "At HandleShortcutRemapEvent Case5 compare whether another configured source shortcut is recognized before the generic shortcut-to-key pass-through.",
+          "Keep Alt+D->Win followed by unremapped A as a required Win+A composition control. Also cover auto-repeat, unremapped keys, AltGr, exact-match and app-scoped mappings, balanced target key-up and modifier release."
         ],
-        "expected_result": "Only Left and Right are emitted; no literal A or D reaches the editor and all modifiers release normally."
-      }
+        "version_requirement": "Current main; historical reports include0.33.1/0.55.1/0.76.2 and a January2025 confirmation",
+        "module": "Keyboard Manager",
+        "expected_result": "Two recognized overlapping navigation mappings produce their targets without literal source letters or stuck state, while intentionally composed target modifiers and unmatched extra keys retain their existing behavior."
+      },
+      "label": "Retain Win+Ctrl overlap as regression control"
     }
   ],
-  "title": "[KBM] missing shortcuts if executed fast one after another",
-  "url": "https://github.com/microsoft/PowerToys/issues/10065",
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
     "Priority-3",
-    "Planning-Consideration"
+    "Planning-Consideration",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
-  "comments": 1
+  "judgment": {
+    "evaluated_at": "2026-11-04T20:42:16.9859091+00:00",
+    "recommended_action": "Run the supplied Win+Ctrl overlap sequence with the shared16140 regression matrix and preserve its distinct modifier/target controls.",
+    "rationale": "Use the actual overlapping down/up order already supplied instead of asking the reporter to time faster keystrokes or repeat generic diagnostics. Keep this older Win+Ctrl variant as an explicit control in16140, without claiming that historical duplicate cleanup fixed it.",
+    "status": "duplicate_or_handled",
+    "evidence": [
+      "The author explicitly corrected the speed-only explanation: A and D briefly overlap while Win+Ctrl remains held; Ctrl+A/Ctrl+E->Home/End has independent confirmation.",
+      "16140 reports the corresponding Alt+J/L navigation leakage, includes later persistence reports and is the maintainer-selected duplicate target of18414.",
+      "Exact current invoked shortcut-to-key Case5 passes another key through while the target remains held, with intentional target-modifier composition as counterevidence to a blanket reset.",
+      "A source-backed direction is recorded with16140. There is no claimed merged or shipped overlap repair, and adjacent49748 is a different recursion-guard concern."
+    ],
+    "source_updated_at": "2026-10-11T16:48:52Z"
+  },
+  "number": 10065,
+  "url": "https://github.com/microsoft/PowerToys/issues/10065",
+  "title": "[KBM] missing shortcuts if executed fast one after another",
+  "evaluated_at": "2026-11-04T20:42:16.9859091+00:00",
+  "owes": "maintainer",
+  "kind": "issue",
+  "generated_at": "2026-11-04T20:42:16.9859091+00:00",
+  "stage": "triage_revalidated",
+  "schemaVersion": 5,
+  "fix_assessment": {
+    "rationale": "Existing issue16140 owns the shared overlap investigation and now has the concrete fix direction; this denotes linked work coverage, not an existing repair or a universal duplicate claim.",
+    "status": "existing_fix",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/16140"
+    ]
+  },
+  "pending_author": false
 }

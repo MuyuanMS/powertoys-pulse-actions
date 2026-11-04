@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 214,
     "open_issues": 11136,
     "community": 10251,
-    "artifacts": 1548
+    "artifacts": 1550
   },
   "impact": {
     "as_of": "2026-11-05T04:29:46.1722307+08:00",
@@ -1645,7 +1645,9 @@ window.BOARD_INDEX = {
     51918,
     51925,
     51926,
-    51920
+    51920,
+    16140,
+    10065
   ],
   "items": [
     {
@@ -172590,23 +172592,28 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
+      "track": "triage",
       "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Retain Win+Ctrl overlap as regression control"
+      },
       "labels": [
         "Issue-Bug",
         "Priority-3",
         "Planning-Consideration",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2021-03-05T13:02:50Z",
       "updated_at": "2026-10-11T16:48:52Z",
       "comments": 1,
@@ -370597,22 +370604,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Area-Quality",
         "Product-Keyboard Manager"
       ],
-      "assignees": [],
+      "assignees": [
+        null
+      ],
       "created_at": "2022-02-07T09:54:49Z",
       "updated_at": "2026-10-11T16:48:11Z",
       "comments": 3,

@@ -1,33 +1,115 @@
 {
-  "number": 16140,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-01-23T08:53:38Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "track": "triage",
+  "source_updated_at": "2026-10-11T16:48:11Z",
+  "proposed_fixes": [
+    {
+      "root_cause": "Conditional source-backed hypothesis: when the first shortcut-to-key target remains down, the invoked mapping owns dispatch and Case5 passes the next action key through without evaluating its configured source mapping.",
+      "verification": [
+        "Run KeyboardManagerEngineTest OS-level shortcut cases with both release orders, reverse navigation, auto-repeat, app scopes, exact match, AltGr and all modifier releases.",
+        "Verify Alt+D->Win plus unremapped A still produces Win+A, and ordinary unmapped typing plus shortcut-to-shortcut transitions retain their current behavior.",
+        "Repeat the reporter Alt+J/L and Win+Ctrl+A/D overlap sequences in a current plain editor; check no literal letters or stuck targets/modifiers remain."
+      ],
+      "plan": [
+        "Add deterministic overlapping-down versus release-before-next-down cases to OSLevelShortcutRemappingTests using the reported single-key navigation targets and held physical modifiers.",
+        "Before generic shortcut-to-key pass-through, determine whether the new action key represents another applicable configured source mapping. Reuse existing modifier/app/exact-match semantics rather than globally suppressing extra input.",
+        "Design balanced old-target release and new-target invocation/reset handling only for a proven recognized transition. Preserve unremapped extra keys and intentional modifier-target composition, then exercise the original editor scenarios."
+      ],
+      "confidence": {
+        "rationale": "Historical independent reports isolate overlap, an actual duplicate points to16140, and exact current source shows the relevant pass-through with a legitimate compatibility use. No current failing test or runtime trace was executed, so the precise safe state transition remains to be demonstrated.",
+        "level": "yellow",
+        "score": 82
+      },
+      "title": "Recognize a second mapped shortcut before generic held-target pass-through"
+    }
+  ],
+  "assignees": [
+    null
+  ],
+  "comments": 3,
+  "issue_context": {
+    "summary": "Distinguish overlapping mapped action keys from intentional target-modifier composition before changing the shortcut-to-key transition.",
+    "analysis": "The oldest report already supplies the missing timing discriminator and the current code contains a deliberate held-target pass-through. First test the recognized second mapping before choosing a narrow transition change; do not treat all extra keys as remaps, remove intended modifier composition, or equate closing18414 with fixing16140.",
+    "known_information": [
+      "The reporter supplies Alt+J/Alt+L to Left/Right, ordinary editor controls and video; a later author confirms0.76.2 still fails. A January2025 participant reports persistent literal-key leakage, not a released repair.",
+      "10065 explicitly isolates overlapping action keys while holding modifiers, rather than elapsed typing speed alone. Its second participant reproduces Ctrl+A/Ctrl+E to Home/End.",
+      "18414 describes the same Alt+J/Alt+L failure and was closed by a maintainer as a duplicate of16140. That administrative closure did not fix the behavior.",
+      "Pinned main HandleShortcutRemapEvent skips other mappings while one is invoked. In Case5, the shortcut-to-key branch returns0 for a new nonmodifier while the first target key remains down, rather than trying the second mapping.",
+      "This pass-through is intentional for composition such as Alt+D mapped to Win followed by A producing Win+A. A blanket suppression or reset would regress supported behavior.",
+      "Existing OSLevelShortcutRemappingTests cover other-key composition and release-before-next-key sequences; those are important controls, not proof the two overlapping mapped navigation keys work.",
+      "Adjacent open49748 addresses physical dwExtraInfo flag collisions in the recursion guard, with SingleKeyRemappingTests. It is not demonstrated coverage of this invoked shortcut-to-key transition."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-01-23T08:53:38Z"
-  }
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read both complete reports/discussions and all ten comments on linked18414, including the actual maintainer duplicate target and unrelated Mouse Without Borders hotkey correction.",
+      "Read exact pinned main HandleShortcutRemapEvent invoked-state/Case5 branches and existing OS-level remapping control tests; inspected current open keyboard candidates and49748 scope.",
+      "No mappings were changed, keyboard events injected or native unit tests executed. This is a lightweight source-backed direction, not an approved implementation or current runtime pass."
+    ],
+    "inferences": [
+      "The current held-target pass-through supports the reported leakage mechanism when the first target remains down. A current runtime reproduction and exact event-state tests are still required; source inspection is not an executed failing test."
+    ]
+  },
+  "repository": "microsoft/PowerToys",
+  "actions": [
+    {
+      "primary": true,
+      "type": "reproduce",
+      "id": "issue-16140-reproduce-overlap",
+      "reproduce": {
+        "prerequisites": [
+          "Use disposable mappings in a plain editor and the existing mocked-input unit harness. Keep the modifier physically held and explicitly control key-up order."
+        ],
+        "steps": [
+          "Configure Alt+J->Left and Alt+L->Right. Compare J-down/J-up/L-down with J-down/L-down/J-up/L-up while Alt remains held; repeat both action-key release orders and reversed navigation.",
+          "Repeat Ctrl+A/Ctrl+E->Home/End and Win+Ctrl+A/Win+Ctrl+D->Left/Right; record target output, leaked literal letters and final physical/virtual modifier state.",
+          "At HandleShortcutRemapEvent Case5 compare whether another configured source shortcut is recognized before the generic shortcut-to-key pass-through.",
+          "Keep Alt+D->Win followed by unremapped A as a required Win+A composition control. Also cover auto-repeat, unremapped keys, AltGr, exact-match and app-scoped mappings, balanced target key-up and modifier release."
+        ],
+        "version_requirement": "Current main; historical reports include0.33.1/0.55.1/0.76.2 and a January2025 confirmation",
+        "module": "Keyboard Manager",
+        "expected_result": "Two recognized overlapping navigation mappings produce their targets without literal source letters or stuck state, while intentionally composed target modifiers and unmatched extra keys retain their existing behavior."
+      },
+      "label": "Compare overlapping and sequential mapped keys"
+    },
+    {
+      "primary": false,
+      "type": "approve_design",
+      "id": "issue-16140-design-overlap",
+      "label": "Design overlap-safe shortcut transition"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Area-Quality",
+    "Product-Keyboard Manager"
+  ],
+  "judgment": {
+    "evaluated_at": "2026-11-04T20:42:16.9859091+00:00",
+    "recommended_action": "Add deterministic overlapping-key regression cases, preserve composition controls, then design the smallest recognized-mapping transition shared with existing state handling.",
+    "rationale": "The oldest report already supplies the missing timing discriminator and the current code contains a deliberate held-target pass-through. First test the recognized second mapping before choosing a narrow transition change; do not treat all extra keys as remaps, remove intended modifier composition, or equate closing18414 with fixing16140.",
+    "status": "actionable_design",
+    "evidence": [
+      "The reporter supplies Alt+J/Alt+L to Left/Right, ordinary editor controls and video; a later author confirms0.76.2 still fails. A January2025 participant reports persistent literal-key leakage, not a released repair.",
+      "10065 explicitly isolates overlapping action keys while holding modifiers, rather than elapsed typing speed alone. Its second participant reproduces Ctrl+A/Ctrl+E to Home/End.",
+      "18414 describes the same Alt+J/Alt+L failure and was closed by a maintainer as a duplicate of16140. That administrative closure did not fix the behavior.",
+      "Pinned main HandleShortcutRemapEvent skips other mappings while one is invoked. In Case5, the shortcut-to-key branch returns0 for a new nonmodifier while the first target key remains down, rather than trying the second mapping.",
+      "This pass-through is intentional for composition such as Alt+D mapped to Win followed by A producing Win+A. A blanket suppression or reset would regress supported behavior.",
+      "Existing OSLevelShortcutRemappingTests cover other-key composition and release-before-next-key sequences; those are important controls, not proof the two overlapping mapped navigation keys work.",
+      "Adjacent open49748 addresses physical dwExtraInfo flag collisions in the recursion guard, with SingleKeyRemappingTests. It is not demonstrated coverage of this invoked shortcut-to-key transition."
+    ],
+    "source_updated_at": "2026-10-11T16:48:11Z"
+  },
+  "number": 16140,
+  "url": "https://github.com/microsoft/PowerToys/issues/16140",
+  "title": "Pressing keyboard shortcuts fastly with the same mofidier key fails sometimes",
+  "evaluated_at": "2026-11-04T20:42:16.9859091+00:00",
+  "owes": "maintainer",
+  "kind": "issue",
+  "generated_at": "2026-11-04T20:42:16.9859091+00:00",
+  "stage": "triage_revalidated",
+  "schemaVersion": 5,
+  "fix_assessment": {
+    "rationale": "The exact invoked-state branch supports a concrete overlap hypothesis. The safe transition and state/reset semantics need focused regression tests before implementation.",
+    "status": "proposed"
+  },
+  "pending_author": false
 }
