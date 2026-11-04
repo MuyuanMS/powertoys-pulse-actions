@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 214,
     "open_issues": 11136,
     "community": 10251,
-    "artifacts": 1532
+    "artifacts": 1535
   },
   "impact": {
     "as_of": "2026-11-05T04:29:46.1722307+08:00",
@@ -1629,7 +1629,10 @@ window.BOARD_INDEX = {
     51908,
     51909,
     51911,
-    51912
+    51912,
+    51923,
+    51922,
+    51919
   ],
   "items": [
     {
@@ -20034,22 +20037,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Verify existing icon fix51925",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-11-04T19:07:09Z",
       "updated_at": "2026-11-04T19:07:09Z",
       "comments": 0,
@@ -20067,22 +20075,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Verify existing icon fix51926",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-11-04T19:05:20Z",
       "updated_at": "2026-11-04T19:05:20Z",
       "comments": 0,
@@ -20133,22 +20146,27 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "label": "Verify existing icon fix51920",
+        "type": "reproduce"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-11-04T18:19:20Z",
       "updated_at": "2026-11-04T18:19:20Z",
       "comments": 0,
