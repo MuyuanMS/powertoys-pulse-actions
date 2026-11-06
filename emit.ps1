@@ -274,11 +274,17 @@ function Test-CurrentOpenBugArtifact {
   }
 
   $context = Get-PropertyValue $Artifact 'issue_context'
+  $hasInferences = $false
+  if ($context -is [System.Collections.IDictionary]) {
+    $hasInferences = $context.Contains('inferences')
+  } elseif ($null -ne $context) {
+    $hasInferences = $null -ne $context.PSObject.Properties['inferences']
+  }
   if ($null -eq $context -or
       [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'summary')) -or
       [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'analysis')) -or
       @((Get-PropertyValue $context 'known_information')).Count -eq 0 -or
-      $null -eq (Get-PropertyValue $context 'inferences') -or
+      -not $hasInferences -or
       @((Get-PropertyValue $context 'initial_investigation')).Count -eq 0) {
     return $false
   }
