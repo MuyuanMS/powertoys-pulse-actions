@@ -2,47 +2,50 @@
   "schemaVersion": 5,
   "number": 48048,
   "kind": "issue",
-  "track": "fix",
+  "track": "triage",
   "stage": "reproducible",
-  "owes": "maintainer",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-13T07:18:43.4524709Z",
-  "evaluated_at": "2026-09-13T07:18:43.452Z",
-  "source_updated_at": "2026-07-08T14:02:37Z",
+  "generated_at": "2026-11-06T12:43:29.79+08:00",
+  "evaluated_at": "2026-11-06T12:43:29.79+08:00",
+  "source_updated_at": "2026-10-06T05:51:56Z",
   "status": {
-    "glyph": "",
-    "label": "reproducible",
-    "detail": "The issue is independently corroborated with a repeatable focus trigger and workaround."
+    "glyph": "!",
+    "label": "Corroborated; privilege condition to verify",
+    "detail": "Multiple reports reproduce the focus-triggered shortcut issue, and one reporter found an elevation workaround."
   },
   "next_action": {
-    "glyph": "",
-    "label": "Reproduce after focus changes with original and remapped Windows keys.",
-    "reason": "The issue is independently corroborated with a repeatable focus trigger and workaround."
+    "glyph": "!",
+    "label": "Compare elevated and standard shortcut handling",
+    "reason": "The new workaround should be reproduced with the same focus and key sequence before choosing a code path."
   },
   "actions": [
     {
-      "type": "approve_design",
-      "label": "Approve reproduce fancyzones win+arrow interception design"
+      "type": "reproduce",
+      "label": "Compare elevated and standard FancyZones shortcut handling",
+      "primary": true,
+      "reproduce": {
+        "title": "Verify Win+Arrow behavior after focus changes",
+        "module": "FancyZones",
+        "version_requirement": "Current supported PowerToys build.",
+        "prerequisites": [
+          "FancyZones enabled with at least two zones; one affected window and a second window for focus changes."
+        ],
+        "setup": [],
+        "steps": [
+          "Run PowerToys as a standard user, focus and refocus the affected window by Alt+Tab and clicking, then press Win+Left/Right repeatedly.",
+          "Repeat the identical sequence with PowerToys elevated.",
+          "Compare with the reported Windows-key remapping workaround disabled and enabled; note whether native snapping or FancyZones receives each press."
+        ],
+        "expected_result": "The trigger and elevation/remapping dependency are reproducible and the handler responsible for the first snap is identified."
+      }
     },
     {
-      "type": "reproduce",
-      "label": "Reproduce FancyZones Win+Arrow interception",
-      "note": "Verify the public reproduction before selecting an implementation path.",
-      "reproduce": {
-        "module": "FancyZones",
-        "prerequisites": [
-          "FancyZones enabled",
-          "At least two zones"
-        ],
-        "title": "Verify FancyZones Win+Arrow interception",
-        "version_requirement": "PowerToys 0.99.1 or newer",
-        "steps": [
-          "Focus or refocus a window with Alt+Tab or click.",
-          "Press Win+Left/Right repeatedly.",
-          "Compare behavior with the Windows-key remapping workaround disabled and enabled."
-        ],
-        "expected_result": "Win+Arrow moves through FancyZones without native half-screen snapping first."
-      }
+      "type": "approve_design",
+      "label": "Review interception fix direction after reproduction",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve a code-level design only after the elevated/standard comparison identifies the responsible input path."
     }
   ],
   "confidence": {
@@ -52,55 +55,65 @@
   },
   "judgment": {
     "status": "reproducible",
-    "rationale": "The issue is independently corroborated with a repeatable focus trigger and workaround.",
+    "rationale": "The added elevation workaround narrows the next reproduction: compare elevated and standard PowerToys under the same focused-window and left-Win shortcut sequence. Existing focus-change reproductions still support a real issue, but the input-hook or integrity-level cause is not established.",
     "evidence": [
-      "Multiple commenters reproduce it after Alt+Tab or clicking a focused window.",
-      "The issue persists after reinstalling and has a Windows-key remapping workaround.",
-      "No linked fix is present."
+      "Several commenters independently reproduce Win+Arrow invoking Windows half-screen snapping before FancyZones movement after focus changes.",
+      "The latest reporter says running PowerToys as administrator resolves the symptom; the report does not yet establish whether elevation alone is causal or whether the shortcut/focus conditions changed.",
+      "A Windows-key remapping workaround was also reported; no linked fix is present and the issue remains unassigned."
     ],
-    "recommended_action": "Reproduce after focus changes with original and remapped Windows keys.",
-    "evaluated_at": "2026-09-13T07:18:43.452Z",
-    "source_updated_at": "2026-07-08T14:02:37Z"
+    "recommended_action": "Reproduce the same Win+Arrow focus sequence with PowerToys elevated and standard, and compare the left-Win key with the reported remapping workaround.",
+    "evaluated_at": "2026-11-06T12:43:29.79+08:00",
+    "source_updated_at": "2026-10-06T05:51:56Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No current linked fix covers the reported path; the direction remains evidence-limited.",
-    "existing_fix_urls": []
+    "rationale": "The reproduced focus condition and elevation workaround justify a narrow investigation, but do not yet establish the failing input path."
   },
   "issue_context": {
-    "summary": "FancyZones Win+Arrow sometimes invokes Windows half-screen snapping before moving through FancyZones, especially after focus changes.",
+    "summary": "FancyZones Win+Arrow can trigger native half-screen snapping before FancyZones after focus changes; a recent report says elevation resolves it.",
     "known_information": [
-      "Multiple commenters reproduce it after Alt+Tab or clicking a focused window.",
-      "The issue persists after reinstalling and has a Windows-key remapping workaround.",
-      "No linked fix is present."
+      "Several commenters independently reproduce Win+Arrow invoking Windows half-screen snapping before FancyZones movement after focus changes.",
+      "The latest reporter says running PowerToys as administrator resolves the symptom; the report does not yet establish whether elevation alone is causal or whether the shortcut/focus conditions changed.",
+      "A Windows-key remapping workaround was also reported; no linked fix is present and the issue remains unassigned."
     ],
     "inferences": [
-      "Native Windows shortcut handling may win before FancyZones receives the left Windows key."
+      "Input-hook registration or integrity-level differences may affect which process receives the shortcut first; this remains a hypothesis."
     ],
-    "analysis": "Independent confirmations and a consistent workaround support local reproduction.",
+    "analysis": "The added elevation workaround narrows the next reproduction: compare elevated and standard PowerToys under the same focused-window and left-Win shortcut sequence. Existing focus-change reproductions still support a real issue, but the input-hook or integrity-level cause is not established.",
     "initial_investigation": [
-      "Timeline records a close/reopen cycle and related issue #48387."
+      "Read the issue body and all seven public comments; the latest comment reports resolution when PowerToys runs as administrator.",
+      "No current-build reproduction or code-path tracing was performed in this lightweight revalidation."
     ],
     "information_gaps": []
   },
   "proposed_fixes": [
     {
-      "title": "Reproduce FancyZones Win+Arrow interception",
-      "root_cause": "Native Windows shortcut handling may win before FancyZones after focus changes; hypothesis only.",
+      "title": "Preserve FancyZones Win+Arrow handling after focus changes",
+      "root_cause": "A low-confidence hypothesis is that shortcut interception differs after focus changes or between standard and elevated PowerToys processes.",
       "plan": [
-        "Confirm the affected module path and trigger.",
-        "Trace the relevant state, input, layout, or persistence boundary.",
-        "Implement the smallest targeted correction with focused regression coverage."
+        "Reproduce the same window-focus changes and Win+Arrow sequence with standard and elevated PowerToys.",
+        "Compare left-Win behavior with the reported remapping workaround and capture which process handles the shortcut.",
+        "Only after confirming a PowerToys-owned interception gap, make the smallest targeted change and add regression coverage for the focus/elevation boundary."
       ],
       "verification": [
-        "Run the maintainer reproduction on the current supported build.",
-        "Verify the reported edge case and normal behavior."
+        "Win+Arrow consistently advances FancyZones zones after focus changes in the affected launch mode.",
+        "The comparison confirms whether elevation or key remapping changes the handling path.",
+        "Native Windows half-screen snapping and unaffected shortcut behavior remain intact."
       ],
       "confidence": {
-        "score": 76,
-        "level": "yellow",
-        "rationale": "The issue is independently corroborated with a repeatable focus trigger and workaround."
+        "score": 47,
+        "level": "red",
+        "rationale": "Multiple reports corroborate the symptom, but the elevation workaround and responsible input path are not yet verified."
       }
     }
-  ]
+  ],
+  "title": "FancyZones win arrows shortcut is snapping first to windows half-screen zones instead of FancyZones.",
+  "url": "https://github.com/microsoft/PowerToys/issues/48048",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 7
 }

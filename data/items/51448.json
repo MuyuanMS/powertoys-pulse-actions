@@ -4,25 +4,27 @@
   "kind": "issue",
   "title": "[Mouse Without Borders] Service mode: SYSTEM process leaks Token/Event/Thread handles at a constant rate (~10k handles/day)",
   "url": "https://github.com/microsoft/PowerToys/issues/51448",
-  "generated_at": "2026-10-27T19:08:10.916061+08:00",
-  "evaluated_at": "2026-10-27T19:08:10.916061+08:00",
-  "source_updated_at": "2026-10-25T01:03:52Z",
+  "generated_at": "2026-11-06T12:29:59.9832832+08:00",
+  "evaluated_at": "2026-11-06T12:29:59.9832832+08:00",
+  "source_updated_at": "2026-11-06T02:31:34Z",
   "stage": "triage_revalidated",
   "judgment": {
     "status": "reproducible",
-    "rationale": "Replace the stale helper-restart/timer attribution. The desktop/socket lifetime boundary is now the strongest discriminator, but the retaining allocator is still unknown. Measure the TCP-owning process across peer crossing and desktop teardown before selecting SafeHandle, thread-join or socket cleanup changes; flat live threads do not establish which retained handle owner is responsible.",
+    "rationale": "The new service-off measurements reproduce the same object-type pattern and desktop-switch release boundary, broadening the affected mode but not identifying the allocating call stack. Preserve the measured trigger/lifetime distinction and obtain an attributed handle trace before choosing a cleanup change.",
     "evidence": [
       "The author's latest corrections supersede the earlier timer/helper-restart narrative: growth starts only after crossing to the peer and back, then persists while idle.",
       "The reported cadence is roughly three Token, two Event and one Thread handles every 50 seconds in the SYSTEM process owning the TCP connection; live thread count stays flat.",
       "A desktop switch releases the accumulated handles without changing the owning PID. The second SYSTEM/helper process remains stable.",
       "Killing the helper does not reclaim the handles; growth continued for more than eleven hours without it. The author plans a current-version retest from the older 0.100.2 baseline.",
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
-      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass."
+      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
+      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
+      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass.",
+      "A November 6 follow-up reports the same Token/Event/Thread growth in the user-session MWB process with service mode OFF: about +24 Token, +8 Event and +5 Thread handles per minute, while Key and WaitCompletionPacket counts and live thread count stayed flat.",
+      "The same follow-up reports that a cancelled UAC prompt released accumulated handles in the same process, and distinguishes this Token/Event/Thread pattern from the separate Settings-triggered certificate-store leak tracked in #51952."
     ],
     "recommended_action": "Reproduce Mouse Without Borders service handles behavior",
-    "evaluated_at": "2026-10-27T19:08:10.916061+08:00",
-    "source_updated_at": "2026-10-25T01:03:52Z"
+    "evaluated_at": "2026-11-06T12:29:59.9832832+08:00",
+    "source_updated_at": "2026-11-06T02:31:34Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -33,8 +35,8 @@
       "title": "Identify and bound retained connection-lifetime handles after peer crossing",
       "root_cause": "Hypothesis: peer-crossing activates a connection/session worker path that retains native handle sets until desktop-driven socket teardown. The exact allocator and owner remain unmeasured; the corrected evidence contradicts helper restart as the release mechanism.",
       "plan": [
-        "Reproduce the no-crossing control and the cross-to-peer-and-back trigger while sampling the TCP-owning SYSTEM PID separately from the helper.",
-        "Attribute each growing handle set to its creation/retention stack; compare one desktop switch with a helper-only termination while preserving the original process.",
+        "Reproduce the no-crossing control and the cross-to-peer-and-back trigger in both service-on SYSTEM and service-off user-session modes; sample the TCP-owning PID, object types, Settings state and clipboard/file-transfer settings.",
+        "Attribute growing handles to their creation/retention stack; compare a desktop switch with a helper-only termination while preserving the original process.",
         "Only after identifying the owner, enforce deterministic cleanup at that connection/session lifetime and test repeated crossings plus normal/exception/desktop-close paths."
       ],
       "verification": [
@@ -50,21 +52,24 @@
     }
   ],
   "issue_context": {
-    "summary": "Mouse Without Borders retains handles after peer crossing; desktop switching releases them.",
+    "summary": "Mouse Without Borders retains Token/Event/Thread handles after peer crossing in both service-on and service-off modes; desktop switching releases them, but the allocator is not identified.",
     "known_information": [
       "The author's latest corrections supersede the earlier timer/helper-restart narrative: growth starts only after crossing to the peer and back, then persists while idle.",
       "The reported cadence is roughly three Token, two Event and one Thread handles every 50 seconds in the SYSTEM process owning the TCP connection; live thread count stays flat.",
       "A desktop switch releases the accumulated handles without changing the owning PID. The second SYSTEM/helper process remains stable.",
-      "Killing the helper does not reclaim the handles; growth continued for more than eleven hours without it. The author plans a current-version retest from the older 0.100.2 baseline."
+      "Killing the helper does not reclaim the handles; growth continued for more than eleven hours without it. The author plans a current-version retest from the older 0.100.2 baseline.",
+      "A November 6 follow-up reports the same Token/Event/Thread growth in the user-session MWB process with service mode OFF: about +24 Token, +8 Event and +5 Thread handles per minute, with Key/WaitCompletionPacket counts and live thread count flat.",
+      "The same follow-up reports a cancelled UAC prompt released accumulated handles in the same PID and distinguishes this pattern from the separate Settings-triggered certificate-store leak in #51952."
     ],
     "inferences": [
       "Socket teardown is a supported investigation boundary, not a proven leak root cause."
     ],
-    "analysis": "Replace the stale helper-restart/timer attribution. The desktop/socket lifetime boundary is now the strongest discriminator, but the retaining allocator is still unknown. Measure the TCP-owning process across peer crossing and desktop teardown before selecting SafeHandle, thread-join or socket cleanup changes; flat live threads do not establish which retained handle owner is responsible.",
+    "analysis": "The new service-off measurements reproduce the same object-type pattern and desktop-switch release boundary, broadening the affected mode but not identifying the allocating call stack. Preserve the measured trigger/lifetime distinction and obtain an attributed handle trace before choosing a cleanup change.",
     "initial_investigation": [
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
-      "Upstream main 9e6593c34949: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
-      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass."
+      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
+      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
+      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass.",
+      "Read the complete November 6 service-off follow-up, including object-type counts, same-PID UAC release, and the explicit distinction from #51952; no handle-creation stack or current-build reproduction was executed in this triage."
     ],
     "information_gaps": []
   },
@@ -104,5 +109,5 @@
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "comments": 3
+  "comments": 5
 }
