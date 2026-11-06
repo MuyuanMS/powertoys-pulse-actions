@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 5,
+  "number": 51941,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[Release tooling] Prevent duplicate release-note headings",
+  "url": "https://github.com/microsoft/PowerToys/pull/51941",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-06T19:24:51.7813787+08:00",
+  "evaluated_at": "2026-11-06T19:24:51.7813787+08:00",
+  "source_updated_at": "2026-11-05T15:20:06Z",
+  "head_sha": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "51941-normalize-h1-in-upsert",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/skills/release-note-generation/scripts/upsert-draft-preview-release.ps1",
+      "start_side": "RIGHT",
+      "side": "RIGHT",
+      "start_line": 51,
+      "line": 52,
+      "title": "Remove every legacy H1 without consuming body content",
+      "severity": "medium",
+      "body": "### Remove every legacy H1 without consuming body content\n\n**Severity:** `medium`\n\nThe matcher only accepts the literal `# ` form, so valid tabbed/bare ATX and Setext H1s can remain and duplicate the GitHub release title. Its trailing `\\s*` also spans line breaks and indentation after the heading, while the replacement always writes LF, which can alter a CRLF body or the first indented block. Match only the heading and blank-only separators, recognize both heading forms, and preserve the original newline.\n\n```suggestion\n    $newline = if ($block.Contains(\"`r`n\")) { \"`r`n\" } else { \"`n\" }\n    $heading = [regex]::new(\n        '\\A' + [regex]::Escape($beginMarker) + '\\r?\\n(?:[ \\t]*\\r?\\n)*' +\n            '(?: {0,3}#(?:[ \\t]+[^\\r\\n]*|(?=\\r?\\n|$))(?:\\r?\\n|$)|' +\n            ' {0,3}\\S[^\\r\\n]*\\r?\\n {0,3}=+[ \\t]*(?:\\r?\\n|$))'\n    )\n    return $heading.Replace($block, \"$beginMarker$newline\", 1)\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The pinned upstream matcher uses broad \\s* around a literal #-space heading and hardcodes LF; the exact replacement parsed and preserved CRLF and body indentation in targeted tests."
+      },
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "51941-heading-forms",
+        "atomic": true,
+        "title": "Normalize and validate H1 forms across the preview pipeline",
+        "total": 3,
+        "position": 1
+      }
+    },
+    {
+      "id": "51941-reject-setext-in-verifier",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/skills/release-note-generation/scripts/verify-draft-preview-release.ps1",
+      "start_side": "RIGHT",
+      "side": "RIGHT",
+      "start_line": 100,
+      "line": 100,
+      "title": "Reject Setext H1s during release verification",
+      "severity": "medium",
+      "body": "### Reject Setext H1s during release verification\n\n**Severity:** `medium`\n\nThis guard only recognizes ATX `#` headings, so a Setext H1 (`Release title` followed by `===`) passes verification despite the documented no-H1 rule. Add the Setext form with CRLF-safe matching so final verification rejects a body that still duplicates the GitHub release title.\n\n```suggestion\nif ($managedBody -match '(?m)^ {0,3}#(?:[ \\t]+|\\r?$)|^ {0,3}\\S[^\\r\\n]*\\r?\\n {0,3}=+[ \\t]*\\r?$') {\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The exact pinned verifier checks only an ATX prefix; a Setext H1 demonstrably bypasses the current regular expression and is covered by the literal replacement test."
+      },
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "51941-heading-forms",
+        "atomic": true,
+        "title": "Normalize and validate H1 forms across the preview pipeline",
+        "total": 3,
+        "position": 2
+      }
+    },
+    {
+      "id": "51941-reject-setext-before-create",
+      "kind": "inline",
+      "in_diff": true,
+      "path": ".github/skills/release-note-generation/scripts/create-github-draft-release.ps1",
+      "start_side": "RIGHT",
+      "side": "RIGHT",
+      "start_line": 104,
+      "line": 104,
+      "title": "Reject Setext H1s before draft creation",
+      "severity": "medium",
+      "body": "### Reject Setext H1s before draft creation\n\n**Severity:** `medium`\n\nThis pre-creation guard also recognizes only ATX headings, so a Setext H1 (`Release title` followed by `===`) can pass the draft checks and ship a duplicated top-level heading. Add the same Setext pattern used by verification so invalid notes are rejected before creating the draft.\n\n```suggestion\nif ($content -match '(?m)^ {0,3}#(?:[ \\t]+|\\r?$)|^ {0,3}\\S[^\\r\\n]*\\r?\\n {0,3}=+[ \\t]*\\r?$') {\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The exact pinned draft-creation check is ATX-only; the current check accepts Setext H1 input, while the proposed CRLF-safe expression rejects it."
+      },
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "51941-heading-forms",
+        "atomic": true,
+        "title": "Normalize and validate H1 forms across the preview pipeline",
+        "total": 3,
+        "position": 3
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "51941-post-heading-review",
+      "type": "post_review",
+      "label": "Post coordinated release-heading corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 51941,
+        "head_sha": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+        "commit_id": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+        "event": "COMMENT",
+        "comment_ids": [
+          "51941-normalize-h1-in-upsert",
+          "51941-reject-setext-in-verifier",
+          "51941-reject-setext-before-create"
+        ]
+      },
+      "note": "Draft only. The coordinated inline suggestions require explicit maintainer approval."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51941-normalize-h1-in-upsert",
+        "51941-reject-setext-in-verifier",
+        "51941-reject-setext-before-create"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "0e94a5e9f2fa42b93a31084cabd9a4d9db5f761b",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51941-normalize-h1-in-upsert",
+        "51941-reject-setext-in-verifier",
+        "51941-reject-setext-before-create"
+      ],
+      "files": [
+        {
+          "path": ".github/skills/release-note-generation/scripts/upsert-draft-preview-release.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/skills/release-note-generation/scripts/verify-draft-preview-release.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/skills/release-note-generation/scripts/create-github-draft-release.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
