@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 29701,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Backslash \"\\\" character is not available in keyboard manager.",
+  "url": "https://github.com/microsoft/PowerToys/issues/29701",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-10T17:59:04Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T22:36:07Z",
+  "evaluated_at": "2026-11-05T22:36:07Z",
+  "source_updated_at": "2026-10-11T16:46:54Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current-layout key-picker retest",
+    "detail": "The report says the backslash character is missing on Spanish and French layouts; current key-list construction is based on characters produced by the active layout."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Check backslash selection on the exact keyboard layout",
+    "reason": "The active layout and a current key-capture result will show whether the picker omits a usable virtual key or whether the physical layout produces a different key."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-29701-layout-specific-backslash-check",
+      "type": "request_info",
+      "label": "Check backslash selection on the exact keyboard layout",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for clarifying that you use Spanish and for sharing the screenshot; another commenter reports the same missing character with a French layout. Current Keyboard Manager builds the character portion of its key list from the active Windows layout, so the exact layout matters. Could you confirm on v0.102.3001 which Spanish layout is active (for example Spain or Latin American), whether the backslash key can be recorded with the editor's press-a-key control even though it is absent from the list, and whether the picker changes when switching to English (United States)?"
+      }
+    },
+    {
+      "id": "issue-29701-approve-layout-key-picker-design",
+      "type": "approve_design",
+      "label": "Approve layout-independent key-picker design"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says the backslash character is unavailable in the picker and identifies Spanish as the language; a commenter also reports the problem with a French layout. Current upstream main builds character entries from the active layout's ToUnicodeEx results and its list of virtual keys, so a character that the active layout does not produce may be absent. The exact Spanish layout, current-version behavior, and whether physical key capture still yields a usable key code are not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body does not list a PowerToys version, installation method, or administrator status.",
+      "The reporter says the backslash character is missing from the Keyboard Manager character selection list and identifies Spanish as the language.",
+      "A commenter says the same issue occurs with French; the thread includes a screenshot.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 generates character keys from the active layout's Unicode mappings and builds names using ToUnicodeEx and MapVirtualKeyExW.",
+      "Related #27074 concerns keys that a Japanese PS/2 driver reports as the same undefined VK; #48541 and #49352 concern distinguishing two physical backslash keys. None establishes coverage for this missing-character-list report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-10T17:59:04Z"
+    "recommended_action": "Request the precise active layout and a current comparison between list selection and physical key capture before choosing a layout-independent key-list change.",
+    "evaluated_at": "2026-11-05T22:36:07Z",
+    "source_updated_at": "2026-10-11T16:46:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A layout-specific character picker may omit a virtual key when the active keyboard layout does not produce that character. If current testing confirms this, the editor needs a way to select the underlying key code without requiring it to produce a Unicode character in the active layout."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep non-character virtual keys selectable across layouts",
+      "root_cause": "The current picker derives character entries from the active layout's ToUnicodeEx output. A key that does not produce a Unicode character in that layout may have no selectable character entry, even when the underlying virtual key can be captured.",
+      "plan": [
+        "Reproduce on the reporter's exact Spanish layout and compare the dropdown entries with the physical-key capture result and the English (United States) layout.",
+        "If capture identifies a usable virtual key that the picker omits, expose a stable VK or layout-independent key entry for that key.",
+        "Keep visible character labels layout-aware while preserving the underlying virtual-key identity used by the remapping.",
+        "Add key-list tests for Spanish and French layouts where a key is not represented by a printable character."
+      ],
+      "verification": [
+        "The backslash-producing key can be selected or captured and saved on the confirmed Spanish layout.",
+        "Changing keyboard layout refreshes display labels without changing the saved virtual-key mapping.",
+        "Existing character choices and duplicate physical-key behavior remain unchanged."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "Current source ties the picker to active-layout Unicode output and multiple layouts are reported, but the exact layout and physical key code have not been retested on current stable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The backslash character reportedly cannot be selected in Keyboard Manager on Spanish and French keyboard layouts.",
+    "known_information": [
+      "The issue body does not list a PowerToys version, installation method, or administrator status.",
+      "The reporter says the backslash character is missing from the character selection list and identifies Spanish as the language.",
+      "A commenter reports the same symptom with French and posted a screenshot.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 constructs key-list entries using the active layout's Unicode output and key-code list.",
+      "No assignee or direct covering fix PR was found."
+    ],
+    "inferences": [
+      "The active layout may have no virtual key whose Unicode output is backslash, causing a character-oriented picker to omit the desired entry.",
+      "The physical key may still be capturable as a virtual key; the issue does not confirm whether press-to-capture succeeds."
+    ],
+    "analysis": "The implementation depends on the active layout, but Spanish has multiple variants and the report does not name one. Ask for the exact layout and whether physical key capture yields a code; that distinguishes an omitted picker entry from a scan-code or duplicate-key problem documented in #27074, #48541, and #49352.",
+    "initial_investigation": [
+      "Refreshed the full issue body and all three comments; retained the reporter's Spanish detail, the French report, and screenshot reference.",
+      "Inspected current upstream main's keyboard_layout.cpp: the active layout is queried, Unicode names use ToUnicodeEx, and the key list includes character keys derived from layout output.",
+      "Compared #27074 (driver-reported undefined keys), #48541 and #49352 (duplicate physical backslash key identity); these are related but do not establish the same failure.",
+      "Searched for linked PRs and direct covering issues; none was found for #29701."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact active Spanish keyboard layout, whether the backslash-producing physical key is captured by the editor on v0.102.3001, and whether the picker changes when switching to English (United States)",
+        "why_needed": "This determines whether the failure is a missing layout-independent virtual-key entry or a physical-key/scan-code mapping issue.",
+        "how_to_collect": "On v0.102.3001, identify the active Spanish layout, test the physical-key capture control, and compare the key list after switching to English (United States).",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
   }
 }

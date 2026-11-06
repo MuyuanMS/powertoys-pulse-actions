@@ -1,33 +1,132 @@
 {
+  "schemaVersion": 5,
   "number": 17066,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager shortcut bindings do not account for key bindings",
+  "url": "https://github.com/microsoft/PowerToys/issues/17066",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-23T19:21:22Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Status-Reproducible",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:40Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm key-before-shortcut precedence on current release",
+    "detail": "A 2024 maintainer comment confirms the behavior on 0.85.1; a contributor suspected shortcut mappings run after key mappings."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report has a deterministic example: Pause maps to Play/Pause Media, while Shift+Pause maps to Next Track; the single-key mapping wins, whereas mapping Shift+Play/Pause Media works. A contributor suggested shortcut remaps run after key remaps, and a member confirmed the issue in 0.85.1. Current-release behavior is unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report lists PowerToys 0.56.2 and gives the exact key and shortcut mappings.",
+      "The reporter says the shortcut becomes Play/Pause Media; using Shift+Play/Pause Media as the trigger works around it.",
+      "A contributor suggested shortcut remaps occur after key remapping.",
+      "A member confirmed the behavior on 0.85.1 on 2024-10-23.",
+      "The issue is open and labeled Status-Reproducible; no linked fix was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-23T19:21:22Z"
-  }
+    "recommended_action": "Ask whether the precedence behavior remains on current stable; if it does, verify it with the provided workaround and test a change that matches shortcuts before applying single-key mappings.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:40Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The exact example and workaround support a precedence issue: applying Pause-to-Play/Pause first changes the key seen by the Shift+Pause shortcut mapping. The intended precedence and current behavior still require confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Match shortcut remaps before applying single-key remaps",
+      "root_cause": "The shortcut engine may evaluate a key remap first, converting Pause to Play/Pause Media before the Shift+Pause rule is checked. This fits the reported workaround but the precedence contract and current release are unverified.",
+      "plan": [
+        "Confirm the exact behavior on current stable with the reported mappings.",
+        "Trace the order in which Keyboard Manager applies key and shortcut remappings.",
+        "Define precedence so a configured multi-key shortcut can match its original trigger before a single-key mapping transforms it, while preserving intended key remaps.",
+        "Add regression coverage for Shift+Pause and the Shift+Play/Pause workaround."
+      ],
+      "verification": [
+        "Verify Shift+Pause invokes Next Track with the reported mappings.",
+        "Verify Pause alone still invokes Play/Pause Media.",
+        "Verify unrelated shortcuts containing remapped keys preserve their configured behavior."
+      ],
+      "confidence": {
+        "score": 75,
+        "level": "yellow",
+        "rationale": "The reporter's workaround and the contributor's ordering hypothesis strongly support precedence as the cause, but current behavior and intended global precedence are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A shortcut remap using Shift+Pause reportedly loses to a single-key Pause-to-Play/Pause remap, while using Shift+Play/Pause as the shortcut trigger works.",
+    "known_information": [
+      "The original report lists PowerToys 0.56.2, running as administrator.",
+      "Pause maps to Play/Pause Media, and Shift+Pause maps to Next Track.",
+      "The reporter says the single-key action occurs instead of the shortcut action; mapping Shift+Play/Pause works.",
+      "A contributor proposed that shortcut remaps run after key remaps, and a member confirmed the behavior on 0.85.1."
+    ],
+    "inferences": [
+      "Key remapping may transform the trigger before shortcut matching, consistent with the contributor's explanation and the reported workaround."
+    ],
+    "analysis": "The report is unusually specific and has corroborating historical evidence. Confirm it on current stable before treating the ordering hypothesis as an active defect; avoid proposing a global precedence change without checking other remap interactions.",
+    "initial_investigation": [
+      "Read the report, comments, labels, state, exact mappings, workaround, and 0.85.1 confirmation.",
+      "No linked fix or cross-reference was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the reported single-key-versus-shortcut precedence still occurs on current stable PowerToys",
+        "why_needed": "The last explicit confirmation is 0.85.1; current behavior is needed before implementing a change to remapping precedence.",
+        "how_to_collect": "On current stable, configure Pause to Play/Pause Media and Shift+Pause to Next Track, then compare with the reported Shift+Play/Pause workaround; report the exact version.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-17066-confirm-remap-precedence",
+      "type": "request_info",
+      "label": "Confirm key and shortcut precedence",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for providing the Pause/Shift+Pause example and the Shift+Play/Pause workaround; a member also confirmed it on 0.85.1. Could you confirm whether the same precedence still occurs on current stable PowerToys and include the exact version? This check will show whether the single-key mapping is still consuming the shortcut trigger."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the remapping precedence investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce key-remap versus shortcut precedence",
+      "note": "The direct shortcut workaround helps verify the mapping-order hypothesis.",
+      "reproduce": {
+        "title": "Verify Pause key and shortcut remap precedence",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "A keyboard with Pause key",
+          "Media key actions available"
+        ],
+        "setup": [
+          "Map Pause to Play/Pause Media.",
+          "Map Left Shift+Pause to Next Track."
+        ],
+        "steps": [
+          "Press Pause alone and observe the media action.",
+          "Press Left Shift+Pause and observe whether the shortcut or single-key action runs.",
+          "Replace the shortcut trigger with Left Shift+Play/Pause Media and compare."
+        ],
+        "expected_result": "Pause alone should invoke Play/Pause Media, while Left Shift+Pause should invoke Next Track as configured."
+      }
+    }
+  ]
 }

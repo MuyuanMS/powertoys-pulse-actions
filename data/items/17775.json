@@ -1,33 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 17775,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remap:ctrl+shift+T not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/17775",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-28T17:05:42Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Status-Reproducible",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T20:10:00Z",
+  "evaluated_at": "2026-11-05T20:10:00Z",
+  "source_updated_at": "2026-10-11T16:47:35Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Investigate the confirmed Numpad key-up mismatch",
+    "detail": "A maintainer reproduced the stuck modifiers and explained that Shift changes Numpad 4's key identity on release; the issue remains open without a linked fix."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The original report lists PowerToys 0.57.2 and maps Numpad 4 to Ctrl+Shift+T. A contributor reproduced the stuck Ctrl/Shift state and explained that with Shift active, the physical Numpad 4 release is observed as the non-NumLock Left key, so the original mapping release is not detected. The contributor later said the current approach may need scan-code-based key identity; no linked fix was found.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report says Numpad 4 mapped to Ctrl+Shift+T leaves Keyboard Manager and other remaps jammed; Numpad 6 mapped to Ctrl+R works.",
+      "The reporter later found Numpad 0 mapped to left Shift also remains permanently active after one press.",
+      "A maintainer reproduced the stuck modifiers and described the Numpad 4 key-down/key-up identity mismatch when Shift changes the key recognized on release.",
+      "The maintainer noted scan-code-based identity as a possible direction but said the issue was not actively in progress.",
+      "The issue remains open, is marked Status-Reproducible, and has no linked fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-28T17:05:42Z"
-  }
+    "recommended_action": "Design a release-matching fix that preserves physical Numpad key identity across modifier state changes, then test both NumLock states and the reporter's modifier mapping.",
+    "evaluated_at": "2026-11-05T20:10:00Z",
+    "source_updated_at": "2026-10-11T16:47:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The maintainer's reproduction identifies a concrete mismatch between the key-down identity and the translated key-up identity. The likely fix is to pair releases with the original physical input identity, but the implementation must be checked against existing scan-code and injected-key handling."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Pair remapped key releases with the original physical key",
+      "root_cause": "When Shift is part of an injected shortcut, the OS may report the release of a physical Numpad key as its NumLock-off navigation key. Keyboard Manager then misses the release for the original Numpad mapping and leaves injected modifiers active.",
+      "plan": [
+        "Trace the Keyboard Manager key-down and key-up paths for Numpad keys when an injected modifier changes the translated key identity.",
+        "Preserve the original physical key identity or use the matching scan code for the remap release event, if consistent with the engine's existing input model.",
+        "Ensure the change distinguishes physical input from injected output and does not pair unrelated key releases.",
+        "Add regression coverage for Numpad 4 to Ctrl+Shift+T and Numpad 0 to Shift with NumLock on and off."
+      ],
+      "verification": [
+        "Verify both mappings release all injected modifiers after the physical key is released.",
+        "Verify the corresponding navigation key still works with NumLock off.",
+        "Verify ordinary Numpad remaps and other modifier shortcuts are unchanged."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "A maintainer reproduced and explained the key-identity mismatch; scan-code-based correction is plausible but requires code-level confirmation of input pairing and injected-event handling."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Numpad remaps that emit modifiers reportedly leave those modifiers active because the physical key's release is recognized under a different key identity.",
+    "known_information": [
+      "The report lists PowerToys 0.57.2 and Windows 10 19044.",
+      "Numpad 4 to Ctrl+Shift+T and Numpad 0 to left Shift reportedly leave modifiers active.",
+      "A maintainer reproduced the issue and explained how Shift changes Numpad 4's recognized key identity on release."
+    ],
+    "inferences": [
+      "Matching the release by original physical key or scan code may prevent stuck injected modifiers; the correct engine implementation is not yet verified."
+    ],
+    "analysis": "The issue has stronger evidence than a generic remap failure: the maintainer supplied a concrete event-identity explanation. The safe design must preserve physical/injected event distinctions and test NumLock variants.",
+    "initial_investigation": [
+      "Read the report and all five comments, including the maintainer reproduction, technical diagnosis, and note that scan-code work was not actively in progress.",
+      "No linked fix or pull request was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the current Keyboard Manager engine can match the key-up by original physical key identity or scan code without mispairing injected events",
+        "why_needed": "This determines the safe implementation path and prevents a release fix from affecting unrelated keys or injected output.",
+        "how_to_collect": "On current stable, reproduce Numpad 4 to Ctrl+Shift+T with NumLock on and off, then inspect the engine's key-down/key-up identity handling for physical versus injected events.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Numpad modifier-release mismatch",
+      "reproduce": {
+        "title": "Test Numpad remap release matching",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "A physical Numpad keyboard"
+        ],
+        "setup": [
+          "Map Numpad 4 to Ctrl+Shift+T.",
+          "Map Numpad 0 to left Shift."
+        ],
+        "steps": [
+          "Test each mapping with NumLock on and off.",
+          "After each key press, release the physical Numpad key and check whether Ctrl, Shift, or other remaps remain active.",
+          "Repeat with the corresponding navigation key pressed directly."
+        ],
+        "expected_result": "Releasing the physical Numpad key releases all injected modifiers, and NumLock-off navigation keys remain functional."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the physical-key release design"
+    }
+  ]
 }

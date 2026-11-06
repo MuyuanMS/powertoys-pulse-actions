@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 27074,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Multiple keys that show up as \"Undefined\" and can only be mapped to one key",
+  "url": "https://github.com/microsoft/PowerToys/issues/27074",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:10:53Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T23:03:22Z",
+  "evaluated_at": "2026-11-05T23:03:22Z",
+  "source_updated_at": "2026-10-11T15:59:21Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Potential JIS key identity collision",
+    "detail": "The reporter found three distinct JIS keys that Windows reports as VK 255; current remap lookup is keyed by virtual key, but a current-build retest is still needed."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Retest distinct JIS keys on a current build",
+    "reason": "Confirm the VK 255 collision still occurs, then design scan-code identity support without changing ordinary virtual-key remaps."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-27074-request-current-jis-result",
+      "type": "request_info",
+      "label": "Confirm current JIS key identity",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the detailed JIS key list, the VK 255 check with Keyboard Manager turned off, and the registry scan-code workaround. Could you confirm whether the same three keys still collide on PowerToys v0.102.3001 or newer with the same Japanese PS/2 keyboard? If they do, please confirm the Windows version and whether each key still reports VK 255; there is no need to resend the workaround already included here."
+      }
+    },
+    {
+      "id": "issue-27074-approve-scan-code-design",
+      "type": "approve_design",
+      "label": "Approve JIS scan-code identity design"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report identifies multiple distinct physical JIS keys that collapse to VK 255 even with Keyboard Manager disabled. Current Keyboard Manager single-key remaps are looked up by vkCode, so the shared virtual key explains why those sources collide. A scan-code-aware identity for otherwise indistinguishable keys is a concrete candidate, subject to a current-build retest and careful compatibility coverage.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report identifies a Fujitsu JIS 106/109 keyboard on Windows 10 22H2 and distinguishes the Henkan, Hiragana/Katakana, and Yen keys by PS/2 scan codes 0x79, 0x70, and 0x7d.",
+      "The reporter says those three keys all appear as Undefined and cannot be assigned separately, while Muhenkan (VK 235) and backslash/underscore (VK 193) can be mapped individually.",
+      "In a 2023 comment, the reporter says KeyboardStateView showed key code 255 for the affected keys while Keyboard Manager was off, and supplied a registry Scan Code Mapper workaround.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 uses data->lParam->vkCode for the runtime single-key lookup in KeyboardEventHandlers.cpp and keys MappingConfiguration::singleKeyReMap by originalKey; scanMap is only consulted for the special numpad-with-Shift path.",
+      "No linked fixing pull request appears in the saved issue timeline; the last discussion comment supplied an AutoHotkey workaround rather than a PowerToys fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:10:53Z"
+    "recommended_action": "Retest the three reported JIS keys on a current build; if they still arrive with the same VK 255 but distinct scan codes, design scan-code-aware source identity for those keys and add regression coverage for existing virtual-key mappings.",
+    "evaluated_at": "2026-11-05T23:03:22Z",
+    "source_updated_at": "2026-10-11T15:59:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current event lookup and configuration table are keyed by virtual key, matching the reported collision. A scan-code-aware identity could distinguish the affected physical keys, but current hardware behavior and compatibility requirements remain to be verified.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Distinguish JIS keys that share VK 255",
+      "root_cause": "The keyboard driver reports several distinct JIS keys as VK 255, while Keyboard Manager stores and looks up source remaps by virtual key. The low-level keyboard event also carries scan-code data, but the normal single-key remap path does not use it as part of source identity.",
+      "plan": [
+        "Retest the reported Henkan, Hiragana/Katakana, and Yen keys on a current supported build and record their low-level virtual-key and scan-code values.",
+        "Extend source-key identity and settings serialization to distinguish otherwise identical undefined virtual keys by scan code, while preserving the existing virtual-key path for ordinary keys.",
+        "Update the editor to present distinct stable labels for those keys and reject duplicate mappings only when both source identities match.",
+        "Add tests for distinct scan codes sharing VK 255, duplicate identical sources, settings save/reload, extended scan-code handling, and unaffected standard virtual-key mappings."
+      ],
+      "verification": [
+        "On a JIS keyboard, the three reported keys can be assigned different targets and each triggers only its own mapping.",
+        "The mappings survive a Keyboard Manager settings save/reload.",
+        "Existing virtual-key remaps, including the reported VK 235 and VK 193 cases, continue to behave unchanged."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The reporter's VK 255 observation and current virtual-key-only lookup strongly support the collision mechanism, but current hardware values and scan-code compatibility have not been retested."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a Japanese JIS keyboard, several distinct physical keys are reported as VK 255 and therefore cannot be remapped independently in Keyboard Manager.",
+    "known_information": [
+      "The original report identifies a Fujitsu Japanese PS/2 106/109 keyboard on US English Windows 10 22H2 and PowerToys 0.70.1.",
+      "The reporter lists distinct PS/2 scan codes for Henkan (0x79), Hiragana/Katakana (0x70), and Yen (0x7d), and says all three appear as Undefined and share one remap.",
+      "The reporter says KeyboardStateView showed key code 255 with Keyboard Manager disabled, and posted a registry scan-code workaround.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 keys the normal single-key remap lookup by vkCode; scan codes are used only by a separate numpad-with-Shift handling path."
+    ],
+    "inferences": [
+      "If the distinct scan codes are still delivered on a current build, using scan code as part of the source identity for VK 255 keys could make those keys independently mappable.",
+      "The reporter's AutoHotkey workaround shows that scan-code-level remapping can work on that setup, but does not establish PowerToys compatibility requirements or current behavior."
+    ],
+    "analysis": "The report provides unusually specific hardware, scan-code, virtual-key, and workaround evidence. Current source confirms that the standard remap table cannot distinguish two keys with the same vkCode. A narrowly gated scan-code identity for otherwise undefined keys is plausible, but must be checked against current device events, settings persistence, extended scan codes, and ordinary key mappings.",
+    "initial_investigation": [
+      "Read the current issue body and all five comments, including the VK 255 observation, registry workaround, and AutoHotkey workaround.",
+      "Checked the saved issue timeline for a linked fixing pull request; none was present.",
+      "Inspected MappingConfiguration::AddSingleKeyRemap and KeyboardEventHandlers.cpp at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: normal mappings are keyed and looked up by virtual key, with scan-code use limited to numpad/Shift handling."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the same three JIS keys still collide as VK 255 on a current PowerToys build, and the current Windows/keyboard-driver version",
+        "why_needed": "The report and code evidence are strong but old; a current result confirms the behavior and whether the same scan-code design applies.",
+        "how_to_collect": "Retest separate remaps for Henkan, Hiragana/Katakana, and Yen on PowerToys v0.102.3001 or newer with the same JIS keyboard; confirm whether each still appears as VK 255.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

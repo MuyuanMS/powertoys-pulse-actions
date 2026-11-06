@@ -1,33 +1,91 @@
 {
+  "schemaVersion": 5,
   "number": 39407,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager: Caret key ^ is not listed or not showing",
+  "url": "https://github.com/microsoft/PowerToys/issues/39407",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:04:37Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T23:20:35Z",
+  "evaluated_at": "2026-11-05T23:20:35Z",
+  "source_updated_at": "2026-10-11T15:42:12Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Caret may be a shifted character",
+    "detail": "The report produces ^ with Shift+6, but the keyboard layout and whether the intended source is a chord or a standalone key are unspecified."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Confirm layout and Shift+6 remapping",
+    "reason": "A shifted character may be remapped as a shortcut rather than as a separate physical key; confirm the layout and desired target first."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-39407-confirm-keyboard-layout-and-shortcut",
+      "type": "request_info",
+      "label": "Confirm layout and Shift+6 behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for noting that `^` appears in Notepad when you press Shift+6. A caret can be the output of a shifted key rather than a separate physical key, and the relevant key varies by layout. Could you confirm:\n- Your keyboard layout, whether you want to remap the physical `6` key alone or the `Shift+6` chord, and the desired target.\n- If it is the chord, whether a shortcut remap from that combination works in PowerToys v0.102.3001 or newer."
+      }
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report gives Shift+6 as the way to produce the caret, but does not identify the keyboard layout or desired remap. Current Keyboard Manager exposes separate key-list paths for single-key and shortcut remapping, so this may be an expected shifted-character case rather than a missing standalone key; a current result is needed before proposing a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report identifies PowerToys 0.90.1 and says the caret is entered in Notepad with Shift+6, but does not name the keyboard layout or the intended target.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 builds the dropdown list through KeyboardMap.GetKeyNameList(isShortcut), so the editor has a shortcut-specific key-list path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:04:37Z"
+    "recommended_action": "Ask which keyboard layout and physical source sequence the reporter intends to remap, then confirm whether the corresponding shortcut remap works on a current build.",
+    "evaluated_at": "2026-11-05T23:20:35Z",
+    "source_updated_at": "2026-10-11T15:42:12Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "No code fix is justified for a shifted character that is already expressible as a shortcut remap. If the reporter's layout has a separate physical caret key, or the Shift+6 shortcut also fails on a current build, reassess the issue as a product defect.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter cannot find a caret source in Keyboard Manager and says the character is produced by Shift+6.",
+    "known_information": [
+      "The reported PowerToys version is 0.90.1.",
+      "The reporter says Shift+6 produces ^ in Notepad and that the caret is not listed in Keyboard Manager.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 obtains key names through a shortcut-aware key-list path in KeyDropDownControl.cpp."
+    ],
+    "inferences": [
+      "The caret may be a shifted character produced by a physical key chord rather than a standalone virtual key.",
+      "If the intended input is Shift+6, a shortcut remap may be the supported way to remap it; this has not been confirmed on the reporter's layout or current PowerToys."
+    ],
+    "analysis": "The public report is concise, has no comments, and omits the keyboard layout and target mapping. Since the caret may be produced by a modifier chord, adding it as a separate single-key entry could be the wrong fix. Confirm the layout and whether the shortcut route works before making a code proposal.",
+    "initial_investigation": [
+      "Read the issue body and labels; it reports PowerToys 0.90.1 and Shift+6 but no keyboard layout, target key, or follow-up result.",
+      "Inspected current upstream KeyDropDownControl.cpp: the dropdown builds its entries from GetKeyNameList(isShortcut) and refreshes them when the keyboard layout changes."
+    ],
+    "information_gaps": [
+      {
+        "information": "The keyboard layout, whether the intended source is the physical 6 key or the Shift+6 chord, and the desired target",
+        "why_needed": "The caret is a character result and may not correspond to a separate physical key; the correct remap path depends on the layout and intended source.",
+        "how_to_collect": "Name the active Windows keyboard layout, the exact physical key or chord to remap, and the desired output key.",
+        "evidence_type": "keyboard_layout"
+      },
+      {
+        "information": "Whether a Shift+6 shortcut remap works on a current PowerToys build",
+        "why_needed": "This distinguishes an expected shifted-character case from a current shortcut-remapping defect.",
+        "how_to_collect": "On PowerToys v0.102.3001 or newer, try mapping the reported chord through Keyboard Manager's shortcut remapping and report whether it triggers the chosen target.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

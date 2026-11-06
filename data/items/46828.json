@@ -1,33 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 46828,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/46828",
+  "title": "FancyZones crashes when using Shift key to activate zones",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:51:57Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T11:36:28Z",
+  "evaluated_at": "2026-11-05T11:36:28Z",
+  "source_updated_at": "2026-11-05T05:06:57Z",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The original report includes a video and a diagnostic archive, and a second user now reproduces a similar regression on two PCs with PowerToys 0.97.0 and 0.102.3001 after 0.91.1 worked. This establishes a reproducible regression, but the available evidence does not identify whether the disappearing overlay is a stale Shift state or a broader FancyZones hang.",
+    "existing_fix_urls": []
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "proposed_fixes": [
+    {
+      "title": "Restore reliable Shift-drag activation after the 0.91.1 regression",
+      "root_cause": "A regression in the Shift-drag activation path or its interaction with FancyZones state is plausible. Current code tracks Shift through both low-level keyboard-hook handling and Raw Input, but the issue evidence does not prove which transition or component causes the overlay and editor to stop responding.",
+      "plan": [
+        "Reproduce on PowerToys 0.102.3001 with Shift-drag enabled and compare the same setup with 0.91.1, recording whether the overlay disappears and whether the layout editor remains responsive.",
+        "Trace the Shift transitions through FancyZones::OnKeyDown/OnKeyUp, FancyZones::OnKeyboardInput, DraggingState::SetShiftState, and WindowMouseSnap::MoveSizeUpdate in the failing and last-working builds.",
+        "Fix only the confirmed stale-state or stalled-component transition and add a regression test that verifies both zone activation and subsequent layout-editor responsiveness."
+      ],
+      "verification": [
+        "Run the reproducer on a built-in FancyZones layout with Shift-drag enabled on a current stable build and on 0.91.1 for comparison.",
+        "Verify that the zone overlay remains available while Shift is held, snapping completes, and the layout editor continues to open after repeated drags.",
+        "Run the focused FancyZones Shift-drag UI tests, including the existing Shift-drag activation and drag-toggle cases."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "Two users report the same post-0.91.1 failure and the current source has a multi-input Shift-state path, but no current trace or source-level failing transition ties that path to the observed hang."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Holding Shift while dragging briefly shows FancyZones zones, then the overlay disappears and FancyZones stops responding until toggled or restarted.",
+    "known_information": [
+      "The original reporter identifies PowerToys 0.92.0 on Windows 10 build 19045, reports 0.88.0 through 0.91.1 working and later versions failing, and supplied a bug-report ZIP and video.",
+      "The original report says disabling Windows Snap does not change the failure and the layout editor works before the failure.",
+      "A second user reports the same Shift-drag failure on two HP all-in-one PCs with 0.97.0 and 0.102.3001, while 0.91.1 works; that user's layout editor also stops working after the failure.",
+      "The second user's report says the issue occurs with the built-in Columns layout and that toggling or restarting FancyZones restores it temporarily."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:51:57Z"
-  }
+    "inferences": [
+      "The version comparison from both users supports a regression introduced after 0.91.1, but does not locate the introducing change.",
+      "Because the second user's layout editor also becomes unresponsive, the failure may extend beyond the zone overlay or Shift-state calculation."
+    ],
+    "analysis": "The repro is now independently confirmed across two users and multiple versions, so another generic reporter-log request would not add much. Current FancyZones code sets Shift through low-level hook handling and Raw Input, while DraggingState::Enable reseeds the state from GetAsyncKeyState; WindowMouseSnap updates highlights when snapping mode changes. These are investigation points, not proof of the fault. Reproduce the reported version transition and inspect state/event flow before choosing a code change.",
+    "initial_investigation": [
+      "Read the full issue report, original video and bug-report reference, plus the November 5 confirmation with version comparison and additional editor failure.",
+      "Inspected FancyZonesLib/DraggingState.cpp, FancyZonesLib/FancyZones.cpp, and FancyZonesLib/WindowMouseSnap.cpp for Shift-state activation and overlay updates.",
+      "Inspected existing FancyZones UI tests for Shift-drag activation and drag-toggle behavior; they do not establish the reported hang."
+    ],
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The original report and a second user's cross-version reproduction establish a repeatable Shift-drag failure; the specific defect mechanism remains unconfirmed and should be investigated by maintainers.",
+    "source_updated_at": "2026-11-05T05:06:57Z",
+    "evaluated_at": "2026-11-05T11:36:28Z",
+    "recommended_action": "Reproduce the same Shift-drag sequence on 0.91.1 and current stable, then trace the Shift-state and overlay path before implementing a fix.",
+    "evidence": [
+      "The original report supplies a video, a bug-report reference, and a 0.91.1-versus-later version comparison.",
+      "A second user independently confirms the failure on two devices with 0.97.0 and 0.102.3001, and reports the layout editor becomes unresponsive.",
+      "Current source has distinct low-level hook and Raw Input paths that update the Shift state, but no failing transition has been confirmed."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve targeted Shift-drag regression investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare Shift-drag on 0.91.1 and current stable",
+      "reproduce": {
+        "title": "Reproduce FancyZones Shift-drag regression",
+        "module": "FancyZones",
+        "version_requirement": "Compare PowerToys 0.91.1 with current stable 0.102.3001 or newer on Windows 10 and Windows 11 where available.",
+        "prerequisites": [
+          "Enable FancyZones and the setting to hold Shift to activate zones while dragging.",
+          "Use the built-in Columns layout and a normal, non-elevated Explorer window."
+        ],
+        "setup": [],
+        "steps": [
+          "Start with PowerToys 0.91.1 and hold Shift while dragging the window across a zone; record whether the overlay remains visible and the window snaps.",
+          "Repeat the same steps on current stable without changing the layout or display setup.",
+          "After the overlay disappears, try opening the FancyZones layout editor and record whether it still responds.",
+          "Repeat several drags to determine whether toggling FancyZones only restores one attempt or restores sustained operation."
+        ],
+        "expected_result": "The overlay stays available while Shift is held, the dragged window can be snapped, and FancyZones settings and the layout editor remain responsive after repeated attempts."
+      }
+    }
+  ]
 }

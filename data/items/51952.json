@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 5,
+  "number": 51952,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproducible",
+  "pending_author": false,
+  "owes": "us",
+  "generated_at": "2026-11-06T01:30:36Z",
+  "evaluated_at": "2026-11-06T01:30:36Z",
+  "source_updated_at": "2026-11-06T00:58:13Z",
+  "title": "[Mouse Without Borders] MWB leaks ~15 handles/s (Event/Key/WaitCompletionPacket on the cert stores) after an MWB restart while Settings is open; stops when PowerToys.Settings exits",
+  "url": "https://github.com/microsoft/PowerToys/issues/51952",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The reporter supplies a repeatable restart trigger, handle-type measurements, a no-restart control, and a Settings-exit control. The proposed signer-check connection is plausible but unconfirmed, so a maintainer reproduction with handle-stack attribution is the next step.",
+    "evidence": [
+      "The report identifies PowerToys 0.103.3052.0 x64, MWB service mode off, and a toggle while Settings remains open as the trigger.",
+      "The reported process grows Event, Key, and WaitCompletionPacket handles at about 14-15 per second; a no-restart control stays flat and ending Settings stops growth.",
+      "The issue identifies certificate-store handles and suggests the SettingsSync signer check, but provides no allocation stack proving that attribution.",
+      "Current source at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 verifies the peer on a recreated SettingsSync connection; the inspected managed and native certificate resources have explicit disposal paths.",
+      "The linked #51448 report is a separate service-mode SYSTEM issue with a different trigger and Token/Event/Thread profile."
+    ],
+    "recommended_action": "Reproduce the restart trigger on a current build and capture allocation/retention stacks for the growing handle types before changing signer verification or resource-lifetime code.",
+    "evaluated_at": "2026-11-06T01:30:36Z",
+    "source_updated_at": "2026-11-06T00:58:13Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A source-specific code change is not justified yet: the suspected verification path has explicit disposal scopes and no captured allocation stack identifies an app-owned leak. This is not a dismissal; the maintainer reproduction action remains necessary to locate the retaining owner before a fix can be selected."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Restarting Mouse Without Borders while Settings remains open is reported to cause rapid Event, Key, and WaitCompletionPacket handle growth in the user-session MWB process; ending Settings stops the growth.",
+    "known_information": [
+      "The reporter gives a repeatable PowerToys 0.103.3052.0 scenario with MWB service mode off, Settings left open, and MWB toggled off/on to start a new process.",
+      "The reporter measured roughly 14-15 handles per second, primarily Event, Key, and WaitCompletionPacket handles; a control run without restarting MWB while Settings is open remained flat.",
+      "Ending the Settings process reportedly stops handle growth. The attached report is described as manually redacted; it was not downloaded or inspected.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 verifies the peer process when a SettingsSync pipe is newly connected; the check reaches NamedPipePeerVerification.TryVerifyPeerProcess and its signing-policy path.",
+      "The inspected signing-policy path scopes X509Store, X509Chain, embedded stores, and certificate collections for disposal, and wraps native certificate-store/message handles in SafeHandle types; this does not establish that the suspected path is leak-free at runtime.",
+      "The maintainer comment on #51448 explicitly distinguishes this user-session Event/Key/WaitCompletionPacket profile from that issue's service-mode SYSTEM Token/Event/Thread profile."
+    ],
+    "inferences": [
+      "The restart-while-Settings-is-open trigger and reported certificate-store handles are consistent with repeated SettingsSync peer verification, but no allocation stack proves that this call path owns the retained handles.",
+      "The source's explicit disposal paths make a missing application-level dispose non-obvious; runtime/provider behavior or another repeated path remains possible.",
+      "The reported input failures may correlate with the resource growth, but the issue says that relationship is still being tested."
+    ],
+    "analysis": "The report is detailed enough for a maintainer reproduction, but the suspected signer-check path is not proven. Current source explicitly disposes the managed certificate/store objects and wraps native certificate handles, so do not weaken signer verification, cache results, or propose a cleanup patch until a current-build handle trace identifies the allocating stack.",
+    "initial_investigation": [
+      "Read the current issue body and all comments; the report supplies a repeated restart trigger, a no-restart control, handle-type measurements, and a Settings-exit control.",
+      "Inspected current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: MouseWithoutBordersViewModel.GetSettingsSyncHelperAsync verifies the peer when recreating the SettingsSync stream.",
+      "Traced TryVerifyServer through TryVerifyPeerProcess and the signing-policy path; the inspected X509Store, X509Chain, embedded-store, certificate-collection, and native SafeHandle paths have explicit disposal.",
+      "Confirmed PR #50480 is merged; its existence does not prove that the reported leak is caused by signer verification or that the current resource lifetime is correct.",
+      "Did not download or inspect the attached diagnostic archive; the issue body contains sufficient redacted reproduction details for the next maintainer step."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Trace MWB handles after a SettingsSync restart",
+      "reproduce": {
+        "module": "Mouse Without Borders SettingsSync",
+        "version_requirement": "Reported PowerToys 0.103.3052.0 x64 with service mode off; repeat on current main or a current candidate build.",
+        "prerequisites": [
+          "Use two controlled Windows test machines paired through Mouse Without Borders.",
+          "Keep PowerToys Settings running while monitoring the user-session Mouse Without Borders process; do not use or publish real credential values."
+        ],
+        "steps": [
+          "Record the MWB process PID and baseline counts for Event, Key, and WaitCompletionPacket handles.",
+          "With Settings open, toggle Mouse Without Borders off and back on to start a new MWB process.",
+          "Sample the new process's handle counts at short intervals and capture allocation/retention stacks for the growing object types.",
+          "End the Settings process and observe whether growth stops; repeat a control run with Settings open but without restarting MWB.",
+          "Repeat on current source while recording SettingsSync peer-verification invocation counts; compare those counts with handle growth without weakening or bypassing signature checks."
+        ],
+        "expected_result": "Either the reported growth reproduces and a specific allocation/retention stack is identified, or current-build measurements show no growth; the Settings-open/no-restart control remains distinguishable from the restart trigger."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Maintainer reproduction needed",
+    "detail": "The reported leak has a controlled trigger, but its allocation owner is unconfirmed."
+  },
+  "next_action": {
+    "glyph": "→",
+    "label": "Capture handle allocation stacks",
+    "reason": "Attribute the growing handles before selecting a code-level fix."
+  }
+}

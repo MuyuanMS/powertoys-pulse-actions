@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 45455,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:56:14Z",
+  "generated_at": "2026-11-05T13:31:46Z",
+  "evaluated_at": "2026-11-05T13:31:46Z",
+  "source_updated_at": "2026-10-11T16:48:39Z",
+  "title": "Remap shortcut not working as expected",
+  "url": "https://github.com/microsoft/PowerToys/issues/45455",
+  "author": "tlansec",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "duplicate",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
+    "glyph": "⌨",
+    "label": "Screenshot-only remap; conflict hypothesis",
+    "detail": "The issue includes the configured remap as an image and says it has no effect. An automated duplicate suggestion points to #45444, but that issue's closure chain does not establish coverage for this mapping."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the linked canonical issue or pull request and do not start duplicate work."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Reproduce the exact shortcut shown in the attached image and inspect whether the Keyboard Manager shortcut-conflict ignore setting suppresses it before designing a code change.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation.",
+    "status": "reproducible",
+    "rationale": "The reporter supplies a screenshot of the configured shortcut and says it has no effect on PowerToys 0.97.1. A separate issue #45444 reports a similar ineffective remap that began working after disabling an 'Ignore shortcut' conflict option, but the automated duplicate chain does not establish that the same mapping or cause applies here. A maintainer can test the screenshot's configuration directly.",
     "evidence": [
-      "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
+      "The issue reports PowerToys 0.97.1 from the Microsoft Store and includes a screenshot of the shortcut configuration.",
+      "The report says the configured shortcut has no effect but does not transcribe the source and target key combinations into text.",
+      "An automated comment suggests #45444 as a possible duplicate. In #45444, a commenter said disabling the 'Ignore shortcut' conflict option restored remaps; that issue was later closed as a duplicate of #21497, whose report concerns Caps Lock after waking from a screen saver.",
+      "The duplicate suggestion and conflict-option behavior are therefore leads to verify, not proof that this issue is covered or fixed."
     ],
-    "recommended_action": "Monitor the linked canonical issue or pull request and do not start duplicate work.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:56:14Z"
-  }
+    "recommended_action": "Use the attached configuration to reproduce on a current build, check the shortcut-conflict ignore state, and only design a fix after identifying the failing condition.",
+    "evaluated_at": "2026-11-05T13:31:46Z",
+    "source_updated_at": "2026-10-11T16:48:39Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported no-op may be caused by the Keyboard Manager shortcut-conflict ignore setting, as in a related but not proven-equivalent report. The exact mapping must be reproduced before selecting a code fix."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve a shortcut-conflict suppression if it disables this mapping",
+      "root_cause": "Hypothesis: the configured shortcut is ignored because a shortcut-conflict control is enabled or stale. A commenter on possible duplicate #45444 reported that disabling 'Ignore shortcut' restored a similar remap, but the current issue's screenshot-only mapping has not been compared with that case.",
+      "plan": [
+        "Read the source and target keys from the issue's existing screenshot and reproduce that exact mapping on PowerToys 0.97.1 or a current stable build.",
+        "Inspect the Keyboard Manager shortcut-conflict state and test the same mapping with the reported 'Ignore shortcut' option enabled and disabled.",
+        "If the option suppresses the mapping unexpectedly, correct the conflict-state handling or make the suppression explicit in the UI and add a regression test.",
+        "If the option is unrelated, trace the exact source/target chord through shortcut matching and update the duplicate assessment based on the observed path."
+      ],
+      "verification": [
+        "The exact mapping shown in the issue screenshot either invokes its configured target or displays an explicit, accurate conflict explanation.",
+        "Changing the shortcut-conflict ignore setting has a predictable and documented effect on this mapping.",
+        "The conclusion does not rely on the automated possible-duplicate suggestion without confirming equivalent configuration and behavior."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The no-op is reported with a configuration screenshot, but the key combinations are not transcribed and the only conflict-setting lead comes from a different issue whose duplicate chain is not equivalent."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A shortcut configuration shown in an attached screenshot reportedly has no effect on PowerToys 0.97.1.",
+    "known_information": [
+      "The issue reports PowerToys 0.97.1 from the Microsoft Store.",
+      "The reporter says configuring the shortcut shown in the issue image has no effect.",
+      "The issue has one automated comment suggesting #45444 as a possible duplicate.",
+      "In #45444, a commenter said disabling the 'Ignore shortcut' option in Shortcut conflicts restored a remap; #45444 was closed as a duplicate of #21497, which describes a different Caps Lock/screensaver scenario."
+    ],
+    "inferences": [
+      "The shortcut-conflict ignore setting is a possible cause but has not been shown to apply to the screenshot's mapping.",
+      "The automated duplicate suggestion may be a false positive because the linked duplicate chain does not establish the same configured shortcut."
+    ],
+    "analysis": "The existing screenshot gives a maintainer a concrete configuration to test, but the report text omits the source and target key combinations. A similar conflict-option workaround exists in another issue, but it is not sufficient to classify this as a duplicate or claim that the setting is responsible. Reproduce the exact screenshot mapping and inspect the conflict state before selecting a code change.",
+    "initial_investigation": [
+      "Read the live issue body, screenshot reference, label, and automated duplicate comment.",
+      "Read the proposed duplicate chain through #45444 and #21497; #21497 concerns a different Caps Lock/screensaver behavior, so the chain is not accepted as confirmed duplicate coverage.",
+      "No linked pull request or verified covering fix was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "The exact source and target key combinations shown in the screenshot and whether the shortcut-conflict ignore option is enabled for this mapping.",
+        "why_needed": "Those details distinguish a conflict-setting suppression from a different shortcut matching or injection failure.",
+        "how_to_collect": "Read the existing screenshot and reproduce the mapping while checking Shortcut conflicts; no new screenshot or diagnostic archive is needed."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve shortcut-conflict investigation",
+      "note": "Treat the conflict setting as a hypothesis only; first verify the exact screenshot mapping and the duplicate chain."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the screenshot shortcut",
+      "note": "Use the existing image and compare the shortcut-conflict ignore setting; do not request the same screenshot again.",
+      "reproduce": {
+        "title": "Test the shortcut shown in issue 45455",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.97.1 or newer; record the exact build",
+        "prerequisites": [
+          "Windows with Keyboard Manager enabled",
+          "Access to the shortcut configuration shown in the issue attachment"
+        ],
+        "setup": [
+          "Configure the exact source and target shortcut shown in the issue screenshot."
+        ],
+        "steps": [
+          "Trigger the configured source shortcut and record whether the target occurs.",
+          "Inspect Keyboard Manager's Shortcut conflicts view for an 'Ignore shortcut' setting affecting the mapping.",
+          "Repeat as a controlled test with that setting enabled and disabled, if it applies."
+        ],
+        "expected_result": "The configured target works when the mapping is enabled; any conflict-based suppression is explicit and changes predictably when its setting is toggled.",
+        "attachments": [
+          {
+            "label": "Existing shortcut configuration screenshot",
+            "url": "https://github.com/user-attachments/assets/97416bf8-839c-4f93-a18a-c621edc0c563"
+          }
+        ],
+        "setup_prompt": "Open issue #45455's existing shortcut screenshot, enter the same source and target in Keyboard Manager, and compare the result with the Shortcut conflicts ignore setting enabled and disabled."
+      }
+    }
+  ]
 }

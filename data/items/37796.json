@@ -1,33 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 37796,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "New Keyboard Manager shortcut to files-stable.exe gives error",
+  "url": "https://github.com/microsoft/PowerToys/issues/37796",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:14:01Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T22:20:45Z",
+  "evaluated_at": "2026-11-05T22:20:45Z",
+  "source_updated_at": "2026-10-11T16:46:56Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Actionable executable-alias path fix",
+    "detail": "The screenshot shows a bare files-stable.exe alias, and current main resolves it relative to the engine directory before reporting that the program was not found."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Approve executable-alias support design",
+    "reason": "The current main launch path and the attached error screenshot directly support resolving bare executable names before file validation."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-37796-approve-alias-resolution-design",
+      "type": "approve_design",
+      "label": "Approve executable-alias support design"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The screenshot shows the Run Program field contains the bare name files-stable.exe and the resulting toast says the program was not found. The issue comment identifies it as a packaged-app execution alias and notes that wt.exe behaves similarly. Current microsoft/PowerToys main still calls ProgramLauncher::ExpandAndGetAbsolutePath, which uses GetFullPathNameW to resolve the name against the current directory; CreateOrShowProcessForShortcut then requires GetFileAttributesW to succeed on that resolved path before launch. This explains the reported failure and gives a focused path-resolution fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys v0.89.0 and reports that a new shortcut to files-stable.exe gives an error.",
+      "The settings screenshot shows Win+F mapped to Run Program with the bare files-stable.exe name.",
+      "The error screenshot says 'The program was not found.'",
+      "A commenter identifies files-stable.exe as a packaged-app execution alias and says the wt.exe alias also does not work.",
+      "On current microsoft/PowerToys main, ProgramLauncher::ExpandAndGetAbsolutePath uses GetFullPathNameW, and CreateOrShowProcessForShortcut validates the resulting path with GetFileAttributesW before launching.",
+      "No assignee or matching PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:14:01Z"
+    "recommended_action": "Design a safe executable-name resolution path for enabled Windows app execution aliases while preserving the existing explicit-path launch behavior.",
+    "evaluated_at": "2026-11-05T22:20:45Z",
+    "source_updated_at": "2026-10-11T16:46:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A bare executable alias is currently treated as a path relative to the Keyboard Manager engine's working directory, then checked as a file; it is not resolved through the executable search paths that make app aliases available."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve bare executable names for Run Program shortcuts",
+      "root_cause": "ProgramLauncher::ExpandAndGetAbsolutePath expands environment variables and calls GetFullPathNameW, which turns a bare executable name into a path under the current directory instead of resolving it through the user's executable search paths. The subsequent GetFileAttributesW check therefore rejects aliases such as files-stable.exe and wt.exe before launch.",
+      "plan": [
+        "Distinguish explicit absolute or relative paths from a bare executable name in the Run Program launch path.",
+        "Resolve bare names using the intended Windows executable-resolution behavior, including enabled user app execution aliases, without changing explicit-path semantics or adding an unintended current-directory fallback.",
+        "Pass the resolved target through the existing already-running, arguments, working-directory, elevation, and window-visibility handling.",
+        "Add focused tests for a resolved app alias, a normal executable found on PATH, an explicit absolute path, and a missing executable."
+      ],
+      "verification": [
+        "Reproduce the reported Win+F to files-stable.exe mapping on a current build and confirm the alias launches instead of showing 'The program was not found.'",
+        "Verify the wt.exe alias and an ordinary executable name resolve correctly while explicit paths and missing-program errors retain their existing behavior."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The issue screenshot confirms the bare alias input and exact not-found error, and current main's name-to-path and file-validation steps explain the failure directly."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager's Run Program action rejects the bare files-stable.exe packaged-app alias with a 'program was not found' error; the same limitation is reported for wt.exe.",
+    "known_information": [
+      "The issue lists PowerToys v0.89.0.",
+      "The settings screenshot shows Win+F configured to run files-stable.exe by name.",
+      "The error screenshot says the program was not found.",
+      "A commenter identifies files-stable.exe as a packaged-app execution alias and reports that wt.exe also does not work.",
+      "Current main still resolves the path with GetFullPathNameW and validates that path with GetFileAttributesW before launch."
+    ],
+    "inferences": [
+      "The reported bare alias is likely unavailable because the launch code does not search the executable paths where Windows app execution aliases are registered.",
+      "Supporting aliases through name resolution should be possible without changing how explicit executable paths are handled, but the exact Windows resolution API and supported elevation/window modes need design validation."
+    ],
+    "analysis": "The screenshots remove the key ambiguity: the configured value is the bare files-stable.exe name, not a quoted path or a missing file selected through the picker, and the toast is the engine's not-found result. The current main source follows a path-resolution and file-existence check that does not resolve bare names through PATH, matching both files-stable.exe and wt.exe reports. The fix should resolve names before the existing launch pipeline and retain explicit-path semantics.",
+    "initial_investigation": [
+      "Refreshed the complete issue body and comment, including both screenshots.",
+      "Inspected the settings screenshot and confirmed Win+F is configured to run the bare files-stable.exe name; the error screenshot says the program was not found.",
+      "Verified current microsoft/PowerToys main at src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp:172-185, where ProgramLauncher::ExpandAndGetAbsolutePath calls GetFullPathNameW.",
+      "Verified current main at the same file's CreateOrShowProcessForShortcut path (around lines 1680-1739), where the resolved path is checked with GetFileAttributesW before launch.",
+      "Searched related PowerToys issues and PRs for packaged-app aliases and files-stable.exe; no separate covering report or PR was found."
+    ],
+    "information_gaps": []
   }
 }

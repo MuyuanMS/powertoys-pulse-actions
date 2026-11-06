@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 45278,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-02-02T11:54:20Z",
+  "generated_at": "2026-11-05T21:04:24+08:00",
+  "evaluated_at": "2026-11-05T21:04:24+08:00",
+  "source_updated_at": "2026-10-11T16:48:51Z",
+  "title": "Keyboard Manager remap shortcut (sent text) only runs once",
+  "url": "https://github.com/microsoft/PowerToys/issues/45278",
+  "author": "shimself",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "Needs repeated-trigger confirmation",
+    "detail": "The v0.97.1 report has a clear one-time text-send symptom, but there is no current-build retest. Related reports were routed to this still-open canonical issue."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Ask whether Ctrl+' still sends the configured text only once on a current build and capture the exact press/release sequence and target app.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says a Ctrl+' shortcut that sends an email address works once and then does nothing until a reboot. The report is from PowerToys 0.97.1 and has no comments. Maintainers closed #41153 and #31839 as duplicates of this issue, so #45278 remains the canonical open report; those duplicate links do not establish that the behavior is fixed. Current main sends shortcut text through Helpers::SendTextInput and consumes the matching event, but that path alone does not establish why a later trigger may fail.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #45278 is open, unassigned, labeled Issue-Bug, Needs-Triage, and Product-Keyboard Manager, and has no comments; its 2026-10-11 update changed labels only.",
+      "The reporter lists PowerToys 0.97.1 and says the Ctrl+' (shown as Ctrl@) shortcut sends \"me@mydomain.com\" once, then does nothing until reboot.",
+      "Maintainers closed #41153 and #31839 as duplicates of #45278; #45278 itself remains open.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardEventHandlers.cpp:1099-1103 calls Helpers::SendTextInput for shortcut-to-text remaps and consumes the event; this does not establish whether transient shortcut state is reset correctly after repeated sends.",
+      "No linked pull request or current-version reproduction was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-02-02T11:54:20Z"
-  }
+    "recommended_action": "Request a current-build retest with the exact key-down/key-up sequence and target application before proposing a state-reset change.",
+    "evaluated_at": "2026-11-05T21:04:24+08:00",
+    "source_updated_at": "2026-10-11T16:48:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repeat-trigger state or synthetic-input cleanup problem is plausible, but the report does not establish whether the shortcut still fails on current builds or whether the trigger modifiers are fully released between attempts."
+  },
+  "issue_context": {
+    "summary": "A Ctrl+' shortcut configured to send an email address works once, then stops sending text until reboot.",
+    "known_information": [
+      "The original report lists PowerToys 0.97.1 and says the shortcut is triggered by Ctrl+' (displayed as Ctrl@).",
+      "The configured text is \"me@mydomain.com\"; the first trigger succeeds and later triggers do not until reboot.",
+      "Maintainers closed #41153 and #31839 as duplicates of this issue, which remains open.",
+      "The issue has no comments or assignee; the latest upstream activity was a label-only update on 2026-10-11."
+    ],
+    "inferences": [
+      "A stale shortcut-invocation state or incomplete cleanup around synthetic text input could prevent the second trigger, but the report does not show whether all physical keys were released.",
+      "The target application could affect how injected text is accepted, so a plain text editor provides a useful control."
+    ],
+    "analysis": "The original report already gives the trigger and expected text, and the related issues are deliberately routed here. Current main's shortcut-to-text branch calls Helpers::SendTextInput and returns after handling the event; the relevant key/modifier release and repeat behavior still needs a current reproduction. Ask only for a current-version result, the precise release sequence, and whether the same failure occurs in a plain text editor; do not request a diagnostic archive that the report does not need yet.",
+    "initial_investigation": [
+      "Read the live issue body, labels, assignees, comments, and timeline through 2026-10-11T16:48:51Z; there are no comments, assignees, or direct linked pull requests.",
+      "Read the maintainer duplicate closures on #41153 and #31839 pointing to #45278.",
+      "Read current upstream source at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp:1099-1103 and src/modules/keyboardmanager/common/Helpers.cpp:317-329."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the send-text shortcut still succeeds only once on a current PowerToys build, and whether the same failure occurs in a plain text editor.",
+        "why_needed": "The only reproduction is from v0.97.1, and a control application helps separate Keyboard Manager input handling from application-specific behavior.",
+        "how_to_collect": "Retest the shortcut in a plain text editor on the latest installed stable build and include the exact PowerToys version and whether the second trigger inserts any text."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact key-down/key-up sequence between the first and second Ctrl+' trigger, including whether Ctrl and the apostrophe key are fully released.",
+        "why_needed": "A stale invocation state is only a hypothesis; key-release timing determines whether the repeat path can be reached.",
+        "how_to_collect": "Describe whether both keys are released before the second trigger and whether switching focus or waiting changes the result; no diagnostic upload is needed for this step."
+      }
+    ]
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reset shortcut-to-text state after a completed send",
+      "root_cause": "Hypothesis: the shortcut's invocation or synthetic-input state remains active after the first Helpers::SendTextInput call, preventing a later trigger from being matched. The current report does not establish whether this state is actually stale.",
+      "plan": [
+        "Confirm the issue on a current build with Ctrl+' mapped to the reported text, fully release both keys between attempts, and compare a plain text editor with the original target app.",
+        "Trace shortcut invocation, modifier release and text-injection cleanup through HandleShortcutRemapEvent and Helpers::SendTextInput.",
+        "If a state-reset gap is confirmed, reset only the completed text-remap invocation state and add a regression test that triggers the same shortcut twice without restarting PowerToys."
+      ],
+      "verification": [
+        "The configured text is inserted on each of two successive Ctrl+' triggers without restarting PowerToys.",
+        "The trigger keys are released normally and no extra Ctrl or apostrophe input reaches the target application.",
+        "Existing shortcut-to-key, shortcut-to-shortcut, and text-remap behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 39,
+        "level": "red",
+        "rationale": "The one-time symptom is clear, but it is reported only on v0.97.1 and no current reproduction or key-release sequence is available."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve repeated text-remap investigation",
+      "note": "Proceed to a code design only if a current-build test confirms that the same shortcut still fails on its second trigger."
+    },
+    {
+      "type": "request_info",
+      "label": "Request current repeated-trigger result",
+      "comment": {
+        "target": "issue",
+        "number": 45278,
+        "body": "Thanks for providing the Ctrl+' trigger, the text to send, and the result that the first attempt works. Could you confirm:\n- Whether this still happens on a current PowerToys build, including its version, and whether the second attempt inserts any text.\n- Whether Ctrl and the apostrophe key are fully released before the second attempt.\n- Whether the same test fails in a plain text editor or only in the original target app.\n\nThis check does not require an upload."
+      }
+    }
+  ]
 }

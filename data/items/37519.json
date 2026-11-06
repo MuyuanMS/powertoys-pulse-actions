@@ -1,33 +1,84 @@
 {
+  "schemaVersion": 5,
   "number": 37519,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "KB Manager: alt + tab, left/right breaks shortcut remap (crtl + tab produces alt + tab)",
+  "url": "https://github.com/microsoft/PowerToys/issues/37519",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:16:16Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T21:24:00Z",
+  "evaluated_at": "2026-11-05T21:24:00Z",
+  "source_updated_at": "2026-10-11T16:47:10Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Separate expected task-switcher behavior from persistent shortcut failure",
+    "detail": "The report uses chained Alt/Ctrl/Win remaps and Ctrl+arrow remaps; an older maintainer response says transforming Alt+Arrow can close the task switcher, but this report also describes later shortcut failures."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report lists PowerToys 0.88.0 and gives a detailed chain of Alt/Ctrl/Win and shortcut remaps. During the Alt+Tab task switcher, pressing an arrow activates the configured Ctrl+arrow-to-Ctrl+Home/End mapping; older closed issue #18298 explains that transforming an Alt+Arrow chord can release Alt and close the switcher, which may be expected. However, #37519 additionally says shortcut functionality later returns only after waiting or restarting Windows, while restarting PowerToys does not help. There are no current-version results or reporter follow-ups. Ask whether the persistent failure remains on current stable and distinguish it from the switcher's expected response to the mapped arrow chord.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.88.0 installed through a company portal and details three modifier swaps plus Ctrl+Tab, Ctrl+tilde, and Ctrl+arrow mappings.",
+      "The reporter says pressing an arrow while the Alt+Tab switcher is open dismisses it and that shortcut behavior later returns only after waiting; restarting Windows helps but restarting PowerToys does not.",
+      "The sole comment is an automated similar-issue suggestion linking #18298 and #23231.",
+      "Closed issue #18298's maintainer response says an Alt+Arrow remap can release Alt and close the task switcher, which is expected when the chord is transformed.",
+      "Open issue #23231 contains broader reports of Keyboard Manager shortcuts stopping, but does not establish the same modifier chain or arrow trigger.",
+      "The report has no current-version confirmation or assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:16:16Z"
-  }
+    "recommended_action": "Ask whether the exact sequence and any lasting shortcut failure persist on v0.102.3001, separately from the task switcher closing when the arrow is remapped.",
+    "evaluated_at": "2026-11-05T21:24:00Z",
+    "source_updated_at": "2026-10-11T16:47:10Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is from PowerToys 0.88.0 and combines a task-switcher transition that may be expected with a separate lasting shortcut failure. Confirm whether the lasting failure remains on current stable before selecting a code path."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A complex Alt/Ctrl/Win remap closes the Alt+Tab switcher when an arrow is pressed and reportedly leaves shortcuts broken until later or a Windows restart.",
+    "known_information": [
+      "The report lists PowerToys 0.88.0 and the mappings Alt->Ctrl, Win->Alt, Ctrl->Win, Ctrl+Tab->Alt+Tab, Ctrl+tilde->Alt+Tab+Shift, and Ctrl+arrows->Ctrl+Home/End.",
+      "The reporter says arrow input dismisses the Alt+Tab switcher and shortcuts later recover only after waiting or restarting Windows.",
+      "Closed issue #18298 explains that remapping Alt+Arrow can release Alt and close the switcher.",
+      "Open issue #23231 contains broader but not identical reports of shortcut failure."
+    ],
+    "inferences": [
+      "The task switcher closing may be the expected result of applying the configured Alt/arrow remap, but the reported later loss of shortcut functionality may be a separate defect."
+    ],
+    "analysis": "The current evidence does not justify a fix design because it predates the current release and mixes a likely expected task-switcher response with a claimed persistent failure. Ask for the same mapping on current stable and whether shortcut behavior is still broken after the switcher closes.",
+    "initial_investigation": [
+      "Read the live report and its sole similar-issue comment; the full modifier/mapping sequence and recovery behavior are in the report body.",
+      "Read closed issue #18298, where a maintainer explained that transforming Alt+Arrow releases Alt and closes the switcher.",
+      "Reviewed relevant discussion in open issue #23231; its general stop-working reports do not establish this same trigger."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether v0.102.3001 still dismisses the task switcher with the reported remapped arrow and whether the Ctrl+Tab/related shortcuts remain broken after dismissal",
+        "why_needed": "The task-switcher dismissal may be expected under the configured Alt/arrow mapping, while the reported lasting shortcut failure is distinct and was last observed on 0.88.0.",
+        "how_to_collect": "Repeat the reported modifier and shortcut mappings on v0.102.3001, press an arrow while the switcher is open, then report whether the switcher closes and whether the remapped shortcuts continue working afterward.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-37519-confirm-persistent-shortcut-failure",
+      "type": "request_info",
+      "label": "Confirm whether the shortcut failure persists on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the complete Alt/Ctrl/Win mapping sequence and for distinguishing the arrow-key behavior from text navigation. Since the report lists PowerToys 0.88.0, could you repeat it on v0.102.3001 and report separately whether the arrow merely closes the task switcher and whether Ctrl+Tab or the other remapped shortcuts remain broken afterward?"
+      }
+    }
+  ]
 }

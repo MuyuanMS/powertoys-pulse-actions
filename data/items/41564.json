@@ -1,33 +1,127 @@
 {
+  "schemaVersion": 5,
   "number": 41564,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "SendInput does not set extended flag for Windows key in remapped shortcuts",
+  "url": "https://github.com/microsoft/PowerToys/issues/41564",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:08:13Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:30Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Verify the injected Windows-key extended flag",
+    "detail": "A Space-to-Win+R mapping on PowerToys 0.93 reportedly emits a VK_LWIN key-down without the extended-key flag."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report provides a specific shortcut mapping and compares the observed WM_KEYDOWN fields with the expected Windows-key event, isolating the extended-key flag as the reported discrepancy. A current-build reproduction in the receiving application is needed to verify that this flag omission is still present and causes a user-visible failure.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter used PowerToys 0.93.0 and mapped Space to Win(left)+R.",
+      "Spy++ reportedly showed VK_LWIN with scan code 0x5B and fExtended=0, while the reporter expected fExtended=1.",
+      "No comments or later reproduction are present."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:08:13Z"
-  }
+    "recommended_action": "Reproduce the mapping on current stable, inspect the event delivered to the target application, and confirm whether the missing extended flag affects the shortcut before changing injection behavior.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:30Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current Keyboard Manager output omits the extended-key state for injected left-Windows key events, correct the event construction while preserving existing modifier and key-up behavior."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Set the extended-key state for injected Windows-key events",
+      "root_cause": "The remapped shortcut path may construct a left-Windows key-down with the correct virtual key and scan code but omit the extended-key state expected by the receiving input path; this needs current-build confirmation.",
+      "plan": [
+        "Repeat the Space-to-Win(left)+R mapping on current stable and inspect both key-down and key-up events in a target application.",
+        "Compare the injected event fields with a physical Win(left)+R event and identify the Keyboard Manager input-construction path.",
+        "If the mismatch is confirmed and affects shortcut handling, set the extended-key state consistently for the Windows-key down/up pair.",
+        "Add regression coverage for left and right Windows-key injection and modifier release."
+      ],
+      "verification": [
+        "The mapped shortcut delivers the expected Windows-key event flags and invokes the configured action.",
+        "The Windows modifier is released after the remapped shortcut.",
+        "Existing physical and remapped Windows-key combinations continue to work."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The report identifies a concrete event-field discrepancy, but it is from PowerToys 0.93 and does not establish whether the flag remains missing or causes the reported shortcut behavior on current builds."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Space-to-Win(left)+R remap reportedly injects a VK_LWIN key-down without the extended-key flag.",
+    "known_information": [
+      "The report lists PowerToys 0.93.0 from the Microsoft Store.",
+      "The mapping under test is Space to Win(left)+R.",
+      "The reporter used Spy++ and observed VK_LWIN, scan code 0x5B, and fExtended=0."
+    ],
+    "inferences": [
+      "The missing extended-key state may affect how a receiving application interprets the injected Windows key, but the issue does not show a target-application failure or current-build reproduction."
+    ],
+    "analysis": "The event-field comparison is specific enough for a maintainer reproduction. Confirm the down/up event pair and user-visible shortcut behavior before deciding whether event construction should change.",
+    "initial_investigation": [
+      "Read the issue body and all comments; there are no comments.",
+      "No linked fix or duplicate is identified in the issue discussion."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the fExtended=0 observation remains on current stable and whether it changes the behavior in the target application",
+        "why_needed": "The report is from PowerToys 0.93 and shows an event-field discrepancy without documenting a current user-visible failure.",
+        "how_to_collect": "Repeat the same mapping on current stable, compare with a physical Win(left)+R event in the same target application, and state whether the shortcut still fails.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41564-confirm-current-key-flag",
+      "type": "request_info",
+      "label": "Confirm the current Windows-key event flags",
+      "primary": true,
+      "comment": {
+        "body": "You reported that the Space-to-Win(left)+R mapping on PowerToys 0.93 produced VK_LWIN with fExtended=0 in Spy++. Could you confirm whether this still happens on current stable, and whether the shortcut behaves differently from a physical Win(left)+R in the same target application?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the injected Windows-key event",
+      "reproduce": {
+        "title": "Compare remapped and physical Win-key event flags",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.93.0 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "A target application and Spy++ or an equivalent event viewer"
+        ],
+        "setup": [
+          "Map Space to Win(left)+R."
+        ],
+        "steps": [
+          "Capture the event fields when pressing the remapped Space key.",
+          "Capture the event fields when pressing physical Win(left)+R in the same application.",
+          "Compare virtual key, scan code, extended-key state, and matching key-up events.",
+          "Check whether the remapped shortcut invokes the same action as the physical shortcut."
+        ],
+        "expected_result": "The remapped shortcut delivers a balanced Windows-key event pair and behaves consistently with the physical shortcut."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Windows-key event investigation"
+    }
+  ]
 }

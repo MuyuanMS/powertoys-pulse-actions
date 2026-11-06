@@ -1,33 +1,103 @@
 {
+  "schemaVersion": 5,
   "number": 40423,
+  "title": "Keyboard Manager hangs multiple times a day",
+  "url": "https://github.com/microsoft/PowerToys/issues/40423",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-08-05T19:05:27Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:32:14.485Z",
+  "generated_at": "2026-11-05T14:32:14.485Z",
+  "evaluated_at": "2026-11-05T14:32:14.485Z",
+  "source_updated_at": "2026-10-11T16:48:05Z",
+  "comments": 3,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting a current-build diagnostic from one failure",
+    "detail": "The UK-layout character mappings and repeated hangs are described, but all reported versions are 0.92/0.92.1. A fresh diagnostic captured before restarting is needed to identify what stops responding."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report gives a concrete UK-layout setup that maps Ctrl+; to ö and Ctrl+Shift+; to Ö, describes input lag followed by mappings stopping until PowerToys restarts, and has two comments reporting similar recurring failures. However, the supplied versions are 0.92/0.92.1 and there is no diagnostic from a failure. Since restarting clears the failing state, a current-build retest with a fresh /bugreport captured before restart is the next discriminating evidence.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body lists PowerToys 0.92.0 and describes UK-layout mappings for ö/Ö, multi-second input lag, and recovery only after restarting PowerToys.",
+      "Two commenters report recurring Keyboard Manager failures, including one on 0.92.1, but provide no current-build diagnostic.",
+      "The issue remains open and unassigned, with no outstanding request for a fresh diagnostic."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-08-05T19:05:27Z"
-  }
+    "recommended_action": "Ask one affected reporter to retest on the current PowerToys version and capture /bugreport immediately after a failure, before restarting PowerToys.",
+    "evaluated_at": "2026-11-05T14:32:14.485Z",
+    "source_updated_at": "2026-10-11T16:48:05Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The recovery-after-restart pattern could indicate a stale or stalled Keyboard Manager hook/event state, but no current diagnostic identifies the responsible path and this remains a low-confidence hypothesis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover Keyboard Manager event processing after a repeated hang",
+      "root_cause": "A keyboard-hook or event-processing state may become stalled after a remapped modifier sequence, leaving the mappings inactive until PowerToys restarts; the report does not establish which component or state transition is responsible.",
+      "plan": [
+        "Reproduce the reported UK-layout Ctrl+; and Ctrl+Shift+; mappings on a current build and capture diagnostics before restarting.",
+        "Use the trace to identify whether hook delivery, remap state, or another Keyboard Manager component stops progressing during the lag.",
+        "Fix the identified state transition or recovery path and add a regression test that verifies mappings resume without restarting PowerToys."
+      ],
+      "verification": [
+        "Run the exact character mappings through repeated reported hang intervals and verify input remains responsive.",
+        "Confirm that a failure does not require restarting PowerToys to restore the mappings."
+      ],
+      "confidence": {
+        "score": 34,
+        "level": "red",
+        "rationale": "The repeated failure and restart recovery are concrete, but the latest reported builds are 0.92/0.92.1 and no diagnostic captures the failing state; a stalled hook/state path is only a hypothesis."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager's UK-layout character shortcuts stop working after recurring input lag, and restarting PowerToys restores them.",
+    "known_information": [
+      "The original report lists PowerToys 0.92.0 and maps Ctrl+; to ö and Ctrl+Shift+; to Ö on an English UK input layout.",
+      "The reporter says the input lags or hangs for several seconds, after which the mappings stop working until PowerToys is restarted.",
+      "Two commenters report similar recurring failures; one lists PowerToys 0.92.1.",
+      "No current-build diagnostic is attached, and the issue remains open and unassigned."
+    ],
+    "inferences": [
+      "Because restarting PowerToys restores the mappings, the failure may involve Keyboard Manager runtime or hook state, but the issue does not establish the affected component."
+    ],
+    "analysis": "The issue and follow-up comments establish repeated user-visible failures, but not whether the same behavior persists on current PowerToys or which component becomes unresponsive. A fresh diagnostic from one current-build failure, captured before restart clears the state, is needed before choosing an implementation path.",
+    "initial_investigation": [
+      "Read the full issue body and all three comments, including the exact UK-layout mappings and reported restart recovery.",
+      "Confirmed the related reports do not provide a current-build diagnostic or identify a common root cause.",
+      "Inspected the current Keyboard Manager low-level event handling and its modifier/AltGr state paths; the reports do not identify which path fails."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive from one affected device after the failure occurs on the current PowerToys version, captured before restarting PowerToys.",
+        "why_needed": "The report says restart restores the mappings, so restarting first may erase the runtime state needed to identify the stalled component.",
+        "how_to_collect": "Retest the existing mappings on the current PowerToys version; immediately after the hang and before restarting, add a comment containing /bugreport and include the device model and Windows build."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the Keyboard Manager hang investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest and capture one current failure",
+      "comment": {
+        "target": "issue",
+        "number": 40423,
+        "body": "Thanks for documenting the UK-layout mappings (`Ctrl+;` → `ö` and `Ctrl+Shift+;` → `Ö`) and that restarting PowerToys restores them. The reported versions are 0.92/0.92.1, and no diagnostic captures the failure. Could one affected device be retested on the current PowerToys version? If it happens again, please add a comment containing `/bugreport` immediately after the hang and before restarting PowerToys, and include the device model and Windows build. Capturing before restart matters because restart restores the mappings and may clear the failing runtime state."
+      }
+    }
+  ]
 }

@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 43802,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "With Caps Lock → Disable, Caps Lock / Shift lock randomly appears",
+  "url": "https://github.com/microsoft/PowerToys/issues/43802",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:01:48Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T21:53:43.454Z",
+  "evaluated_at": "2026-11-05T21:53:43.454Z",
+  "source_updated_at": "2026-10-11T16:47:00Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Capture a current Caps Lock state regression",
+    "detail": "The report uses PowerToys 0.94.0 and describes random lock-state changes without a trigger sequence; related Caps Lock reports have different mappings and conditions."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says Caps Lock is mapped to Disable but Caps/Shift lock state appears randomly: letters become uppercase, Shift+letter produces no character, and number/punctuation keys behave as if Shift is held. Disabling the mapping does not restore normal behavior. The report uses PowerToys 0.94.0 and gives no sequence that triggers the state change, so a current version and the immediate preceding key/event are needed to distinguish a Keyboard Manager state defect from an OS/keyboard lock state.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.94.0 on Windows 11 Pro x64 build 26100.7171, running as a user.",
+      "The mapping is Caps Lock to Disable.",
+      "The reported state is uppercase letters, Shift+letters producing no character, and number/punctuation keys behaving as Shift is held; Caps Lock does not toggle the state.",
+      "Disabling the Keyboard Manager assignment has no effect; no deterministic trigger or comments are provided.",
+      "Open issue #9300 has a related symptom where a Caps Lock remap sometimes allows Caps Lock through, including a separate UAC reproduction; it is not the same mapping or trigger.",
+      "Open issue #50127 describes Shift remaining held after Advanced Paste with CapsLock-to-Ctrl; it is a separate module interaction and does not establish a covering fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:01:48Z"
-  }
+    "recommended_action": "Ask whether the symptom persists on v0.102.3001 and request the exact keys/actions immediately before the lock state appears, including whether it occurs with Keyboard Manager fully disabled.",
+    "evaluated_at": "2026-11-05T21:53:43.454Z",
+    "source_updated_at": "2026-10-11T16:47:00Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A persistent lock/modifier state may indicate a remapping state defect, but the report provides no trigger and disabling only the mapping does not isolate Keyboard Manager from the OS or keyboard state."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate unexpected Caps/Shift lock state with Caps Lock disabled",
+      "root_cause": "A Caps Lock or modifier state may become inconsistent when the physical Caps Lock event is suppressed, but the report does not identify a trigger or prove the issue is PowerToys-owned.",
+      "plan": [
+        "Obtain a current reproduction sequence and verify whether Keyboard Manager must be running for the state change.",
+        "Compare behavior with the same keyboard after fully disabling Keyboard Manager and after a clean restart.",
+        "If the issue is PowerToys-owned, trace Caps Lock state and injected key transitions for the confirmed trigger and add a focused regression test."
+      ],
+      "verification": [
+        "Confirm Caps Lock-to-Disable prevents lock-state changes on the current build.",
+        "Verify Shift and number-row key behavior returns to normal after the triggering sequence."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The report is current enough to describe a concrete symptom but lacks a deterministic trigger, and related reports have different mappings or contexts."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Caps Lock mapped to Disable, the keyboard reportedly enters an unexpected Caps/Shift lock state that persists after disabling the mapping.",
+    "known_information": [
+      "The report lists PowerToys 0.94.0 on Windows 11 Pro x64 build 26100.7171.",
+      "Caps Lock is mapped to Disable.",
+      "The unexpected state affects letters, Shift+letters, and number/punctuation keys.",
+      "Disabling the assignment does not restore normal behavior; the report contains no comments or exact trigger sequence."
+    ],
+    "inferences": [
+      "A keyboard lock state or modifier state may become inconsistent, but the report does not establish whether the cause is PowerToys, Windows, or the keyboard."
+    ],
+    "analysis": "The first required evidence is a deterministic current-build sequence and whether the same behavior occurs with Keyboard Manager fully disabled. Related Caps Lock issues report different mappings and triggers, so they should inform comparison but not be treated as duplicates.",
+    "initial_investigation": [
+      "Read the full issue report, labels, comments, and assignees.",
+      "Compared open #9300 (Caps Lock remap sometimes allows Caps Lock through, including a UAC scenario) and #50127 (Advanced Paste leaves Shift held with CapsLock-to-Ctrl); neither confirms a covering fix for CapsLock-to-Disable."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the lock-state behavior persists on v0.102.3001, the exact keys/actions immediately before it appears, and whether it happens with Keyboard Manager fully disabled",
+        "why_needed": "The report gives no deterministic trigger and the state persists after disabling only the mapping, so the responsible layer is unclear.",
+        "how_to_collect": "On v0.102.3001, record the short key sequence immediately before the state appears; if safe, compare once with Keyboard Manager fully disabled. Do not include any sensitive text.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-43802-current-lock-state-sequence",
+      "type": "request_info",
+      "label": "Capture current Caps Lock failure sequence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 43802,
+        "body": "Thanks for detailing the Caps/Shift lock symptoms. Since the report is from PowerToys 0.94.0, could you confirm whether this still occurs on v0.102.3001? If it does, please share the short sequence immediately before the lock state appears and whether it also happens with Keyboard Manager fully disabled. Please do not include any sensitive text."
+      }
+    },
+    {
+      "id": "approve-design-43802",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

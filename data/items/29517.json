@@ -1,33 +1,135 @@
 {
+  "schemaVersion": 5,
   "number": 29517,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager Exchange CTRL and WIN to cause third-party software unworking",
+  "url": "https://github.com/microsoft/PowerToys/issues/29517",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:09:23Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T22:09:00Z",
+  "evaluated_at": "2026-11-05T22:09:00Z",
+  "source_updated_at": "2026-10-11T16:46:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Retest Ctrl/Win swap with the translator",
+    "detail": "The reporter attached a PowerToys report and KeyViz observation showing Ctrl+Win+C after a Ctrl/Win swap; the reported build is v0.74.1."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report lists PowerToys v0.74.1, gives the Ctrl/Win exchange and Win+C sequence, and explains how the resulting Ctrl+Win+C activates a Teams shortcut instead of the third-party TTime translator's copy action. A collaborator requested /bugreport and the author supplied a PowerToys report ZIP, then described the same observed key combination in KeyViz, so another archive request is unnecessary. The behavior is old and no current-build confirmation or linked PR was found; verify it on v0.102.3001 before deciding whether the remap still emits the source modifier.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys v0.74.1 and says exchanging Ctrl and Win makes the translator fail.",
+      "The reporter states that Win+C produces Ctrl+Win+C and that KeyViz showed this combination.",
+      "The author attached a PowerToys report ZIP after a collaborator requested /bugreport.",
+      "The issue has two comments, no assignee, and no matching PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:09:23Z"
+    "recommended_action": "Reproduce the reciprocal Ctrl/Win remap on v0.102.3001 and verify whether Win+C still emits both the source and remapped modifiers before designing a fix.",
+    "evaluated_at": "2026-11-05T22:09:00Z",
+    "source_updated_at": "2026-10-11T16:46:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported key sequence is consistent with the source Win modifier not being fully suppressed during a reciprocal Ctrl/Win remap, but the observation is from v0.74.1 and has not been independently reproduced on current stable.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Suppress the source modifier during reciprocal Ctrl/Win remapping",
+      "root_cause": "A reciprocal Ctrl/Win key exchange may inject the target modifier while allowing the original modifier to reach the application, producing Ctrl+Win+C instead of the expected single remapped chord. The current-build behavior is unconfirmed.",
+      "plan": [
+        "Reproduce the exact reciprocal Ctrl/Win exchange on the current supported build and record the modifier sequence for Win+C.",
+        "Trace source-key suppression and target modifier key-down/key-up handling for the confirmed mapping.",
+        "Ensure the original modifier is suppressed while the remapped modifier remains held for the source key's lifetime.",
+        "Add regression coverage for reciprocal Ctrl/Win remaps and for ordinary Ctrl/Win shortcuts that are not configured for remapping."
+      ],
+      "verification": [
+        "Verify Win+C after the reciprocal exchange produces only the expected remapped chord and no unintended Teams/system shortcut.",
+        "Verify the reporter's TTime copy/translation workflow and normal Ctrl/Win shortcuts remain functional."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The attached report and KeyViz description point to a modifier-suppression issue, but the product version is old and the emitted sequence has not been confirmed on current stable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A reciprocal Ctrl/Win key exchange reportedly makes Win+C emit Ctrl+Win+C, which conflicts with the TTime translator's copy shortcut.",
+    "known_information": [
+      "The report lists PowerToys v0.74.1 and says Ctrl and Win are exchanged in Keyboard Manager.",
+      "The reporter says the translator uses Copy to capture underlined text and that Win+C instead produces Ctrl+Win+C, activating Teams.",
+      "The reporter says KeyViz observed Ctrl+Win+C and attached a PowerToys report ZIP after a collaborator requested /bugreport.",
+      "The issue has no assignee and no matching PR was found."
+    ],
+    "inferences": [
+      "The original Win modifier may be reaching the target application alongside the remapped Ctrl modifier, but the event sequence has not been verified on current stable."
+    ],
+    "analysis": "The supplied archive and KeyViz observation are useful evidence and should not be requested again. The exact reciprocal mapping is clear enough for a maintainer reproduction, but the report is from v0.74.1 and the current behavior is unknown. Search found an older Win/Alt shortcut report (#5956), but it does not cover this Ctrl/Win exchange or establish a fix.",
+    "initial_investigation": [
+      "Read the full issue and both comments, including the original /bugreport request, the attached archive, and the author's KeyViz explanation.",
+      "Searched for reports containing the reported Ctrl+Win+C sequence; no other direct matching issue was found.",
+      "Searched for PRs referencing the issue; none were returned."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Win+C still produces Ctrl+Win+C on v0.102.3001 with the same reciprocal Ctrl/Win mapping, and whether TTime still fails",
+        "why_needed": "The only versioned reproduction is v0.74.1; a current retest determines whether the source modifier is still leaking or whether a later change already fixed the behavior.",
+        "how_to_collect": "On v0.102.3001, keep the same Ctrl/Win exchange, test Win+C with a key-event viewer such as the reporter's KeyViz setup, and report the observed chord and whether TTime still performs its copy/translation action.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-29517-current-ctrl-win-retest",
+      "type": "request_info",
+      "label": "Retest the Ctrl/Win swap on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for providing the PowerToys report ZIP and the KeyViz observation that Win+C produced Ctrl+Win+C; the archive should not need to be uploaded again. Since the report is from v0.74.1, could you confirm whether this still happens on v0.102.3001 with the same reciprocal Ctrl/Win mapping? Please report the chord shown by KeyViz and whether TTime still fails to copy and translate the selected text."
+      }
+    },
+    {
+      "id": "issue-29517-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce the Ctrl/Win modifier exchange",
+      "note": "The report includes the exact mapping and a diagnostic archive; verify the modifier sequence on current stable before choosing a code path.",
+      "reproduce": {
+        "title": "Verify reciprocal Ctrl/Win remapping",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "A reciprocal Ctrl/Win key remap configured in Keyboard Manager",
+          "A text editor or key-event viewer to observe the emitted chord"
+        ],
+        "steps": [
+          "Configure the same Ctrl/Win exchange described in the issue.",
+          "Press Win+C and record whether the application receives Ctrl+C, Ctrl+Win+C, or another sequence.",
+          "If available, repeat in TTime and verify whether its Copy-based translation action still works."
+        ],
+        "expected_result": "The remapping produces only the intended target modifier and does not also expose the original source modifier to the application."
+      }
+    },
+    {
+      "id": "issue-29517-approve-modifier-suppression-investigation",
+      "type": "approve_design",
+      "label": "Approve Ctrl/Win modifier investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Retest the Ctrl/Win swap on current stable",
+    "reason": "The report provides a useful reproduction and archive, but the observed key sequence is from v0.74.1."
   }
 }

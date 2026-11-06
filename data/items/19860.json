@@ -1,33 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 19860,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Always On Top covers a small portion of the top of the taskbar",
+  "url": "https://github.com/microsoft/PowerToys/issues/19860",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-24T16:39:44Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-3",
+    "Status-Reproducible"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T23:20:35Z",
+  "evaluated_at": "2026-11-05T23:20:35Z",
+  "source_updated_at": "2026-10-11T15:03:42Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "▶",
+    "label": "Unclamped border rectangle reaches taskbar",
+    "detail": "Current GetFrameRect expands DWM frame bounds on every side without monitor/work-area clamping; the latest commenter offers a matching maximized/full-monitor fix."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Review the monitor-boundary clamp design",
+    "reason": "The issue is marked reproducible, current source shows the unconditional expansion, and the latest commenter supplied a narrow fix approach."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-19860-approve-frame-rectangle-clamp",
+      "type": "approve_design",
+      "label": "Approve maximized and full-monitor boundary clamping",
+      "primary": true
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue is marked Status-Reproducible, the latest commenter identifies GetFrameRect as the source of the overflow, and current upstream expands the DWM frame bounds by frameThickness on all four sides without clamping. Clamping only maximized and full-monitor windows to the appropriate bounds is a concrete, narrowly scoped candidate that preserves normal-window behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports that a maximized Always on Top border clips over the taskbar; it is labeled Status-Reproducible.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 expands the DWM extended frame bounds by frameThickness on all sides in WindowBorder.cpp:GetFrameRect and returns the expanded rectangle without a work-area or monitor-bound check.",
+      "The latest issue comment independently identifies the same expansion and proposes clamping maximized windows to the monitor work area and full-monitor windows to monitor bounds.",
+      "Related issue #15283 was closed as a duplicate of #19860. Related #32423 independently records the expected behavior that the border should not cross monitor boundaries or overlap the taskbar; #32750 was closed in favor of #32423."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-24T16:39:44Z"
+    "recommended_action": "Approve a focused GetFrameRect change that clamps maximized windows to the monitor work area and full-monitor windows to monitor bounds, then verify ordinary windows remain unchanged.",
+    "evaluated_at": "2026-11-05T23:20:35Z",
+    "source_updated_at": "2026-10-11T15:03:42Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current source directly performs the unbounded expansion implicated by the reproduced taskbar-overlap report. A state-specific clamp is supported by both the source and the latest issue discussion.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clamp maximized and full-monitor Always on Top borders",
+      "root_cause": "GetFrameRect expands the tracked window's DWM extended frame bounds by the configured border thickness on every side. Maximized windows already occupy the monitor work area and full-monitor windows already occupy the monitor, so expanding their overlay rectangle can place the border over the taskbar or across an adjacent monitor.",
+      "plan": [
+        "In WindowBorder.cpp:GetFrameRect, determine whether the tracked window is maximized or covers the full monitor and obtain the corresponding monitor work-area or monitor bounds.",
+        "Clamp the expanded rectangle to the work area for maximized windows and to monitor bounds for full-monitor windows; leave ordinary window geometry on the current path.",
+        "Add focused geometry tests for maximized, full-monitor, ordinary, and multi-monitor windows, including monitors with different work areas.",
+        "Retest with border thickness greater than one pixel and verify the border remains visible along the window edge without covering the taskbar or adjacent monitor."
+      ],
+      "verification": [
+        "Maximized windows do not draw the border over the taskbar.",
+        "Full-monitor windows do not draw the border across an adjacent monitor.",
+        "Ordinary non-maximized windows retain the current border thickness and placement."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The issue is marked reproducible, current source performs the exact unbounded expansion, and the latest discussion proposes the same state-specific bounds; remaining work is to validate geometry and preserve ordinary-window behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Always on Top border extends over the taskbar when the tracked window is maximized; current source expands its frame rectangle without clamping.",
+    "known_information": [
+      "The original report used PowerToys v0.61.1 and says a maximized window's border clips over the taskbar.",
+      "The issue is labeled Status-Reproducible.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 expands the DWM extended frame rectangle by the configured thickness on every side in WindowBorder.cpp:GetFrameRect and returns it without clamping.",
+      "The latest commenter proposes clamping maximized windows to monitor work-area bounds and full-monitor windows to monitor bounds.",
+      "Related #15283 is closed as a duplicate of this issue. #32423 documents the broader expected behavior that borders not cross monitor boundaries or overlap the taskbar; #32750 is closed in favor of #32423."
+    ],
+    "inferences": [
+      "The unconditional expansion is consistent with the taskbar and adjacent-monitor overflow reported for maximized or full-monitor windows.",
+      "A clamp selected by window state and monitor geometry should contain the overlay without changing placement for ordinary windows."
+    ],
+    "analysis": "The report's status and latest comment support the same geometry defect visible in current source. The proposed change should be limited to windows already filling the work area or monitor; general frame-size behavior and ordinary windows need to remain unchanged. The related #32423 expectation provides useful boundary cases but does not make #32750 a duplicate of this issue.",
+    "initial_investigation": [
+      "Read all four issue comments; the latest comment identifies GetFrameRect and offers a maximized/work-area and full-monitor/monitor-bounds clamp.",
+      "Inspected current upstream WindowBorder.cpp: GetFrameRect expands top, left, right, and bottom by frameThickness and contains no monitor or work-area clamp.",
+      "Read related #15283, #32423, and #32750: #15283 is officially duplicated to #19860, while #32750 is closed in favor of #32423, whose expected behavior explicitly excludes taskbar overlap and monitor-boundary crossing."
+    ],
+    "information_gaps": []
   }
 }

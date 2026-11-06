@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 45712,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/45712",
+  "title": "Quick access assumes system tray in bottom-right corner",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-03T13:14:56Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-06T00:48:19Z",
+  "evaluated_at": "2026-11-06T00:48:19Z",
+  "source_updated_at": "2026-11-05T18:57:21Z",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current Quick Access show and prime paths both call PositionWindowBottomRight, and the helper deliberately places the window at the bottom-right of the work area on the cursor monitor. It does not use the notification-area icon or taskbar edge. A taskbar-aware placement change is applicable, although the exact activation anchor and fallback behavior need maintainer reproduction across supported taskbar positions.",
+    "existing_fix_urls": []
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "proposed_fixes": [
+    {
+      "title": "Place Quick Access relative to the PowerToys tray icon",
+      "root_cause": "Quick Access uses a fixed bottom-right work-area placement rather than the taskbar or tray-icon position. This directly explains the reported placement when the taskbar is on the left or top.",
+      "plan": [
+        "Resolve the PowerToys notification-area/taskbar anchor when Quick Access is summoned and pass it to the shared flyout placement path used by both ShowWindow and PrimeWindow.",
+        "Place the flyout beside the anchor according to the taskbar edge, clamp it to the selected monitor's work area, and preserve a safe bottom-right fallback when the anchor cannot be resolved.",
+        "Add placement tests for bottom, top, left, and right taskbars, including non-primary monitors and DPI scaling."
+      ],
+      "verification": [
+        "On Windows 10 22H2 and a supported Windows 11 build, open Quick Access from the PowerToys tray icon with the taskbar at the bottom, top, left, and right; verify the popup opens adjacent to the icon.",
+        "Repeat on a secondary monitor and at non-default display scaling; verify the popup remains within the correct work area and does not overlap the taskbar."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The hard-coded bottom-right behavior is confirmed in both Quick Access placement paths and directly matches the report. The tray activation anchor and edge-selection implementation have not yet been exercised on movable taskbars, so their integration details still need a focused reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Access opens at the bottom-right of the monitor instead of beside the PowerToys notification-area icon when the taskbar is moved.",
+    "known_information": [
+      "The reporter uses PowerToys 0.97.2 on Windows 10 22H2 and says the taskbar is unlocked and moved to the left or top edge.",
+      "The expected behavior is to open next to the system-tray icon, either automatically or through a position setting.",
+      "A second commenter confirmed the same behavior with a top-positioned taskbar.",
+      "A November 5 commenter notes that a recent Windows 11 update adds taskbar-position settings; this is not a new reproduction result.",
+      "A November 5 maintainer reply confirms a related report was closed as a duplicate of #45712, which remains the canonical tracking issue; the reply does not establish that a fix has shipped.",
+      "Current source still uses fixed bottom-right placement for both Quick Access show and prime paths."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-03T13:14:56Z"
-  }
+    "inferences": [
+      "The current fixed placement logic is the direct reason the popup does not follow a non-bottom taskbar.",
+      "The exact tray-icon activation coordinates may not be available to Quick Access today; a maintainer should verify the supported anchor source and fallback before implementation."
+    ],
+    "analysis": "MainWindow.ShowWindow and PrimeWindow both call FlyoutWindowHelper.PositionWindowBottomRight. That helper selects the monitor under the cursor and positions the window at the work area bottom-right, without taskbar-edge or tray-icon input. The latest maintainer reply confirms a related report is a duplicate of this canonical issue, but no merged or released fix is established and current source still has the fixed placement. Keep the taskbar-aware proposal on this tracker and verify the supported anchor/fallback behavior before detailed design.",
+    "initial_investigation": [
+      "Read the complete issue report, both comments, labels, and current live update time; there is no assignee or maintainer ownership.",
+      "Inspected QuickAccess.UI/QuickAccessXAML/MainWindow.xaml.cs: both ShowWindow and PrimeWindow call PositionWindowBottomRight.",
+      "Inspected Common.UI.Controls/Window/FlyoutWindowHelper.cs: the helper selects the cursor monitor and computes placement from the bottom-right of its work area.",
+      "Read related issue #51600; it is closed but describes a similar Quick Access and Power Display taskbar-placement request, not a verified fix.",
+      "Re-read the November 5 follow-up: a maintainer says the related report was closed as a duplicate of #45712; checked current upstream/fork PR search and found no matching PR."
+    ],
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue still has a concrete placement defect: current Quick Access paths use fixed bottom-right positioning. A new maintainer reply confirms a related report was closed as a duplicate of #45712 and says this issue tracks the work; that establishes #45712 as the canonical thread but does not establish that a fix has shipped. The current source still uses the fixed placement, so retain the proposal while avoiding a competing duplicate.",
+    "source_updated_at": "2026-11-05T18:57:21Z",
+    "evaluated_at": "2026-11-06T00:48:19Z",
+    "recommended_action": "Keep #45712 as the canonical tracker, verify any proposed implementation against the current fixed-placement code, and reproduce taskbar-edge behavior before approving a detailed design.",
+    "evidence": [
+      "The report and confirmation describe Quick Access appearing bottom-right when the taskbar is on the left or top.",
+      "Both Quick Access placement paths call PositionWindowBottomRight, which ignores the taskbar and tray-icon location.",
+      "The related closed #51600 is not evidence that the current Quick Access implementation was changed.",
+      "A November 5 maintainer reply confirms that a related report was closed as a duplicate of #45712 and that this issue tracks the work; it does not report a merged or released fix."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve taskbar-aware Quick Access placement"
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify Quick Access placement on moved taskbars",
+      "reproduce": {
+        "title": "Check Quick Access placement against taskbar position",
+        "module": "Quick Access",
+        "version_requirement": "Current stable PowerToys; include Windows 10 22H2 and a supported Windows 11 build when available.",
+        "prerequisites": [
+          "Unlock the Windows taskbar and make the PowerToys notification-area icon visible."
+        ],
+        "setup": [],
+        "steps": [
+          "Move the taskbar to the left edge and click the PowerToys notification-area icon.",
+          "Repeat with the taskbar at the top and right edges.",
+          "Repeat from a secondary monitor if available and record the monitor and display scaling."
+        ],
+        "expected_result": "Quick Access opens next to the PowerToys tray icon on the same display and remains within the work area without covering the taskbar."
+      }
+    }
+  ]
 }

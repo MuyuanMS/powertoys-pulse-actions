@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 32683,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Can't remap CTRL (Left) + Shift (Right) to Disabled",
+  "url": "https://github.com/microsoft/PowerToys/issues/32683",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:02:41Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm modifier-only shortcut disabling on current release",
+    "detail": "The report says Ctrl (Left)+Shift (Right) cannot be mapped to Disabled while ordinary shortcuts work; related issue 31094 tracks a broader modifier-only remapping request."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter lists PowerToys 0.80.1 on Windows 11 and gives a specific modifier-only combination, Ctrl (Left)+Shift (Right), that fails when mapped to Disabled while combinations containing ordinary keys can be remapped. A commenter says it appears to be the same issue as #31094, which tracks inability to remap modifier-only shortcuts, but current behavior and whether the two different-side modifiers are the same limitation are unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.80.1 and Windows 11 with Spanish and English configurations.",
+      "The attempted action is Ctrl (Left)+Shift (Right) to Disabled; combinations such as Ctrl+J and Ctrl+Alt+comma reportedly work.",
+      "A commenter identifies #31094 as a likely same issue; #31094 remains open and covers modifier-only shortcut remapping generally.",
+      "The issue is open and unassigned; no linked fix was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:02:41Z"
-  }
+    "recommended_action": "Ask whether the exact modifier-only action is still rejected on current stable and whether #31094's general modifier-only scenario covers it; avoid treating it as fixed by an unrelated similar issue.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:38Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds still reject the mapping, Keyboard Manager may prohibit modifier-only triggers for Disable actions or reject the combination because it overlaps an OS/input-language shortcut. Current rules and behavior need confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Allow supported modifier-only shortcuts to be disabled",
+      "root_cause": "The Disable action may reject modifier-only triggers even when the user intends to suppress a specific Ctrl/Shift combination. Alternatively, Windows may reserve the combination for input-language switching; the report does not establish which rule blocks it.",
+      "plan": [
+        "Confirm the exact combination and rejection on current stable, including whether the target app changes the result.",
+        "Compare with the broader modifier-only case tracked by #31094 and check whether the action is OS-reserved.",
+        "If the combination is not reserved and is a supported trigger, update Disable-action validation to accept it.",
+        "Add regression tests for left/right-specific modifier-only triggers and rejected reserved combinations."
+      ],
+      "verification": [
+        "Verify Ctrl (Left)+Shift (Right) can be disabled when the target combination is supported.",
+        "Verify the mapping does not suppress unrelated Ctrl/Shift combinations.",
+        "Verify genuinely reserved system shortcuts remain rejected with a clear explanation."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The exact rejected mapping and successful ordinary-key comparisons are useful, but current validation behavior and OS reservation are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Disable action reportedly rejects Ctrl (Left)+Shift (Right), while shortcuts containing ordinary keys are accepted.",
+    "known_information": [
+      "The report lists PowerToys 0.80.1 on Windows 11 with Spanish and English configurations.",
+      "Ctrl (Left)+Shift (Right) to Disabled is rejected; Ctrl+J and Ctrl+Alt+comma can be remapped.",
+      "A commenter says the report may be the same as #31094, an open issue about modifier-only shortcut remapping."
+    ],
+    "inferences": [
+      "The combination may be blocked by modifier-only validation or by an OS-reserved input-language shortcut; the report does not distinguish them."
+    ],
+    "analysis": "The current validation rules need confirmation before classifying this as a bug or an intentional limitation. #31094 is relevant tracking context but is not a linked fix.",
+    "initial_investigation": [
+      "Read the report and both comments, including the exact mapping and comparison shortcuts.",
+      "Reviewed #31094, which remains open and describes modifier-only shortcut remapping generally; no covering fix is linked."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the exact Ctrl (Left)+Shift (Right) to Disabled mapping is still rejected on current stable, and whether it is an OS-reserved shortcut",
+        "why_needed": "This determines whether the failure is current and whether the mapping should be accepted or clearly rejected as reserved.",
+        "how_to_collect": "On current stable, recreate the exact mapping and report the PowerToys version, whether the same behavior occurs in a target app, and whether Windows uses the combination for input-language switching.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-32683-confirm-modifier-only-disabled",
+      "type": "request_info",
+      "label": "Confirm modifier-only shortcut rejection",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for specifying Ctrl (Left)+Shift (Right) to Disabled and the ordinary-key combinations that do work. Could you confirm whether the exact modifier-only mapping is still rejected on current stable PowerToys, include the version, and say whether Windows uses that combination for input-language switching? This will help distinguish validation limits from an OS-reserved shortcut."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the modifier-only validation investigation"
+    }
+  ]
 }

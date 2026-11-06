@@ -1,33 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 31403,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:04:40Z",
+  "generated_at": "2026-11-05T13:31:46Z",
+  "evaluated_at": "2026-11-05T13:31:46Z",
+  "source_updated_at": "2026-10-11T16:48:41Z",
+  "title": "Remapping bluetooth headphone buttons cause win, shift, ctrl etc keys to stick / lock",
+  "url": "https://github.com/microsoft/PowerToys/issues/31403",
+  "author": "xlm13x",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "One-shot remap can retain target modifiers",
+    "detail": "Current main keeps target shortcut modifiers down after the source action key is released, until another unrelated event. That behavior matches the reported stuck Win key; related issue #19628 has newer Bluetooth media-key reports."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Reproduce the Bluetooth Play/Pause-to-Win+R case on a current build and design a targeted release path for one-shot media-key shortcut remaps.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Current main explicitly leaves target modifiers held after the source action key is released for a non-chord shortcut remap, releasing them only on a later unrelated key event. The report says a Bluetooth Play/Pause-to-Win+R mapping leaves Win held, and the linked historical issue has newer reports of Bluetooth media-key remaps leaving Ctrl, Alt, and Shift engaged. This is a plausible, source-backed root cause that should be verified before changing the intentional modifier-lifetime behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.78.0 and says mapping a Bluetooth headset Play/Pause button to Win+R opens Run but leaves Win active; pressing E then triggers Win+E. The reporter reproduced it on two machines and in both admin and user modes.",
+      "The reporter linked #19628 as a similar Bluetooth media-key modifier-stuck issue. That thread has later reports on v0.94.2 and in August 2026 of Play/Pause mappings leaving Ctrl, Alt, and Shift engaged.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardEventHandlers.cpp:1113-1120 documents that for a non-chord shortcut remap, the target action key is released while target modifiers are kept down until a later unrelated key event.",
+      "No linked pull request or fix covering either report was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:04:40Z"
-  }
+    "recommended_action": "Reproduce with a current build and design a one-shot media-key path that balances target modifier state at the source-key release without regressing remaps that intentionally preserve held modifiers.",
+    "evaluated_at": "2026-11-05T13:31:46Z",
+    "source_updated_at": "2026-10-11T16:48:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current handler's documented deferred modifier release matches the stuck-modifier symptom, and later reports in the related issue support continued impact. A current-build reproduction must confirm that this one-shot path is responsible before implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Balance target modifiers after one-shot media-key shortcuts",
+      "root_cause": "For a non-chord shortcut remap, the current handler sends key-up for the target action key but deliberately keeps target modifiers down until a later unrelated input event. A Bluetooth media-key remap to Win+R can therefore leave Win active or let a subsequent key be interpreted with the stale modifier state.",
+      "plan": [
+        "Reproduce Play/Pause-to-Win+R on a current build and compare with the Play/Pause-to-Ctrl+F10 or Alt+Shift+A cases reported in related issue #19628.",
+        "Trace the source media-key down/up events and the target shortcut's injected modifier/action events, confirming when the target modifier is released.",
+        "Adjust the one-shot remap state so target modifiers are released when the source media key is released, while preserving any intentional hold behavior for remaps whose source key remains physically down.",
+        "Add regression tests for Bluetooth media-key-to-Win+R and multi-modifier shortcuts; assert that a subsequent E key does not invoke Win+E and that no modifier remains logically pressed."
+      ],
+      "verification": [
+        "After Play/Pause opens Run, pressing E does not launch Explorer and the on-screen keyboard shows no stuck Win modifier.",
+        "Play/Pause-to-Alt+Shift+A and the related reported modifier combinations leave no Ctrl, Alt, or Shift state stuck after the source button is released.",
+        "Existing shortcut and held-key remappings retain their intended key-down/key-up behavior."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The source explicitly defers target-modifier release and the reported symptom is a stuck target modifier, with later related reports. Current-version reproduction is still needed to verify the exact event path and preserve intended hold semantics."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mapping a Bluetooth headset Play/Pause button to Win+R opens the Run dialog but can leave Win active, causing later keys to behave as Windows shortcuts.",
+    "known_information": [
+      "The issue reports PowerToys 0.78.0 installed from GitHub and running as administrator.",
+      "The reporter maps Play/Pause to Win+R; after the Run dialog opens, Win remains stuck and pressing E launches Explorer. The reporter observed this on two machines in admin and user modes.",
+      "The reporter links #19628 as a similar closed issue; later comments there report Bluetooth media-key remaps leaving Ctrl, Alt, or Shift engaged on v0.94.2 and in August 2026.",
+      "Current main's non-chord shortcut-remap key-up branch releases the target action key but intentionally defers releasing target modifiers until another unrelated key event."
+    ],
+    "inferences": [
+      "The deferred modifier-release policy may leave a target modifier active for a one-shot media-key event or may allow the next physical key to be processed while that stale modifier is active.",
+      "The exact behavior should be reproduced on a current build because the direct report is from v0.78.0 and the related current-version report is on a separate issue."
+    ],
+    "analysis": "The current handler's documented behavior provides a concrete path matching the stuck-Win symptom: it keeps target modifiers down after releasing the target action key for non-chord shortcut remaps. The related issue has later Bluetooth media-key confirmations but no linked fix or active owner. A focused reproduction and key-state trace should establish whether the deferred release is the cause and how to avoid changing intentional held-modifier behavior.",
+    "initial_investigation": [
+      "Read the live issue body and both comments, including the reporter's link to #19628.",
+      "Read #19628 and its later comments; it contains the same Bluetooth media-key/stuck-modifier class with v0.94.2 and 2026 follow-up reports, but no linked pull request or fix.",
+      "Inspected upstream main at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: KeyboardEventHandlers.cpp:1113-1120."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether a current PowerToys build still leaves the target modifier down after the Bluetooth media key is released.",
+        "why_needed": "The original report uses v0.78.0, and a current reproduction is needed to confirm that the present deferred-release branch causes the symptom.",
+        "how_to_collect": "Repeat the reported Play/Pause-to-Win+R mapping on a current build and check modifier state after the source button is released."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve media-key modifier-release design",
+      "note": "Preserve intentional held-modifier behavior while ensuring one-shot Bluetooth media-key shortcuts do not leave their target modifier active."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Bluetooth media-key modifier state",
+      "note": "Use the reported Win+R mapping and check the target modifier after release; related issue #19628 provides additional multi-modifier cases.",
+      "reproduce": {
+        "title": "Check modifier release after a Bluetooth media-key shortcut",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.94.2 or newer; record the exact build",
+        "prerequisites": [
+          "Windows with Keyboard Manager enabled",
+          "Bluetooth headset with a Play/Pause media button",
+          "On-Screen Keyboard available to inspect modifier state"
+        ],
+        "setup": [
+          "Map the headset Play/Pause media key to Win+R."
+        ],
+        "steps": [
+          "Press Play/Pause and confirm that the Run dialog opens.",
+          "Release the headset button and inspect whether Win remains active using On-Screen Keyboard.",
+          "Press E and confirm whether Explorer opens unexpectedly.",
+          "As an additional control, test a Play/Pause-to-Alt+Shift+A mapping."
+        ],
+        "expected_result": "The mapped shortcut runs, then all target modifiers return to their prior state; pressing E afterward does not invoke Win+E.",
+        "setup_prompt": "On a current Windows test machine, map a Bluetooth headset's Play/Pause button to Win+R, inspect modifier state after release, and verify that pressing E does not open Explorer."
+      }
+    }
+  ]
 }

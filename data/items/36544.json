@@ -1,33 +1,112 @@
 {
+  "schemaVersion": 5,
   "number": 36544,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remapping ALT+<key> to DEL doesn't fully work : CTRL+ALT+<key> triggers CTRL+ALT+DEL instead of CTRL+DEL",
+  "url": "https://github.com/microsoft/PowerToys/issues/36544",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:26:00Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T19:20:00Z",
+  "evaluated_at": "2026-11-05T19:20:00Z",
+  "source_updated_at": "2026-10-11T16:47:49Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm modifier-remap behavior",
+    "detail": "The reported CTRL+ALT+key result is reproducible from the description, but the report is from PowerToys 0.87.1."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says remapping ALT+X to DEL causes CTRL+ALT+X to invoke the Windows CTRL+ALT+DEL screen instead of CTRL+DEL. The report is open and unassigned with no comments or attachments and lists PowerToys 0.87.1. A cross-reference to #37363 is not a covering fix: that issue and its discussion concern a Send Text mapping and explicitly distinguish the key-remapping behavior here. Current-version behavior is unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.87.1 and gives the ALT+X to DEL remap and CTRL+ALT+X reproduction.",
+      "The reporter says the actual result is CTRL+ALT+DEL and says the issue is not specific to X.",
+      "The issue is open and unassigned, with no comments or attachments.",
+      "The linked #37363 report concerns Send Text; its discussion distinguishes that behavior from key-to-key remapping."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:26:00Z"
-  }
+    "recommended_action": "Ask whether the key-to-key remap still behaves this way on current stable PowerToys and whether the exact-match option changes the result.",
+    "evaluated_at": "2026-11-05T19:20:00Z",
+    "source_updated_at": "2026-10-11T16:47:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds reproduce the behavior, the key-remapping path may be preserving the original Alt modifier while applying the DEL target. The report establishes the unexpected result but does not confirm the current behavior or the handling of additional modifiers."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply key remaps without retaining the remapped source modifier",
+      "root_cause": "The reported CTRL+ALT+X result suggests the original Alt state may survive while ALT+X is remapped to DEL, producing CTRL+ALT+DEL. The current event path and current-build behavior have not been verified.",
+      "plan": [
+        "Confirm the exact source remap, exact-match setting, and result on current stable PowerToys.",
+        "If reproduced, trace modifier-state handling when a modifier-plus-key source is remapped while an additional modifier is held.",
+        "Correct the event transformation so the resulting chord follows the documented remapping semantics without swallowing unrelated modifier combinations.",
+        "Add regression coverage for ALT+X to DEL with CTRL held and for ordinary ALT+X and CTRL+DEL behavior."
+      ],
+      "verification": [
+        "Verify ALT+X remapped to DEL plus CTRL produces CTRL+DEL rather than CTRL+ALT+DEL.",
+        "Verify ordinary CTRL+ALT+DEL behavior remains available when no matching remap applies.",
+        "Verify the result with both exact-match configuration states on current stable PowerToys."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The symptom and expected result are explicit, but the report predates current releases and does not establish how the exact-match option or current modifier processing behaves."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remapping ALT+X to DEL reportedly leaves CTRL+ALT+X opening the CTRL+ALT+DEL system screen instead of producing CTRL+DEL.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1 installed from the Microsoft Store.",
+      "The reporter says the issue also occurs with other non-modifier keys in place of X.",
+      "The issue is open and unassigned with no comments or attachments.",
+      "The cross-referenced #37363 report concerns a Send Text action; a commenter explicitly distinguishes it from this key-to-key remapping case."
+    ],
+    "inferences": [
+      "The original Alt modifier may remain active after the source chord is remapped, but the current event path has not been inspected."
+    ],
+    "analysis": "The linked issue is similar in its overlapping Alt shortcuts but describes a different action type, so it does not establish duplicate coverage. The most useful next evidence is whether this key-to-key case remains on current stable and how the exact-match setting affects it.",
+    "initial_investigation": [
+      "Read the live issue body, labels, state, assignees, and full discussion; there are no comments or attachments.",
+      "Checked the cross-reference to #37363 and its discussion; it describes Send Text and explicitly distinguishes the key-to-key case."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether ALT+X to DEL still causes CTRL+ALT+X to invoke CTRL+ALT+DEL on current stable PowerToys",
+        "why_needed": "The report is from 0.87.1, so a later release may already have changed modifier remapping.",
+        "how_to_collect": "Retest the described remap on current stable and report the exact PowerToys version and observed result.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether enabling the exact-match option changes the result",
+        "why_needed": "This determines whether source-chord matching is involved before investigating modifier transformation.",
+        "how_to_collect": "Repeat the same test with the remap's exact-match option enabled and disabled, if available in the tested version.",
+        "evidence_type": "settings_permissions"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36544-confirm-modifier-remap",
+      "type": "request_info",
+      "label": "Confirm modifier-remap behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the exact ALT+X to DEL example and for noting that it is not specific to X. The linked #37363 discussion concerns Send Text rather than this key-to-key remap, so it does not establish that this behavior is covered. Could you confirm:\n1. Whether the same result still occurs on current stable PowerToys and the exact version tested.\n2. Whether the remap's exact-match option changes the result, if that option is available in your version.\n\nNo diagnostic upload is needed for this clarification."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the modifier-remap fix direction"
+    }
+  ]
 }

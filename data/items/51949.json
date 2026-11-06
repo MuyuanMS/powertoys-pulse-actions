@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 51949,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "actionable_design",
+  "pending_author": false,
+  "owes": "us",
+  "generated_at": "2026-11-06T01:08:19Z",
+  "evaluated_at": "2026-11-06T01:08:19Z",
+  "source_updated_at": "2026-11-05T23:33:45Z",
+  "title": "[CmdPal] Microsoft.CmdPal.UI.exe crashes on startup with System.NotImplementedException in AppLifecycle.GetActivatedEventArgs when running elevated / EnableLUA=0",
+  "url": "https://github.com/microsoft/PowerToys/issues/51949",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The exception and first call site are explicit in the report, and current main contains the same unguarded call in DecideRedirection plus a second call in OnLaunched. A narrow unsupported-activation fallback is actionable, with launch semantics requiring validation.",
+    "evidence": [
+      "The issue reports System.NotImplementedException/E_NOTIMPL from GetActivatedEventArgs in Program.DecideRedirection under elevated EnableLUA=0 startup.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 calls GetActivatedEventArgs unguarded in Program.cs::DecideRedirection.",
+      "Current upstream main also calls GetActivatedEventArgs unguarded in App.xaml.cs::OnLaunched, so a fix limited to the reported first call would leave another failure path.",
+      "The issue gives an exact Windows build, package version, installation method, and startup sequence."
+    ],
+    "recommended_action": "Add a narrow unsupported-activation fallback at both startup call sites, preserve supported redirection, and validate it in a disposable EnableLUA=0 environment.",
+    "evaluated_at": "2026-11-06T01:08:19Z",
+    "source_updated_at": "2026-11-05T23:33:45Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The failure mechanism is confirmed, but the correct launch context when AppInstance activation arguments are unavailable needs a focused compatibility test."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle unavailable activation arguments during CmdPal startup",
+      "root_cause": "Program.DecideRedirection calls AppInstance.GetCurrent().GetActivatedEventArgs without handling the E_NOTIMPL/NotImplementedException reported for elevated processes with EnableLUA=0. App.OnLaunched repeats the same unguarded call, so a first-call-only catch would not complete startup.",
+      "plan": [
+        "Introduce a narrow, shared activation-argument retrieval path that handles only the unsupported NotImplementedException/E_NOTIMPL case and leaves unrelated failures visible.",
+        "When activation arguments are unavailable, skip redirection for that launch and start CmdPal through a safe cold-launch path; update OnLaunched to consume the shared result or normal launch arguments instead of calling the unsupported API again.",
+        "Preserve existing activation redirection whenever the API returns arguments, and document which launch data cannot be forwarded in the unsupported case.",
+        "Add focused tests for the unsupported activation-argument path and supported single-instance activation forwarding."
+      ],
+      "verification": [
+        "In a disposable Windows 11 VM snapshot, run the reported elevated/EnableLUA=0 startup scenario and verify CmdPal reaches its UI without an unhandled exception or modal crash dialog.",
+        "Repeat with normal UAC and a second activation to confirm existing single-instance redirection still works.",
+        "Run focused CmdPal startup tests covering available and unavailable activation arguments."
+      ],
+      "confidence": {
+        "score": 77,
+        "level": "yellow",
+        "rationale": "The reported stack and current source establish the failing call and a second unguarded call, but the safe cold-launch/activation fallback must be validated in the affected environment."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette startup can terminate when AppInstance.GetActivatedEventArgs throws NotImplementedException under an elevated token with EnableLUA=0.",
+    "known_information": [
+      "The reporter gives a repeatable Windows 11 25H2 startup scenario with PowerToys 0.102.3001, CmdPal enabled, elevation, and EnableLUA=0.",
+      "The reported Event ID 1026 stack identifies AppInstance.GetActivatedEventArgs called from Program.DecideRedirection as the throwing call.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 calls GetActivatedEventArgs without a guard in Program.DecideRedirection and calls it again in App.OnLaunched."
+    ],
+    "inferences": [
+      "Catching only the first call would leave a second unhandled failure when the application reaches OnLaunched.",
+      "When activation arguments are unavailable, startup must avoid redirecting an activation it cannot forward while preserving supported single-instance behavior."
+    ],
+    "analysis": "The root exception and first call site are directly supported by the report and current source. Handle the expected unsupported-API path at both call sites and define a safe cold-launch fallback without swallowing unrelated exceptions or regressing supported activation forwarding.",
+    "initial_investigation": [
+      "Read the full issue report and stack trace; no follow-up comments were present in the live snapshot.",
+      "Read Program.cs and App.xaml.cs from current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368; both independently call GetActivatedEventArgs without a guard.",
+      "No product code was changed and no elevated/EnableLUA=0 reproduction was run."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve CmdPal startup fallback design",
+      "design": {
+        "title": "Handle unavailable activation arguments during CmdPal startup"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify elevated CmdPal startup fallback",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Reported PowerToys 0.102.3001 / Microsoft.CommandPalette 0.13.13001; candidate build for verification",
+        "prerequisites": [
+          "Use a disposable Windows 11 25H2 VM or snapshot with CmdPal enabled.",
+          "Configure the reported elevated startup and EnableLUA=0 only in that disposable test environment."
+        ],
+        "steps": [
+          "Reboot or sign in and observe whether Microsoft.CmdPal.UI.exe reaches the UI.",
+          "After the fix, repeat the same startup and confirm no unhandled NotImplementedException or crash dialog occurs.",
+          "In a normal-UAC run, launch a second activation and confirm it is still forwarded to the existing CmdPal instance."
+        ],
+        "expected_result": "CmdPal starts safely when activation arguments are unsupported and retains normal redirection when they are available."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Startup crash",
+    "detail": "The reported activation API exception is unhandled during CmdPal startup."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Review startup fallback design",
+    "reason": "Handle only the unsupported activation-argument case and preserve normal single-instance behavior."
+  }
+}

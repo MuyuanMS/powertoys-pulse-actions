@@ -1,33 +1,115 @@
 {
+  "schemaVersion": 5,
   "number": 37803,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Wrong Keyboard Manager shortcut",
+  "url": "https://github.com/microsoft/PowerToys/issues/37803",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:13:53Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:36:07Z",
+  "evaluated_at": "2026-11-05T22:36:07Z",
+  "source_updated_at": "2026-10-11T16:46:55Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs the exact Browser Search mapping",
+    "detail": "The v0.89.0 report expects selected-text browser search but says Windows Search opens; the source chord and target mapping are not recorded."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Compare the mapped and physical Browser Search keys",
+    "reason": "A current test can distinguish an OS-native Browser Search action from a Keyboard Manager remap failure and clarify what behavior the target key provides."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-37803-browser-search-comparison",
+      "type": "request_info",
+      "label": "Compare the mapped and physical Browser Search keys",
+      "primary": true,
+      "comment": {
+        "body": "Your v0.89.0 report says the Browser Search mapping opens Windows 11 Search instead of searching selected text in a new tab, while other Browser actions work. Could you confirm on v0.102.3001 the exact source chord and target shown in the editor, which browser was active, and whether an unmapped physical Browser Search key opens the same Windows panel? This separates the key's native OS action from the Keyboard Manager mapping. The related open #31524 describes the physical Browser Search key also invoking a Windows action alongside a remap, but it does not establish that this target-key scenario is the same defect."
+      }
+    },
+    {
+      "id": "issue-37803-approve-browser-search-investigation",
+      "type": "approve_design",
+      "label": "Approve Browser Search routing investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter wants a Browser Search command to search selected text in the active browser, but the report does not include the source chord, exact target entry, browser, or whether the physical Browser Search key has the same behavior. Current open #31524 reports a related but distinct case where the physical search key invokes a Windows panel in addition to the remapped shortcut. The available evidence does not establish whether #37803 is a remap-routing bug or an expectation about what the Browser Search virtual key does.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys v0.89.0 from the Microsoft Store and says Windows 11 Search opens instead of a new browser tab searching selected text.",
+      "The reporter says other Browser actions, including Browser Refresh and Browser Home, work as intended.",
+      "The issue has no comments, assignees, browser name, exact source chord, or current-version retest.",
+      "Open #31524 describes the physical Browser Search key invoking a Windows panel alongside a remapped shortcut; its source-key scenario does not prove the target-key behavior here."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:13:53Z"
+    "recommended_action": "Request the exact mapping and a current comparison between the mapped shortcut and an unmapped physical Browser Search key.",
+    "evaluated_at": "2026-11-05T22:36:07Z",
+    "source_updated_at": "2026-10-11T16:46:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If a remapped Browser Search target is escaping Keyboard Manager and invoking Windows Search instead of reaching the focused browser, a narrow routing or suppression defect may exist. The exact mapping and native-key comparison are needed before attributing the behavior to PowerToys."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Route Browser Search remaps to the focused application",
+      "root_cause": "The VK_BROWSER_SEARCH target may be handled by the Windows shell rather than the focused browser, or the reported selected-text behavior may not be provided by that virtual key. The current report does not distinguish these cases.",
+      "plan": [
+        "Reproduce the reported target mapping on v0.102.3001 with selected text in the reporter's browser and compare it with an unmapped physical Browser Search key.",
+        "Trace whether Keyboard Manager injects VK_BROWSER_SEARCH and whether Windows Search or the browser consumes the event.",
+        "If the remap is being routed to the shell, adjust the narrow hook/injection path so the mapped target reaches the focused application without invoking the native panel.",
+        "Add a regression test for Browser Search target delivery and confirm that unrelated Browser keys remain unchanged."
+      ],
+      "verification": [
+        "With selected text in the supported browser, the configured mapping produces the intended browser behavior and does not open Windows Search.",
+        "An unmapped physical Browser Search key retains its documented native behavior."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The symptom is specific, but the exact mapping is missing and a related issue shows that the physical Browser Search key can have separate Windows behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Browser Search mapping reportedly opens Windows 11 Search instead of searching selected text in a new browser tab.",
+    "known_information": [
+      "The issue lists PowerToys v0.89.0 from the Microsoft Store and says it was not run as administrator.",
+      "The reporter expected selected text to be searched in a new active-browser tab.",
+      "Windows 11 Search reportedly opens instead; the reporter says other Browser Refresh and Browser Home mappings work.",
+      "There are no comments, assignees, browser name, source chord, or exact target mapping.",
+      "Open #31524 concerns a physical Browser Search source key that can invoke a Windows panel alongside a remapped shortcut; that is related but not the same described mapping direction."
+    ],
+    "inferences": [
+      "Windows may be consuming a Browser Search virtual-key event, but the issue does not establish whether the configured mapping targets that key or whether the event is also delivered to Windows.",
+      "The selected-text search expectation may require browser-specific behavior that a virtual-key remap alone does not provide."
+    ],
+    "analysis": "The distinction between the source chord, the Browser Search target, and the physical Browser Search key is decisive. Ask for the exact current mapping and compare the mapped shortcut with the native key before proposing a change to event routing or treating the browser-specific selected-text behavior as supported.",
+    "initial_investigation": [
+      "Refreshed the complete issue body and confirmed it has no comments or assignees.",
+      "Read open #31524, including its discussion that the physical Browser Search key can trigger a Windows action as well as a Keyboard Manager remap.",
+      "Read closed #23669, which describes a similar physical search-key conflict but was closed after an author-feedback timeout; it does not validate this target-key scenario.",
+      "Searched current open reports for Browser Search; no linked fix or PR was found for #37803."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact source chord and target entry, the active browser, and whether the same Windows Search panel opens when an unmapped physical Browser Search key is pressed",
+        "why_needed": "These facts distinguish Keyboard Manager routing from the key's native Windows action and determine whether the selected-text expectation is supported by the configured virtual key.",
+        "how_to_collect": "On v0.102.3001, report the exact editor mapping and compare it with the physical Browser Search key while selected text is open in the affected browser.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

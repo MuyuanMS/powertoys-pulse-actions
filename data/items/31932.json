@@ -2,67 +2,109 @@
   "schemaVersion": 5,
   "number": 31932,
   "kind": "issue",
-  "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "author": "cheezmil",
-  "generated_at": "2026-09-14T00:53:55.2254937Z",
-  "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-  "source_updated_at": "2024-03-27T13:42:19Z",
+  "repository": "microsoft/PowerToys",
   "title": "Shortcut key long text does not work",
   "url": "https://github.com/microsoft/PowerToys/issues/31932",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 0,
+  "generated_at": "2026-11-05T18:55:00Z",
+  "evaluated_at": "2026-11-05T18:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:49Z",
   "status": {
-    "glyph": "ℹ️",
-    "label": "Waiting on author",
-    "detail": "Revalidated during scheduled update run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Clarify long-text failure",
+    "detail": "The report says short text works and long text does not, but omits its length and what happens in the target application."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "Revalidation determined status 'waiting_on_author' based on current assignees, labels, and discussion.",
+    "status": "needs_information",
+    "rationale": "The reporter says a Keyboard Manager shortcut using Operation -> Send Message can send short text such as \"123\" but not a long string. The issue has no comments or attachments and reports PowerToys 0.79.0. It is open and unassigned; no request to the reporter is outstanding, so the prior waiting-on-author state is unsupported.",
     "evidence": [
-      "Title: Shortcut key long text does not work",
-      "Assignees: ",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage"
+      "The issue identifies the Keyboard Manager shortcut operation as Send Message.",
+      "The reporter says a short string works while a long text does not, but gives no length, target application, or description of whether text is truncated, delayed, or absent.",
+      "The report lists PowerToys 0.79, has no comments or attachments, and is open and unassigned."
     ],
-    "recommended_action": "Wait for author feedback.",
-    "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-    "source_updated_at": "2024-03-27T13:42:19Z"
+    "recommended_action": "Ask for the current-version result, approximate text length, target application, and whether the text is missing or partially inserted; do not request the reporter's private prompt text.",
+    "evaluated_at": "2026-11-05T18:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:49Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Revalidated issue in stage 'waiting_on_author': a repository fix attempt is not yet actionable."
+    "status": "proposed",
+    "rationale": "A long-text mapping could fail while saving, serializing, or emitting text, but the report does not show which stage fails. A minimal sanitized reproduction is needed before choosing among those paths."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Preserve long Send Message text in shortcut mappings",
+      "root_cause": "The report suggests behavior changes with text length, but does not establish whether the mapping is rejected, truncated, or fails during text emission. The cause remains an unverified hypothesis.",
+      "plan": [
+        "Confirm the approximate failing length, target application, and whether the mapping saves successfully.",
+        "Reproduce with a non-sensitive test string on current stable PowerToys and identify whether loss occurs in configuration, serialization, or input emission.",
+        "Correct the specific length-sensitive path while preserving existing short-text behavior.",
+        "Add regression coverage for short, long, and non-ASCII text in the affected operation."
+      ],
+      "verification": [
+        "Verify short and long non-sensitive test strings are saved and emitted completely in the reported target application.",
+        "Verify the result is not truncated or duplicated and that existing shortcut mappings still work.",
+        "Record the tested PowerToys version and destination application."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "Only the short-versus-long contrast is known; neither the failure stage nor the length threshold is reported."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated PowerToys bug report: Shortcut key long text does not work",
+    "summary": "A Keyboard Manager Send Message shortcut reportedly emits short text but fails for longer text.",
     "known_information": [
-      "Title: Shortcut key long text does not work",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Upstream issue revalidated during scheduled update run."
+      "The report describes a Keyboard Manager shortcut using Operation -> Send Message.",
+      "The reporter says \"123\" works while a longer string does not.",
+      "The issue lists PowerToys 0.79, is open and unassigned, and has no comments or attachments."
     ],
     "inferences": [
-      "Behavior may depend on local environment or configuration."
+      "A length-sensitive failure could occur while saving or emitting the text, but the report does not identify which stage fails."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The prior artifact marked this as waiting on the author despite there being no outstanding request or author-response comment. The next useful evidence is a current-version test with a non-sensitive string, its approximate length, and the observable failure in the target application; private prompt text is unnecessary.",
     "initial_investigation": [
-      "Read issue metadata and comments for issue.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the live issue body, labels, state, assignees, and full discussion; there are no comments or attachments.",
+      "Searched related PowerToys issue titles for long-text Keyboard Manager reports; no matching duplicate surfaced."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Approximate length and whether the long text is rejected, truncated, duplicated, or absent in the target application",
+        "why_needed": "This distinguishes a configuration limit from a text-emission failure without requiring the reporter's private content.",
+        "how_to_collect": "Use a non-sensitive test string and report its approximate character count, the destination application, and the observed result.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether the failure persists on current stable PowerToys",
+        "why_needed": "The report is from PowerToys 0.79, so a later release may already have changed the behavior.",
+        "how_to_collect": "Retest the same mapping on current stable and state the exact PowerToys version.",
+        "evidence_type": "powertoys_version"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "issue-31932-confirm-long-text",
+      "type": "request_info",
+      "label": "Confirm long-text mapping behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for noting that a short Send Message string such as `123` works while longer text does not. To tell whether the mapping is rejected or text is lost during emission, could you retest on current stable PowerToys and share:\n1. The approximate character count, destination application, and whether the long text is absent, truncated, duplicated, or otherwise changed. A non-sensitive test string is sufficient; please do not share private prompt text.\n2. The exact PowerToys version used for that test.\n\nNo diagnostic upload is needed for these details."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the long-text mapping fix direction"
+    }
+  ]
 }

@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 40724,
+  "title": "Keyboard manager newly doesn't detect Airplane mode key",
+  "url": "https://github.com/microsoft/PowerToys/issues/40724",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:55:06Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:39:51.647Z",
+  "generated_at": "2026-11-05T14:39:51.647Z",
+  "evaluated_at": "2026-11-05T14:39:51.647Z",
+  "source_updated_at": "2026-10-11T16:48:00Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting current Lenovo hotkey details",
+    "detail": "PowerToys 0.92.1 captured the airplane-mode key as Win+A previously, but it now toggles airplane mode without being detected. The laptop model and current-build behavior are unconfirmed."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter describes a Lenovo IdeaPad 5 Pro 14ARH7 where the airplane-mode/F8 button previously appeared as Win+A but now toggles airplane mode directly and is not captured by Keyboard Manager; Fn+F8 is recognized as F8. The only tested build is 0.92.1 on Windows 11 build 26100.4484. The key may be handled as an OEM/ACPI hotkey rather than a standard keyboard event, but a current-build test and exact Fn mode are needed before concluding it is unsupported.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.92.1, Lenovo IdeaPad 5 Pro 14ARH7, and Windows 11 build 26100.4484.",
+      "The airplane-mode button previously appeared as Win+A and was remapped; now it toggles airplane mode directly and is not detected, while Fn+F8 is recognized as F8.",
+      "The issue has no comments or diagnostic archive and remains open and unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:55:06Z"
-  }
+    "recommended_action": "Ask for a v0.102.3001 retest with the exact Fn/hotkey mode and a fresh /bugreport if the physical airplane-mode key remains undetected.",
+    "evaluated_at": "2026-11-05T14:39:51.647Z",
+    "source_updated_at": "2026-10-11T16:48:00Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The key may have changed from a standard Win+A sequence to a firmware/OS airplane-mode hotkey that Keyboard Manager cannot observe, but no current-build capture or diagnostic confirms the event path."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Support the airplane-mode key if Windows exposes it as a keyboard event",
+      "root_cause": "The laptop's airplane-mode button may now be handled by firmware or Windows as a system hotkey rather than the Win+A keyboard sequence previously observed, leaving Keyboard Manager with no remappable key event.",
+      "plan": [
+        "Retest on v0.102.3001 with the stated Lenovo model and Fn/hotkey mode, comparing the physical airplane-mode button with Fn+F8 in the remap capture dialog.",
+        "Use the fresh diagnostic to confirm whether Windows delivers a keyboard event for the physical button.",
+        "If a remappable event is delivered but ignored, add support for that event and regression coverage; if the firmware/OS consumes it before the hook, document the boundary rather than adding a code workaround."
+      ],
+      "verification": [
+        "Verify the physical airplane-mode button is captured and can be remapped when Windows exposes a keyboard event.",
+        "Confirm Fn+F8 behavior and airplane-mode system behavior remain unchanged."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The report identifies a device and distinguishes the physical hotkey from Fn+F8, but it is from 0.92.1 and does not show what event reaches Windows on a current build."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Lenovo IdeaPad airplane-mode/F8 button that previously appeared as Win+A now toggles airplane mode directly and is not detected for remapping.",
+    "known_information": [
+      "The report lists PowerToys 0.92.1, Lenovo IdeaPad 5 Pro 14ARH7, and Windows 11 build 26100.4484.",
+      "The reporter says the physical airplane-mode key was previously recognized as Win+A, but now toggles airplane mode and is not detected.",
+      "Fn+F8 is recognized as F8; the report says the physical hotkey is not.",
+      "No current-build diagnostic or comment is available."
+    ],
+    "inferences": [
+      "The physical key may now be handled by firmware or Windows as an airplane-mode system hotkey instead of emitting the Win+A sequence; the current event path is unknown."
+    ],
+    "analysis": "The report has enough detail to distinguish the physical airplane-mode key from Fn+F8, but it predates the latest stable release and does not establish whether the current Windows/firmware path reaches Keyboard Manager. A current capture test and diagnostic should determine whether this is a remappable keyboard event or an OEM system hotkey outside the hook.",
+    "initial_investigation": [
+      "Read the complete issue body and noted the Lenovo model, Windows build, former Win+A behavior, current airplane-mode toggle, and Fn+F8 control.",
+      "Confirmed there are no comments or diagnostic attachments and no current-build retest.",
+      "No linked duplicate or confirmed fix is established by the issue."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Whether the physical airplane-mode key is detected in the Keyboard Manager capture dialog on v0.102.3001, and the laptop's Fn/hotkey mode.",
+        "why_needed": "The physical key now toggles airplane mode while Fn+F8 is detected, so the event path may differ from a standard F8 key.",
+        "how_to_collect": "On v0.102.3001, open Remap a key or Remap a shortcut, test the physical airplane-mode button and Fn+F8 separately, and state the current Fn/hotkey mode."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive if the physical airplane-mode key remains undetected on v0.102.3001.",
+        "why_needed": "A current diagnostic is needed to determine whether an event reaches Keyboard Manager or is consumed by firmware/Windows.",
+        "how_to_collect": "Immediately after testing the undetected key, add a comment containing /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the airplane-mode key event investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest the Lenovo airplane-mode key",
+      "comment": {
+        "target": "issue",
+        "number": 40724,
+        "body": "Thanks for identifying the IdeaPad 5 Pro 14ARH7 and noting that Fn+F8 is detected while the physical airplane-mode key toggles airplane mode. The report lists PowerToys 0.92.1. Could you please:\n1. Retest on the latest stable v0.102.3001 and state the laptop's current Fn/hotkey mode.\n2. In the Keyboard Manager capture dialog, test the physical airplane-mode button and Fn+F8 separately and report what each is detected as.\n3. If the physical key remains undetected, comment `/bugreport` immediately after the test.\nThis will show whether Windows delivers a remappable keyboard event or handles the button as a firmware/system hotkey."
+      }
+    }
+  ]
 }

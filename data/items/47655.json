@@ -2,74 +2,109 @@
   "schemaVersion": 5,
   "number": 47655,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager: remaps with alt as the only modifier key have to be pressed twice before it work",
+  "url": "https://github.com/microsoft/PowerToys/issues/47655",
   "track": "fix",
-  "stage": "triage",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-21T18:11:45Z",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design",
-      "description": "Approve fork-side implementation design for issue 47655"
-    }
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "confidence": "Medium",
+  "comments": 5,
+  "generated_at": "2026-11-05T20:40:28Z",
+  "evaluated_at": "2026-11-05T20:40:28Z",
+  "source_updated_at": "2026-10-11T16:47:19Z",
+  "status": {
+    "glyph": "?",
+    "label": "Investigate Grab And Move modifier interference",
+    "detail": "The author says disabling Grab And Move restores an Alt-only Keyboard Manager remap; related reports describe similar Alt/Win shortcut interference, including a 0.100.2 reproduction."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The report gives a concrete Alt+V-to-Ctrl+V remap and says the final key is inconsistently delivered while Grab And Move is enabled; disabling Grab And Move appears to restore normal behavior. Discussion adds a related Win+Space/Command Palette symptom and points to other Grab And Move hook reports. Issue #47585 has a reported reproduction on PowerToys 0.100.2. This supports a focused shared-input investigation, although this report's exact Grab And Move activation modifier and current-version behavior remain unconfirmed.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The report lists PowerToys 0.99.1 and says the behavior occurs with Grab And Move enabled; disabling it appears to fix the Alt-only remap.",
+      "The reported example is Alt+V to Ctrl+V, where the final key may need to be pressed twice or may fail.",
+      "A commenter says re-enabling Grab And Move does not reproduce the problem again until PowerToys restarts.",
+      "Another commenter reports a Win+Space Command Palette shortcut needing an extra key press when Grab And Move uses the Windows key.",
+      "Issue #47585 reports Win-key shortcut interference with Grab And Move and a reproduction on PowerToys 0.100.2; issue #47271 was closed by its reporter after identifying Grab And Move as the trigger, while #47337 describes a related Alt-first shortcut case."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-21T18:11:45Z"
+    "recommended_action": "Trace Grab And Move's modifier suppression/replay and hook ordering against Keyboard Manager and other global shortcuts, after confirming the exact activation modifier and current-version reproduction.",
+    "evaluated_at": "2026-11-05T20:40:28Z",
+    "source_updated_at": "2026-10-11T16:47:19Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+    "rationale": "The issue isolates Grab And Move as a condition, and related reports describe Alt/Win shortcut events losing their expected effect. The shared input-hook mechanism is plausible but has not been traced in code."
   },
   "proposed_fixes": [
     {
-      "title": "Actionable bug candidate",
-      "root_cause": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+      "title": "Preserve unrelated Alt and Win shortcuts in Grab And Move",
+      "root_cause": "Grab And Move may consume or replay Alt/Win key events while deciding whether a drag action is occurring, leaving Keyboard Manager or another global-shortcut consumer with an incomplete modifier/key sequence.",
       "plan": [
-        "Investigate and isolate the failure path in the owning module.",
-        "Apply the targeted fix to restore expected behavior.",
-        "Verify with regression tests and reproduction steps."
+        "Reproduce the Alt-only remap with Grab And Move enabled and record the selected activation modifier and relevant hook state.",
+        "Trace Grab And Move's handling of modifier and key-down/key-up events when no drag action is committed, including its interaction with Keyboard Manager's hook.",
+        "If unrelated shortcuts lose or receive reordered events, adjust the suppression/replay path so Grab And Move only intercepts the sequence it owns and other registered shortcut consumers receive a consistent event pair.",
+        "Add regression coverage for Alt+V to Ctrl+V with Grab And Move using Alt, and for a Win+Space global shortcut with Grab And Move using Win."
       ],
-      "verification": "Reproduce original steps and verify expected behavior.",
+      "verification": [
+        "The first Alt+V press produces exactly one Ctrl+V action with Grab And Move enabled.",
+        "Unrelated Alt- and Win-based shortcuts continue to work when Grab And Move does not activate a drag.",
+        "Grab And Move still starts and completes drag operations correctly, and toggling its activation modifier does not leave stale key state until restart."
+      ],
       "confidence": {
-        "score": 85,
-        "level": "green",
-        "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+        "score": 77,
+        "level": "yellow",
+        "rationale": "The report identifies Grab And Move as a condition, and related open reports show similar Alt/Win shortcut interference. The exact event-loss mechanism and activation-modifier conditions have not been traced or confirmed on current stable."
       }
     }
   ],
   "issue_context": {
-    "summary": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "summary": "An Alt-only Keyboard Manager remap may require a repeated key press when Grab And Move is enabled; disabling Grab And Move reportedly restores normal behavior.",
     "known_information": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The report lists PowerToys 0.99.1 from the Microsoft Store.",
+      "The example remap is Alt+V to Ctrl+V, with the final key sometimes needing to be pressed twice or failing.",
+      "The reporter says turning Grab And Move off seems to fix the behavior.",
+      "A commenter reports that re-enabling Grab And Move does not reproduce the issue again until PowerToys restarts.",
+      "A different commenter reports a Win+Space Command Palette shortcut needing an extra key press when Grab And Move uses the Windows key.",
+      "Related issues include #47585 (Win-key shortcut interference), #47271 (closed by its reporter after identifying Grab And Move), and #47337 (Alt-first shortcut behavior)."
     ],
     "inferences": [
-      "Behavior consistent with reported symptoms in the affected component."
+      "Grab And Move may be consuming, suppressing, or replaying a modifier/key event sequence needed by another shortcut handler.",
+      "The Alt-only remap and Win-key reports may share an input-hook state or event-ordering problem, but a common code path has not been verified."
     ],
-    "analysis": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-    "initial_investigation": "Reviewed issue description, labels, and module ownership.",
-    "information_gaps": []
-  }
+    "analysis": "The report supports a focused investigation because disabling Grab And Move changes the outcome. Keep this issue distinct from the related reports until code tracing confirms a shared defect. Verify the exact Grab And Move activation key and current stable behavior before implementing a change.",
+    "initial_investigation": [
+      "Read the current issue body and all five comments; verified there are no assignees.",
+      "Read the related current reports #47585, #47271, and #47337 to compare their Alt/Win shortcut symptoms and status.",
+      "Confirmed #47585 has a community-reported reproduction on PowerToys 0.100.2, while #47271 was closed by its reporter and #47337 remains a separate open Alt-first report."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Alt-only remaps still fail on current stable and which activation modifier is selected in Grab And Move",
+        "why_needed": "This confirms the report remains current and determines whether the suspected Alt or Win interception path should be investigated.",
+        "how_to_collect": "On current stable, test Alt+V to Ctrl+V with Grab And Move enabled, report its selected activation modifier, and compare the result after disabling Grab And Move.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the Grab And Move input fix"
+    },
+    {
+      "id": "issue-47655-confirm-current-grab-and-move-repro",
+      "type": "request_info",
+      "label": "Confirm the current Alt-remap behavior",
+      "comment": {
+        "body": "Thanks for identifying that disabling Grab And Move appears to restore the Alt+V-to-Ctrl+V remap. Could you confirm whether this still reproduces on current stable, and which activation modifier is selected in Grab And Move when it happens? That will distinguish the Alt-activation path from the related Win-key shortcut reports."
+      }
+    }
+  ]
 }

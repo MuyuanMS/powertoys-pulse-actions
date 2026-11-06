@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 34318,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Win+H remapping forces the user to hold the new shortcut",
+  "url": "https://github.com/microsoft/PowerToys/issues/34318",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:12:27Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:20:45Z",
+  "evaluated_at": "2026-11-05T22:20:45Z",
+  "source_updated_at": "2026-10-11T16:46:56Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current Win+H comparison",
+    "detail": "The report is from v0.83.0 and does not identify the Windows build or whether a direct Win+H tap has the same release behavior."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Compare native and remapped Win+H on current stable",
+    "reason": "A current comparison will show whether the release behavior comes from Keyboard Manager or the Windows voice-typing hotkey on this system."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-34318-current-voice-typing-comparison",
+      "type": "request_info",
+      "label": "Compare native and remapped Win+H on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the exact steps; the attached screenshot confirms the remap is Win+Z to Win+H. The report is from v0.83.0, and the issue does not say which Windows build is handling the Win+H voice-typing shortcut. Could you confirm whether this still occurs on v0.102.3001 and provide your Windows version/build? On that setup, please compare a tap of native Win+H with a tap and a hold of the remapped Win+Z, and report whether voice typing remains open and accepts input in each case."
+      }
+    },
+    {
+      "id": "issue-34318-approve-key-release-investigation",
+      "type": "approve_design",
+      "label": "Approve Win+H key-release investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The attached screenshot confirms the remapping is Win+Z to Win+H, and the report says releasing Win+Z immediately closes Speech Recognition instead of leaving it ready for dictation. The report is from v0.83.0, has no comments, and gives no Windows build. A native Win+H comparison is needed to separate a Keyboard Manager key-release issue from Windows voice-typing behavior on the reporter's system.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body lists PowerToys v0.83.0 and says the replacement shortcut is intended to open Speech Recognition.",
+      "The attached screenshot shows Win+Z mapped to Win+H for all apps.",
+      "The reporter says Speech Recognition closes as soon as the replacement shortcut is released.",
+      "The report has no Windows version/build or discussion, and no matching issue or PR was found in the focused search."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-13T12:12:27Z"
+    "recommended_action": "Ask for a current-build comparison of native Win+H and the remapped Win+Z, including the Windows version/build and tap-versus-hold results.",
+    "evaluated_at": "2026-11-05T22:20:45Z",
+    "source_updated_at": "2026-10-11T16:46:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If native Win+H stays active but Win+Z-to-Win+H closes on release on the current build, Keyboard Manager may be releasing the target shortcut in a way that changes the system hotkey's expected behavior. The Windows build and native baseline are not yet known."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Win+H behavior when a replacement shortcut is released",
+      "root_cause": "The remapping path may send a target key-up that causes Windows voice typing to close immediately, but the issue does not establish whether native Win+H has the same behavior on the reported Windows version.",
+      "plan": [
+        "Compare native Win+H and the reported Win+Z-to-Win+H remap on the current Windows and PowerToys builds.",
+        "If only the remapped shortcut closes on release, trace the key-down/key-up handling for the generated Win+H chord.",
+        "Adjust the narrow remapping behavior so the target system hotkey remains active after the replacement shortcut is tapped, without changing ordinary held-key semantics.",
+        "Add a regression test for Win+Z-to-Win+H tap and hold behavior."
+      ],
+      "verification": [
+        "On a supported Windows build, a tap of the remapped Win+Z opens voice typing and leaves it ready to accept dictation, matching the expected native behavior.",
+        "Holding and releasing the remapped shortcut does not leave Win or H stuck and does not alter unrelated shortcut remaps."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The screenshot and report identify the exact target chord and release symptom, but there is no current-version repro or native Win+H baseline to confirm the owning behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Win+Z-to-Win+H mapping reportedly opens Speech Recognition only while Win+Z is held and closes it immediately on release.",
+    "known_information": [
+      "The issue lists PowerToys v0.83.0.",
+      "The screenshot shows Win+Z mapped to Win+H for all apps.",
+      "The reporter expects voice typing to remain open after a tap and says it closes on release.",
+      "A screenshot and a short recording are attached; there are no issue comments.",
+      "The Windows version/build and current-version result are not present."
+    ],
+    "inferences": [
+      "If direct Win+H remains active while the remapped chord closes, target key-release handling in Keyboard Manager is a plausible cause.",
+      "If direct Win+H also closes on release, the behavior may instead be specific to the Windows voice-typing implementation or configuration."
+    ],
+    "analysis": "The screenshot confirms the exact mapping, but the missing Windows build and native-hotkey baseline prevent attribution. The next discriminating evidence is a tap/hold comparison of native Win+H and remapped Win+Z on current stable; another generic diagnostics request is not justified.",
+    "initial_investigation": [
+      "Refreshed the full issue body and confirmed it has no comments or assignee.",
+      "Inspected the attached screenshot, confirming Win+Z is mapped to Win+H for all apps.",
+      "Searched for other PowerToys reports and PRs about remapped Win+H voice typing; no matching item was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the behavior still occurs on v0.102.3001, the Windows version/build, and the tap-versus-hold result for native Win+H versus remapped Win+Z",
+        "why_needed": "The Windows hotkey may have build-specific behavior; a native comparison is required to isolate whether the remapping path changes the release semantics.",
+        "how_to_collect": "On v0.102.3001, compare a tap of native Win+H with a tap and hold of the remapped Win+Z, then report whether voice typing remains open and accepts input for each.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

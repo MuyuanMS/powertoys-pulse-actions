@@ -1,33 +1,87 @@
 {
+  "schemaVersion": 5,
   "number": 40025,
+  "title": "Remapped Shortcuts not consistent when changing Keyboard Layout",
+  "url": "https://github.com/microsoft/PowerToys/issues/40025",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:59:18Z",
+  "generated_at": "2026-11-05T14:27:54.244Z",
+  "evaluated_at": "2026-11-05T14:27:54.244Z",
+  "source_updated_at": "2026-10-11T16:48:08Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "↻",
+    "label": "Reproduce layout-dependent shortcut behavior",
+    "detail": "The report gives a German-to-US test on PowerToys 0.91.1: Alt+Left+A mapped to the text ä reportedly emits an apostrophe after switching to US. Confirm the same physical key and layout sequence on a current build."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue gives a concrete sequence: create an Alt(Left)+a-to-text-ä shortcut while the German layout is active, switch to US, and press the same key; the reporter says the output becomes an apostrophe. The only reported build is 0.91.1 and the phrase “same key” does not clarify whether the test is based on the same physical key position or logical key label. This is a useful current-build reproduction before deciding whether the behavior is a layout-dependent virtual-key mapping or a defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.91.1.",
+      "The reporter creates Alt(Left)+a → text ä under German (DE), switches to US, and reports that the same key produces an apostrophe instead.",
+      "The issue has no comments, assignee, or current-build retest."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:59:18Z"
-  }
+    "recommended_action": "Repeat the German-to-US sequence on a current build while recording the physical key position, active layout, and output.",
+    "evaluated_at": "2026-11-05T14:27:54.244Z",
+    "source_updated_at": "2026-10-11T16:48:08Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is clear enough for a controlled reproduction but does not establish whether the source is bound to a physical scan code or a layout-specific virtual key, and it has no current-build result. Do not propose a fix until that distinction is tested."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A shortcut mapped to emit ä under German layout reportedly emits an apostrophe after switching to US layout.",
+    "known_information": [
+      "The issue lists PowerToys 0.91.1.",
+      "The reporter configures Alt(Left)+a to emit ä while German (DE) is active, then switches to US and reports that the remap no longer emits ä.",
+      "No comments, assignee, exact physical key position, or current-build retest are present."
+    ],
+    "inferences": [
+      "The trigger may be associated with a layout-dependent key code or physical scan code; the report does not distinguish whether the same physical key or logical key label is used after the layout change."
+    ],
+    "analysis": "The current-build test should preserve the same physical key position while switching layouts and record the actual output. This distinguishes a layout-dependent source key from a failure to retain the text target.",
+    "initial_investigation": [
+      "Read the complete issue body and verified there is no later discussion or ownership.",
+      "Separated the configured text target (ä) from the unspecified physical/logical identity of the source key after the layout change."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the German-to-US layout switch",
+      "note": "The report provides a test sequence; preserve the physical key position and record the output on a current build.",
+      "reproduce": {
+        "title": "Verify shortcut remapping across keyboard layouts",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
+        "prerequisites": [
+          "Windows with German (DE) and US keyboard layouts available",
+          "Keyboard Manager enabled",
+          "A text editor to observe emitted text"
+        ],
+        "setup": [
+          "Switch to German (DE).",
+          "Create a shortcut remap using Alt (Left) plus the reported physical key, with a Text target of ä."
+        ],
+        "steps": [
+          "Focus a text editor and press the mapped chord under German (DE); record the output.",
+          "Switch to US without editing the mapping.",
+          "Press the same physical key position with Alt (Left) and record the output and whether the remap triggered.",
+          "Switch back to German (DE) and repeat as a control."
+        ],
+        "expected_result": "The text remap should emit ä under both layouts if the configured physical shortcut is intended to be layout-independent; the historical report says the US-layout test emits an apostrophe."
+      }
+    }
+  ]
 }

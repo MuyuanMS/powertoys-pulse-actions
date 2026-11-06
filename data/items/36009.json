@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 36009,
+  "title": "Zoom button issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/36009",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:28:08Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:52:54.291Z",
+  "generated_at": "2026-11-05T14:52:54.291Z",
+  "evaluated_at": "2026-11-05T14:52:54.291Z",
+  "source_updated_at": "2026-10-11T16:47:57Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm the Keymaster Zoom key on a current build",
+    "detail": "The report says the key acts like Win+=, Shift+Zoom like Win+-, and capture identifies it as =; the only tested build was 0.86.0."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report identifies a Keymaster v1 Zoom control that appears as = in Keyboard Manager while activating Windows zoom shortcuts, but it only tests PowerToys 0.86.0. Without comparing the captured event for Zoom, Shift+Zoom, and an ordinary equals key on a current build, it is unclear whether Keyboard Manager loses a distinct hardware event or the keyboard emits ordinary key combinations.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys v0.86.0, Windows 10 Pro, and a Keymaster v1 keyboard.",
+      "Zoom reportedly acts like Win+=; Shift+Zoom acts like Win+- even after remapping.",
+      "The capture editor reportedly identifies the Zoom button as =.",
+      "The issue has no comments or attached diagnostic archive."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:28:08Z"
-  }
+    "recommended_action": "Retest on v0.102.3001 and compare the captured Zoom and ordinary equals events, including whether the Zoom control triggers Magnifier with Keyboard Manager disabled.",
+    "evaluated_at": "2026-11-05T14:52:54.291Z",
+    "source_updated_at": "2026-10-11T16:47:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A distinct device key may be getting normalized to the ordinary equals virtual key, but the report does not establish whether the keyboard sends a unique event or Win+= itself."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve distinguishable Keymaster Zoom-key input",
+      "root_cause": "If the Keymaster reports a distinct scan-code event, Keyboard Manager may translate it to the ordinary equals key; alternatively, the keyboard may emit Win+= directly, which is not distinguishable as a separate Zoom key.",
+      "plan": [
+        "Reproduce on v0.102.3001 and compare capture output for Zoom, Shift+Zoom, and the ordinary equals key.",
+        "If the device supplies a distinct event, trace how its scan code and modifiers are translated in Keyboard Manager capture.",
+        "Preserve the distinct event in capture/remapping and add regression coverage only if the current path collapses distinguishable inputs."
+      ],
+      "verification": [
+        "Verify Zoom and ordinary equals are shown distinctly when the device supplies distinct scan codes.",
+        "Verify the shifted Zoom event and ordinary Win+= remain correctly identified."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The hardware and captured labels are described, but the report is limited to 0.86.0 and does not show whether the device emits a distinct event or a standard equals chord."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keymaster v1 Zoom control reportedly activates Windows zoom shortcuts but appears as = in Keyboard Manager capture.",
+    "known_information": [
+      "The reporter uses Windows 10 Pro and PowerToys v0.86.0.",
+      "Zoom reportedly acts like Win+= and Shift+Zoom like Win+-.",
+      "Keyboard Manager capture reportedly identifies Zoom as =.",
+      "No remappers or key managers were reported; there are no issue comments."
+    ],
+    "inferences": [
+      "The key may be translated to an ordinary equals event, or the keyboard firmware may emit Win+= directly; the report does not distinguish these cases."
+    ],
+    "analysis": "The capture mismatch may be in Keyboard Manager or in the event the device emits. Testing the Zoom control beside the ordinary equals key on a current build, including with Keyboard Manager disabled, will determine whether a distinct input is available to map.",
+    "initial_investigation": [
+      "Read the full issue report and confirmed it has no comments or diagnostics.",
+      "Confirmed the reported build is v0.86.0 and the reporter already ruled out other remappers.",
+      "Identified the unresolved distinction between a device-specific event and ordinary Win+= input."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "how_to_collect": "Retest the same keyboard controls with PowerToys v0.102.3001.",
+        "information": "Whether the Zoom capture behavior reproduces on v0.102.3001.",
+        "why_needed": "The report is from v0.86.0, so it may predate current capture behavior."
+      },
+      {
+        "evidence_type": "keyboard_layout",
+        "how_to_collect": "In Keyboard Manager remap capture, test each key sequence on the same active layout and record the displayed keys and modifiers; if available, compare the ordinary equals key.",
+        "information": "The exact captured key/modifier output for Zoom, Shift+Zoom, and the ordinary equals key, plus whether Zoom alone opens Magnifier with Keyboard Manager disabled.",
+        "why_needed": "This distinguishes a lost device-specific event from firmware that emits ordinary equals or Win+= input."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest Keymaster Zoom capture",
+      "comment": {
+        "target": "issue",
+        "number": 36009,
+        "body": "Thanks for explaining that the Keymaster Zoom control acts like Win+=, Shift+Zoom like Win+-, and the remap editor labels it as =. Since this was reported on v0.86.0, we do not yet know whether the current build receives a distinct Zoom-key event or the same input generated by the keyboard.\n\nOn v0.102.3001, could you please:\n1. Test Zoom alone, Shift+Zoom, and the keyboard ordinary = key (if present) in Keyboard Manager capture, and report the exact key/modifiers shown for each.\n2. Note whether Zoom alone opens Magnifier with Keyboard Manager disabled.\nThis will distinguish a capture/translation issue from the device sending ordinary key combinations."
+      }
+    }
+  ]
 }

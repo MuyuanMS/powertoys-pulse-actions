@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 34325,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard layout change not being able to return to normal",
+  "url": "https://github.com/microsoft/PowerToys/issues/34325",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:55:33Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:30:32Z",
+  "evaluated_at": "2026-11-05T22:30:32Z",
+  "source_updated_at": "2026-10-11T16:46:55Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs the exact mapping and persistence result",
+    "detail": "The report says the changed layout survives disabling and uninstalling PowerToys but does not identify which keys or mapping method changed."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Clarify the persistent keyboard change",
+    "reason": "Exact source/target keys and a clean post-uninstall retest are needed to distinguish a Keyboard Manager cleanup defect from a Windows or other input-layer setting."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-34325-identify-persistent-key-change",
+      "type": "request_info",
+      "label": "Clarify the persistent keyboard change",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for reporting that the mapping appeared to remain after Keyboard Manager was disabled and PowerToys was removed. The issue is from v0.83.0, but it does not say which keys changed or whether this was a Keyboard Manager remap versus a Windows keyboard-layout change. Could you provide the exact original-to-new key behavior, the Windows version, and whether the same behavior still occurs after a full reboot with PowerToys uninstalled? If another keyboard remapping utility or device-specific software is installed, please name it as well."
+      }
+    },
+    {
+      "id": "issue-34325-approve-persistence-investigation",
+      "type": "approve_design",
+      "label": "Approve keyboard-state persistence investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says a custom layout remained after the Keyboard Manager UI showed it disabled and after PowerToys was uninstalled, but it does not identify any source or target keys, the exact remapping feature used, or whether the behavior persisted after a clean reboot. Without those facts, it is not possible to determine whether PowerToys left persistent state or whether Windows, keyboard firmware, or another remapping tool owns the change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys v0.83.0 from the Microsoft Store and says the computer was restarted after changing a key layout.",
+      "The reporter says the UI showed the custom layout disabled but the changed behavior remained.",
+      "The reporter says the behavior remained after removing PowerToys.",
+      "The issue has no comments, exact key pairs, Windows version, or named competing software."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:55:33Z"
+    "recommended_action": "Ask for the exact key behavior and a current post-uninstall reboot result before attributing the persistent change to PowerToys.",
+    "evaluated_at": "2026-11-05T22:30:32Z",
+    "source_updated_at": "2026-10-11T16:46:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If PowerToys is shown to leave a persistent keyboard mapping after disable or uninstall, cleanup of that PowerToys-owned state may be required. The report does not yet identify a persistent setting or prove that PowerToys owns the remaining behavior."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Remove any confirmed PowerToys-owned key state on disable or uninstall",
+      "root_cause": "A persistent Windows or device-level mapping may remain after the Keyboard Manager setting is disabled or PowerToys is removed, but the issue does not identify the changed keys or the state mechanism. The remaining behavior may instead be owned by Windows, keyboard software, or another remapper.",
+      "plan": [
+        "Obtain the exact key mapping and reproduce it with the same PowerToys version and Windows build where possible.",
+        "Compare behavior with Keyboard Manager disabled, PowerToys fully exited, and PowerToys uninstalled after a reboot.",
+        "If a PowerToys-owned persistent setting remains, trace its disable/uninstall cleanup and remove only that state.",
+        "Add a regression test that the confirmed mapping returns to normal after disable and uninstall."
+      ],
+      "verification": [
+        "After the confirmed mapping is disabled and PowerToys is uninstalled, the affected key produces its normal Windows behavior after reboot.",
+        "Other Windows keyboard layouts and device-specific remaps remain unchanged."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The reported persistence is potentially serious, but no key mapping, Windows version, current reproduction, or owning state is identified; the cause could be outside PowerToys."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A custom keyboard behavior reportedly remains after Keyboard Manager is disabled and PowerToys is uninstalled, but the changed keys and mapping method are not specified.",
+    "known_information": [
+      "The report lists PowerToys v0.83.0 from the Microsoft Store and says it was not run as administrator.",
+      "The issue says the computer was restarted after changing a key layout.",
+      "The Keyboard Manager UI reportedly showed the custom layout disabled, but the behavior remained after PowerToys was removed.",
+      "There are no comments, screenshots, exact key mappings, Windows version, or assignees."
+    ],
+    "inferences": [
+      "If the behavior survives a clean reboot after uninstall, it may come from persistent Windows/device state or another input-layer utility rather than a running Keyboard Manager hook.",
+      "If PowerToys created persistent state and failed to remove it, a cleanup defect is possible but not established."
+    ],
+    "analysis": "The key behavior and mapping method are the decisive missing facts. The report's post-uninstall observation is not enough to assign ownership or propose a safe cleanup change; ask for an exact key example and confirm persistence after a reboot without PowerToys before investigating system-level state.",
+    "initial_investigation": [
+      "Refreshed the complete issue body; confirmed there are no comments or assignees.",
+      "Searched for similar PowerToys reports about a keyboard layout remaining after uninstall; no direct covering issue or PR was found.",
+      "Avoided treating the post-uninstall observation as proof that Keyboard Manager wrote persistent system state."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact original-to-new key behavior, whether the change came from Keyboard Manager or Windows keyboard-layout settings, Windows version, and whether it persists after reboot with PowerToys uninstalled",
+        "why_needed": "These details determine whether the remaining behavior is attributable to PowerToys cleanup or to Windows, keyboard firmware, or another remapping utility.",
+        "how_to_collect": "Describe one affected key's normal and current output, name the setting used to change it, and test again after a full reboot with PowerToys uninstalled.",
+        "evidence_type": "repro_steps"
+      }
+    ]
   }
 }

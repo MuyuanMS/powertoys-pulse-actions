@@ -1,33 +1,91 @@
 {
+  "schemaVersion": 5,
   "number": 31571,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-29T07:42:21Z",
+  "generated_at": "2026-11-05T13:59:57.471Z",
+  "evaluated_at": "2026-11-05T13:59:57.471Z",
+  "source_updated_at": "2026-10-11T16:48:20Z",
+  "title": "MegaBug: Sticky Keys Issues in KBM when remapping Alt/Ctrl/Win modifiers",
+  "url": "https://github.com/microsoft/PowerToys/issues/31571",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 8,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Need a scoped current-build repro",
+    "detail": "The thread combines several modifier failures; the latest Shift-stops-working report is on 0.98.1 and says no remappings were configured."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request a current-build retest of the specific Shift/no-remapping symptom and separate it from the AltGr-specific Ctrl fix.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "This is a mega-thread containing materially different symptoms. The latest Shift-failure report is from 0.98.1 and says no remappings were configured, while merged PR #46672 fixes a narrow stale-AltGr flag that can leave Ctrl stuck; that does not establish a fix for the Shift/no-remapping report. The 2026 comment also distinguishes #47277 as the opposite held-versus-sticky behavior. A current, scoped reproduction is needed before selecting a root cause or design.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body describes modifier keys becoming sticky during shortcut remapping.",
+      "A January 2026 commenter reports Shift stopped working across applications on PowerToys 0.97.0 and says quitting PowerToys resolved it; that commenter had Keyboard Manager off.",
+      "A March 2026 commenter says the behavior still occurred on 0.98.0.",
+      "A March 2026 report says Shift stopped working randomly on 0.98.1 with no remappings configured.",
+      "Merged PR #46672 fixes a stale AltGr flag that can leave Ctrl stuck, but it is linked to #46693 and does not establish coverage for the Shift/no-remapping symptom.",
+      "The latest issue comment says #47277 describes the opposite condition: a modifier not remaining held while pressed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-29T07:42:21Z"
-  }
+    "recommended_action": "Ask the person reporting the 0.98.1 Shift failure for a current-build reproduction, exact sequence, PowerToys/Keyboard Manager state, and a fresh /bugreport if it persists; keep the AltGr-specific fix separate.",
+    "evaluated_at": "2026-11-05T13:59:57.471Z",
+    "source_updated_at": "2026-10-11T16:48:20Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The issue aggregates distinct symptoms, one narrow Ctrl-sticking mechanism is covered by merged PR #46672, and the latest Shift/no-remapping report has no current-build reproduction. A single competing code change cannot be justified until the reports are separated and the remaining symptom is reproduced."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A broad Keyboard Manager thread collects different modifier-sticking and modifier-loss symptoms, including a recent report of Shift stopping on 0.98.1 with no mappings configured.",
+    "known_information": [
+      "The original report describes sticky-like Ctrl/Alt/Win behavior while using shortcut remaps.",
+      "A 0.98.1 commenter says Shift stops working randomly even with no remappings configured.",
+      "A commenter reported a similar Shift failure on 0.97.0 and said quitting PowerToys resolved it, although Keyboard Manager was disabled.",
+      "Merged PR #46672 fixes a stale AltGr flag that can leave Ctrl stuck; its PR description links it to #46693, not this issue.",
+      "The thread explicitly distinguishes #47277 as a different, opposite held-modifier behavior."
+    ],
+    "inferences": [
+      "The mega-thread likely groups multiple input-state and accessibility/interoperation failures rather than one root cause.",
+      "The latest Shift/no-remapping report may involve PowerToys outside Keyboard Manager or an external input component; the comments do not establish which."
+    ],
+    "analysis": "Do not treat PR #46672 as a complete fix for this broad issue. The narrow AltGr/Ctrl path and the newer Shift failure without mappings need separate validation; asking for one current, discriminating repro is more useful than proposing a shared hook change.",
+    "initial_investigation": [
+      "Read the full issue body and all eight comments, including the 0.97.0, 0.98.0, and 0.98.1 reports.",
+      "Compared the latest Shift/no-remapping symptom with merged PR #46672; that PR addresses a specific stale AltGr Ctrl flag and is not linked as a fix for #31571.",
+      "Checked related #30213 and the commenter clarification about #47277; neither establishes that all symptoms share one cause.",
+      "No assignee or issue-linked fix covering the whole mega-thread is present."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether the 0.98.1 Shift failure persists on PowerToys 0.100.2 or newer, with exact steps and whether PowerToys and Keyboard Manager are running.",
+        "why_needed": "The thread contains different failure modes, and the latest report says no remappings were configured, so the failing component cannot be inferred from the title.",
+        "how_to_collect": "Retest the same Shift sequence on a current build with PowerToys running and fully exited; state which toys are enabled and whether the failure occurs in each case."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive captured immediately after a current-build Shift failure.",
+        "why_needed": "Current diagnostics may show whether the failure is associated with a PowerToys input hook or a different enabled component.",
+        "how_to_collect": "If the issue persists, comment /bugreport immediately after reproduction."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm the current Shift failure",
+      "comment": {
+        "target": "issue",
+        "number": 31571,
+        "body": "Thanks for the newer report that Shift stopped working on 0.98.1 even with no remappings configured. This thread includes several distinct modifier symptoms, and merged PR #46672 addresses a specific AltGr-triggered Ctrl-stuck case rather than this Shift report. To isolate the current behavior, could you please:\n1. Retest on PowerToys 0.100.2 or newer and say whether it occurs with PowerToys running versus fully exited, and whether Keyboard Manager is enabled.\n2. Provide the exact key sequence and identify which modifier stops responding; include the keyboard model and any vendor remapping software.\n3. If it still occurs on the current build, comment `/bugreport` immediately after reproducing.\nThis will distinguish a current PowerToys input-state failure from a different keyboard or software interaction."
+      }
+    }
+  ]
 }

@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 36142,
+  "title": "Disabling Alt+Tab+1234567890",
+  "url": "https://github.com/microsoft/PowerToys/issues/36142",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-12-19T20:31:26Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:52:54.291Z",
+  "generated_at": "2026-11-05T14:52:54.291Z",
+  "evaluated_at": "2026-11-05T14:52:54.291Z",
+  "source_updated_at": "2026-10-11T16:47:56Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Separate Keyboard Manager behavior from the Windows/G Hub chord",
+    "detail": "The report uses a Logitech G Hub macro while physical Tab is held and lists PowerToys 0.86.0; current behavior is not established."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report describes a Logitech G Hub macro emitting Alt+1 while Tab is physically held, producing an Alt+Tab chord that opens the Windows task switcher despite an attempted Alt+Tab disable. It lists PowerToys 0.86.0 and does not establish the exact event order, whether the same chord occurs with Keyboard Manager disabled, or whether the behavior reproduces on a current build. These facts distinguish a Keyboard Manager interception defect from the OS responding to the macro/physical-key combination.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.86.0 and describes WoW Retail with a Logitech G600 and G Hub macro.",
+      "The described sequence is to hold Tab and execute an Alt+1 macro; the Windows Alt+Tab task switcher opens.",
+      "The reporter says disabling Alt+Tab through PowerToys and the registry did not prevent the behavior, and notes that a third modifier cannot be added through PowerToys.",
+      "The issue has no comments or diagnostic archive."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-19T20:31:26Z"
-  }
+    "recommended_action": "Retest the exact physical Tab plus G Hub macro sequence on v0.102.3001 and compare it with the macro run when Tab is released and Tab held without the macro.",
+    "evaluated_at": "2026-11-05T14:52:54.291Z",
+    "source_updated_at": "2026-10-11T16:47:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Keyboard Manager suppression defect is possible, but the described trigger may simply deliver the Windows system Alt+Tab chord through the Logitech macro and held physical Tab."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent unintended Alt+Tab activation during the reported macro sequence",
+      "root_cause": "If current Keyboard Manager is expected to suppress the reported combination, it may not intercept the Alt+Tab chord formed by a held physical Tab plus the G Hub Alt+1 macro; the report does not show that Keyboard Manager participates.",
+      "plan": [
+        "Reproduce on v0.102.3001 with the exact G Hub macro and physical Tab timing.",
+        "Compare the macro with Tab released and Tab held without the macro, and record whether Keyboard Manager is enabled and what shortcut suppression is configured.",
+        "If the current product receives the chord but fails to suppress it, fix that event path and add a regression test; otherwise document the Windows/G Hub limitation rather than changing Keyboard Manager."
+      ],
+      "verification": [
+        "Verify the task switcher does not open for the reported combination when the supported suppression configuration is active.",
+        "Verify ordinary Alt+Tab remains unchanged when no suppression is configured."
+      ],
+      "confidence": {
+        "score": 22,
+        "level": "red",
+        "rationale": "The report is old and combines a system Alt+Tab chord from a physical key and an external macro; no current-build A/B test establishes a PowerToys defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Holding Tab while a Logitech G Hub Alt+1 macro runs reportedly opens the Windows Alt+Tab task switcher.",
+    "known_information": [
+      "The report lists PowerToys v0.86.0, Windows 11, WoW Retail, a Logitech G600, and Logitech G Hub.",
+      "The described trigger combines a physically held Tab key with an Alt+1 macro.",
+      "The reporter says disabling Alt+Tab in PowerToys and the registry did not prevent it, but does not state whether Keyboard Manager itself was disabled.",
+      "No comments or diagnostics are attached."
+    ],
+    "inferences": [
+      "The combination may be recognized by Windows as Alt+Tab regardless of the added key, or Keyboard Manager may fail to suppress a chord formed by overlapping physical and injected input; the evidence does not distinguish these paths."
+    ],
+    "analysis": "Alt+Tab is a Windows task-switcher chord, and the report combines physical Tab with a software-generated Alt+1 sequence. A controlled current-build comparison with Tab released, Tab held without the macro, and the exact macro is needed before attributing the result to Keyboard Manager.",
+    "initial_investigation": [
+      "Read the full issue body and confirmed it has no comments or diagnostics.",
+      "Recorded the existing Logitech G600/G Hub and WoW context; do not ask the reporter to repeat basic setup.",
+      "The reported build is v0.86.0, and the description does not specify whether Keyboard Manager is enabled during the exact macro sequence."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "how_to_collect": "Retest the same G Hub macro and held-Tab sequence on v0.102.3001.",
+        "information": "Whether the reported behavior reproduces on v0.102.3001.",
+        "why_needed": "The issue only reports PowerToys v0.86.0."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "how_to_collect": "On the current build, compare the G Hub macro with Tab released, Tab held without the macro, and the reported overlap; record whether Keyboard Manager is on and the task-switcher result for each.",
+        "information": "Whether Alt+Tab opens when the macro runs with Tab released, when Tab is held without the macro, and when both overlap, including whether Keyboard Manager is enabled.",
+        "why_needed": "These controls distinguish a Windows/G Hub Alt+Tab chord from a Keyboard Manager interception failure."
+      },
+      {
+        "evidence_type": "other_software",
+        "how_to_collect": "If safe in the game, compare the same held-Tab action with the G Hub macro disabled or with a harmless test key sequence.",
+        "information": "Whether the same G Hub macro sequence is handled differently when the macro is temporarily disabled or changed to a harmless test chord.",
+        "why_needed": "The macro is the source of injected Alt+1 input and may be central to forming the system Alt+Tab chord."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest Alt+Tab macro behavior",
+      "comment": {
+        "target": "issue",
+        "number": 36142,
+        "body": "Thanks for specifying the WoW, Logitech G600, and G Hub macro setup. The described trigger combines a physically held Tab with an Alt+1 macro, which can form the Windows Alt+Tab system chord; the report is also from PowerToys 0.86.0.\n\nOn v0.102.3001, could you compare these cases and report whether the task switcher opens:\n1. Run the G Hub macro with Tab released.\n2. Hold Tab without running the macro.\n3. Repeat the original overlap.\nPlease also note whether Keyboard Manager is enabled during each test. This will show whether the unexpected switcher is caused by the Windows/G Hub chord or by Keyboard Manager failing to suppress it."
+      }
+    }
+  ]
 }

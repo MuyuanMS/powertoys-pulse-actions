@@ -1,33 +1,134 @@
 {
+  "schemaVersion": 5,
   "number": 28130,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "FancyZones Snap Breaks when also Using Keyboard Manager Key Remapping for Windows <-> Alt Key",
+  "url": "https://github.com/microsoft/PowerToys/issues/28130",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-06-04T18:54:31Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Hotkeys",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T18:55:00Z",
+  "evaluated_at": "2026-11-05T18:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:49Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm current FancyZones remap behavior",
+    "detail": "The left-Win/Alt remap failure was confirmed on 0.79 and 0.81.1, but not on a current stable build."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue contains a concrete repro and two confirmations that swapping left Win and left Alt prevents FancyZones snap override from handling the remapped left-Win chord, while right Win still works. Those confirmations are from 2023-2024; no current-build result or diagnostic is present. The issue is open and unassigned, so verify whether the behavior remains before proposing a component-level change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report describes swapping left Win and left Alt in Keyboard Manager, then using the remapped Windows key with arrow keys in FancyZones.",
+      "A follow-up reproduced the behavior on PowerToys 0.79.0 and reported that right Win still triggered FancyZones.",
+      "Another follow-up confirmed the behavior on PowerToys 0.81.1.",
+      "The issue has four comments, no assignee, and no attached diagnostics."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-06-04T18:54:31Z"
-  }
+    "recommended_action": "Ask whether the exact remap scenario still fails on current stable PowerToys; if confirmed, provide it as a maintainer reproduction before choosing a fix.",
+    "evaluated_at": "2026-11-05T18:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The historical reports consistently isolate Keyboard Manager's left Win/Alt remap and FancyZones' Windows snap override. A likely direction is to make the override honor the effective remapped chord, but the current behavior and mechanism are unverified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Honor Keyboard Manager remaps in the FancyZones snap override",
+      "root_cause": "The reported asymmetry suggests FancyZones' snap override may not recognize the effective left-Win chord after Keyboard Manager remapping, while the unremapped right-Win chord remains recognized. No current-build reproduction or code-path evidence confirms this mechanism.",
+      "plan": [
+        "Verify the reported remap and snap-override scenario on current stable PowerToys.",
+        "If it reproduces, trace how Keyboard Manager remapped key events reach FancyZones' Windows snap override.",
+        "Update the override to recognize the effective remapped chord without breaking ordinary Win+Arrow handling.",
+        "Add regression coverage for left-Win/left-Alt remapping, both arrow-key directions, and the unaffected right-Win shortcut."
+      ],
+      "verification": [
+        "With FancyZones snap override enabled and left Win/left Alt swapped, verify the remapped left-Win plus arrow chord moves the window between FancyZones zones.",
+        "Verify right-Win plus arrow and unremapped Win+Arrow behavior remain unchanged.",
+        "Repeat after disabling the snap override to confirm normal Windows snap behavior is preserved."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The historical behavior is described consistently across two PowerToys releases, but persistence on current stable and the responsible event path are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Swapping left Win and left Alt in Keyboard Manager historically prevented FancyZones' Windows snap override from handling the remapped left-Win plus arrow chord.",
+    "known_information": [
+      "The issue gives steps to swap left Win and left Alt, enable FancyZones, and use the remapped Windows key with arrow keys.",
+      "A reporter confirmed the behavior on PowerToys 0.79.0; another confirmed it on 0.81.1.",
+      "The 0.79.0 follow-up says the unremapped right-Win plus arrow chord continued to use FancyZones.",
+      "The issue is open and unassigned; its discussion has no current-version confirmation or attached diagnostics."
+    ],
+    "inferences": [
+      "The reported left/right asymmetry may indicate that FancyZones' snap override does not account for the effective remapped key state."
+    ],
+    "analysis": "The historical repro is specific enough to guide a maintainer test, but the latest confirmation predates current releases. The first decision is whether the behavior still exists; if it does, the left/right asymmetry is a useful regression oracle for investigating the input path.",
+    "initial_investigation": [
+      "Read the complete live issue and all four comments, including the 0.79.0 and 0.81.1 confirmations.",
+      "Checked current issue state, labels, and assignees; the issue is open and unassigned.",
+      "Searched related PowerToys issue titles for reports combining FancyZones snap override with Keyboard Manager Win/Alt remapping; no matching duplicate surfaced."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the left-Win/left-Alt remap still bypasses FancyZones on current stable PowerToys",
+        "why_needed": "The latest reproduction is from 0.81.1; a later release may already have changed the interaction.",
+        "how_to_collect": "Retest the described remap with FancyZones' Override Windows Snap enabled and report the exact PowerToys version and whether right Win still works.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-28130-confirm-current-remap",
+      "type": "request_info",
+      "label": "Confirm current FancyZones remap behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the detailed repro and for confirming it on both 0.79.0 and 0.81.1. Since those reports are from older releases, could you confirm whether it still happens on current stable PowerToys? If so, please include the exact version and whether the unremapped right-Win+Arrow shortcut still works with FancyZones' Override Windows Snap enabled. The existing steps are sufficient; no need to repeat them or upload diagnostics."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the remapped snap-override fix direction"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the remapped snap-override behavior",
+      "note": "The historical report includes a repeatable left/right key comparison; verify it on current stable before selecting implementation details.",
+      "reproduce": {
+        "title": "Verify FancyZones snap override with left Win/Alt remapping",
+        "module": "FancyZones and Keyboard Manager",
+        "version_requirement": "Current stable PowerToys, 0.102.3001 or newer",
+        "prerequisites": [
+          "Windows with FancyZones and Keyboard Manager enabled",
+          "A test window that can be moved between FancyZones zones"
+        ],
+        "setup": [
+          "In Keyboard Manager, swap left Win with left Alt.",
+          "Enable FancyZones' Override Windows Snap option and configure at least two adjacent zones."
+        ],
+        "steps": [
+          "Move a test window to a FancyZones zone using the remapped left-Win+Arrow chord.",
+          "Repeat with the unremapped right-Win+Arrow chord.",
+          "Disable Override Windows Snap and repeat the left-Win+Arrow test."
+        ],
+        "expected_result": "With the override enabled, both the remapped left-Win chord and the unremapped right-Win chord should move the window through FancyZones zones; with it disabled, normal Windows snap behavior should be restored."
+      }
+    }
+  ]
 }

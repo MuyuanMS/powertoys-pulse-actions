@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 37868,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remapping either Scroll Lock or Num Lock key to Ctrl + [other key] not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/37868",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-05-08T16:48:38Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:36:07Z",
+  "evaluated_at": "2026-11-05T22:36:07Z",
+  "source_updated_at": "2026-10-11T16:46:54Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current lock-key modifier retest",
+    "detail": "The v0.89.0 report says Num Lock or Scroll Lock mapped to Ctrl+= leaves Ctrl pressed after the first activation; similar older stuck-modifier reports do not establish this sequence is fixed."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Retest Num Lock and Scroll Lock separately",
+    "reason": "A current comparison will show whether the old behavior remains after later modifier fixes and whether one lock-key source is responsible."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-37868-current-lock-key-retest",
+      "type": "request_info",
+      "label": "Retest Num Lock and Scroll Lock separately",
+      "primary": true,
+      "comment": {
+        "body": "Your v0.89.0 steps say either Num Lock or Scroll Lock mapped to Ctrl+= works once, then leaves Ctrl held until you press it physically. Could you confirm on v0.102.3001 whether this still happens, testing Num Lock and Scroll Lock separately, and whether Ctrl remains down in the On-Screen Keyboard after the first press? If it persists, please add a comment containing `/bugreport` immediately after reproducing and say which source key was used. Older #14815 and #17035 reports describe related stuck-modifier symptoms, but neither establishes that this exact lock-key mapping remains unfixed."
+      }
+    },
+    {
+      "id": "issue-37868-approve-lock-key-release-investigation",
+      "type": "approve_design",
+      "label": "Approve lock-key modifier-release investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original report provides a concrete v0.89.0 sequence and symptom but has no comments or current-version retest. Similar reports #14815 and #17035 describe stuck modifiers, and #17035 links merged PR #37930 for generic modifier side tracking; those do not prove this Num Lock/Scroll Lock source sequence is fixed. Current upstream main's single-key remap path emits an action-key-up followed by modifier key-up on the source key-up event, so the remaining question is whether the event pair is delivered and recognized in this case.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys v0.89.0 from GitHub and remaps Num Lock or Scroll Lock to Ctrl+=.",
+      "The first activation works, later activations do nothing, and Ctrl reportedly remains pressed until manually pressed.",
+      "There are no comments, current-version test results, or assignees.",
+      "Closed #14815 includes a similar Scroll Lock-to-Ctrl+C stuck-modifier report; closed #17035 and merged #37930 concern generic versus left/right modifier tracking, but neither is an exact confirmed fix for this mapping.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 emits the target shortcut action-key-up and modifier key-up on the single-key remap key-up path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-05-08T16:48:38Z"
+    "recommended_action": "Ask for a current-version retest of Num Lock and Scroll Lock separately and a fresh /bugreport only if the stuck state persists.",
+    "evaluated_at": "2026-11-05T22:36:07Z",
+    "source_updated_at": "2026-10-11T16:46:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report may represent a remaining key-event sequencing defect for lock-key sources; the existing main path contains explicit key-up injection, so the current test must establish whether that sequence fails or whether later releases corrected the original behavior."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep synthesized Ctrl state paired for lock-key remaps",
+      "root_cause": "The lock-key source may not produce a matching up/down path that releases the injected Ctrl modifier, or Windows may ignore the generated key-up in this sequence. Current source includes explicit modifier release, so a missing release call is not established.",
+      "plan": [
+        "Reproduce Num Lock-to-Ctrl+= and Scroll Lock-to-Ctrl+= separately on v0.102.3001 and capture a fresh bug report after any stuck state.",
+        "Trace source key-down and key-up through the single-key remap handler and verify that Ctrl down, equals down/up, and Ctrl up are all accepted.",
+        "If a source-specific event sequence leaves Ctrl logically down, correct the narrow state transition and add tests for both lock-key sources.",
+        "Retest repeated activations and verify that the modifier state returns to normal after each one."
+      ],
+      "verification": [
+        "Both Num Lock and Scroll Lock can trigger Ctrl+= repeatedly without leaving Ctrl held.",
+        "The On-Screen Keyboard and ordinary shortcuts show no residual Ctrl state after the remap.",
+        "Existing lock-key toggle behavior remains unchanged when no remap is configured."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The original repro is specific, but it predates later modifier changes and current code already emits matching key-up events; a fresh reproduction is needed to localize any remaining defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mapping Num Lock or Scroll Lock to Ctrl+= reportedly works once, then stops while leaving Ctrl logically pressed.",
+    "known_information": [
+      "The issue lists PowerToys v0.89.0 from GitHub.",
+      "The reporter says either Num Lock or Scroll Lock mapped to Ctrl+= triggers zoom once, then subsequent presses do nothing and Ctrl remains pressed until manually pressed.",
+      "There are no comments or current-version reproduction details.",
+      "Closed #14815 includes an older Scroll Lock-to-Ctrl+C stuck-state report; closed #17035 led to merged #37930 for generic modifier-side tracking, but neither confirms coverage of this exact mapping.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 sends the action key-up and modifier key-up when the source key-up is handled."
+    ],
+    "inferences": [
+      "The historical behavior may have been corrected by subsequent input changes, but no current retest is recorded.",
+      "If it persists, a lock-key event or generated key-up may be mishandled rather than omitted from the current single-key remap path."
+    ],
+    "analysis": "The original steps are sufficient for a focused current reproduction, but the report predates later modifier handling and current code explicitly releases the target modifier on source key-up. Ask whether the exact sequence still fails on v0.102.3001, separate the two source keys, and request a fresh /bugreport only for a current failure.",
+    "initial_investigation": [
+      "Refreshed the full issue body and confirmed there are no comments or assignees.",
+      "Read #14815 and #17035, including the Scroll Lock-to-Ctrl+C report and merged #37930's generic modifier side-tracking fix.",
+      "Read current upstream KeyboardEventHandlers.cpp and Helpers.cpp; the single-key remap path generates modifier key-down on source key-down and matching key-up on source key-up.",
+      "Searched current open reports and direct PR references; no specific merged fix for #37868 was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Num Lock and Scroll Lock separately still leave Ctrl held on v0.102.3001 and whether the On-Screen Keyboard shows Ctrl remaining down",
+        "why_needed": "This determines whether the 2025 report is still reproducible after later modifier changes and which source event path needs investigation.",
+        "how_to_collect": "Test each source key separately on v0.102.3001; if either reproduces, add `/bugreport` immediately afterward and identify the key used.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

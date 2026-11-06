@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 46307,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager: Insert text does not work correctly with New Outlook",
+  "url": "https://github.com/microsoft/PowerToys/issues/46307",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-03T12:59:07Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T15:15:59Z",
+  "evaluated_at": "2026-11-05T15:15:59Z",
+  "source_updated_at": "2026-10-11T16:47:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm current New Outlook behavior",
+    "detail": "The newline failure is isolated to New Outlook, but the report predates current stable PowerToys."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter confirms that the same inserted text preserves carriage returns in several other editors but appears on one line in New Outlook; another commenter reports similar New Outlook behavior. Current Keyboard Manager code normalizes CRLF and emits Shift+Enter for each newline, but there is no current-version New Outlook reproduction or app-specific regression test. Confirming the current PowerToys/Outlook behavior and whether manual Shift+Enter works is the smallest way to decide if injected input is still at fault.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.98.0 and New Outlook 1.2026.303.100.",
+      "The inserted signature text contains CRLF line breaks; the reporter says it works in Notepad, Notepad++, VS Code, PowerShell ISE, and Word, but not New Outlook.",
+      "The reporter confirms the failure occurs in both inline and pop-out compose windows.",
+      "A later commenter reports a similar New Outlook newline issue, but no current-release confirmation is present.",
+      "The attached diagnostic archive is already available; an unrelated editor toggle error in that archive does not explain the newline symptom."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-03T12:59:07Z"
-  }
+    "recommended_action": "Confirm the same mapping on current stable PowerToys and New Outlook and compare injected line breaks with a manual Shift+Enter in the same compose surface.",
+    "evaluated_at": "2026-11-05T15:15:59Z",
+    "source_updated_at": "2026-10-11T16:47:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue is isolated to New Outlook while the same mapping works in other editors. Current source handles CRLF and emits Shift+Enter, so the likely fix is in how that event sequence interacts with the Outlook compose surface, but current-version behavior must be confirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve inserted line breaks in New Outlook",
+      "root_cause": "New Outlook's composing surface may handle the synthetic Shift+Enter sequence differently from ordinary editors, so CRLF text that Keyboard Manager converts to Shift+Enter events is accepted without creating visible line breaks.",
+      "plan": [
+        "Reproduce the exact multiline Insert text mapping with current stable PowerToys and New Outlook.",
+        "Compare a manually typed Shift+Enter with the same event sequence sent by Keyboard Manager in the same compose surface.",
+        "If the injected event sequence is the differentiator, adjust newline delivery without regressing chat applications that require Shift+Enter.",
+        "Add focused regression coverage for multiline text in New Outlook and plain-text editors."
+      ],
+      "verification": [
+        "Insert a CRLF-containing mapping into New Outlook inline and pop-out compose windows and verify each line break is preserved.",
+        "Verify the same mapping still preserves line breaks in Notepad and at least one chat application.",
+        "Confirm no extra blank lines are introduced when CRLF is normalized."
+      ],
+      "confidence": {
+        "score": 59,
+        "level": "yellow",
+        "rationale": "The cross-editor difference and current Shift+Enter implementation support an input-compatibility hypothesis, but New Outlook has not been retested on a current release."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager's multiline Insert text mapping loses CRLF line breaks only in New Outlook, although the same mapping works in other editors.",
+    "known_information": [
+      "The report lists PowerToys 0.98.0 and New Outlook 1.2026.303.100.",
+      "The mapping uses Insert text with a chord trigger and contains carriage returns between signature lines.",
+      "The reporter says line breaks work in Notepad, Notepad++, VS Code, PowerShell ISE, and Word, but not in New Outlook.",
+      "The same result occurs in inline and pop-out compose windows, and another commenter reports a similar New Outlook behavior.",
+      "A diagnostic archive is attached; no current-release behavior confirmation or assignee is recorded."
+    ],
+    "inferences": [
+      "The failure may be specific to how New Outlook handles injected Shift+Enter events rather than text serialization, because other editors preserve the same mapping's line breaks.",
+      "Current Keyboard Manager code converts CRLF to one newline event and emits Shift+Enter, but the issue does not establish whether the same behavior is present in the current stable release."
+    ],
+    "analysis": "The report already supplies the important cross-editor comparison and a diagnostic archive, so a generic request for more logs is unnecessary. Current source sends each normalized newline as Shift+Enter, but the New Outlook-specific result may depend on the compose surface or may already have changed in a later release. A current-version check and manual Shift+Enter control are the next discriminating evidence.",
+    "initial_investigation": [
+      "Read the complete issue and all four comments, including the author's confirmation that other editors preserve line breaks and the later New Outlook report.",
+      "Reviewed the attached diagnostics privately; the editor toggle error is unrelated to the reported newline behavior and is not treated as causal.",
+      "Read current-main Helpers.cpp: SendTextInput treats CRLF as one newline and emits Shift+Enter for newline characters.",
+      "No Outlook-specific test or current-version confirmation was found in the issue discussion."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the issue persists on current stable PowerToys and New Outlook",
+        "why_needed": "The supplied PowerToys version is 0.98.0, so the current status is unknown.",
+        "how_to_collect": "Test the same mapping on v0.102.3001 or later stable and state the exact PowerToys and New Outlook versions and result.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "information": "Whether a manually typed Shift+Enter creates a line break in the same New Outlook compose surface",
+        "why_needed": "This distinguishes New Outlook's own compose behavior from Keyboard Manager's injected event sequence.",
+        "how_to_collect": "In the same compose field, type Shift+Enter manually and report whether it starts a new line; do not share signature text.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-46307-confirm-current-outlook-newlines",
+      "type": "request_info",
+      "label": "Confirm current New Outlook newline behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for confirming that the same mapping preserves line breaks in other editors but not New Outlook, and for sharing the attached report. Current Keyboard Manager code normalizes CRLF and sends Shift+Enter for each line break, so the remaining question is whether the current New Outlook compose surface still handles that injected sequence differently.\n\nPlease confirm:\n1. Does this still reproduce on current stable PowerToys (v0.102.3001 or later) with your current New Outlook build? Include both exact versions.\n2. In the same New Outlook compose field, does manually typing Shift+Enter create a line break? Please do not share the signature text.\n\nThis will distinguish a later-version fix from a New Outlook-specific input behavior. The report already attached is sufficient for now."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve New Outlook newline-compatibility design"
+    }
+  ]
 }

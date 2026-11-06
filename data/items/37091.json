@@ -1,33 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 37091,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "repository": "microsoft/PowerToys",
+  "title": "设置映射之后输入较快的情况下映射会失败",
+  "url": "https://github.com/microsoft/PowerToys/issues/37091",
+  "track": "triage",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:19:56Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:25:44Z",
+  "evaluated_at": "2026-11-05T20:25:44Z",
+  "source_updated_at": "2026-10-11T16:47:25Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce rapid Alt-key remaps",
+    "detail": "The mapping screenshot confirms Alt+U/I/O map to 7/8/9; the reporter says fast input sometimes leaks the original I or O."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The reporter gives a concrete Keyboard Manager mapping and contrasts slow versus fast input: while using Left Alt with U/I/O, slow input produces 7/8/9 but fast input sometimes leaves I or O unchanged. The attached screenshot was inspected and confirms the three relevant mappings. There are no comments, maintainer reproductions, or current-build results, so the first useful step is a controlled reproduction rather than a speculative code fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.87.1 and Keyboard Manager.",
+      "The report says Left Alt with U/I/O should produce 7/8/9, but rapid input sometimes produces 7/I/9 or 7/8/O.",
+      "The supplied mapping screenshot shows Alt+U to 7, Alt+I to 8, and Alt+O to 9 for all applications.",
+      "The issue currently has no comments or assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:19:56Z"
-  }
+    "recommended_action": "Reproduce the three mappings on current stable with slow and rapid Left-Alt input, recording whether the original letter event leaks through.",
+    "evaluated_at": "2026-11-05T20:25:44Z",
+    "source_updated_at": "2026-10-11T16:47:25Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is concrete enough to reproduce but does not establish whether the failure comes from modifier/key event ordering, input rollover, or another cause. No code change should be proposed before a maintainer verifies the sequence and current-build behavior."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Rapid Left-Alt input sometimes bypasses one of the configured U/I/O-to-7/8/9 mappings.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1 and Keyboard Manager.",
+      "The reporter expects Left Alt+U/I/O to output 7/8/9.",
+      "The reporter says slow input works but rapid input sometimes leaves I or O unchanged.",
+      "The supplied screenshot confirms Alt+U to 7, Alt+I to 8, and Alt+O to 9 for all applications."
+    ],
+    "inferences": [
+      "The reported failure may depend on the ordering or timing of adjacent modified key events, but the original sequence does not isolate a particular event transition."
+    ],
+    "analysis": "The screenshot removes ambiguity about the three relevant mappings. Reproduce the same held-modifier and key sequence at slow and fast rates before selecting an input-hook or state-management fix.",
+    "initial_investigation": [
+      "Read the current issue body and labels; the discussion has no comments or maintainer reproduction.",
+      "Inspected the supplied mapping screenshot and confirmed the Left-Alt U/I/O mappings to 7/8/9."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the fast-input failure persists on current stable and the exact outputs from a controlled U-then-I-then-O sequence while Left Alt remains held",
+        "why_needed": "The report is from 0.87.1 and describes intermittent results without isolating which key event or release order is missed.",
+        "how_to_collect": "Repeat the reported sequence on current stable, first slowly and then quickly, and record the output for each key.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare slow and rapid Left-Alt remaps",
+      "primary": true,
+      "reproduce": {
+        "title": "Check rapid sequential Left-Alt key remapping",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable; the issue was reported on PowerToys 0.87.1",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "Left Alt available as a physical modifier"
+        ],
+        "setup": [
+          "Configure Left Alt+U to 7, Left Alt+I to 8, and Left Alt+O to 9 for all applications."
+        ],
+        "steps": [
+          "Hold Left Alt and press U, I, and O slowly one at a time; confirm the output.",
+          "Repeat the same sequence while pressing the keys rapidly without releasing Left Alt.",
+          "Record whether any original I or O character appears instead of 8 or 9.",
+          "Repeat each chord individually to compare with the sequential input."
+        ],
+        "expected_result": "Every configured chord produces its mapped digit at both slow and rapid input rates, without leaking the original letter."
+      }
+    }
+  ]
 }

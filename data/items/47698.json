@@ -2,91 +2,107 @@
   "schemaVersion": 5,
   "number": 47698,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Select all (CTRL+A) not working on directories or desktop after mapping",
+  "url": "https://github.com/microsoft/PowerToys/issues/47698",
   "track": "fix",
-  "stage": "triage",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T22:54:43.1320266Z",
-  "evaluated_at": "2026-09-12T22:54:43.1320266Z",
-  "source_updated_at": "08/05/2026 02:09:07",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T20:44:17Z",
+  "evaluated_at": "2026-11-05T20:44:17Z",
+  "source_updated_at": "2026-10-11T16:47:18Z",
+  "status": {
+    "glyph": "?",
+    "label": "Investigate the Explorer-only shortcut failure",
+    "detail": "The author confirmed that Ctrl+E to Ctrl+A still fails on the desktop and in directories on the latest version, while working in other applications; screenshots confirm the mapping."
+  },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue was revalidated against the current public report, but the available evidence does not yet establish a sufficiently specific, implementation-ready PowerToys fix path.",
+    "status": "actionable_design",
+    "rationale": "The initial report describes Ctrl+E to Ctrl+A on a Spanish Windows 11 system. In a follow-up, the author says the failure persists on the latest PowerToys version, supplies screenshots of the exact mapping and Keyboard Manager configuration, and gives numbered steps: the remap fails on directories or the desktop but works in Word, browsers, and other applications. This isolates an application-context difference and supports a focused investigation of how the remap reaches the Windows shell. The exact current build number is not stated.",
     "evidence": [
-      "Current title: Select all (CTRL+A) not working on directories or desktop after mapping",
-      "Current report excerpt: ### Microsoft PowerToys version\n\n0.99.1\n\n### Installation method\n\nOther (please specify in \"Steps to Reproduce\")\n\n### Area(s) with issue?\n\nKeyboard Manager\n\n### Steps to reproduce\n\nMy system is in spanish so I use CTRL+E to select all. However, I decided to change it to CTRL+A as I'm used to it.\n\nThe problem is that when I activate the shortcut, I can't select all no matter what. Only after disabling it it starts working again with CTRL+E.\n\nNot, CTRL+A works in browsers and such.\n\n### ✔️ Expected Behavior\n\nMap CTRL+E to CTRL+A to select all\n\n### ❌ Actual Behavior\n\nCTRL+E and/or CTRL+A doesn't work at all in my desktop until the Keyboard manager is disabled.\n\n### Upload Bug Report ZIP-file\n\n_No response_\n\n### Additional Information\n\nWindows 11\n.Net version 4.8.09221\nLanguage Spanish\nRunning as admin\n\n### Other Software\n\n_No response_",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Current discussion count: 3"
+      "The original report lists PowerToys 0.99.1, Windows 11, Spanish language, and PowerToys running as administrator.",
+      "The author says the mapping is Ctrl+E to Ctrl+A and that Ctrl+E is the native select-all shortcut in their Spanish environment.",
+      "The author confirms the failure still occurs on the latest version and supplies screenshots showing the Ctrl+E to Ctrl+A mapping.",
+      "The numbered follow-up says the mapping fails on a directory or desktop but works in applications such as Word and Chrome.",
+      "The issue has three comments and no assignees."
     ],
-    "recommended_action": "Confirm a current supported-build reproduction with exact expected versus actual behavior and provide a fresh diagnostic package if the problem remains.",
-    "evaluated_at": "2026-09-12T22:54:43.1320266Z",
-    "source_updated_at": "08/05/2026 02:09:07"
+    "recommended_action": "Reproduce the app-versus-shell difference on the current build, then trace how Keyboard Manager's remapped Ctrl+A is delivered to Explorer and the desktop.",
+    "evaluated_at": "2026-11-05T20:44:17Z",
+    "source_updated_at": "2026-10-11T16:47:18Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A PowerToys-owned fix may apply, but the failing mechanism is not confirmed from the current public evidence."
+    "rationale": "The author confirms current behavior and shows the same mapping works in ordinary applications but not in Explorer or the desktop. This supports investigating a shell-specific remap delivery or shortcut interaction, though the underlying mechanism has not been identified."
   },
   "proposed_fixes": [
     {
-      "title": "Trace and correct the reported behavior in the owning PowerToys component",
-      "root_cause": "The issue indicates a component-specific behavior regression or state-handling defect, but the exact failing path remains unconfirmed.",
+      "title": "Preserve Ctrl+E to Ctrl+A remapping in Windows shell surfaces",
+      "root_cause": "Windows Explorer or the desktop may handle Ctrl+E/Ctrl+A differently from ordinary applications, preventing Keyboard Manager's replacement shortcut from reaching the shell's select-all command.",
       "plan": [
-        "Identify the owning module and reproduce the behavior on the current supported build.",
-        "Trace the state or control flow that diverges from the expected result.",
-        "Implement the smallest targeted correction and add regression coverage for the reported sequence."
+        "Reproduce the exact Ctrl+E to Ctrl+A mapping on current stable in a directory, on the desktop, and in Word or a browser.",
+        "Trace Keyboard Manager's input and output events for the Explorer and desktop processes, comparing them with the working application case.",
+        "If the original Ctrl+E event or synthesized Ctrl+A is intercepted or suppressed in the shell path, adjust the remapping behavior so the shell receives the intended Ctrl+A without breaking its other Ctrl+E behavior.",
+        "Add regression coverage for the mapping in File Explorer, the desktop, and a standard application."
       ],
       "verification": [
-        "Reproduce the issue on the current build, apply the correction, and confirm the expected result.",
-        "Run the focused tests for the owning module and repeat the original user flow."
+        "Ctrl+E selects all items in a File Explorer directory and on the desktop when mapped to Ctrl+A.",
+        "The same mapping continues to work in standard applications.",
+        "Disabling Keyboard Manager restores the system's native Ctrl+E behavior, and unrelated Explorer shortcuts remain unaffected."
       ],
       "confidence": {
-        "score": 40,
-        "level": "red",
-        "rationale": "The public report supports a PowerToys-owned investigation but does not yet confirm the root cause."
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The current failure and app-versus-shell difference are confirmed with screenshots and numbered steps, but no event trace establishes whether Explorer intercepts the original key or does not receive the synthesized Ctrl+A."
       }
     }
   ],
   "issue_context": {
-    "summary": "Select all (CTRL+A) not working on directories or desktop after mapping",
+    "summary": "Ctrl+E mapped to Ctrl+A still fails to select all on the desktop and in directories in the latest PowerToys version, while the mapping works in other applications.",
     "known_information": [
-      "The issue is open and labeled Issue-Bug.",
-      "The current report says: ### Microsoft PowerToys version\n\n0.99.1\n\n### Installation method\n\nOther (please specify in \"Steps to Reproduce\")\n\n### Area(s) with issue?\n\nKeyboard Manager\n\n### Steps to reproduce\n\nMy system is in spanish so I use CTRL+E to select all. However, I decided to change it to CTRL+A as I'm used to it.\n\nThe problem is that when I activate the shortcut, I can't select all no matter what. Only after disabling it it starts working again with CTRL+E.\n\nNot, CTRL+A works in browsers and such.\n\n### ✔️ Expected Behavior\n\nMap CTRL+E to CTRL+A to select all\n\n### ❌ Actual Behavior\n\nCTRL+E and/or CTRL+A doesn't work at all in my desktop until the Keyboard manager is disabled.\n\n### Upload Bug Report ZIP-file\n\n_No response_\n\n### Additional Information\n\nWindows 11\n.Net version 4.8.09221\nLanguage Spanish\nRunning as admin\n\n### Other Software\n\n_No response_"
+      "The original report lists PowerToys 0.99.1, Windows 11, Spanish language, and PowerToys running as administrator.",
+      "The author says Ctrl+E is the native select-all shortcut and maps it to Ctrl+A.",
+      "The author says the behavior still occurs on the latest version and supplied screenshots showing the mapping.",
+      "The follow-up steps say the remap fails on a directory or desktop but works in Word, browsers, and other applications.",
+      "The exact current PowerToys build number is not provided."
     ],
     "inferences": [
-      "The behavior may be owned by the PowerToys component indicated by the issue labels or report, but this is not confirmed."
+      "The failure may be specific to the Windows shell's handling of the original or synthesized shortcut rather than a general remapping failure."
     ],
-    "analysis": "The report warrants a focused current-build revalidation before an implementation-grade design is approved.",
+    "analysis": "The current confirmation and app-versus-shell comparison support a focused Keyboard Manager investigation. Reproduce in File Explorer and on the desktop, then inspect the delivered key sequence before choosing a code change; obtain the exact current build number to make the reproduction unambiguous.",
     "initial_investigation": [
-      "Read the current issue body, labels, and 3 public comments."
+      "Read the current issue body and all three comments.",
+      "Inspected the two follow-up screenshots; the configuration shows Ctrl+E assigned to Ctrl+A.",
+      "Confirmed the author says the issue persists on the latest version and provided numbered reproduction steps."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "A current supported-build reproduction with exact expected and actual behavior.",
-        "why_needed": "This distinguishes a still-current product defect from an already-fixed, configuration-specific, or externally caused report.",
-        "how_to_collect": "Reproduce on the latest PowerToys build and reply with numbered steps; if diagnostics are needed, comment /bugreport immediately after reproducing."
+        "information": "The exact current PowerToys version/build used for the latest-version reproduction",
+        "why_needed": "The issue confirms the bug is current but does not name the build, which is needed to reproduce and compare behavior consistently.",
+        "how_to_collect": "Read the PowerToys version from Settings > General and reply with the full version number used for the screenshots and retest.",
+        "evidence_type": "powertoys_version"
       }
     ]
   },
   "actions": [
     {
-      "id": "request-current-repro-47698",
-      "type": "request_info",
-      "label": "Confirm current repro and diagnostics",
-      "primary": true,
-      "comment": {
-        "target": "issue",
-        "number": 47698,
-        "body": "Please retest this on the latest PowerToys build and reply with numbered reproduction steps plus the exact expected and actual behavior. If it still reproduces, please comment `/bugreport` immediately after the failure so we can inspect current diagnostics."
-      }
+      "type": "approve_design",
+      "label": "Approve the Windows shell remap investigation"
     },
     {
-      "id": "approve-design-47698",
-      "type": "approve_design",
-      "label": "Approve focused investigation",
-      "primary": false,
-      "confirm": true,
-      "note": "Draft only; no upstream action was posted."
+      "id": "issue-47698-record-current-version",
+      "type": "request_info",
+      "label": "Record the current PowerToys version",
+      "comment": {
+        "body": "Thanks for confirming that Ctrl+E to Ctrl+A still fails on the desktop and in directories but works in other applications, and for sharing the mapping screenshots. Could you share the full PowerToys version number shown in Settings > General for the latest-version retest?"
+      }
     }
   ]
 }

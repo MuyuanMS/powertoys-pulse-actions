@@ -1,33 +1,136 @@
 {
+  "schemaVersion": 5,
   "number": 47858,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Atl + Tab does not remap correctly.",
+  "url": "https://github.com/microsoft/PowerToys/issues/47858",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-13T14:09:11Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:02:34Z",
+  "evaluated_at": "2026-11-05T22:02:34Z",
+  "source_updated_at": "2026-10-11T16:46:58Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Retest Alt+Tab remapping on current stable",
+    "detail": "The report combines a VIA hardware Ctrl/Alt swap with multiple Keyboard Manager key and shortcut mappings; the current-build failure and exact failing profile need isolation."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report lists v0.99.1 on Windows 10 and includes a PowerToys report ZIP. Its initial reproduction says Alt+Tab to Ctrl+Tab still opens the Windows switcher; the additional details describe a separate full profile with a VIA hardware LCtrl/LAlt swap and bidirectional key/shortcut mappings, where pressing or releasing Shift commits the highlighted tab instead of reversing direction. These observations may share an event-ordering problem, but the report does not clearly distinguish which exact profile produces each symptom. The old #12430 report concerns stuck modifiers around elevation changes and Alt+arrow remaps, not this browser-tab cycle behavior. No assignee or matching PR was found. Ask for a current retest that separates the hardware swap from the Keyboard Manager remap layers; do not request the already attached report again.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys v0.99.1, Windows 10 Enterprise build 19045, and attaches a PowerToys report ZIP.",
+      "The first reproduction step is Alt+Tab to Ctrl+Tab in the classic Keyboard Manager editor, but the expected browser-tab behavior is not observed.",
+      "The additional configuration includes a Keychron K8 Pro VIA hardware swap for left Ctrl/Alt and several bidirectional Keyboard Manager key and shortcut mappings.",
+      "With the full software-remap profile, the reporter says pressing or releasing Shift commits the highlighted tab rather than reversing tab-cycle direction.",
+      "#12430 describes a different stuck-modifier/elevation scenario and does not cover the browser-tab remapping behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-13T14:09:11Z"
+    "recommended_action": "Ask whether the single shortcut mapping still fails on v0.102.3001 with the VIA hardware swap enabled, then have the reporter distinguish that result from the full bidirectional Keyboard Manager profile.",
+    "evaluated_at": "2026-11-05T22:02:34Z",
+    "source_updated_at": "2026-10-11T16:46:58Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The conflicting results could arise from modifier translation and shortcut matching interacting across the hardware and software remap layers, but the report does not establish the failing profile or event sequence. The proposed direction is intentionally low-confidence.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stabilize Alt+Tab remapping across modifier layers",
+      "root_cause": "The key-level Ctrl/Alt swaps and shortcut-level Alt+Tab/Ctrl+Tab swaps may cause the chord to be matched against a translated modifier state, with Shift key-up/down changing which mapping owns the active cycle. This event-ordering hypothesis is unverified.",
+      "plan": [
+        "Reproduce the single Alt+Tab-to-Ctrl+Tab mapping with the VIA hardware swap and record which physical key events reach the browser and Windows switcher.",
+        "Repeat with the hardware swap disabled and then with the full Keyboard Manager key/shortcut profile to identify the layer that changes behavior.",
+        "Trace shortcut matching and modifier release handling for the confirmed failing profile before changing event ordering.",
+        "Add focused regression coverage for forward and reverse browser-tab cycling, including pressing and releasing Shift while the cycle is active."
+      ],
+      "verification": [
+        "On the current supported build, verify Alt+Tab reaches the browser as Ctrl+Tab under the confirmed configuration without opening the Windows switcher.",
+        "Verify Ctrl+Shift+Tab and Shift press/release reverse the browser-tab cycle without prematurely committing the highlighted tab."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The report combines hardware and multiple software remaps and does not distinguish which profile causes each symptom; modifier event ordering is only one possible explanation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A classic-editor Alt+Tab-to-Ctrl+Tab remap reportedly continues to invoke the Windows switcher, while a larger hardware/software Ctrl/Alt swap profile mishandles Shift during browser-tab cycling.",
+    "known_information": [
+      "The report lists PowerToys v0.99.1 on Windows 10 Enterprise build 19045 and includes a PowerToys report ZIP.",
+      "The first reported mapping is Alt+Tab to Ctrl+Tab, with the expectation that browser tabs cycle instead of windows.",
+      "The additional profile includes a VIA hardware LCtrl/LAlt swap and multiple bidirectional Keyboard Manager key and shortcut remappings.",
+      "In the full profile, the reporter says pressing or releasing Shift commits the highlighted tab instead of reversing direction."
+    ],
+    "inferences": [
+      "The two symptoms may share a modifier-translation or key-release interaction, but the report does not establish that they occur under the same configuration.",
+      "The source of the hardware swap and the Keyboard Manager mappings must be separated before selecting a fix."
+    ],
+    "analysis": "The existing report is detailed and already includes a diagnostic archive, but it combines a single shortcut mapping, a VIA hardware modifier swap, and several bidirectional software mappings. A focused current-build comparison can identify whether the basic shortcut remap fails by itself or only after the larger profile is enabled. The old #12430 report is not a covering duplicate because it describes stuck modifiers while switching between elevated windows and Alt+arrow remaps.",
+    "initial_investigation": [
+      "Read the full issue body, labels, comments, assignees, and attached-report reference; there are no comments or assignees.",
+      "Searched for PRs referencing the issue; none were returned.",
+      "Compared #12430; it is an older elevated-window/stuck-modifier scenario, not the reported browser-tab cycle behavior."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Alt+Tab to Ctrl+Tab still fails on v0.102.3001 with the VIA hardware swap, and whether the Shift-direction failure occurs only with the full Keyboard Manager profile",
+        "why_needed": "The report describes a simple shortcut remap and a larger hardware-plus-software profile without clearly tying each symptom to one configuration; isolating them determines which event path needs investigation.",
+        "how_to_collect": "On v0.102.3001, test the single Alt+Tab-to-Ctrl+Tab mapping with the VIA hardware LCtrl/LAlt swap enabled. Then test the full Keyboard Manager key/shortcut profile separately and report which setup opens the Windows switcher or commits the browser tab when Shift is pressed or released.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-47858-isolate-modifier-profile",
+      "type": "request_info",
+      "label": "Isolate the Alt+Tab modifier profile",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for including the VIA hardware swap, the full Keyboard Manager mapping list, and the PowerToys report. Since the report is from v0.99.1, could you confirm whether the single Alt+Tab-to-Ctrl+Tab mapping still opens the Windows switcher on v0.102.3001 with the VIA LCtrl/LAlt swap enabled? Please test the full bidirectional Keyboard Manager profile separately and say whether the Shift press/release issue occurs only in that setup."
+      }
+    },
+    {
+      "id": "issue-47858-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce Alt+Tab modifier interaction",
+      "note": "Keep the hardware swap and Keyboard Manager mappings as separate test cases so the failing layer is identifiable.",
+      "reproduce": {
+        "title": "Verify browser-tab remapping with modifier swaps",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "A browser in which Ctrl+Tab and Ctrl+Shift+Tab cycle tabs",
+          "Keychron K8 Pro or equivalent VIA-configurable keyboard with left Ctrl/Alt hardware swap"
+        ],
+        "steps": [
+          "With the VIA hardware LCtrl/LAlt swap enabled, configure only Alt+Tab to Ctrl+Tab in the classic editor and test the browser and Windows switcher.",
+          "Record the result, then separately configure the reported bidirectional Keyboard Manager key and shortcut mappings.",
+          "During browser-tab cycling, press and release Shift while holding the cycle modifier and check whether the highlighted tab is committed or the cycle direction changes."
+        ],
+        "expected_result": "The configured chord reaches the browser as Ctrl+Tab, and Ctrl+Shift+Tab reverses tab cycling without prematurely committing the selected tab or opening the Windows switcher."
+      }
+    },
+    {
+      "id": "issue-47858-approve-remap-investigation",
+      "type": "approve_design",
+      "label": "Approve Alt+Tab modifier investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Isolate the Alt+Tab modifier profile",
+    "reason": "The issue mixes a hardware swap with multiple software mappings and needs a current-build test that separates the failing layer."
   }
 }

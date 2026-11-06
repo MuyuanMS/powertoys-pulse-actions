@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 40736,
+  "title": "Keyboard Manager can't remap numbers on a german keyboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/40736",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:54:58Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:44:22.502Z",
+  "generated_at": "2026-11-05T14:44:22.502Z",
+  "evaluated_at": "2026-11-05T14:44:22.502Z",
+  "source_updated_at": "2026-10-11T16:47:58Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting a current German-layout key capture",
+    "detail": "On PowerToys 0.92.1, the number row captures shifted symbols and the dropdown omits those keys. Current dropdown entries are generated from the active keyboard layout."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says that on a German layout, the number-row keys are captured as their shifted alternatives and are absent from the dropdown, while numpad keys are excluded from the described test. Current KeyDropDownControl obtains its list from the active keyboard-layout map and refreshes it when the layout changes. The issue is from 0.92.1 and does not show the exact key/shift state or whether the current layout is active in the capture thread. Retest the same keys on the latest stable build before proposing a layout-mapping change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.92.1, Windows 11 Home 24H2 build 26100.4652, German system language, and administrator execution.",
+      "Pressing non-numpad number-row keys in the capture dialog reportedly yields their shifted alternatives; the number keys are also missing from the dropdown.",
+      "Current KeyDropDownControl builds the dropdown from the active keyboard-layout map and refreshes the list when the thread's keyboard layout changes.",
+      "The issue has no comments or diagnostic archive."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:54:58Z"
-  }
+    "recommended_action": "Ask for a v0.102.3001 retest identifying the active German layout, exact physical number key, and captured output with Shift released; request a diagnostic if the mismatch remains.",
+    "evaluated_at": "2026-11-05T14:44:22.502Z",
+    "source_updated_at": "2026-10-11T16:47:58Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report could reflect a mismatch between the German keyboard-layout key-name map and the key event recorded by the capture UI, but it does not show the active layout or exact shifted/unshifted result on the current build."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep German number-row key names aligned with captured key events",
+      "root_cause": "The dropdown and capture UI may interpret top-row number keys differently under the active German layout, causing the key to be omitted or displayed as its shifted alternative.",
+      "plan": [
+        "Reproduce on v0.102.3001 with the German layout active and record the physical number key, Shift state, captured name, and dropdown entries.",
+        "Compare the layout-specific key-name list with the virtual key captured by the editor.",
+        "If the list and captured event diverge, correct the layout mapping and add regression coverage for German number-row keys with Shift released and pressed."
+      ],
+      "verification": [
+        "Verify each top-row number key can be selected by capture and dropdown on the German layout.",
+        "Confirm shifted symbols remain correctly identified and numpad keys remain distinct."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The issue is specific to the German number row, but current source already derives key names from the active layout and the only reproduction is on 0.92.1; the mismatch is not confirmed on the current build."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a German keyboard, Keyboard Manager reportedly captures top-row numbers as shifted symbols and omits the number keys from its dropdown.",
+    "known_information": [
+      "The report lists PowerToys 0.92.1, Windows 11 Home 24H2 build 26100.4652, German system language, and administrator execution.",
+      "The reporter says non-numpad number-row keys are captured as their shifted alternatives and are absent from the dropdown.",
+      "Current KeyDropDownControl obtains names from the active keyboard-layout map and refreshes the list when that layout changes.",
+      "There are no comments, screenshots, or diagnostics attached."
+    ],
+    "inferences": [
+      "The capture thread may be using a different active layout or shift state than the dropdown mapping, but the report does not confirm either."
+    ],
+    "analysis": "The current editor explicitly sources dropdown names from the active layout, so a German-specific failure could be a mismatch between the active layout and recorded key events rather than missing number keys generally. The old report does not state which physical keys, Shift state, or captured labels are affected. Ask for a current-build reproduction that records those exact details before modifying the layout map.",
+    "initial_investigation": [
+      "Read the full issue body and confirmed it has no comments or diagnostics.",
+      "Inspected current KeyDropDownControl, which builds its list from the active keyboard-layout map and refreshes entries when the layout changes.",
+      "Confirmed the report has no current-build test or exact key-by-key capture output."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Whether each affected number-row key is captured correctly on v0.102.3001 with the German layout active and Shift released, and what name appears for the exact physical key.",
+        "why_needed": "The dropdown uses the active keyboard-layout map, and the report does not show whether Shift is held or which key event is being translated.",
+        "how_to_collect": "On v0.102.3001, confirm the active German input layout, test one physical number-row key with Shift released and pressed, and report the captured name and whether the same key appears in the dropdown."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive if the capture/dropdown mismatch persists on v0.102.3001.",
+        "why_needed": "A current report may identify the active layout and captured key path needed to investigate the editor's mapping.",
+        "how_to_collect": "Immediately after reproducing the current mismatch, add a comment containing /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the German number-key mapping investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest German number-row capture",
+      "comment": {
+        "target": "issue",
+        "number": 40736,
+        "body": "Thanks for identifying the German layout and the non-numpad number row. Current Keyboard Manager builds the dropdown from the active keyboard layout, but the report lists 0.92.1. Could you please:\n1. Retest on v0.102.3001 with the German input layout active and Shift released, using one physical number-row key; report the captured name and whether that key appears in the dropdown.\n2. Repeat with Shift held so we can distinguish the number key from its shifted symbol.\n3. If the mismatch remains, comment `/bugreport` immediately after reproducing.\nThis will show whether the current editor's layout map differs from the key event it captures."
+      }
+    }
+  ]
 }

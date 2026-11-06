@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 41143,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Key mapping leaves Alt or Ctrl active after idle wake",
+  "url": "https://github.com/microsoft/PowerToys/issues/41143",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:52:05Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:42Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm stuck modifier after idle on current release",
+    "detail": "The report describes a random Alt/Ctrl stuck state after waking from idle on PowerToys 0.93.0, but has no follow-up or diagnostics."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says left Alt is mapped to left Ctrl and Insert to Delete because the physical Ctrl/Delete keys do not work. After idle wake, pressing Alt can register as Alt+Ctrl or leave Alt active, causing Esc to minimize windows. The report is specific but from 0.93.0 and has no current-version confirmation or diagnostic capture.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.93.0 from Microsoft Store on Windows 11.",
+      "The two mappings are Insert to Delete and left Alt to left Ctrl.",
+      "The issue reportedly occurs randomly after the display goes dark from idle without a lock screen.",
+      "No comments, current-version confirmation, or diagnostic attachment are present."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:52:05Z"
-  }
+    "recommended_action": "Ask whether the issue persists on current stable and, if it does, request a fresh /bugreport captured immediately after the stuck modifier occurs.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:42Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the problem persists after idle wake, Keyboard Manager may fail to reconcile modifier key state across display or input-device idle transitions. A current diagnostic capture is needed to distinguish a remapping engine issue from the physically failing keys or a device-state change."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore modifier state after waking from idle",
+      "root_cause": "The remapping engine may retain or synthesize an inconsistent Alt/Ctrl state when input resumes after idle, especially when the physical Ctrl key is unavailable. The report does not identify which transition causes the stuck state.",
+      "plan": [
+        "Confirm the issue on current stable and capture a fresh PowerToys diagnostic immediately after reproduction.",
+        "Compare engine and input state before idle and after the display wakes.",
+        "Trace how remapped modifiers are released or reconciled across the observed idle transition.",
+        "Correct the confirmed state handling and add regression coverage for wake/resume with an active remap."
+      ],
+      "verification": [
+        "Verify left Alt produces only the configured left Ctrl mapping after idle wake.",
+        "Verify Alt and Ctrl are released when the key is released and Esc no longer minimizes windows unexpectedly.",
+        "Repeat multiple idle/wake cycles with both reported mappings active."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The post-idle symptom and mapping are concrete, but recurrence on current builds and the failing input transition are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After idle wake, left Alt mapped to left Ctrl reportedly acts as Alt+Ctrl or remains stuck, causing later keypresses such as Esc to minimize windows.",
+    "known_information": [
+      "The report lists PowerToys 0.93.0 from Microsoft Store on Windows 11.",
+      "Insert is mapped to Delete and left Alt to left Ctrl because the physical Delete/Ctrl keys do not work.",
+      "The issue reportedly occurs randomly after the display goes dark from idle without a lock screen.",
+      "No comments or diagnostics are present."
+    ],
+    "inferences": [
+      "The symptom may involve modifier state after idle/resume, but the report does not rule out the failing physical keys or a device/driver transition."
+    ],
+    "analysis": "The report provides a useful setup but not a deterministic trigger. First confirm current behavior and request a fresh /bugreport only if it still reproduces; do not request raw logs separately.",
+    "initial_investigation": [
+      "Read the full report, mapping configuration, idle condition, environment, labels, state, and comments.",
+      "No linked fix or related issue was identified."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the issue still occurs on current stable and a fresh PowerToys diagnostic captured immediately after the modifier becomes stuck",
+        "why_needed": "The report is from 0.93.0 and the event is random; current-version evidence is needed to identify the active input-state failure.",
+        "how_to_collect": "On current stable, repeat the mappings through an idle/wake cycle. If Alt or Ctrl becomes stuck, add a comment containing /bugreport immediately after the reproduction.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41143-confirm-idle-modifier-state",
+      "type": "request_info",
+      "label": "Confirm modifier state after idle wake",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for specifying the two mappings and the idle-wake condition. Could you confirm whether this still happens on current stable PowerToys? If Alt or Ctrl becomes stuck again, please add a comment containing `/bugreport` immediately after reproducing it so the diagnostic captures the active state; no raw log files are needed."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the idle modifier-state investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the stuck modifier after idle",
+      "note": "The issue is intermittent; gather diagnostics only if the current build reproduces it.",
+      "reproduce": {
+        "title": "Verify remapped modifier state after idle wake",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Windows 11",
+          "Keyboard Manager enabled",
+          "A keyboard with the reported physical Ctrl/Delete key problem"
+        ],
+        "setup": [
+          "Map Insert to Delete.",
+          "Map left Alt to left Ctrl."
+        ],
+        "steps": [
+          "Allow the display to go dark from idle without locking Windows.",
+          "Wake the display and press left Alt as a single key.",
+          "Check whether Alt or Ctrl remains active and whether Esc unexpectedly minimizes the current window."
+        ],
+        "expected_result": "Left Alt should produce only the configured left Ctrl mapping and release normally after key-up."
+      }
+    }
+  ]
 }

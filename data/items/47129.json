@@ -1,33 +1,128 @@
 {
+  "schemaVersion": 5,
   "number": 47129,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager text shortcut pastes previous clipboard content on first press",
+  "url": "https://github.com/microsoft/PowerToys/issues/47129",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-26T13:10:41Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:30Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce first-press text shortcut paste",
+    "detail": "On PowerToys 0.98.1, the first shortcut press reportedly pastes old clipboard content and the second press pastes the configured text."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives an always-reproducible sequence: assign a shortcut to text, copy other text, and press the shortcut twice. The first activation pastes the old clipboard and the second pastes the configured text, which points to ordering between clipboard update and paste dispatch. The exact implementation path remains to be confirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.98.1 and says the issue reproduces every time.",
+      "The first shortcut activation pastes the previous clipboard content; the second activation pastes the assigned text.",
+      "The report contains no comments or attached diagnostic archive."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-26T13:10:41Z"
-  }
+    "recommended_action": "Reproduce the two-press sequence and trace when the configured text is placed on the clipboard relative to the paste keystroke.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:30Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The old clipboard value appearing on the first press is consistent with the paste being dispatched before the configured text is available; confirm and order those operations so the first press pastes the assigned text."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Update shortcut text before dispatching paste",
+      "root_cause": "The text-shortcut handler may dispatch Ctrl+V before the clipboard contains the configured text, causing the first paste to use the previous clipboard value.",
+      "plan": [
+        "Reproduce the first-press failure on the reported configuration and inspect the text-shortcut clipboard update and paste dispatch order.",
+        "Ensure the configured text is available before emitting the paste command, using the existing clipboard synchronization mechanism.",
+        "Preserve the user's previous clipboard contents if that is the existing contract and ensure cleanup occurs after paste completion.",
+        "Add a regression test for the first activation and repeated activations."
+      ],
+      "verification": [
+        "The first shortcut press pastes the configured text rather than the prior clipboard content.",
+        "Repeated presses continue to paste the configured text.",
+        "Clipboard restoration and unrelated shortcut mappings remain correct."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The repeated first-old/second-configured result strongly suggests an ordering race, but the report's clipboard-timing explanation is not yet confirmed against the current handler."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keyboard Manager text shortcut reportedly pastes stale clipboard content on its first activation and the assigned text on its second.",
+    "known_information": [
+      "The report lists PowerToys 0.98.1 from the Microsoft Store.",
+      "The reproduction assigns a shortcut to a text string, copies other text, and presses the shortcut twice.",
+      "The reported first activation pastes prior clipboard content; the second pastes the assigned text.",
+      "The reporter says the behavior reproduces consistently."
+    ],
+    "inferences": [
+      "The text update and paste dispatch may be ordered incorrectly, but the report does not include an event trace."
+    ],
+    "analysis": "Because the failure is reported as consistent and the first/second results differ, a focused trace of clipboard update versus paste dispatch is more useful than requesting generic diagnostics.",
+    "initial_investigation": [
+      "Read the issue body and all comments; there are no comments.",
+      "No linked tracker or fix is mentioned in the report."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the first-press stale clipboard behavior remains on current stable and whether it occurs for each text shortcut configuration",
+        "why_needed": "The report is from PowerToys 0.98.1; current confirmation establishes whether the ordering behavior remains and its scope.",
+        "how_to_collect": "Confirm the current PowerToys version and repeat the same text shortcut after copying distinct clipboard text, noting whether the first and subsequent presses differ.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-47129-confirm-current-first-paste",
+      "type": "request_info",
+      "label": "Confirm current first-press paste behavior",
+      "primary": true,
+      "comment": {
+        "body": "You reported that the first text-shortcut press pastes the previous clipboard content and the second pastes the configured text on PowerToys 0.98.1. Could you confirm whether this still occurs on current stable with the same sequence?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the text shortcut clipboard order",
+      "reproduce": {
+        "title": "Check first and repeated text shortcut activations",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.98.1 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "A text shortcut configured"
+        ],
+        "setup": [
+          "Assign a keyboard shortcut to a known text string and copy a different known string to the clipboard."
+        ],
+        "steps": [
+          "Focus a text field and press the configured shortcut once.",
+          "Record the inserted text.",
+          "Press the same shortcut again and record the inserted text.",
+          "Repeat after copying a different clipboard string."
+        ],
+        "expected_result": "Each activation inserts the configured text, including the first press, and does not insert stale clipboard content."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the text shortcut ordering fix"
+    }
+  ]
 }

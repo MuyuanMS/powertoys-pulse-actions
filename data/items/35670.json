@@ -1,33 +1,87 @@
 {
+  "schemaVersion": 5,
   "number": 35670,
+  "title": "将Ctrl+c 的复制功能映射到一个键盘按键后，按这个键第二次，复制的文本内容还是第一次的文本内容",
+  "url": "https://github.com/microsoft/PowerToys/issues/35670",
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:31:23Z",
+  "generated_at": "2026-11-05T14:17:56.506Z",
+  "evaluated_at": "2026-11-05T14:17:56.506Z",
+  "source_updated_at": "2026-10-11T16:48:14Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "↻",
+    "label": "Validate repeated Ctrl+C remapping",
+    "detail": "The reporter gives a concrete Scroll Lock-to-Ctrl+C sequence on PowerToys 0.85.1, including stale clipboard contents and Ctrl remaining pressed; current-build behavior is unknown."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report specifies a Scroll Lock-to-Ctrl+C mapping and two repeated activations: the second copy reportedly retains the first selection, and Ctrl remains pressed. This is a focused maintainer reproduction, but it is reported only on PowerToys 0.85.1 and there is no evidence it persists on a supported build. Reproduce the same sequence locally before designing a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.85.1 and maps Ctrl+C to Scroll Lock.",
+      "The reporter says the second activation copies the first selection instead of the newly selected text.",
+      "The reporter separately says Ctrl can remain pressed after repeated activation.",
+      "The issue is open, has no comments, and has no assignee."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:31:23Z"
-  }
+    "recommended_action": "Run the exact repeated-selection sequence on PowerToys 0.100.2 or newer in a disposable text buffer and verify both clipboard contents and modifier release.",
+    "evaluated_at": "2026-11-05T14:17:56.506Z",
+    "source_updated_at": "2026-10-11T16:48:14Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The only reported build is 0.85.1 and the issue does not establish whether the two symptoms persist today. A current-build maintainer reproduction is available; no specific code correction is justified until that result isolates a still-failing path."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Repeated Scroll Lock-to-Ctrl+C remaps reportedly copy stale text and can leave Ctrl pressed.",
+    "known_information": [
+      "The report lists PowerToys 0.85.1.",
+      "The source key is Scroll Lock and the target shortcut is Ctrl+C.",
+      "The reporter describes stale clipboard content on the second activation and a Ctrl modifier that remains pressed."
+    ],
+    "inferences": [
+      "The paired symptoms may involve repeated injected shortcut events or modifier state, but the report does not identify which event or release path fails."
+    ],
+    "analysis": "The issue provides enough detail for a maintainer-controlled test without asking for generic logs. Use distinct text selections and a disposable editor so the clipboard result and any stuck modifier can be observed independently on a current build.",
+    "initial_investigation": [
+      "Read the complete Chinese issue body; there are no later comments, assignees, or current-build retest.",
+      "Separated the stale-copy symptom from the reported stuck-Ctrl symptom so each can be checked in the same controlled sequence."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce repeated Ctrl+C remapping",
+      "note": "The report has a specific sequence; verify whether either symptom remains on a current build before proposing a code change.",
+      "reproduce": {
+        "title": "Verify repeated Scroll Lock-to-Ctrl+C remaps",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
+        "prerequisites": [
+          "Windows desktop session",
+          "Keyboard Manager enabled",
+          "A text editor with a disposable buffer"
+        ],
+        "setup": [
+          "Map Scroll Lock to Ctrl+C in Keyboard Manager.",
+          "Open a disposable text buffer and prepare two different strings, such as alpha and beta."
+        ],
+        "steps": [
+          "Select alpha and press Scroll Lock; verify the clipboard contains alpha.",
+          "Select beta and press Scroll Lock again; paste into a separate line and verify the clipboard contains beta.",
+          "Release Scroll Lock, focus an empty line, and type an ordinary letter to check whether Ctrl remains logically pressed."
+        ],
+        "expected_result": "Each activation should copy the current selection, and Ctrl should be released after the remapped key is released."
+      }
+    }
+  ]
 }

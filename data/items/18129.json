@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 18129,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "FancyZones app-running-as-administrator prompt doesn't honor the don't show again option",
+  "url": "https://github.com/microsoft/PowerToys/issues/18129",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-04-13T17:23:29Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-1",
+    "Status-Reproducible"
+  ],
+  "comments": 8,
+  "generated_at": "2026-11-05T23:38:39Z",
+  "evaluated_at": "2026-11-05T23:38:39Z",
+  "source_updated_at": "2026-10-11T14:45:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "▶",
+    "label": "Make elevated-warning dismissal persistent",
+    "detail": "The elevated-app toast uses a 30-day dismissal timestamp; the existing warning setting provides a visible, reversible way to honor \"Don't show again.\""
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Approve the setting-backed dismissal",
+    "reason": "Persistently disabling the existing elevated-app warning setting matches the button label and leaves the separate preview-toast timeout unchanged."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-18129-approve-setting-backed-dismissal",
+      "type": "approve_design",
+      "label": "Approve persistent, reversible warning dismissal",
+      "primary": true
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The latest investigation identifies the precise mismatch: the elevated-app warning stores a timestamp that is honored for only 30 days. Current code separately reads the existing enable_warnings_elevated_apps setting, so making the button persistently disable that visible setting is a concrete and reversible fix; the preview-modules toast can retain its current 30-day behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The 2022 report says the warning returns after a restart or new Windows flight; later users report repeated warnings.",
+      "The 2026-10-11 issue comment reproduces the return by backdating the elevated-warning registry timestamp by 45 days and identifies ElevatedDisableIntervalInDays = 30.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 calls is_toast_disabled(ElevatedDontShowAgainRegistryPath, ElevatedDisableIntervalInDays) for the elevated-app warning.",
+      "Current NotificationUtil::ReadSettings loads enable_warnings_elevated_apps, providing an existing user-visible and reversible setting; the preview toast uses a separate registry path and interval."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-04-13T17:23:29Z"
+    "recommended_action": "Change the elevated-warning button activation to persistently disable the existing enable_warnings_elevated_apps setting; keep the preview-modules toast on its existing 30-day suppression behavior and verify that users can re-enable the warning in Settings.",
+    "evaluated_at": "2026-11-05T23:38:39Z",
+    "source_updated_at": "2026-10-11T14:45:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The 30-day timestamp is directly confirmed in current code and reproduces the reported recurrence. Reusing the existing setting makes the dismissal durable and visible without changing the separate preview-toast policy.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Persistently disable the elevated-app warning when dismissed",
+      "root_cause": "The elevated-app warning uses the generic timestamp-based toast suppression with a 30-day interval. After that interval the warning is eligible again, despite the button promising not to show it again. The existing enable_warnings_elevated_apps setting is a user-visible and reversible control.",
+      "plan": [
+        "Update the elevated-warning activation path to persistently set enable_warnings_elevated_apps to false when the user selects \"Don't show again.\"",
+        "Keep the preview-modules toast on its own 30-day timestamp-based suppression path; do not make the shared helper permanent for all toasts.",
+        "Add coverage for dismissal across module/process restart and settings updates, and verify that turning the existing warning setting back on restores the warning."
+      ],
+      "verification": [
+        "After dismissing the elevated-app warning, restarting FancyZones or Always On Top does not show it again.",
+        "The preview-modules toast still uses its existing 30-day dismissal interval.",
+        "Re-enabling the elevated-app warning in Settings allows the warning to appear again when its trigger occurs."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The 30-day expiry is explicit in the current helper and is the direct cause of the reported recurrence; the existing setting is already read by the warning utility and is reversible."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The FancyZones and Always On Top elevated-app warning returns after the user selects \"Don't show again.\"",
+    "known_information": [
+      "The original report used PowerToys 0.58.0 and observed the warning after restarting or starting a new Windows session.",
+      "The latest investigation reports that the elevated-warning dismissal is stored as a timestamp and expires after 30 days; backdating it by 45 days reproduces the warning.",
+      "Current upstream uses a 30-day interval for the elevated-app warning and separately loads the enable_warnings_elevated_apps setting.",
+      "The preview-modules toast has a separate registry path and a separate 30-day interval."
+    ],
+    "inferences": [
+      "A permanent, reversible setting change is more consistent with the \"Don't show again\" button than an expiring timestamp.",
+      "The preview-modules toast should retain its existing temporary suppression behavior because it uses a distinct notification path."
+    ],
+    "analysis": "The 30-day suppression explains why the button appears to work initially but the warning later returns. The existing warning setting offers a visible way to reverse the choice, unlike a hidden permanent registry dismissal. Keep the change limited to the elevated-app warning so the preview-toast policy does not change.",
+    "initial_investigation": [
+      "Read the full issue body and comments, including the 2026-10-11 reproduction and proposed alternatives.",
+      "Inspected current upstream NotificationUtil.cpp and dont_show_again.h: the elevated warning uses the 30-day timestamp helper, while NotificationUtil::ReadSettings reads the existing warning setting."
+    ],
+    "information_gaps": []
   }
 }

@@ -1,33 +1,135 @@
 {
+  "schemaVersion": 5,
   "number": 37790,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager - Assign of a modifier key (Shift, Control,..) not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/37790",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:14:08Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:09:00Z",
+  "evaluated_at": "2026-11-05T22:09:00Z",
+  "source_updated_at": "2026-10-11T16:46:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Retest key-to-modifier behavior on current stable",
+    "detail": "The v0.89 report says a mapped key emits Control or Shift but does not remain active as a modifier; a current-build test is missing."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says that in PowerToys v0.89, mapping a key to Control or Shift emits the target key but does not keep it active while held. The report asks for modifier behavior or an explicit option and includes a screenshot, but no concrete source key, target-side modifier, or current-build result is recorded. Open issue #33539 is related but focuses on a modifier-only remap being rejected with an orphaned-key warning; its latest current-version question is unanswered. Open #3619 requests non-modifier keys such as Space as chord sources, which is a different behavior. Neither establishes that the runtime hold behavior in this report is covered.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys v0.89 and says a key mapped to Control or Shift is sent but does not act as a held modifier.",
+      "The report includes a screenshot and has no comments or assignees.",
+      "#33539 concerns modifier-only remapping being rejected with a warning, while #3619 concerns using non-modifier keys as chord sources; neither confirms a fix for this runtime behavior.",
+      "No matching PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:14:08Z"
+    "recommended_action": "Ask for one concrete key-to-Left-Ctrl or key-to-Left-Shift mapping and whether it still fails on v0.102.3001 when the source key is held with a second key.",
+    "evaluated_at": "2026-11-05T22:09:00Z",
+    "source_updated_at": "2026-10-11T16:46:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the issue persists, the key-remap path may be emitting the modifier as a tap rather than pairing target key-down and key-up with the source key lifetime. The source mapping and current behavior need confirmation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve held state for key-to-modifier remaps",
+      "root_cause": "The key-to-key remap path may send a modifier target without preserving its pressed state until the source key is released, causing the target to behave like a tap rather than a held modifier. The report does not identify the source key or current build.",
+      "plan": [
+        "Reproduce with one ordinary source key mapped to Left Ctrl and then Left Shift, holding the source while pressing a second key.",
+        "Trace how target modifier key-down and key-up events are generated from source-key events.",
+        "If the target is released too early, pair its lifetime with the source key and preserve existing modifier state when the source is released.",
+        "Add regression coverage for held modifier targets, source-key release, and consecutive remapped inputs."
+      ],
+      "verification": [
+        "Verify a mapped source key held with a second key activates the expected Ctrl/Shift shortcut on current stable.",
+        "Verify releasing the source key releases the target modifier and does not leave it stuck."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The described tap-versus-held behavior suggests a key-event lifetime issue, but no exact mapping or current-build result is supplied."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A key mapped to Control or Shift reportedly emits the target but does not keep the modifier active while the source key is held.",
+    "known_information": [
+      "The report lists PowerToys v0.89 from the Microsoft Store and says it was running as administrator.",
+      "The reporter tried mapping a key to Control or Shift and says the target is sent but does not act as a held modifier.",
+      "The issue includes a screenshot but no comments or assignees."
+    ],
+    "inferences": [
+      "A target modifier key-down may be released too early, but the report does not provide a concrete source key or event trace.",
+      "#33539 and #3619 are related discussions, not confirmed coverage of this same runtime behavior."
+    ],
+    "analysis": "The issue is about the runtime semantics of mapping a key to a standard modifier. #33539 is about a modifier-only mapping rejected by the editor with an orphaned-key warning, and #3619 is about using non-modifier keys such as Space as chord sources; those are not enough to mark this report handled. A current retest with one specific mapping will determine whether a code change is still needed.",
+    "initial_investigation": [
+      "Read the complete issue body and screenshot reference; the issue has no comments or assignees.",
+      "Compared #33539 and #3619 to separate editor validation and non-modifier chord requests from this reported key-to-modifier hold behavior.",
+      "Searched for PRs referencing the issue; none were returned."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether a specific source key mapped to Left Ctrl or Left Shift still fails to behave as a held modifier on v0.102.3001",
+        "why_needed": "The report is from v0.89 and does not identify the exact source key, target side, or current behavior; a concrete held-key test distinguishes a current event-lifetime defect from an old configuration issue.",
+        "how_to_collect": "On v0.102.3001, map one source key to Left Ctrl or Left Shift, hold it while pressing a second key that uses that modifier, and report the exact mapping and whether the shortcut activates.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-37790-current-modifier-retest",
+      "type": "request_info",
+      "label": "Retest a held modifier mapping on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for clarifying that the target Control or Shift is emitted but does not remain active while the source is held. Since the report is from v0.89, could you confirm whether this still happens on v0.102.3001? Please give one concrete mapping (source key to Left Ctrl or Left Shift) and test holding the source while pressing a second key that uses that modifier; say whether the shortcut activates."
+      }
+    },
+    {
+      "id": "issue-37790-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce held modifier key mapping",
+      "note": "Use a standard modifier as the destination and check the target's pressed lifetime, not a non-modifier chord-source feature.",
+      "reproduce": {
+        "title": "Verify held state for a modifier destination",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "A source key that can be safely remapped",
+          "A second key with a known Ctrl or Shift shortcut"
+        ],
+        "steps": [
+          "Map the source key to Left Ctrl and save.",
+          "Hold the source key and press the second key for a known Ctrl shortcut.",
+          "Repeat with the source mapped to Left Shift and a known Shift shortcut.",
+          "Release the source key and verify the target modifier is no longer active."
+        ],
+        "expected_result": "The target modifier remains active for the duration of the source-key hold, triggers the expected shortcut, and is released when the source key is released."
+      }
+    },
+    {
+      "id": "issue-37790-approve-held-modifier-investigation",
+      "type": "approve_design",
+      "label": "Approve held modifier remap investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Retest a held modifier mapping on current stable",
+    "reason": "The report is from v0.89 and does not identify one exact mapping or current-build result."
   }
 }

@@ -1,46 +1,66 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 18979,
   "kind": "issue",
-  "track": "fix",
-  "stage": "design_in_progress",
+  "repository": "microsoft/PowerToys",
+  "title": "TouchPad gestures cause unexpected key events",
+  "url": "https://github.com/microsoft/PowerToys/issues/18979",
+  "track": "triage",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2024-11-01T09:47:03Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/18979",
-  "title": "TouchPad gestures cause unexpected key events",
-  "author": "unuing",
-  "authorAssociation": "CONTRIBUTOR",
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Priority-2"
+    "Priority-2",
+    "Product-Keyboard Manager"
   ],
   "comments": 22,
-  "confidence": "Medium-high",
+  "generated_at": "2026-11-05T20:19:19Z",
+  "evaluated_at": "2026-11-05T20:19:19Z",
+  "source_updated_at": "2026-10-11T16:47:25Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for Keyboard Shortcut Manager with reproduction evidence and enough diagnostic context for deeper design investigation."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
+    "glyph": "i",
+    "label": "Gesture-generated key events pass through the remap",
+    "detail": "Maintainer discussion says Windows exposes touchpad gesture actions as key events to the low-level hook, so a Ctrl-to-Caps Lock remap also transforms gesture-generated Ctrl."
   },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for Keyboard Shortcut Manager with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "status": "not_actionable",
+    "rationale": "The issue reports touchpad gestures causing the configured Ctrl-to-Caps Lock remap to activate. A maintainer explains that Windows sends the gesture as a Ctrl key event visible to Keyboard Manager's low-level hook and that there is no known way for the hook to identify the event as gesture-generated. A later commenter says gestures now work appropriately and identifies a separate Fn+M touchpad toggle as likely lower-level. The remaining expectation that gesture-generated Ctrl bypass the remap is not supported by the input information available to Keyboard Manager.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Priority-2",
-      "Candidate sources: hot_comments",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "The original report describes remapping Left Ctrl and Caps Lock and observing Caps Lock/Win+P behavior for touchpad gestures.",
+      "A maintainer states that touchpad gestures send key events to Windows and Keyboard Manager sees the Control key in its low-level keyboard hook.",
+      "The maintainer says there may be no way to distinguish a gesture-generated key press from other keyboard input.",
+      "A 2024 commenter reports that the gestures work appropriately now and says the remaining Fn+M toggle is likely handled by lower-level device functions.",
+      "Related issue #16596 describes an Fn+F12 touchpad toggle failure and does not establish a Keyboard Manager fix for gesture-generated key remapping."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2024-11-01T09:47:03Z"
+    "recommended_action": "Do not propose a code fix that selectively bypasses touchpad gestures without a Windows-provided event-origin signal; treat device-level Fn-key behavior separately.",
+    "evaluated_at": "2026-11-05T20:19:19Z",
+    "source_updated_at": "2026-10-11T16:47:25Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The documented gesture input reaches Keyboard Manager as a Ctrl key event with no known origin signal, so the configured Ctrl remap is applied as designed. The separate Fn+M device toggle is not established as a PowerToys-owned event path."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Touchpad gestures reportedly trigger the remapped Caps Lock action because Windows exposes gesture output as Ctrl key events to Keyboard Manager.",
+    "known_information": [
+      "The original report lists PowerToys 0.59.1 and a Left Ctrl/Caps Lock swap.",
+      "A maintainer explains that Windows sends the touchpad gesture as a key event visible to Keyboard Manager's low-level hook.",
+      "The maintainer does not know of a way for Keyboard Manager to identify that the Ctrl event originated from a gesture.",
+      "A later commenter reports that gestures work appropriately now and believes Fn+M is a separate low-level device function.",
+      "Closed issue #16596 concerns a different Fn+F12 touchpad toggle failure."
+    ],
+    "inferences": [
+      "Without an input-origin signal from Windows, Keyboard Manager cannot reliably exempt gesture-generated Ctrl from the configured remap while continuing to remap physical Ctrl."
+    ],
+    "analysis": "The current architecture treats the gesture's Ctrl event like other Ctrl input. The original gesture symptom is therefore not a separate remapping defect absent evidence of a distinguishable event source; device firmware Fn shortcuts should not be attributed to Keyboard Manager based only on co-occurrence.",
+    "initial_investigation": [
+      "Read the complete issue and all 22 comments, including maintainer input-path explanation and the 2024 follow-up that gestures work appropriately.",
+      "Reviewed closed issue #16596; it concerns a device-level Fn+F12 toggle and does not show a Keyboard Manager fix path."
+    ],
+    "information_gaps": []
   },
   "actions": []
 }

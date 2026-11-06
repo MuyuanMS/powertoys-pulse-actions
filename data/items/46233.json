@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 46233,
+  "title": "Cannot access part of window nor move window behind to allow access",
+  "url": "https://github.com/microsoft/PowerToys/issues/46233",
+  "labels": [
+    "Issue-Bug",
+    "Area-User Interface",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-21T21:30:03Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T15:01:13.876Z",
+  "generated_at": "2026-11-05T15:01:13.876Z",
+  "evaluated_at": "2026-11-05T15:01:13.876Z",
+  "source_updated_at": "2026-10-11T16:47:54Z",
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to niels9001, indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Retest remap dialog positioning",
+    "detail": "On v0.98, remap dialog controls can be off-screen and neither the dialog nor its editor owner can be moved; closing the dialog restores editor movement."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to niels9001, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report gives a specific new-editor scenario: save/cancel controls can be off-screen, and while the remap dialog is open neither it nor its owner can be repositioned; closing the dialog restores movement. The report is from v0.98 and one maintainer comment asks whether a screenshot depicts the issue, but there is no current-build confirmation or display resolution/scaling. These details determine whether this is still a layout defect and what display geometry triggers it.",
     "evidence": [
-      "The issue is assigned to niels9001, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.98.0 and Keyboard Manager.",
+      "The remap dialog can place Save/Cancel outside the visible area and the owner/editor cannot be moved while the dialog is open.",
+      "The reporter says closing the dialog allows the editor to be repositioned; resizing and maximizing are possible.",
+      "One maintainer comment asks if the reporter-provided screenshot represents the issue; there is no reporter reply confirming it."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-21T21:30:03Z"
-  }
+    "recommended_action": "Retest on v0.102.3001 and report display resolution/scaling plus whether dragging either title bar works while the remap dialog is open.",
+    "evaluated_at": "2026-11-05T15:01:13.876Z",
+    "source_updated_at": "2026-10-11T16:47:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The modal dialog and owner may be constrained to an off-screen or non-movable layout, but the current build and display geometry are unconfirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep remap dialog controls accessible and windows movable",
+      "root_cause": "The new editor may position the remap dialog or owner outside the usable work area and fail to provide a movable title bar when the dialog is open.",
+      "plan": [
+        "Reproduce on v0.102.3001 and record screen resolution, scaling, and the remap dialog state.",
+        "Determine whether the dialog or owner is outside the work area or its drag handling is disabled while modal.",
+        "Keep required controls visible and allow recovery by moving/resizing the dialog or owner; add UI coverage for scaled and constrained window sizes."
+      ],
+      "verification": [
+        "Verify Save/Cancel remain visible or the dialog can be repositioned at the reported display configuration.",
+        "Verify the owner editor can be recovered without closing the dialog."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The window interaction is described clearly, but only v0.98 is reported and the display geometry and current behavior are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager remap dialog controls may be off-screen while the dialog and its editor owner cannot be moved.",
+    "known_information": [
+      "The report lists v0.98.0 and the new Keyboard Manager editor.",
+      "Save/Cancel can be outside the visible area; neither dialog nor editor can be repositioned until the dialog is closed.",
+      "The editor can be resized or maximized, but title-bar drag does not respond.",
+      "A maintainer posted a screenshot question; no reporter confirmation appears in the thread."
+    ],
+    "inferences": [
+      "Display scaling or available work area may contribute, but the issue gives no resolution or scaling information."
+    ],
+    "analysis": "The report has enough detail to identify the blocked interaction, so do not ask for a generic repro. A current-build test with display geometry will show whether the layout/drag issue remains and which window cannot be recovered.",
+    "initial_investigation": [
+      "Read the full issue and the single maintainer comment.",
+      "Recorded the existing description that closing the modal dialog restores editor movement.",
+      "Confirmed the reported build is v0.98.0 and no display resolution/scaling or current-build test is provided."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "The report is from v0.98.0.",
+        "how_to_collect": "Repeat the same remap-dialog workflow on v0.102.3001.",
+        "information": "Whether the off-screen controls and non-movable windows reproduce on v0.102.3001.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "why_needed": "Window work-area and scaling determine whether the controls become inaccessible and whether the issue is layout-specific.",
+        "how_to_collect": "Report the affected display resolution and Windows scaling percentage, then test dragging the dialog and editor title bars while the dialog remains open.",
+        "information": "The affected display resolution and scaling, and which of the dialog/editor title bars can be moved while the dialog is open.",
+        "evidence_type": "monitor_topology"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest remap dialog positioning",
+      "comment": {
+        "target": "issue",
+        "number": 46233,
+        "body": "Thanks for describing that Save/Cancel can be off-screen and closing the remap dialog restores editor movement. A maintainer also asked whether the screenshot in the thread shows the same state, but there is no confirmation yet.\n\nCould you please:\n1. Retest the same workflow on v0.102.3001 and report whether Save/Cancel are still inaccessible and whether dragging the dialog or editor title bar works while the dialog is open.\n2. Include the affected display resolution and Windows scaling percentage.\nThis will distinguish a current dialog layout/drag defect from a display-specific off-screen state."
+      }
+    }
+  ]
 }

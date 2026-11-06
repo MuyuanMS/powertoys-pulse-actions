@@ -3,86 +3,111 @@
   "number": 37671,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidation",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:23:59",
+  "generated_at": "2026-11-05T21:45:41.49Z",
+  "evaluated_at": "2026-11-05T21:45:41.49Z",
+  "source_updated_at": "2026-10-11T16:47:02Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The bounded revalidation found that current evidence is insufficient to confirm a specific fix path.",
+    "rationale": "The report says a key configured to launch an app does nothing on PowerToys 0.88.0 and lists iFlyIME 3.0.1738; the reporter attached a diagnostic archive. A later commenter reports no errors in that archive and asks whether the issue persists on 0.100.2 or above and whether all remaps fail. That comment is minimized as low-quality and has no reply. Ask for current-version behavior and whether the failure is limited to the launch-app action before requesting more diagnostics.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The report lists PowerToys 0.88.0 from Microsoft Store and iFlyIME 3.0.1738; the reproduction is a key remapped to launch an app, with no result.",
+      "The reporter attached a PowerToys diagnostic archive.",
+      "A later commenter says the archive has no errors and asks whether the issue persists on 0.100.2 or above and whether all remaps fail; no answer is present.",
+      "A separate commenter described a Windows-key startup/remap behavior, which is not the same launch-app reproduction.",
+      "The issue remains open with five comments and no assignees."
     ],
-    "recommended_action": "Collect a current reproduction and /bugreport diagnostics before detailed design.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:23:59"
+    "recommended_action": "Ask whether the launch-app mapping still fails on v0.102.3001 and whether ordinary key remaps work, including the exact key and app used.",
+    "evaluated_at": "2026-11-05T21:45:41.49Z",
+    "source_updated_at": "2026-10-11T16:47:02Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A current report and diagnostics are needed before a defensible PowerToys fix design can be selected."
+    "rationale": "The attached diagnostics were reported to contain no errors, but the old report does not establish whether the launch-app action or Keyboard Manager generally fails on a current build."
   },
-  "proposed_fixes": {
-    "title": "Revalidate the current failure path",
-    "root_cause": "The available public evidence does not isolate a confirmed root cause.",
-    "plan": [
-      "Collect a current reproduction and diagnostic archive.",
-      "Use the evidence to identify the owning module before proposing a code change."
-    ],
-    "verification": [
-      "Confirm the behavior on a supported current build and compare it with the collected diagnostics."
-    ],
-    "confidence": {
-      "score": 30,
-      "rationale": "Multiple plausible causes remain until current evidence is supplied.",
-      "level": "red"
+  "proposed_fixes": [
+    {
+      "title": "Investigate the reported launch-app remap on a current build",
+      "root_cause": "The app-launch remap may fail in a specific configuration or the reported issue may have been resolved since 0.88.0; the current evidence does not isolate a runtime cause.",
+      "plan": [
+        "Confirm whether the exact key-to-launch-app mapping still fails on a current supported build.",
+        "Compare the launch-app mapping with an ordinary key remap under the same setup.",
+        "If the failure persists, trace the confirmed action path and add a focused regression test for the failing remap type."
+      ],
+      "verification": [
+        "Confirm the launch-app mapping starts the selected application on the current build.",
+        "Verify ordinary key remaps remain functional under the same configuration."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The report is from 0.88.0 and the attached archive reportedly contains no errors; no current reproduction or distinction between action types is available."
+      }
     }
-  },
+  ],
   "issue_context": {
-    "summary": "keyboard manager not working",
+    "summary": "A key-to-launch-app mapping reportedly does nothing on PowerToys 0.88.0; the reporter supplied a diagnostics archive and listed iFlyIME 3.0.1738.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:23:59",
-      "."
+      "The report lists PowerToys 0.88.0, Microsoft Store installation, and iFlyIME 3.0.1738.",
+      "The reported steps configure a key to launch an app; actual behavior is that nothing happens.",
+      "The reporter attached a PowerToys diagnostics archive; a commenter says it contains no errors.",
+      "A later comment asks whether the problem persists on 0.100.2 or above and whether all remaps fail; there is no response."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The failure may be limited to the launch-app mapping or may affect Keyboard Manager more broadly; the report does not distinguish these cases."
     ],
-    "analysis": "A current diagnostic package is the smallest evidence needed to separate stale, environment-specific, and code defects.",
+    "analysis": "Use a current-build check and a comparison with an ordinary key remap to identify whether the issue is isolated to the launch-app action. Do not request another diagnostic archive before the behavior is confirmed.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue body, uploaded-archive comment, follow-up question, automated similar-issue comment, labels, and assignees.",
+      "Checked the listed similar reports; the candidates are closed, stale, generic Keyboard Manager failures, or fixed reports and none confirms a covering fix for this launch-app case.",
+      "Inspected the Keyboard Manager launch path in KeyboardEventHandlers.cpp; the code expands the configured launch path and handles already-running application behavior, but the issue lacks a current repro to identify a failing branch."
     ],
-    "information_gaps": {
-      "evidence_type": "bugreport_zip",
-      "information": "A fresh current-version diagnostic archive captured immediately after reproducing the report.",
-      "why_needed": "To distinguish a PowerToys-owned defect from environment-specific or already-fixed behavior.",
-      "how_to_collect": "Please reproduce, then comment /bugreport immediately after the failure."
-    }
+    "information_gaps": [
+      {
+        "information": "Whether key-to-launch-app still fails on v0.102.3001, and whether ordinary key remaps work on the same setup",
+        "why_needed": "This distinguishes a launch-action failure from a broader Keyboard Manager problem; the existing archive was reported to have no errors.",
+        "how_to_collect": "On v0.102.3001, test the exact launch-app mapping and one ordinary key remap; report the Windows version, source key, and application used.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
   "actions": [
     {
-      "id": "request-info-37671",
+      "id": "request-info-37671-current-launch-remap",
       "type": "request_info",
-      "label": "Request fresh bug report diagnostics",
+      "label": "Confirm launch-app remap on current stable",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 37671,
-        "body": "Thanks for the report. Please reproduce this on a supported current PowerToys version, then comment `/bugreport` immediately after the failure. Include the PowerToys version, Windows version, and a short numbered description of the expected and actual result."
+        "body": "Thanks for attaching the PowerToys report; a commenter says it showed no errors. Your report says a key-to-launch-app remap does nothing on 0.88.0. Could you confirm whether this still happens on PowerToys v0.102.3001? If it does, please say whether an ordinary key remap works on the same setup, and include the Windows version, source key, and app you tried."
       }
     },
     {
       "id": "approve-design-37671",
       "type": "approve_design",
-      "label": "Approve focused triage design",
+      "label": "Approve targeted fix design",
       "primary": false,
       "confirm": true,
       "note": "Draft only; no upstream action was posted."
     }
-  ]
+  ],
+  "repository": "microsoft/PowerToys",
+  "title": "keyboard manager not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/37671",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "status": {
+    "glyph": "❔",
+    "label": "Confirm launch-app remap failure on current stable",
+    "detail": "The report is from 0.88.0 and includes an attached diagnostics archive; a later minimized question asks whether only some remaps fail."
+  }
 }

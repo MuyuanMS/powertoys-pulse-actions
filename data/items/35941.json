@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 35941,
+  "title": "after i changed my keybinds i wasnt able to change them back so now i cant use the keys u,h,j,k and i need help to fix it",
+  "url": "https://github.com/microsoft/PowerToys/issues/35941",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:28:54Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:36:38.838Z",
+  "generated_at": "2026-11-05T14:36:38.838Z",
+  "evaluated_at": "2026-11-05T14:36:38.838Z",
+  "source_updated_at": "2026-10-11T16:48:00Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting current remap and recovery steps",
+    "detail": "The report is from PowerToys 0.86.0 and does not identify the mappings that disabled U, H, J, and K or whether those rows remain enabled."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says changing keybinds made U, H, J, and K unusable and that turning Keyboard Manager off did not restore them, but lists only PowerToys 0.86.0 and gives no mapping rows or recovery steps. The current single-key remap path includes handling for failed injection and matching key-up events, but the issue does not establish whether an active mapping, stuck injected state, or an older regression caused the symptom. Ask for the exact configuration and a current-build retest before assigning a code fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.86.0 installed from GitHub and says the keys U, H, J, and K became unusable after changing keybinds.",
+      "The reporter says turning Keyboard Manager off did not restore those keys, but provides no exact mappings, numbered steps, or Windows build.",
+      "There are no comments, assignees, or diagnostic archive.",
+      "Current Keyboard Manager source handles failed single-key input injection and remembers passthrough state for the matching key-up, but the issue does not provide enough details to identify whether that path is involved."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:28:54Z"
-  }
+    "recommended_action": "Ask for the exact affected remap rows and a v0.102.3001 retest that confirms whether removing the rows and disabling Keyboard Manager restores U/H/J/K; request /bugreport if the current failure remains.",
+    "evaluated_at": "2026-11-05T14:36:38.838Z",
+    "source_updated_at": "2026-10-11T16:48:00Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The symptom could come from a stale or still-active single-key remap state, but the report omits the original mappings and is from 0.86.0; a current reproduction is needed to distinguish configuration from an engine state defect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore affected keys after a Keyboard Manager remap is disabled or removed",
+      "root_cause": "If the issue persists with Keyboard Manager disabled, a remap may be leaving stale injected-key state or an active mapping may not be cleared when settings change; neither is established by the old report.",
+      "plan": [
+        "Reproduce on v0.102.3001 using the exact rows that affect U, H, J, and K and record behavior while the module is enabled, disabled, and after the rows are removed.",
+        "Use a fresh diagnostic to determine whether an active remap or unmatched key-down state remains after disabling or editing the mapping.",
+        "If the engine retains stale state, clear the affected remap state on disable/configuration change and add a regression test that verifies all source keys pass through afterward."
+      ],
+      "verification": [
+        "On the latest stable build, remove the confirmed mappings and verify U, H, J, and K type normally after toggling Keyboard Manager off and restarting PowerToys.",
+        "Verify unrelated key remaps and matching key-up behavior remain unchanged."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The reported loss of four keys is serious, but the mapping rows and current behavior are unknown and the report is from 0.86.0; stale engine state is only one possible explanation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After changing keybinds in PowerToys 0.86.0, U, H, J, and K reportedly stopped working and remained unusable after Keyboard Manager was turned off.",
+    "known_information": [
+      "The report lists PowerToys v0.86.0 installed from GitHub and says the user was running as administrator.",
+      "The reporter identifies U, H, J, and K as the affected keys and says turning Keyboard Manager off did not restore them.",
+      "The original remap rows, Windows build, exact disable/recovery steps, and current-build behavior are not provided.",
+      "The issue remains open and unassigned, with no comments or diagnostic archive."
+    ],
+    "inferences": [
+      "The behavior could reflect an active remap, stale injected-key state, or an old regression, but the issue does not distinguish these possibilities."
+    ],
+    "analysis": "The report is severe but too old and underspecified to identify a specific remap path. Current source includes explicit failed-injection and matching-key-up handling, but no evidence connects those branches to this report. Ask for the exact affected rows and whether disabling/removing them restores the keys on v0.102.3001; only then should a targeted engine fix be proposed.",
+    "initial_investigation": [
+      "Read the full issue body and confirmed there are no follow-up comments, mapping details, or diagnostic attachments.",
+      "Inspected the current single-key remap handling for input-injection failure and key-up passthrough.",
+      "Confirmed the issue has no current-build retest and lists only PowerToys 0.86.0."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "Only the relevant Keyboard Manager remap rows that affect U, H, J, and K, with the source and target for each and whether each row remains enabled.",
+        "why_needed": "The report does not identify which remap produced the failure or whether the keys remain configured to another target.",
+        "how_to_collect": "On v0.102.3001, capture only the relevant Keyboard Manager rows or describe each source-to-target mapping; omit unrelated settings and personal paths."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether U, H, J, and K still fail on v0.102.3001 after those rows are removed and Keyboard Manager is disabled.",
+        "why_needed": "This distinguishes an active configuration from a current failure to clear remap state.",
+        "how_to_collect": "Retest on v0.102.3001, remove the relevant mappings, turn Keyboard Manager off, and report which keys recover and whether restarting PowerToys changes the result."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive if any of the four keys remain unusable on v0.102.3001 after removing the mappings and disabling the module.",
+        "why_needed": "A diagnostic from the unrecovered state is needed to distinguish an active mapping from stale runtime input state.",
+        "how_to_collect": "Immediately after reproducing the current failure, add a comment containing /bugreport before restarting or changing more settings."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the stuck-key recovery investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest the affected keys on the latest stable build",
+      "comment": {
+        "target": "issue",
+        "number": 35941,
+        "body": "The issue says U, H, J, and K stopped working after changing keybinds on PowerToys 0.86.0, even after turning Keyboard Manager off. Could you please:\n1. Retest on the latest stable v0.102.3001 and share only the relevant mapping rows (source → target).\n2. Remove those rows and disable Keyboard Manager, then confirm whether the four keys recover.\n3. If any remain unusable, add a comment containing `/bugreport` immediately after reproducing and before restarting PowerToys.\nThis will distinguish an active mapping from a current failure to clear remap state."
+      }
+    }
+  ]
 }

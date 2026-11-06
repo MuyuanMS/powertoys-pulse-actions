@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 36823,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "\"VK242 → Alt\" works as bug",
+  "url": "https://github.com/microsoft/PowerToys/issues/36823",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:23:25Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T20:10:00Z",
+  "evaluated_at": "2026-11-05T20:10:00Z",
+  "source_updated_at": "2026-10-11T16:47:35Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Clarify VK242 and the Alt+Enter failure",
+    "detail": "The report says mapping VK242 to Alt makes keys fail with Enter, but does not state the exact key sequence, keyboard layout, or current behavior."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original report lists PowerToys 0.70 and says that after mapping VK242 to Alt, pressing VK242 with Enter makes buttons fail. The exact Japanese/OEM key identity, mapping sequence, and expected versus actual output are not provided. A similar-issue bot links #13955, where VK242 is identified as the Japanese Katakana/Hiragana/Romaji key and a separate stuck-state issue was later closed for lack of author feedback; that does not confirm the same defect or a fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.70 and the mapping VK242 to Alt.",
+      "The only reproduction detail is that keys do not work correctly when VK242-to-Alt is used with Enter.",
+      "A bot suggests #13955; comments there identify VK242 as an OEM-specific Japanese IME key, but that issue has a different symptom and was closed after an unanswered need-info request.",
+      "The issue remains open and has no other discussion or linked fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:23:25Z"
-  }
+    "recommended_action": "Ask for current-version confirmation, the keyboard/layout that generates VK242, and numbered steps showing what is pressed and what output occurs.",
+    "evaluated_at": "2026-11-05T20:10:00Z",
+    "source_updated_at": "2026-10-11T16:47:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If VK242-to-Alt still breaks Enter combinations on current stable, Keyboard Manager may mishandle this OEM/IME key's identity or modifier transitions. The report is too incomplete to select a mechanism."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle VK242-to-Alt combinations without losing key state",
+      "root_cause": "Keyboard Manager may not preserve the OEM VK242 key identity or release state when it is remapped to Alt and combined with Enter. The exact failure sequence and keyboard layout are unknown.",
+      "plan": [
+        "Confirm which physical key produces VK242 and whether the issue persists on current stable.",
+        "Reproduce the exact VK242-to-Alt mapping with Enter and record the resulting key events.",
+        "Compare behavior with a standard Alt+Enter mapping and with the OEM key unmapped.",
+        "If the issue is in VK242 event handling, preserve the correct key identity and modifier release state and add a layout-specific regression test."
+      ],
+      "verification": [
+        "Verify VK242-to-Alt plus Enter produces the intended action without stuck or lost key input.",
+        "Verify standard Alt+Enter and the underlying Japanese IME key remain functional.",
+        "Verify the mapping does not affect unrelated keys."
+      ],
+      "confidence": {
+        "score": 52,
+        "level": "yellow",
+        "rationale": "The mapping and failure are identified, but there are no exact reproduction steps or current-version confirmation, and the similar VK242 issue has a different symptom."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mapping VK242 to Alt reportedly makes keys fail when used with Enter.",
+    "known_information": [
+      "The report lists PowerToys 0.70 and the mapping VK242 to Alt.",
+      "The exact keyboard, layout, key sequence, and resulting output are not described.",
+      "Similar issue #13955 identifies VK242 as a Japanese IME-related OEM key but reports a distinct stuck-state symptom and lacks a resolution."
+    ],
+    "inferences": [
+      "The behavior may involve OEM/IME key identity or modifier release handling, but the report does not establish this."
+    ],
+    "analysis": "A current-version numbered reproduction is needed before code investigation can distinguish a VK242-specific defect from a key-sequence or layout issue.",
+    "initial_investigation": [
+      "Read the issue and its bot-suggested related issue.",
+      "Reviewed #13955, including its Japanese VK242 explanation and closure after an unanswered need-info request; no covering fix was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "The current PowerToys version, keyboard/layout generating VK242, and numbered steps with the exact key sequence and resulting output",
+        "why_needed": "These details determine whether the failure is current and whether it is specific to the OEM/IME key or to Alt+Enter generally.",
+        "how_to_collect": "Reply with the current version, keyboard and input layout, exact VK242 mapping, numbered steps pressing VK242 with Enter, and the expected and actual result.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36823-confirm-vk242-repro",
+      "type": "request_info",
+      "label": "Confirm VK242 keyboard and reproduction",
+      "primary": true,
+      "comment": {
+        "body": "Could you confirm whether this still happens on a current PowerToys release? Please include the keyboard and input layout that generates VK242, the exact VK242-to-Alt mapping, numbered steps pressing it with Enter, and the expected versus actual result. This will distinguish an OEM/IME key issue from an Alt+Enter mapping problem."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the VK242 key-state investigation"
+    }
+  ]
 }

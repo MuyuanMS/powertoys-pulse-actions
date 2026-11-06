@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 45151,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-01-29T04:08:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "author": "arj562000",
+  "generated_at": "2026-11-06T00:23:05Z",
+  "evaluated_at": "2026-11-06T00:23:05Z",
+  "source_updated_at": "2026-10-07T15:40:39Z",
+  "title": "Fancy Zones CLI not working correctly to apply layouts",
+  "url": "https://github.com/microsoft/PowerToys/issues/45151",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [
+    "lei9444"
+  ],
+  "comments": 3,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter reproduced with three identical monitors that share model and serial values but have distinct monitor-instance IDs. Current MatchesDevice compares monitor name, virtual desktop, and serial while ignoring the instance ID and monitor number; both historical-layout merging and active-layout lookup use this helper. That can collapse sibling records or return a misleading per-monitor result. The reporter relied on CLI output to verify the result, so the actual visible layout on each display remains unconfirmed.",
     "evidence": [
-      "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The latest report describes three identical monitors sharing model and serial values but having different monitor-instance IDs.",
+      "AppliedLayoutsHelper.MatchesDevice compares monitor name, virtual desktop, and serial, but does not compare the monitor-instance ID or monitor number.",
+      "SetLayoutCommand.MergeWithHistoricalLayouts and GetActiveLayoutCommand both use MatchesDevice, so ambiguous matching can affect both update and read behavior.",
+      "The issue discussion uses get-active-layout output to verify behavior; actual on-screen zones after applying the layout have not been confirmed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-01-29T04:08:40Z"
-  }
+    "recommended_action": "Use monitor-instance identity when available in both layout merging and lookup, preserve a legacy fallback for older records, and ask the reporter to confirm the visible layout on all three displays.",
+    "evaluated_at": "2026-11-06T00:23:05Z",
+    "source_updated_at": "2026-10-07T15:40:39Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The shared matcher’s missing instance identity is a concrete path for treating distinct identical displays as one device. The CLI’s reported result does not yet prove whether the visible layout application is also wrong."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Match FancyZones CLI layouts by monitor instance identity",
+      "root_cause": "The common device matcher ignores the monitor-instance ID and monitor number. With identical monitors sharing model and serial values, historical-layout merge and active-layout lookup can treat distinct displays as equivalent, remove a sibling record, or report the wrong display’s layout.",
+      "plan": [
+        "Extend the shared device identity comparison to use the monitor-instance ID when both the current display and stored layout record provide it; use the monitor number as a disambiguator where the available identity contract requires it.",
+        "Apply the same identity semantics to historical-layout merging and get-active-layout so updates and reads cannot disagree or collapse sibling displays.",
+        "Retain the existing legacy matching fallback when older stored records lack an instance ID, and avoid deleting a sibling record unless it matches the same display identity.",
+        "Add regression coverage for three identical monitors with the same model/serial but distinct instance IDs, plus compatibility coverage for records without instance IDs."
+      ],
+      "verification": [
+        "Apply a different layout to each of three identical monitors and verify the CLI preserves a distinct record for each monitor.",
+        "Query get-active-layout for each monitor and compare the result with the zones visibly active on that display.",
+        "Run a compatibility test using historical layout records without instance IDs and confirm the legacy fallback remains stable."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The shared matcher and its two call sites are confirmed, but the issue has not yet verified whether the reported CLI mismatch corresponds to an incorrect visible layout."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones CLI layout operations can confuse three identical monitors that share model/serial values but have distinct monitor-instance IDs.",
+    "known_information": [
+      "The reporter reproduced with three identical monitors having the same model and serial values but different monitor-instance IDs.",
+      "The current shared device matcher omits monitor-instance ID and monitor number from its comparisons.",
+      "Both historical-layout merging and active-layout lookup use the shared matcher.",
+      "The reporter used CLI output as verification; visible active zones on each monitor remain unconfirmed."
+    ],
+    "inferences": [
+      "Ignoring the distinct instance IDs can cause one monitor’s historical layout to be merged with or reported for a sibling display.",
+      "The issue may affect both actual layout application and CLI reporting, but the visible effect has not been established by the current discussion."
+    ],
+    "analysis": "The matching defect is supported by current source and a concrete identical-monitor scenario. Preserve distinct display identity across both merge and lookup paths, while retaining a safe fallback for old records. Confirm the visible zones separately so a misleading query result is not mistaken for an application failure.",
+    "initial_investigation": [
+      "Reviewed the refreshed issue report and its three-identical-monitor reproduction.",
+      "Inspected AppliedLayoutsHelper.MatchesDevice and confirmed that the identity comparison omits the reported monitor-instance ID and monitor number.",
+      "Traced MatchesDevice through SetLayoutCommand.MergeWithHistoricalLayouts and GetActiveLayoutCommand; both paths rely on the same ambiguous comparison.",
+      "No current report confirms the actual visible zones on each display after the CLI operation."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the zones visibly active on each of the three displays match the per-monitor layout requested through the CLI, along with the corresponding get-active-layout result for each display.",
+        "why_needed": "The shared matcher can make the CLI report a sibling display’s layout, and this comparison distinguishes that reporting defect from an incorrect visual application.",
+        "how_to_collect": "Apply a distinct layout to each display, then note the visible zones and get-active-layout output for each monitor.",
+        "evidence_type": "monitor_topology"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve monitor-instance matching design",
+      "design": {
+        "title": "Match FancyZones CLI layouts by monitor instance identity"
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm the visible layout on each monitor",
+      "comment": {
+        "body": "Thanks for reproducing this with three identical monitors that have different monitor-instance IDs. The shared matcher used by both historical-layout merging and get-active-layout ignores that instance identity, so the CLI can confuse sibling displays. Could you confirm whether the zones visibly active on each monitor match the layout you applied, and share the get-active-layout result for each display? That will distinguish a misleading CLI result from an incorrect visual application."
+      }
+    }
+  ]
 }

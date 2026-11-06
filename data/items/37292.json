@@ -2,46 +2,90 @@
   "schemaVersion": 5,
   "number": 37292,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Mapping Window+V to  any other key when use at background  unlike the usual fixed popup menu  doesn't automatically paste when clicking",
+  "url": "https://github.com/microsoft/PowerToys/issues/37292",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:24:22",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T20:33:19Z",
+  "evaluated_at": "2026-11-05T20:33:19Z",
+  "source_updated_at": "2026-10-11T16:47:21Z",
+  "status": {
+    "glyph": "?",
+    "label": "Reproduce the remapped clipboard-history behavior",
+    "detail": "A commenter reports reproducing the behavior on PowerToys 0.100.2 and Windows 11 25H2. The mapping direction is Alt+C to Win+V; the component responsible is not yet established."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The behavior tracks Windows clipboard-history semantics rather than a PowerToys-owned paste path.",
+    "status": "reproducible",
+    "rationale": "The original report describes an Alt+C-to-Win+V remap whose clipboard popup behaves differently outside the Keyboard Manager settings window. A commenter explicitly reports reproducing the behavior on PowerToys 0.100.2 and Windows 11 25H2, and clarifies the mapping direction. That supports maintainer reproduction, but the comment also suspects Windows clipboard behavior, so the responsible component is not established well enough for a fix design.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The issue body lists PowerToys 0.88 and says the behavior differs when the remapped shortcut is used outside the foreground Remap Shortcut settings interface.",
+      "The body describes mapping Alt+C to Win+V; the commenter explicitly clarifies this direction.",
+      "The commenter reports reproducing the behavior with PowerToys 0.100.2 on Windows 11 25H2.",
+      "The commenter suspects a Windows issue, so the current evidence does not isolate Keyboard Manager as the cause."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:24:22"
+    "recommended_action": "Reproduce the numbered sequence on current stable and compare the remapped shortcut with native Win+V before assigning the failure to Keyboard Manager or proposing a code change.",
+    "evaluated_at": "2026-11-05T20:33:19Z",
+    "source_updated_at": "2026-10-11T16:47:21Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "rationale": "A current-version reproduction is reported, but the available evidence does not distinguish a Keyboard Manager defect from Windows clipboard-history behavior. Establish the failing component through the focused reproduction before proposing an implementation change."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Mapping Window+V to  any other key when use at background  unlike the usual fixed popup menu  doesn't automatically paste when clicking",
+    "summary": "An Alt+C-to-Win+V remap reportedly behaves differently outside the Keyboard Manager settings window, with clipboard-history selection not behaving like native Win+V.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:24:22",
-      "."
+      "The report lists PowerToys 0.88 and describes different behavior when the Remap Shortcut settings interface is foreground.",
+      "The intended mapping is Alt+C to Win+V, as clarified by a commenter.",
+      "A commenter reports reproducing the behavior on PowerToys 0.100.2 and Windows 11 25H2.",
+      "The report says AutoHotkey mapping works, but does not establish which component causes the difference."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The settings-window contrast may indicate that the behavior depends on focus or on the path used to deliver the Win+V input.",
+      "Windows clipboard-history behavior remains a possible cause because the current reproduction does not isolate the Keyboard Manager hook."
     ],
-    "analysis": "The behavior tracks Windows clipboard-history semantics rather than a PowerToys-owned paste path.",
+    "analysis": "The recent reproduction makes the issue worth a maintainer check, but no implementation cause is established. Compare native Win+V with the saved Alt+C remap in the same target app, including the reported foreground-settings contrast, and observe whether opening the history popup and selecting an entry differ.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the current issue body, labels, assignees, and both comments.",
+      "Confirmed the issue remains open with no assignee.",
+      "The issue's current-version reproduction comment clarifies the mapping direction and names PowerToys 0.100.2 on Windows 11 25H2."
     ],
-    "information_gaps": null
+    "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce clipboard history with the saved remap",
+      "note": "The issue has a reported current-version reproduction; compare native Win+V and the saved remap before requesting more diagnostics.",
+      "reproduce": {
+        "title": "Compare native Win+V with an Alt+C remap",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or current stable on Windows 11 25H2",
+        "prerequisites": [
+          "Enable Keyboard Manager.",
+          "Use an application with a text field that accepts pasted text."
+        ],
+        "setup": [
+          "In Keyboard Manager, save a shortcut mapping from Alt+C to Win+V."
+        ],
+        "steps": [
+          "Copy at least two distinct text entries so Clipboard History has selectable items.",
+          "Focus the target application's text field and press native Win+V; record when the history popup appears and what happens after clicking an item.",
+          "Repeat with the saved Alt+C mapping while the target application remains in the foreground.",
+          "Repeat the remapped shortcut with the Remap Shortcut settings interface foreground, as described in the report, and compare the results."
+        ],
+        "expected_result": "The saved Alt+C mapping should invoke Clipboard History like native Win+V, and selecting an item should paste it into the focused application's text field. Any difference between the foreground-settings and background-app cases should be recorded."
+      }
+    }
+  ]
 }

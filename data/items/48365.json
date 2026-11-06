@@ -2,53 +2,112 @@
   "schemaVersion": 5,
   "number": 48365,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-13T16:49:03.1815314Z",
-  "evaluated_at": "2026-09-13T16:49:03.1815314Z",
-  "source_updated_at": "06/07/2026 06:52:02",
+  "repository": "microsoft/PowerToys",
   "url": "https://github.com/microsoft/PowerToys/issues/48365",
   "title": "PowerToys Monaco Preview Handler crashes with WebView2 COMException (0x800700AA)",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
+  "pending_author": false,
   "labels": [
     "Issue-Bug",
     "Product-File Explorer",
     "Needs-Triage"
   ],
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled or owned work",
-    "detail": "The existing triage record identifies this item as handled or owned elsewhere; no independently evidenced PowerToys fix plan is proposed in this lightweight pass."
-  },
-  "next_action": "Revalidate when upstream discussion or ownership changes.",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The existing triage record identifies this item as handled or owned elsewhere; no independently evidenced PowerToys fix plan is proposed in this lightweight pass.",
-    "evidence": [
-      "Labels: Issue-Bug, Product-File Explorer, Needs-Triage"
-    ],
-    "recommended_action": "Avoid duplicate work while upstream ownership remains active.",
-    "evaluated_at": "2026-09-13T16:49:03.1815314Z",
-    "source_updated_at": "06/07/2026 06:52:02"
-  },
+  "comments": 1,
+  "generated_at": "2026-11-05T11:36:28Z",
+  "evaluated_at": "2026-11-05T11:36:28Z",
+  "source_updated_at": "2026-11-04T21:59:29Z",
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The existing triage record identifies this item as handled or owned elsewhere; no independently evidenced PowerToys fix plan is proposed in this lightweight pass."
+    "status": "proposed",
+    "rationale": "The issue includes a concrete WebView2 controller-creation failure with HRESULT 0x800700AA, but the reported PowerToys version conflicts between the issue header and loaded assembly details and no exact preview sequence is given. Source shows a plausible shared-profile process-overlap race, not a proven cause.",
+    "existing_fix_urls": []
   },
+  "proposed_fixes": [
+    {
+      "title": "Prevent overlapping Monaco preview startup against one WebView2 profile",
+      "root_cause": "A candidate race exists because PreviewHandler::DoPreview launches a replacement process before terminating the previous process, while MonacoPreviewHandlerControl creates WebView2 environments with the same MonacoPreview-Temp user-data folder. Concurrent initialization against that folder could explain 0x800700AA, but the issue does not establish that the failure occurs during rapid preview changes.",
+      "plan": [
+        "Confirm the installed PowerToys version and reproduce while changing between supported preview files, recording whether failure frequency depends on how quickly the selection changes.",
+        "Trace process creation, termination, and WebView2 environment/controller initialization to determine whether two Monaco preview processes can use the shared user-data folder concurrently.",
+        "If overlap is confirmed, serialize replacement by terminating and waiting for the prior preview process before launching another, or provide safely isolated per-preview user-data folders; preserve the existing preview lifecycle and recovery behavior."
+      ],
+      "verification": [
+        "On the confirmed affected and current stable versions, rapidly switch among supported preview files and verify no 0x800700AA exception or unhandled dialog occurs.",
+        "Verify the prior preview process exits before replacement initialization or that isolated user-data folders prevent concurrent profile locking.",
+        "Confirm normal repeated preview, Explorer minimize/restore, and unload behavior still releases preview processes."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The stack identifies WebView2 controller creation and the source has a shared-profile, launch-before-terminate overlap window. The version discrepancy and missing trigger sequence prevent confirming that this race explains the reported failure."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "summary": "The Monaco Preview Handler reports WebView2 COMException 0x800700AA while creating a controller, preventing preview rendering.",
     "known_information": [
-      "Labels: Issue-Bug, Product-File Explorer, Needs-Triage"
+      "The body says PowerToys 0.99 in its version header but the environment and loaded assemblies identify PowerToys 0.97.1.",
+      "The exception is 0x800700AA from CoreWebView2Environment.CreateCoreWebView2ControllerAsync during Monaco preview initialization.",
+      "The reporter supplies Windows 11 25H2 build 26200.8524 and a WebView2 runtime version.",
+      "A November 4 commenter links a third-party replacement DLL; the comment is not an upstream fix or evidence that the current PowerToys binary is safely corrected."
     ],
     "inferences": [
-      "The available public triage state does not independently confirm a new code-level root cause."
+      "The shared MonacoPreview-Temp user-data folder and overlapping preview processes are a plausible source of a resource-in-use error, but the issue does not show that two processes were initializing concurrently.",
+      "The inconsistent PowerToys version makes it unclear which release should be used for a regression comparison."
     ],
-    "analysis": "The existing triage record identifies this item as handled or owned elsewhere; no independently evidenced PowerToys fix plan is proposed in this lightweight pass.",
+    "analysis": "PreviewHandler::DoPreview calls ShellExecuteEx for a new preview process before it terminates the previous process. MonacoPreviewHandlerControl creates its WebView2 environment with a fixed MonacoPreview-Temp user-data directory, so an overlap is possible. The stack is consistent with a controller-creation resource conflict, but the report does not say whether selection changes are rapid or whether the problem persists on current stable. Confirm those details before treating the race as the root cause. Do not rely on or recommend replacing a shipped DLL with a third-party build.",
     "initial_investigation": [
-      "Refreshed live issue metadata, labels, assignees, and the latest discussion timestamp during the bounded revalidation pass."
+      "Read the full issue body and latest discussion, including the original stack, assembly versions, OS build, WebView2 version, and third-party comment.",
+      "Inspected previewpane/FileExplorerDllExporter/PreviewHandler.cpp: a new process is launched before the existing process is terminated.",
+      "Inspected previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs: WebView2 initialization uses a fixed MonacoPreview-Temp user-data folder and calls EnsureCoreWebView2Async.",
+      "No linked upstream fix or assignment currently establishes that the issue is handled."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "The exact installed PowerToys version and whether the failure still reproduces on current stable",
+        "why_needed": "The issue says 0.99 but its assembly inventory identifies 0.97.1; a current version check determines whether a regression remains.",
+        "how_to_collect": "Confirm the version shown in PowerToys Settings > General, then update to current stable and repeat the preview test.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "information": "The exact action sequence and whether the error is triggered by rapidly changing preview selection",
+        "why_needed": "The source hypothesis involves overlapping preview processes; confirming the trigger will determine whether shared WebView2 profile use is relevant.",
+        "how_to_collect": "Describe which file types are previewed and whether selecting another file immediately after the first triggers the exception. If it recurs on current stable, add a comment containing /bugreport immediately after the dialog appears.",
+        "evidence_type": "repro_steps"
+      },
+      {
+        "information": "A current PowerToys diagnostic package if the exception recurs after updating",
+        "why_needed": "The existing stack identifies controller creation but not the process overlap or current preview-handler build.",
+        "how_to_collect": "On current stable, add a comment containing /bugreport immediately after reproducing the exception.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
   },
-  "actions": []
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Source provides a concrete concurrency hypothesis that can be tested, but the issue's version mismatch and unspecified trigger prevent a confident fix recommendation. Request the exact version and sequence before approving implementation.",
+    "source_updated_at": "2026-11-04T21:59:29Z",
+    "evaluated_at": "2026-11-05T11:36:28Z",
+    "recommended_action": "Confirm the installed PowerToys version, exact preview sequence, and whether the exception remains on current stable; then verify the shared-profile process-overlap hypothesis.",
+    "evidence": [
+      "The stack fails during WebView2 controller creation with 0x800700AA.",
+      "PreviewHandler::DoPreview starts a replacement process before terminating the prior process.",
+      "MonacoPreviewHandlerControl uses the same MonacoPreview-Temp user-data directory for WebView2 environment creation.",
+      "The issue's version header and assembly inventory disagree, and no trigger sequence establishes process overlap."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve targeted WebView2 preview-race investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request exact version and preview sequence",
+      "comment": {
+        "body": "Thanks for including the `0x800700AA` WebView2 controller-creation stack and the Windows/WebView2 details. The issue header says PowerToys 0.99, while the assembly list identifies 0.97.1, and the report does not show what preview action triggers the error. Could you:\n\n- Confirm the installed PowerToys version from Settings > General and whether the error still occurs on the latest stable release.\n- Describe the exact file types and selection sequence that trigger it, including whether selecting another file immediately after the first reproduces the failure.\n- If it recurs on current stable, add a comment containing `/bugreport` immediately after the error appears.\n\nThis will show whether the shared WebView2 profile is involved without relying on an unverified replacement DLL."
+      }
+    }
+  ]
 }

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 5,
+  "number": 51943,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "actionable_design",
+  "pending_author": false,
+  "owes": "us",
+  "generated_at": "2026-11-06T01:08:19Z",
+  "evaluated_at": "2026-11-06T01:08:19Z",
+  "source_updated_at": "2026-11-05T14:16:25Z",
+  "title": "CmdPal: Don't let fallback refreshes postpone typed results",
+  "url": "https://github.com/microsoft/PowerToys/issues/51943",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Current main confirms that user-input and asynchronous fallback updates share a trailing-edge debounce which resets on every invocation. This supports a focused scheduling design, but the issue has no user-visible repro or timing measurement.",
+    "evidence": [
+      "The issue title says fallback refreshes should not postpone typed results, but provides no query, provider, or timing details.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 routes changed fallback results to MainListPage.RequestRefresh(false).",
+      "User-input updates route through RequestRefresh(true, adjustedInterval) on the same ThrottledDebouncedAction instance.",
+      "ThrottledDebouncedAction.Invoke cancels and resets its trailing-edge delay on each invocation."
+    ],
+    "recommended_action": "Keep background fallback refreshes from resetting the pending user-input result deadline and verify the behavior with a controlled delayed-fallback test.",
+    "evaluated_at": "2026-11-06T01:08:19Z",
+    "source_updated_at": "2026-11-05T14:16:25Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The scheduling path is source-confirmed, but the issue lacks a concrete query/provider and timing observation; preserve the hypothesis and validate it before implementing a broader refresh redesign."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prioritize typed-result refreshes over fallback refreshes",
+      "root_cause": "FallbackUpdateManager invokes RequestRefresh(false) when an item changes, while user-input search updates call RequestRefresh(true, adjustedInterval); both invoke the same trailing-edge ThrottledDebouncedAction. Repeated background callbacks can reset the shared delay after a typed result is ready.",
+      "plan": [
+        "Separate the user-input refresh deadline from background fallback-only refresh scheduling, or otherwise ensure a fallback callback cannot move a pending user-input refresh later.",
+        "Continue coalescing fallback updates and ignore callbacks for superseded query tokens, but render the latest typed-result snapshot as soon as its user-input throttle permits.",
+        "Add a deterministic test using delayed fallback updates and rapid query changes to assert that background callbacks do not postpone the latest typed-result refresh.",
+        "Retain a follow-up refresh when a still-current fallback finishes so fallback rows remain up to date after typed results are shown."
+      ],
+      "verification": [
+        "Use a controlled slow fallback source that emits several changes while the query is being typed; assert the newest typed results render within the user-input refresh budget despite those callbacks.",
+        "Verify obsolete fallback-query callbacks do not replace or delay results for a newer query.",
+        "Verify current fallback items still appear or update after asynchronous work completes and run the focused CmdPal ViewModels tests."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "The shared trailing-edge debounce and both call paths are confirmed in current main, but the issue supplies no concrete query, provider, or measured delay to confirm the user-visible trigger."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CmdPal fallback-result updates and user-input result updates share one trailing-edge debounced refresh, so repeated background callbacks can reset the deadline for typed results.",
+    "known_information": [
+      "The issue is labeled for Command Palette and reports version 0.102; its body contains only the requested behavior.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 wires FallbackUpdateManager changes to MainListPage.RequestRefresh(false).",
+      "User-input search updates also call RequestRefresh(true, adjustedInterval), which invokes the same ThrottledDebouncedAction.",
+      "ThrottledDebouncedAction uses trailing-edge debounce and resets its timer on each invocation; fallback callbacks can therefore compete with the user-input refresh schedule."
+    ],
+    "inferences": [
+      "A burst of fallback changes may postpone the newest typed-result refresh even though stale fallback work is cancelled; the exact observable delay and trigger are not included in the report."
+    ],
+    "analysis": "Current source supports a concrete scheduling hazard: asynchronous fallback changes and typed queries share a trailing-edge debounce, and every invocation resets its timer. Prioritize user-input refreshes independently while continuing to coalesce background fallback updates, then verify both paths with a deterministic delayed-fallback test.",
+    "initial_investigation": [
+      "Read the complete live issue body and verified there were no comments or reproduction details.",
+      "Traced current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 from FallbackUpdateManager callbacks through MainListPage.RequestRefresh to the shared ThrottledDebouncedAction.",
+      "Confirmed that ThrottledDebouncedAction.Invoke resets its delay on each call and that both fallback updates and user-input updates use the same instance.",
+      "No runtime reproduction or performance measurement was performed."
+    ],
+    "information_gaps": [
+      {
+        "information": "A concrete query/provider scenario and the observed delay between the latest keystroke and its typed results.",
+        "why_needed": "This validates that background fallback callbacks, rather than search computation or another UI throttle, are postponing the visible result update.",
+        "how_to_collect": "On CmdPal 0.102, note the query, fallback/provider involved, and approximate time from the final keystroke to the typed result; state whether the delay stops when fallback updates are disabled.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve typed-result refresh priority design",
+      "design": {
+        "title": "Prioritize typed-result refreshes over fallback refreshes"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify typed results during fallback updates",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Reported PowerToys 0.102; candidate build for focused verification",
+        "prerequisites": [
+          "Use a deterministic test fallback source that can delay and emit multiple updates.",
+          "Enable the fallback provider and a query that produces ordinary typed results."
+        ],
+        "steps": [
+          "Start a query and type additional characters while the fallback source is still updating.",
+          "Have the fallback source emit multiple result changes around the final keystroke.",
+          "Measure when the latest typed-result snapshot is rendered, then repeat with fallback updates disabled as a control."
+        ],
+        "expected_result": "The newest typed results render within the user-input refresh budget; current fallback results can update afterward without delaying or replacing the newer query."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request the fallback timing scenario",
+      "comment": {
+        "body": "Could you share one exact query and the fallback/provider involved, plus roughly how long the typed result waits after the final keystroke? Please say whether the delay disappears when that fallback is disabled or when it finishes updating. This will distinguish a shared-refresh scheduling delay from slow query computation or another UI throttle."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Typed-result delay",
+    "detail": "Background fallback refreshes share the debounce used by typed results."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Review refresh-priority design",
+    "reason": "Protect the user-input refresh deadline while preserving coalesced fallback updates."
+  }
+}

@@ -2,66 +2,83 @@
   "schemaVersion": 5,
   "number": 31600,
   "kind": "issue",
-  "track": "triage",
-  "stage": "owned_elsewhere",
+  "track": "fix",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-13T15:30:06.9719009Z",
-  "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-  "source_updated_at": "03/06/2024 21:45:33",
-  "url": "https://github.com/microsoft/PowerToys/issues/31600",
+  "generated_at": "2026-11-05T14:06:00.027Z",
+  "evaluated_at": "2026-11-05T14:06:00.027Z",
+  "source_updated_at": "2026-10-11T16:48:19Z",
   "title": "remapping key error",
-  "author": "OhNoBillS",
+  "url": "https://github.com/microsoft/PowerToys/issues/31600",
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Lightweight schema-v5 triage revalidation completed during the bounded scheduled run."
+    "glyph": "?",
+    "label": "Need measured current-build performance",
+    "detail": "The report is from 0.78.0 and gives no sample length, target app, or timing. Current main sends text one character at a time to avoid dropped or repeated Unicode events."
   },
-  "next_action": {
-    "glyph": "🔗",
-    "label": "Monitor linked or assigned work",
-    "reason": "Existing ownership or handling evidence means duplicate agent work is not appropriate."
-  },
+  "next_action": "Request a current-build timing comparison with a non-sensitive sample and target app before changing text-injection batching.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Public ownership or handling evidence indicates this issue is already covered elsewhere; duplicate work should not be started.",
+    "status": "needs_information",
+    "rationale": "The 0.78.0 report says Send Text is slower than manual typing but gives no text length, destination control, or measured time. Current main loops through the text and calls SendVirtualInput per character; its comment says this avoids repeated or dropped characters seen with large Unicode batches, and the function contains no configured per-character delay. The issue needs a current, measurable comparison before changing a deliberate reliability tradeoff.",
     "evidence": [
-      "Open Issue-Bug report #31600: remapping key error",
-      "Labels present: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The report lists PowerToys 0.78.0 and says a remapped text sequence appears more slowly than manual typing.",
+      "The issue has no comments, exact text length, destination app, or elapsed-time measurement.",
+      "Current Helpers.cpp SendTextInput iterates through characters and calls SendVirtualInput for each character; its comment says individual dispatch avoids repeated or dropped characters from large Unicode batches."
     ],
-    "recommended_action": "Monitor the existing owner or linked work.",
-    "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-    "source_updated_at": "03/06/2024 21:45:33"
+    "recommended_action": "Ask for a current-build comparison using a non-sensitive sample or character count, the destination app, and approximate elapsed time; request /bugreport only if the behavior persists.",
+    "evaluated_at": "2026-11-05T14:06:00.027Z",
+    "source_updated_at": "2026-10-11T16:48:19Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A competing PowerToys fix is not applicable while existing ownership or handling covers the report."
+    "rationale": "The report has no current-build measurement and the current per-character dispatch is an intentional reliability choice. A performance change should not be proposed until the issue is measured in a controlled target app and the reliability tradeoff is understood."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Revalidated open Issue-Bug #31600: remapping key error.",
+    "summary": "A Keyboard Manager text remap reportedly types more slowly than manual typing, but the report does not quantify the text or target app.",
     "known_information": [
-      "Open Issue-Bug report #31600: remapping key error",
-      "Labels present: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The report lists PowerToys 0.78.0 from the Microsoft Store and says a remapped text sequence appears more slowly than manual typing.",
+      "The issue has no comments and does not specify the text length, target application, or time to insert.",
+      "Current Helpers.cpp SendTextInput sends each character individually; the source comment says this avoids synchronization errors that can repeat or drop characters when large batches of Unicode events are sent."
     ],
     "inferences": [
-      "The available public evidence does not yet confirm a single root cause or implementation path."
+      "Per-character virtual-input calls may contribute to latency, but the issue provides no measurement to show whether the current behavior is a regression or an unacceptable delay."
     ],
-    "analysis": "The existing ownership or handling signal is sufficient to avoid duplicating work.",
+    "analysis": "The implementation has an explicit correctness reason for single-character dispatch and no fixed sleep in the loop. Measure a current build with a repeatable text length and target before considering batch injection or another performance change.",
     "initial_investigation": [
-      "Reviewed the live issue metadata, labels, public discussion count, and current artifact freshness.",
-      "Checked the schema-v5 action contract for this revalidation."
+      "Read the full issue body and confirmed it has no comments or current-build retest.",
+      "Inspected current main at commit 8cfe69247aef8aabadeeafbdafaecab293a2a7f3, Helpers.cpp SendTextInput around lines 313-379; it sends one character per SendVirtualInput call to avoid dropped/repeated Unicode events."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether text remapping is still slower than manual typing on PowerToys 0.100.2 or newer, with a non-sensitive text length/sample, destination app, and approximate elapsed times.",
+        "why_needed": "The current implementation favors reliable per-character injection, and without the text length, target control, and timing there is no way to distinguish expected dispatch overhead from a regression.",
+        "how_to_collect": "Retest in Notepad and the original target app on a current build; report the character count (not private text if sensitive), destination app, and approximate insert time versus manual typing."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive captured after the slow insertion on a current build.",
+        "why_needed": "If a controlled current test still shows abnormal delay, diagnostics can help identify the Keyboard Manager input path and environment.",
+        "how_to_collect": "If it persists, comment /bugreport immediately after the test."
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Measure current Send Text speed",
+      "comment": {
+        "target": "issue",
+        "number": 31600,
+        "body": "Thanks for reporting this on 0.78.0. Current Keyboard Manager sends text one character at a time because large Unicode batches have caused repeated or dropped characters, so the text length and target control matter. Could you please:\n1. Retest on PowerToys 0.100.2 or newer in Notepad and the original target app, and report the character count (or a non-sensitive sample) plus approximate insertion time.\n2. Compare that with manually typing the same text and say whether short and long strings behave differently.\n3. If the delay remains on the current build, comment `/bugreport` immediately after the test.\nThis will show whether the current reliability-preserving dispatch is measurably too slow in a specific target."
+      }
+    }
+  ]
 }

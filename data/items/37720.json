@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 37720,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remap key doesn't work when input language is not English",
+  "url": "https://github.com/microsoft/PowerToys/issues/37720",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:14:28Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T21:53:23.84Z",
+  "evaluated_at": "2026-11-05T21:53:23.84Z",
+  "source_updated_at": "2026-10-11T16:47:00Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Retest right-Alt mapping across input layouts",
+    "detail": "The report uses PowerToys 0.88.0 and says Right Alt-to-Space works in English but not Ukrainian; a commenter notes Right Alt may emit a different key code by layout."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says Right Alt-to-Space works with English selected but fails after switching to Ukrainian. A commenter notes that Right Alt may produce a different key code under the selected input language, and the repository has separate handling for Right Alt as AltGr. The report uses PowerToys 0.88.0 and does not provide the exact Windows input-language/layout pair or a current-build test. Ask for those discriminating details before treating the language-dependent behavior as a Keyboard Manager defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.88.0 installed from GitHub and remaps Right Alt to Space.",
+      "The reporter says the remap works with English selected and stops working with Ukrainian selected; returning to English restores it.",
+      "A commenter notes that Right Alt may produce a different key code depending on the selected input language.",
+      "The issue has one comment, no assignees, and no current-version confirmation.",
+      "KeyboardEventHandlers.cpp explicitly detects Right Alt with left Ctrl as AltGr, and the engine tests cover AltGr state handling; this is related input behavior but does not prove the cause here.",
+      "Open issue #3641 concerns remapping AltGr to regular Alt, a different expected behavior and not a confirmed covering fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:14:28Z"
-  }
+    "recommended_action": "Ask whether the mapping still changes behavior on v0.102.3001 and request the exact English and Ukrainian keyboard layouts and what the key-capture UI identifies as Right Alt.",
+    "evaluated_at": "2026-11-05T21:53:23.84Z",
+    "source_updated_at": "2026-10-11T16:47:00Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue may depend on AltGr/input-layout key identity, but the current report does not include layout details or a current-build test."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Right Alt remapping across input-language layouts",
+      "root_cause": "Right Alt may be interpreted as AltGr or produce a different virtual-key sequence under the Ukrainian layout, but the issue does not identify the active keyboard layouts or captured event.",
+      "plan": [
+        "Confirm the exact English and Ukrainian keyboard layouts and test the same Right Alt-to-Space mapping on v0.102.3001.",
+        "Use the key-capture UI to determine whether the physical key is identified consistently across layouts.",
+        "If the mapping fails despite a consistent key event, trace the AltGr/layout handling and add a focused regression test."
+      ],
+      "verification": [
+        "Confirm the same physical Right Alt key produces Space with each reported layout on the current build.",
+        "Verify other AltGr combinations and ordinary Right Alt shortcuts remain functional."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The commenter identifies a plausible layout-dependent key identity, but the report lacks exact layout names and current-build behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Right Alt mapped to Space reportedly works with English input selected but fails with Ukrainian input selected.",
+    "known_information": [
+      "The report lists PowerToys 0.88.0 and maps Right Alt to Space.",
+      "The remap works with English input selected and fails with Ukrainian selected, then works again after returning to English.",
+      "A commenter notes Right Alt may produce a different key code depending on input language."
+    ],
+    "inferences": [
+      "The key may be treated as AltGr or produce a different input event under the Ukrainian layout; the exact layouts and captured event are unknown."
+    ],
+    "analysis": "The language correlation and the comment about Right Alt key identity make a layout-specific event difference plausible. Current behavior and exact layouts are needed before deciding whether the issue is a PowerToys defect or expected AltGr semantics.",
+    "initial_investigation": [
+      "Read the full report and sole comment, labels, and assignees.",
+      "Inspected current AltGr handling and engine tests; the code tracks Right Alt/left Ctrl sequences, but the report does not establish that this path is involved.",
+      "Checked related issue #3641; it concerns AltGr-to-Alt remapping and is not the same mapping or expected behavior."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Right Alt-to-Space still fails on v0.102.3001, the exact keyboard layouts selected, and how the capture UI identifies the physical key under each layout",
+        "why_needed": "The language change may alter Right Alt/AltGr event identity, and the report lacks exact layouts or a current build test.",
+        "how_to_collect": "On v0.102.3001, test the same mapping with the exact English and Ukrainian layouts selected and note the key name shown by the capture UI.",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-37720-current-alt-layout-test",
+      "type": "request_info",
+      "label": "Confirm right-Alt mapping across layouts",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 37720,
+        "body": "Thanks for noting that Right Alt-to-Space changes behavior when you switch from English to Ukrainian. Since the report is from PowerToys 0.88.0, could you confirm whether this still happens on v0.102.3001? Please include the exact English and Ukrainian keyboard layouts and say what the key-capture UI identifies when you press the same physical Right Alt key in each."
+      }
+    },
+    {
+      "id": "approve-design-37720",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

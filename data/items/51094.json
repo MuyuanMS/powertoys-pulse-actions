@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 51094,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "actionable_design",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "zadjii-msft",
+  "generated_at": "2026-11-05T23:59:03Z",
+  "evaluated_at": "2026-11-05T23:59:03Z",
+  "source_updated_at": "2026-10-07T19:30:53Z",
+  "title": "Reloading extensions can drop all of an extension's commands when one item fails",
+  "url": "https://github.com/microsoft/PowerToys/issues/51094",
+  "labels": [
+    "Product-Command Palette",
+    "bug"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report provides a deterministic nested-command reload scenario and a concrete COM failure at PropChanged subscription. Current source confirms that DefaultContextMenuFactory initializes each context item without an item-level exception boundary, while CommandProviderWrapper.InitializeCommands invokes that initialization inside its top-level factory and LoadTopLevelCommands catches only at the whole-provider level. A single failure can therefore discard all commands from the provider.",
+    "evidence": [
+      "The issue includes the COMException 0x800706BA at IWeakReference.Resolve while adding a PropChanged handler for a context item.",
+      "The reporter reproduced with ICommandProvider4.GetCommandItem, pinned nested commands, and multiple MoreCommands, and saw zero commands from the affected providers after reload.",
+      "DefaultContextMenuFactory.UnsafeBuildAndInitMoreCommands loops through context items and calls SlowInitializeProperties without a per-item catch.",
+      "CommandProviderWrapper.InitializeCommands creates top-level items via make in Select and pinned-command loops; CreateTopLevelViewModel initializes properties before returning.",
+      "LoadTopLevelCommands catches exceptions outside InitializeCommands, logs one provider-level failure, and does not preserve the successfully constructed sibling items.",
+      "The linked #41482 reports a different reload failure; its recent follow-up points to #46210 for a List capacity error, not this PropChanged RPC error."
+    ],
+    "recommended_action": "Isolate initialization failures at the context-item boundary, clean up and log the failed item, and continue loading its siblings and unaffected provider commands.",
+    "evaluated_at": "2026-11-05T23:59:03Z",
+    "source_updated_at": "2026-10-07T19:30:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The failure boundary is directly visible in current source and a narrow per-item isolation change can retain healthy siblings without suppressing the error. The suspected stale CsWinRT weak reference remains an unverified underlying cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate Command Palette context-item initialization failures",
+      "root_cause": "A COMException while subscribing to one context item's PropChanged event escapes DefaultContextMenuFactory.UnsafeBuildAndInitMoreCommands. It propagates through TopLevelViewModel.InitializeProperties and the provider's top-level item construction, then reaches LoadTopLevelCommands' provider-wide catch, which leaves all commands from that extension unloaded. The stale weak-reference explanation is plausible but not yet confirmed.",
+      "plan": [
+        "In DefaultContextMenuFactory.UnsafeBuildAndInitMoreCommands, catch failures for each ICommandContextItem independently, log the provider/command context and exception, clean up any partially initialized view model, and continue with sibling items.",
+        "Keep the parent command and successfully initialized MoreCommands available when one child fails; do not convert the failure into a successful empty context menu without logging.",
+        "Add a reload regression fixture with one context item whose PropChanged subscription throws and multiple healthy sibling/top-level commands; verify healthy commands remain available after reload."
+      ],
+      "verification": [
+        "Reproduce the issue with a provider implementing ICommandProvider4.GetCommandItem, pinned nested commands, and multiple MoreCommands, then reload once or twice.",
+        "Inject or simulate a failure while one context item subscribes to PropChanged and verify the failed child is skipped while its parent, siblings, and other provider commands load.",
+        "Confirm the failure is logged with enough provider/command identity to diagnose it and that cleanup is performed for partially constructed view models."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The exception propagation and whole-provider catch are confirmed in current source, but the weak-reference lifecycle and best cleanup/retry semantics should be validated with a focused reload test."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A stale COM weak-reference failure while initializing one nested context item can abort the provider-wide command load during extension reload, leaving zero commands from that provider.",
+    "known_information": [
+      "The developer report includes COMException 0x800706BA from IWeakReference.Resolve while adding PropChanged to a context item.",
+      "The repro uses an ICommandProvider4 provider with pinned nested commands and multiple MoreCommands; restart recovers the commands.",
+      "DefaultContextMenuFactory initializes MoreCommands sequentially without catching failures per item.",
+      "CommandProviderWrapper wraps provider loading in one catch around InitializeCommands, where the failing make operation can abort the provider's remaining items."
+    ],
+    "inferences": [
+      "The stale CsWinRT event-source reference may survive extension process reload, but the issue has not established this as the root cause.",
+      "Per-item failure isolation should preserve healthy siblings even if the underlying COM failure recurs."
+    ],
+    "analysis": "The issue has a narrow, actionable resilience defect independent of whether the stale weak-reference hypothesis is correct: one failed context item currently escapes to a provider-level catch and discards all provider commands. Skip and clean up only the failing child, log the failure, and prove that healthy children and top-level commands survive reload.",
+    "initial_investigation": [
+      "Read the live issue body, repro, stack trace, suggested changes, labels, and the linked automated triage note.",
+      "Read current DefaultContextMenuFactory.UnsafeBuildAndInitMoreCommands: context items are initialized in a loop with no per-item catch or cleanup.",
+      "Read current CommandItemViewModel context initialization and CommandProviderWrapper.InitializeCommands/LoadTopLevelCommands: exceptions propagate to a provider-wide catch.",
+      "Compared #41482: its current follow-up concerns a separate capacity exception tracked by #46210, so it does not cover this RPC failure."
+    ],
+    "information_gaps": null
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve per-item CmdPal reload isolation",
+      "design": {
+        "title": "Isolate Command Palette context-item initialization failures"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce nested-command failure during extension reload",
+      "note": "The issue includes a specific extension shape and COM failure; confirm the failure boundary and healthy-sibling behavior before implementation.",
+      "reproduce": {
+        "title": "Verify per-item Command Palette reload isolation",
+        "module": "Command Palette",
+        "version_requirement": "Current main or a build containing the current CmdPal extension host",
+        "prerequisites": [
+          "An extension implementing ICommandProvider4.GetCommandItem.",
+          "At least two pinned nested commands, each with multiple MoreCommands context items."
+        ],
+        "steps": [
+          "Load the extension and confirm its commands appear.",
+          "Invoke Reload Command Palette extensions once or twice.",
+          "Record whether one context-item PropChanged subscription fails and whether the provider reports zero commands.",
+          "Repeat with a controlled extension where one context item fails initialization and sibling/top-level items remain healthy."
+        ],
+        "expected_result": "A failed context item is logged and skipped, while its parent command, healthy sibling items, and other commands from the provider remain available after reload."
+      }
+    }
+  ]
+}

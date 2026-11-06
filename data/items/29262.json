@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 29262,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Num Lock(under Keyboard Management) is not working as expected for my Numpad Keyboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/29262",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:09:31Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T21:53:05.531Z",
+  "evaluated_at": "2026-11-05T21:53:05.531Z",
+  "source_updated_at": "2026-10-11T16:47:00Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Retest Num Lock remapping on current stable",
+    "detail": "The report uses PowerToys 0.74.1 and an 18-key numpad; the current hook restores Num Lock state when a Num Lock keydown is suppressed, so verify whether the behavior remains."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report describes an 18-key numpad where remapping Num Lock to Right still toggles Num Lock and changes navigation keys such as Home, Insert, and End to number output. It requests an option resembling the Keyboard Manager numpad setting, but the report is from PowerToys 0.74.1. The current hook contains explicit handling to restore the prior Num Lock state when the Num Lock event is suppressed, so the first decision is whether the behavior persists on current stable and with Num Lock on/off.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.74.1, Microsoft Store installation, and administrator execution.",
+      "The reporter uses an 18-key numpad and tries to remap Num Lock to Right or another key.",
+      "The reported side effect is that Num Lock state changes and navigation functions such as Home, Insert, and End instead enter numbers.",
+      "The issue requests an option similar to the Keyboard Manager numpad setting; there are no comments or assignees.",
+      "Current KeyboardManager.cpp and KeyboardManagerEditor.cpp restore the previous Num Lock state when a Num Lock keydown is suppressed; the report predates this observed code path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:09:31Z"
-  }
+    "recommended_action": "Ask whether the same behavior persists on v0.102.3001 with Num Lock initially on and off, and confirm which navigation keys are affected.",
+    "evaluated_at": "2026-11-05T21:53:05.531Z",
+    "source_updated_at": "2026-10-11T16:47:00Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report describes a possible state-preservation defect when suppressing Num Lock, but its version predates the current explicit Num Lock state restoration and needs a current retest."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Verify Num Lock state preservation when remapping the Num Lock key",
+      "root_cause": "Suppressing a Num Lock event may not preserve the keyboard state on the reporter's 18-key numpad, although current hook code attempts to restore the prior state; the outcome has not been verified on current stable.",
+      "plan": [
+        "Retest Num Lock-to-Right with Num Lock initially on and off on v0.102.3001.",
+        "Record whether the Num Lock indicator/state changes and whether Home, Insert, End, or other navigation keys produce the expected outputs.",
+        "If the state still changes when the key is remapped, trace the suppressed keydown/key-up path and add a focused regression test."
+      ],
+      "verification": [
+        "Confirm remapping Num Lock does not unexpectedly toggle the numpad state.",
+        "Verify navigation keys retain their expected behavior with Num Lock on and off."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The report is detailed but comes from 0.74.1, and current code already includes Num Lock state restoration whose effect on this report is unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remapping Num Lock on an 18-key numpad reportedly toggles the numpad state and causes navigation keys to enter numbers.",
+    "known_information": [
+      "The report lists PowerToys 0.74.1 and an 18-key numpad.",
+      "The attempted mapping is Num Lock to Right or another key.",
+      "The reporter says Num Lock still toggles and Home, Insert, End, and similar functions stop behaving as navigation keys.",
+      "The author requests a setting similar to the Keyboard Manager numpad option."
+    ],
+    "inferences": [
+      "The observed number/navigation change may be caused by Num Lock state changing before or despite the remap; current code explicitly restores Num Lock state for suppressed keydowns, but the report predates it."
+    ],
+    "analysis": "The issue may already be addressed by Num Lock state restoration in current hook code. Confirm the current behavior before treating the report as a defect or designing a broader numpad option.",
+    "initial_investigation": [
+      "Read the full report, labels, comments, and assignees.",
+      "Inspected the low-level hook handlers: both KeyboardManager.cpp and KeyboardManagerEditor.cpp restore the previous Num Lock state when a Num Lock keydown is suppressed.",
+      "Searched for related NumLock remapping reports; no current matching issue was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Num Lock still toggles when remapped on v0.102.3001, with the initial state recorded, and which navigation keys are affected",
+        "why_needed": "The report is from 0.74.1 and current hook code restores Num Lock state after a suppressed keydown.",
+        "how_to_collect": "On v0.102.3001, test the same Num Lock mapping once with Num Lock initially on and once off; record the indicator/state and behavior of Home, Insert, and End.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-29262-current-numlock-test",
+      "type": "request_info",
+      "label": "Retest Num Lock mapping on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 29262,
+        "body": "Thanks for describing the 18-key numpad behavior. Since the report is from PowerToys 0.74.1, could you confirm whether Num Lock still toggles when remapped on v0.102.3001? Please test once with Num Lock initially on and once off, and say whether Home, Insert, and End still produce numbers instead of their navigation actions."
+      }
+    },
+    {
+      "id": "approve-design-29262",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 5,
+  "number": 37544,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/37544",
+  "title": "File Explorer .svg thumbnail preview plugin Memory Leak",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
+  "pending_author": false,
+  "labels": [
+    "Issue-Bug",
+    "Priority-1",
+    "Product-File Explorer"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T06:33:58.640078Z",
+  "evaluated_at": "2026-11-05T06:33:58.640078Z",
+  "source_updated_at": "2026-10-26T13:06:11Z",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current fix covers this single-file renderer hang. Issue #34491 addresses the general cost of creating a WebView2 instance for each SVG, while this report describes one supplied SVG exhausting memory; the current provider also waits without a render deadline. A bounded teardown is a plausible mitigation, but current-build reproduction must confirm its effectiveness.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound SVG thumbnail rendering and tear down hung WebView2 instances",
+      "root_cause": "The reporter's SVG is reported to hang multiple browser engines, and the thumbnail provider signals completion only after navigation/capture or an initialization failure. Its wait loop has no deadline, so a renderer that never completes can keep the per-thumbnail host alive indefinitely and retain resources. Whether bounded teardown fully reclaims renderer memory remains to be verified.",
+      "plan": [
+        "Add a finite deadline for WebView2 initialization and thumbnail rendering so a stalled navigation or capture returns no thumbnail instead of waiting indefinitely.",
+        "On timeout, safely dispose the WebView2 control and release its environment, and prevent any late asynchronous callback from using disposed state.",
+        "Add focused coverage for a render that never completes and verify the provider exits its wait and releases the renderer resources; retain the reporter's SVG as an isolated integration case."
+      ],
+      "verification": [
+        "Run the focused SvgThumbnailProvider unit tests, including a controlled non-completing navigation case that verifies bounded return and cleanup.",
+        "In an isolated Windows test environment, reproduce with the reporter-provided SVG in Explorer using medium-or-larger icons; record provider/WebView2 memory and confirm the thumbnail request either completes or fails within the deadline without ongoing resource growth.",
+        "Compare the current supported build with the reported 0.88.0 behavior and distinguish a single-file render hang from the per-file startup cost tracked by issue #34491."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The issue supplies a specific SVG and reports unbounded WebView2 memory growth; a member also reports that the sample hangs other browsers. Current provider source has an unbounded completion wait, which supports a containment fix, but the issue has not been reproduced on a current supported build and timeout teardown has not been tested."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A specific SVG reportedly drives the Explorer thumbnail handler's WebView2 process memory upward until the machine runs out of RAM.",
+    "known_information": [
+      "The report identifies PowerToys 0.88.0, Windows 11 24H2 build 26120.3281, and the File Explorer SVG thumbnail provider.",
+      "The reporter links a specific houndstooth SVG and says that placing it in an Explorer folder using medium-or-larger icons causes a WebView2 process to consume all available RAM.",
+      "A PowerToys maintainer reported that the same sample hangs Edge, Chrome, and Firefox and linked Chromium issue 398904328; the reporter supplied that Chromium issue URL.",
+      "Current `SvgThumbnailProvider.GetThumbnailImpl` waits in a loop until `thumbnailDone` is signaled and disposes the WebView2 control only after that wait; the loop has no timeout.",
+      "Issue #34491 concerns general SVG thumbnail throughput and the cost of a new WebView2 instance per file; its latest discussion does not establish a fix for this single-file memory-exhaustion report."
+    ],
+    "inferences": [
+      "The sample's renderer workload may be the primary trigger because it reportedly stalls multiple browser engines, but this does not establish that PowerToys should accept indefinite resource use.",
+      "The provider's unbounded wait can keep a hung per-thumbnail host alive; a bounded teardown may contain the impact, but current-build behavior and cleanup effectiveness are unverified."
+    ],
+    "analysis": "Keep this report distinct from #34491: repeated WebView2 startup for many files is a throughput issue, while this report describes a single pathological SVG exhausting memory. Current source has no render deadline and blocks until a completion signal, supporting a narrow containment proposal rather than a replacement SVG renderer. Reproduce the supplied asset in an isolated current build and verify that a timed-out render releases its host and WebView2 resources before finalizing the design.",
+    "initial_investigation": [
+      "Read the issue body and all five comments, including the reporter's request to reopen it separately from #34491, the maintainer's cross-browser reproduction observation, and the linked Chromium issue.",
+      "Inspected `src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs`: WebView2 completion is signaled by navigation/capture or initialization failure, the wait loop at lines 211-214 has no deadline, and disposal follows the wait at lines 216-218.",
+      "Confirmed this provider file is unchanged between the current PR head and its upstream-main base; no fix for this issue is present in that source snapshot.",
+      "Compared #34491's latest discussion: it documents per-file WebView2 creation and general performance cost but does not establish coverage for this supplied-file memory exhaustion.",
+      "No current-build reproduction, memory capture, unit test, or verification of timeout cleanup has been performed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the supplied SVG still causes unbounded WebView2 memory growth on a current supported PowerToys build",
+        "why_needed": "The report is from version 0.88.0, and a current reproduction is needed to confirm that the present handler still exhibits the behavior and that a render deadline would mitigate it.",
+        "how_to_collect": "If available, test the same SVG on a current supported build and report the exact PowerToys and Windows versions plus whether WebView2 memory continues to grow; if it reproduces, add `/bugreport` immediately after Explorer stalls and before closing it.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The exact sample, reproduction path, cross-browser hang report, and current provider's unbounded wait support a concrete containment direction. A current-build reproduction and teardown test are still required, so the proposal remains yellow-confidence rather than a confirmed defect mechanism.",
+    "source_updated_at": "2026-10-26T13:06:11Z",
+    "evaluated_at": "2026-11-05T06:33:58.640078Z",
+    "recommended_action": "Reproduce the supplied SVG in an isolated current build, then evaluate a bounded WebView2 render deadline and teardown; keep the issue separate from #34491's general per-file performance concern.",
+    "evidence": [
+      "The issue reports that the linked SVG causes a WebView2 process to consume all available RAM when Explorer generates medium-or-larger thumbnails.",
+      "A maintainer reports that the sample hangs Edge, Chrome, and Firefox and points to Chromium issue 398904328, supporting a pathological renderer workload.",
+      "Current `GetThumbnailImpl` waits without a deadline for `thumbnailDone` and disposes the browser only after the wait completes.",
+      "Issue #34491's latest discussion is about the per-file WebView2 startup cost, not this reported single-file runaway-memory behavior.",
+      "The issue has not been reproduced on a current supported build, and no teardown test establishes that a timeout releases the renderer."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "id": "issue-37544-approve-bounded-render",
+      "label": "Approve bounded SVG-render investigation"
+    },
+    {
+      "type": "request_info",
+      "id": "issue-37544-confirm-current-build",
+      "label": "Confirm behavior on a current build",
+      "comment": {
+        "body": "Thanks for providing the exact SVG and noting that it also hangs other browsers. The current thumbnail provider waits for WebView2 completion without a deadline, but we do not yet know whether this still reproduces on a supported build. If you can test it, please share the PowerToys and Windows versions and whether the same SVG still drives WebView2 memory upward. If it reproduces, add a `/bugreport` immediately after Explorer stalls and before closing it."
+      }
+    },
+    {
+      "type": "reproduce",
+      "id": "issue-37544-reproduce-render-exhaustion",
+      "label": "Reproduce SVG renderer resource exhaustion in isolation",
+      "note": "The report includes a specific sample and Explorer reproduction path; verify the current handler behavior before finalizing a fix.",
+      "reproduce": {
+        "title": "Verify SVG thumbnail behavior with the reported houndstooth sample",
+        "module": "File Explorer SVG thumbnail provider",
+        "version_requirement": "Compare the reported PowerToys 0.88.0 behavior with a current supported build.",
+        "prerequisites": [
+          "Use an isolated Windows test environment because the report describes memory consumption up to all available RAM.",
+          "Enable the PowerToys SVG thumbnail handler and use the reporter-provided SVG linked in the issue."
+        ],
+        "setup": [
+          "Place the reporter-provided SVG in a disposable test folder."
+        ],
+        "steps": [
+          "Open the test folder in File Explorer and select medium-or-larger icons.",
+          "Record whether thumbnail generation completes and observe the PowerToys.SvgThumbnailProvider and msedgewebview2 process memory until it completes or stalls.",
+          "If safe, compare the same sample in the reported browser engines and record whether the renderer stalls there as described."
+        ],
+        "expected_result": "Determine whether the current thumbnail provider reproduces unbounded memory growth or an indefinitely incomplete request for this one file, separately from the per-file startup delay reported in issue #34491.",
+        "attachments": [
+          {
+            "label": "Reporter-provided SVG sample",
+            "url": "https://openclipart.org/download/289287/ht28.svg"
+          }
+        ]
+      }
+    }
+  ]
+}

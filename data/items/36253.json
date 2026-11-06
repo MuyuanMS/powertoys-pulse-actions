@@ -1,65 +1,124 @@
 {
   "schemaVersion": 5,
   "number": 36253,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "author",
-  "pending_author": true,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-28T03:24:39Z",
   "title": "Key mapping issue",
   "url": "https://github.com/microsoft/PowerToys/issues/36253",
   "labels": [
-    "Issue-Bug"
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
-  "comments": 0,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T15:01:13.876Z",
+  "generated_at": "2026-11-05T15:01:13.876Z",
+  "evaluated_at": "2026-11-05T15:01:13.876Z",
+  "source_updated_at": "2026-10-11T16:47:53Z",
+  "comments": 6,
   "status": {
-    "glyph": "ℹ️",
-    "label": "Triage revalidated",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Retest mappings outside PowerToys windows",
+    "detail": "The reporter confirmed mappings work only while a PowerToys window is focused, even while PowerToys is running; prior requests for keyboard model and diagnostics were not answered."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
+    "status": "needs_information",
+    "rationale": "The reporter confirmed in a maintainer exchange that mappings work only with PowerToys windows focused, even while the app is running. A maintainer already explained that Keyboard Manager runs in the background and asked for the keyboard model and /bugreport; the reporter said they would provide it later but did not. The issue is from v0.86.0 and needs a current retest with a concrete mapping. AI-suggested issue #32412 is a different startup-after-reboot problem and is closed as a duplicate of #31375, so it does not cover this foreground-only symptom.",
     "evidence": [
-      "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
-      "Could you retest this on the latest PowerToys build and reply with numbered reproduction steps, the exact key remap/shortcut entries involved, whether running PowerToys elevated changes the result, and a fresh bug report ZIP if it still reproduces?"
+      "The report lists v0.86.0 and says mappings stop outside PowerToys windows.",
+      "The reporter confirmed the symptom persists while PowerToys is running and only works when a PowerToys window is focused.",
+      "A maintainer requested the keyboard model and /bugreport; the reporter said they would send it later, but no report was attached.",
+      "AI suggested #32412, but that closed issue concerns mappings after reboot until PowerToys restarts, not focus-dependent operation.",
+      "A later comment asks about v0.100.2 but has no reporter response."
     ],
-    "recommended_action": "Hold engineering work until the reporter answers the current-version / repro questions already raised in the thread.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-28T03:24:39Z"
+    "recommended_action": "Retest one exact mapping on v0.102.3001 in a non-PowerToys window and provide the keyboard model; if it still depends on focus, submit a current /bugreport.",
+    "evaluated_at": "2026-11-05T15:01:13.876Z",
+    "source_updated_at": "2026-10-11T16:47:53Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository code fix is not yet actionable for issue in stage 'waiting_on_author'."
+    "status": "proposed",
+    "rationale": "Keyboard Manager is expected to process remaps in the background while PowerToys runs; a focus-dependent failure would be a defect, but the report is old and lacks the requested environment details."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Keep Keyboard Manager remaps active outside PowerToys windows",
+      "root_cause": "The Keyboard Manager engine may not receive or apply keyboard events when focus leaves PowerToys windows, but the issue has no current reproduction or device details.",
+      "plan": [
+        "Retest one exact mapping on v0.102.3001 in a PowerToys window and a separate application.",
+        "Record the keyboard model and whether KeyboardManagerEngine remains running during the focus change.",
+        "If current behavior is focus-dependent, trace engine lifecycle/input handling and add a regression test with a non-PowerToys foreground window."
+      ],
+      "verification": [
+        "Verify the same mapping works in a PowerToys window and a non-PowerToys application while PowerToys remains in the background.",
+        "Verify the result is stable after closing or minimizing Settings."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The reporter confirmed a focus dependency on v0.86.0, but no current build, keyboard model, or bug report is available."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Open PowerToys report: Key mapping issue",
+    "summary": "Keyboard remaps reportedly work only while a PowerToys window is focused, despite PowerToys running.",
     "known_information": [
-      "Title: Key mapping issue",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The reporter lists v0.86.0.",
+      "The reporter confirmed mappings work only when a PowerToys window is focused, although PowerToys is running.",
+      "The maintainer explained that Keyboard Manager must run in the background and asked for the keyboard model and a bug report.",
+      "The reporter promised further information but did not attach it; no diagnostics are present."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "A foreground/background engine lifecycle or device-specific input issue may be involved; the available report does not distinguish them."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The prior maintainer question already established the key foreground/background distinction and the reporter answered yes. Ask for the missing current-build reproduction, one exact mapping, and keyboard model; request /bugreport only if it still fails.",
     "initial_investigation": [
-      "Read metadata and labels for #36253.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the issue body and all six comments, including the reporter confirmation and unanswered keyboard-model/diagnostic request.",
+      "Checked suggested issue #32412; it covers a different reboot/startup symptom and is closed in favor of #31375.",
+      "Confirmed no bugreport was attached and the issue has no current-build retest."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "why_needed": "The only reported version is v0.86.0.",
+        "how_to_collect": "Retest one exact mapping on v0.102.3001.",
+        "information": "Whether the focus-dependent mapping failure reproduces on v0.102.3001.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "why_needed": "The earlier reply confirms the focus dependency but does not identify a mapping or current reproduction.",
+        "how_to_collect": "Test the same mapping once in a PowerToys window and once in another application without exiting PowerToys.",
+        "information": "One exact source/target mapping and whether it works in a non-PowerToys foreground application while PowerToys remains running.",
+        "evidence_type": "repro_steps"
+      },
+      {
+        "why_needed": "A prior maintainer request for the device and input stack remains unanswered.",
+        "how_to_collect": "Provide the keyboard make/model and name any active keyboard remapping software.",
+        "information": "The keyboard model and whether any keyboard software/remapper is active.",
+        "evidence_type": "other_software"
+      },
+      {
+        "why_needed": "The prior diagnostic request was not fulfilled and a current report can show engine state during the focus change.",
+        "how_to_collect": "Immediately after reproducing, comment /bugreport.",
+        "information": "A current report if the same mapping still fails outside PowerToys windows.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest mappings outside PowerToys windows",
+      "comment": {
+        "target": "issue",
+        "number": 36253,
+        "body": "Thanks for confirming earlier that the mapping worked only while a PowerToys window was focused. A maintainer already asked for the keyboard model and a bug report, but the issue has no current-build retest or archive; the suggested #32412 concerns a different startup-after-reboot symptom.\n\nCould you please:\n1. Retest one exact mapping on v0.102.3001 in a PowerToys window and then in another application while PowerToys stays running, and report the source/target keys.\n2. Provide the keyboard model and name any other keyboard remapping software in use.\n3. If it still fails outside PowerToys windows, comment /bugreport immediately after reproducing.\nThis will determine whether the focus-dependent failure remains on the current build."
+      }
+    }
+  ]
 }

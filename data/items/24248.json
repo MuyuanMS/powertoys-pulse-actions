@@ -1,33 +1,140 @@
 {
+  "schemaVersion": 5,
   "number": 24248,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Win (Right) being mapped to Alt (Left) isn't work in Terminal",
+  "url": "https://github.com/microsoft/PowerToys/issues/24248",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-28T23:57:26Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Status-Reproducible",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:46:50Z",
+  "evaluated_at": "2026-11-05T22:46:50Z",
+  "source_updated_at": "2026-10-11T16:01:53Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current elevated-Terminal retest",
+    "detail": "The issue has a maintainer-reproducible label and exact old-version steps, but no current PowerToys or Windows Terminal result."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Retest Win Right to Alt in elevated Terminal",
+    "reason": "A current same-integrity test will show whether the old failure persists and separate a remap-state issue from Terminal-version behavior."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-24248-retest-elevated-terminal",
+      "type": "reproduce",
+      "label": "Retest the elevated Terminal remap",
+      "primary": true,
+      "note": "The issue already supplies a precise mapping and working controls; verify the sequence on current builds before assigning a code change.",
+      "reproduce": {
+        "title": "Verify Win Right to Alt Left in elevated Terminal",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer and current Windows Terminal",
+        "prerequisites": [
+          "Run PowerToys as administrator and launch Windows Terminal as administrator.",
+          "Configure Windows Terminal to open a new tab with Alt+T."
+        ],
+        "setup": [
+          "Create a single-key Keyboard Manager mapping from Win (Right) to Alt (Left)."
+        ],
+        "steps": [
+          "Focus the elevated Windows Terminal window and press Win (Right)+T.",
+          "Verify whether a new tab opens.",
+          "Compare with the issue's controls: remove the single-key mapping and map Win (Right)+T to Alt (Left)+T, then test; separately map Shift (Left) to Alt (Left) and test."
+        ],
+        "expected_result": "Win (Right)+T with the single-key remap opens a new Terminal tab, matching the working control mappings."
+      }
+    },
+    {
+      "id": "issue-24248-request-current-terminal-result",
+      "type": "request_info",
+      "label": "Confirm current Terminal remap behavior",
+      "comment": {
+        "body": "Your v0.67.1 report gives the exact Win (Right) to Alt (Left) mapping and says the failure occurs in elevated Terminal while the shortcut and Shift controls work. Could you confirm whether this still reproduces on PowerToys v0.102.3001 and a current Windows Terminal build, with both PowerToys and Terminal running as administrator? If it persists, please add `/bugreport` immediately after the failed Win (Right)+T attempt."
+      }
+    },
+    {
+      "id": "issue-24248-approve-terminal-remap-investigation",
+      "type": "approve_design",
+      "label": "Approve elevated-Terminal remap investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue has a maintainer-added Status-Reproducible label and describes a specific Win (Right) to Alt (Left) mapping that fails only in elevated Windows Terminal, with two working controls. The report predates current PowerToys and Terminal builds, so retest before attributing the behavior to a current defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report lists PowerToys v0.67.1, Windows Terminal 1.16.10262.0, and PowerToys running as administrator.",
+      "The reporter says Win (Right) mapped to Alt (Left) fails for Terminal's Alt+T new-tab command, while the remap works in VS Code.",
+      "Mapping Win (Right)+T directly to Alt (Left)+T and mapping Shift (Left) to Alt (Left) are reported working controls.",
+      "The live issue carries Status-Reproducible and has no comments, assignees, or linked fix.",
+      "Current upstream KeyboardEventHandlers.cpp at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 intercepts configured single-key remaps and injects target key-down/up events, but this does not explain the app-specific failure."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-28T23:57:26Z"
+    "recommended_action": "Retest the exact single-key remap on current builds with both processes elevated, then trace the Win-to-Alt state path only if the behavior persists.",
+    "evaluated_at": "2026-11-05T22:46:50Z",
+    "source_updated_at": "2026-10-11T16:01:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the exact single-key remap still fails in current elevated Terminal while the controls work, a key-state or injection interaction specific to the source Win key may need correction. The current report does not establish that mechanism."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve the Win-to-Alt remap state for elevated Terminal",
+      "root_cause": "The single-key Win (Right) to Alt (Left) remap may not preserve the mapped Alt state when Terminal consumes the following T key, even though direct shortcut and Shift-to-Alt controls work. Current source behavior alone does not establish the failure branch.",
+      "plan": [
+        "Reproduce the exact mapping on current PowerToys and Windows Terminal builds with both processes elevated.",
+        "Trace Win (Right) key-down, injected Alt (Left), T key-down/up, and corresponding releases through Keyboard Manager and Terminal.",
+        "If the injected modifier or following T event is lost, correct the narrow source-key state transition while preserving standalone Win behavior.",
+        "Add a regression test for the single-key remap and retain the direct shortcut and Shift controls."
+      ],
+      "verification": [
+        "Win (Right) mapped to Alt (Left) opens a new tab with Alt+T in elevated Terminal.",
+        "The direct Win (Right)+T to Alt (Left)+T and Shift (Left) to Alt (Left) controls remain functional.",
+        "The Win key retains its normal behavior when the mapping is removed."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The old report has precise controls and a reproducible label, but no current build test or trace localizes the failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A single-key Win (Right) to Alt (Left) remap reportedly fails to trigger Terminal's Alt+T new-tab shortcut in elevated Windows Terminal, although related controls work.",
+    "known_information": [
+      "The original report lists PowerToys v0.67.1, Windows Terminal 1.16.10262.0, and PowerToys running as administrator.",
+      "The same mapping reportedly works in VS Code but not elevated Terminal.",
+      "The reporter says a direct Win (Right)+T to Alt (Left)+T remap and a Shift (Left) to Alt (Left) remap both work in Terminal.",
+      "The issue is marked Status-Reproducible, has no comments or assignees, and has no linked fix.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 injects the configured single-key target on the source key events; the app-specific failure path is not established."
+    ],
+    "inferences": [
+      "The distinction may be in the interaction between the remapped Win key, injected Alt state, Terminal's shortcut handling, and process integrity; the report does not identify which stage loses the event."
+    ],
+    "analysis": "The historical report is specific enough for a maintainer retest, and its control cases narrow the suspected path. Current source injects the single-key target but does not explain why Terminal behaves differently. Do not prescribe an implementation change until the exact sequence is confirmed on current builds.",
+    "initial_investigation": [
+      "Refreshed the full issue body, labels, assignees, and timeline through 2026-10-11; the latest update only re-applied the product label.",
+      "Checked the issue timeline for linked PRs; none was found.",
+      "Read current upstream KeyboardEventHandlers.cpp at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 around HandleSingleKeyRemapEvent; configured source events inject the mapped target and its release, but the code does not establish the Terminal-specific failure."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the exact Win (Right) to Alt (Left) mapping still fails on v0.102.3001 with a current elevated Windows Terminal, while the existing control mappings work",
+        "why_needed": "The original versions are obsolete, and a current result determines whether this remains a product defect or a version-specific Terminal interaction.",
+        "how_to_collect": "Run the exact mapping and control cases with both applications elevated; if the failure persists, add `/bugreport` immediately after the failed attempt.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

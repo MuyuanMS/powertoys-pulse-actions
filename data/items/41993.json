@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 41993,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remapping caps-lock to shift doesn't work on RustDesk on OS boot",
+  "url": "https://github.com/microsoft/PowerToys/issues/41993",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:05:23Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:44:17Z",
+  "evaluated_at": "2026-11-05T20:44:17Z",
+  "source_updated_at": "2026-10-11T16:47:18Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Investigate Keyboard Manager startup with RustDesk",
+    "detail": "The author reports that Caps Lock-to-Shift fails in RustDesk after OS startup and works after manually restarting PowerToys; the report lists PowerToys 0.94.2."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a repeatable startup sequence on Windows 10 22H2 with PowerToys 0.94.2, RustDesk 1.4.2, and Caps Lock mapped to Shift: the mapping fails in a RustDesk session after boot but works after restarting PowerToys. This points to a startup/session initialization interaction in Keyboard Manager, but the report is old and does not establish whether the same behavior remains in current stable.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.94.2, Windows 10 22H2, RustDesk 1.4.2, and PowerToys running as administrator.",
+      "The author supplies steps: enable automatic PowerToys startup, map Caps Lock to Shift, reboot, start a RustDesk session, and test the remap.",
+      "The mapping fails in the RustDesk session after boot and works after manually restarting PowerToys.",
+      "The issue has no comments or assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:05:23Z"
-  }
+    "recommended_action": "Confirm the same startup/session failure on current stable, then trace Keyboard Manager's initialization and input-hook behavior across RustDesk session startup.",
+    "evaluated_at": "2026-11-05T20:44:17Z",
+    "source_updated_at": "2026-10-11T16:47:18Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The failure is tied to OS startup and is cleared by restarting PowerToys, which supports investigating Keyboard Manager initialization or session attachment. The exact startup mechanism is not established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep the Caps Lock remap active across RustDesk session startup",
+      "root_cause": "Keyboard Manager may not initialize or reattach its remapping input path correctly when PowerToys starts at OS boot before the RustDesk session becomes active.",
+      "plan": [
+        "Reproduce the report on current stable with PowerToys set to start automatically, Caps Lock mapped to Shift, and RustDesk started after OS boot.",
+        "Compare the Keyboard Manager remap behavior before and after restarting PowerToys, and determine whether the failure follows the RustDesk session, module startup order, or input-hook lifecycle.",
+        "If the remap path is not ready or attached after the session transition, update the existing initialization/lifecycle handling to restore the mapping without requiring a manual PowerToys restart.",
+        "Add a regression test or documented manual test for automatic startup followed by a RustDesk session on Windows 10."
+      ],
+      "verification": [
+        "Caps Lock produces Shift in RustDesk immediately after OS startup without restarting PowerToys.",
+        "The mapping continues to work after switching between local and RustDesk input.",
+        "Existing Keyboard Manager behavior remains correct when PowerToys is started manually."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The startup condition and manual-restart workaround are explicit, but the report uses PowerToys 0.94.2 and does not establish whether the failure is in Keyboard Manager initialization, session attachment, or RustDesk input."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Caps Lock-to-Shift remap reportedly fails in RustDesk after OS startup and works after restarting PowerToys.",
+    "known_information": [
+      "The report lists PowerToys 0.94.2, Windows 10 22H2, and RustDesk 1.4.2.",
+      "PowerToys is reported to run as administrator and start automatically with the OS.",
+      "The mapping is Caps Lock to Shift.",
+      "The mapping fails in a RustDesk session after boot and works after manually restarting PowerToys."
+    ],
+    "inferences": [
+      "The behavior may involve Keyboard Manager startup or input-hook attachment across the RustDesk session lifecycle."
+    ],
+    "analysis": "The report has a clear startup sequence and restart workaround, so a focused design is justified. Confirm it on current stable before implementation and distinguish an initialization/session issue from RustDesk-specific input behavior.",
+    "initial_investigation": [
+      "Read the current issue body, labels, assignees, and discussion; there are no comments or assignees.",
+      "Searched for other PowerToys RustDesk Caps Lock-to-Shift reports and did not find another covering issue."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the boot-to-RustDesk failure still reproduces on current stable",
+        "why_needed": "The report lists PowerToys 0.94.2; a current result confirms the failure is still live before tracing startup behavior.",
+        "how_to_collect": "Repeat the reported automatic-startup and RustDesk sequence on current stable and confirm whether restarting PowerToys still makes the mapping begin working.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the startup reliability investigation"
+    },
+    {
+      "id": "issue-41993-confirm-current-rustdesk-repro",
+      "type": "request_info",
+      "label": "Confirm the RustDesk startup behavior on current stable",
+      "comment": {
+        "body": "Thanks for the clear boot and RustDesk sequence, including the Caps Lock-to-Shift mapping and the PowerToys restart workaround. Since the report lists PowerToys 0.94.2, could you confirm whether the same failure still occurs on current stable, and whether restarting PowerToys still makes the mapping work in the RustDesk session?"
+      }
+    }
+  ]
 }

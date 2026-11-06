@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 36157,
+  "title": "Microsft Mouse and Keyboard Center breaks Keyboard Manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/36157",
+  "labels": [
+    "Issue-Bug",
+    "Area-App Compat",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-12-19T20:26:02Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:58:49.3Z",
+  "generated_at": "2026-11-05T14:58:49.3Z",
+  "evaluated_at": "2026-11-05T14:58:49.3Z",
+  "source_updated_at": "2026-10-11T16:47:55Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Retest the Mouse and Keyboard Center interaction",
+    "detail": "The report says remapped keys duplicated and a Browser Home mapping also launched Firefox after installing Microsoft Mouse and Keyboard Center; uninstalling it restored normal behavior."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter gives a clear A/B: remapped keys duplicated and an additional browser action occurred after installing Microsoft Mouse and Keyboard Center, then Keyboard Manager worked normally after uninstalling it. The report is from 0.86.0 and lacks the Center version or current-build reproduction. This could be external input interception or a compatibility defect, so evidence does not yet justify a code fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.86.0, elevated execution, and Microsoft Mouse and Keyboard Center installed from the Store.",
+      "Every remapped key reportedly emitted twice; Browser Home mapped to Ctrl+Z also launched Firefox.",
+      "Uninstalling Mouse and Keyboard Center reportedly restored normal behavior, even after switching to a Logitech mouse.",
+      "No comments, screenshots, or diagnostics are attached."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-19T20:26:02Z"
-  }
+    "recommended_action": "If the interaction remains relevant, retest one mapping on v0.102.3001 with Mouse and Keyboard Center installed and report its version and exact output.",
+    "evaluated_at": "2026-11-05T14:58:49.3Z",
+    "source_updated_at": "2026-10-11T16:47:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The uninstall A/B implicates an interaction with another input manager, but there is no current-build reproduction or evidence identifying a PowerToys defect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid duplicated remap output with another input manager",
+      "root_cause": "Mouse and Keyboard Center may intercept or reinject keys that Keyboard Manager remaps, resulting in duplicate output; current evidence does not establish which product owns the conflicting event path.",
+      "plan": [
+        "Confirm whether the interaction reproduces on v0.102.3001 with Mouse and Keyboard Center installed.",
+        "Use one harmless mapping and record Center version, output, and whether it works when the Center is disabled.",
+        "If PowerToys is defective independent of the external tool, correct the demonstrated event path and add a compatibility regression test; otherwise document the input-manager conflict."
+      ],
+      "verification": [
+        "Verify one remapped key produces exactly one intended output with the reported Center version.",
+        "Verify Keyboard Manager returns to baseline when the conflicting input manager is disabled."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "The report has a strong uninstall A/B but is from 0.86.0; no current test or diagnostics identify which tool duplicates input."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Installing Microsoft Mouse and Keyboard Center reportedly caused remapped keys to duplicate until it was uninstalled.",
+    "known_information": [
+      "The report lists PowerToys 0.86.0 and a Microsoft mouse but no Microsoft keyboard.",
+      "After installing Microsoft Mouse and Keyboard Center, remapped keys reportedly duplicated and one mapping triggered Firefox.",
+      "Uninstalling the Center reportedly restored normal Keyboard Manager behavior.",
+      "The Center version and diagnostic archive are absent."
+    ],
+    "inferences": [
+      "The cause may be an interaction between input-management paths rather than a standalone mapping error."
+    ],
+    "analysis": "The uninstall A/B is useful evidence and should not be requested again. A current version and single-key retest with the Center installed would determine whether the compatibility interaction remains; do not ask for reinstall if unavailable.",
+    "initial_investigation": [
+      "Read the report and recorded duplicate output and Browser Home/Ctrl+Z symptoms.",
+      "Recorded the uninstall A/B and that the reporter had a Microsoft mouse but no Microsoft keyboard.",
+      "Confirmed the only PowerToys version is 0.86.0 and no diagnostic archive is attached."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "why_needed": "The report is from 0.86.0.",
+        "information": "Whether the issue reproduces on v0.102.3001.",
+        "how_to_collect": "If still relevant, test one mapping on v0.102.3001."
+      },
+      {
+        "evidence_type": "other_software",
+        "why_needed": "The Center was removed after the failure, and its version/current interaction are unknown.",
+        "information": "The Center version and whether one simple mapping duplicates with it enabled.",
+        "how_to_collect": "If safe and convenient, compare one harmless mapping with the Center enabled and disabled; do not reinstall solely for this report if unavailable."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "why_needed": "The old report has no logs and the interaction involves two input-management components.",
+        "information": "A current archive if duplicate output still occurs on v0.102.3001 with the Center installed.",
+        "how_to_collect": "Immediately after a current duplicate-output reproduction, comment /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest issue 36157 on the current build",
+      "comment": {
+        "target": "issue",
+        "number": 36157,
+        "body": "Thanks for the clear A/B: remapped keys duplicated and Browser Home also launched Firefox after installing Microsoft Mouse and Keyboard Center, then Keyboard Manager returned to normal after uninstalling the Center. The report is from v0.86.0 and does not include the Center version.\n\nIf this interaction is still relevant, could you please:\n1. If the setup is still available, test one harmless mapping on v0.102.3001 with the Center installed and report its version and exact output. Do not reinstall it solely for this report if unavailable.\n2. If duplicate output persists, comment /bugreport immediately afterward.\nThis will determine whether the compatibility interaction remains on a current build."
+      }
+    }
+  ]
 }

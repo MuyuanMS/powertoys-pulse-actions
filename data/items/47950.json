@@ -2,67 +2,115 @@
   "schemaVersion": 5,
   "number": 47950,
   "kind": "issue",
-  "track": "triage",
-  "stage": "owned_elsewhere",
+  "repository": "microsoft/PowerToys",
+  "title": "Can't remap Windows + C and other 'hard-coded' shortcuts",
+  "url": "https://github.com/microsoft/PowerToys/issues/47950",
+  "track": "fix",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-13T15:30:06.9719009Z",
-  "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-  "source_updated_at": "06/18/2026 23:54:21",
-  "url": "https://github.com/microsoft/PowerToys/issues/47950",
-  "title": "Can't remap Windows + C and other 'hard-coded' shortcuts",
-  "author": "LukeDRussell",
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 1,
+  "generated_at": "2026-11-05T22:30:32Z",
+  "evaluated_at": "2026-11-05T22:30:32Z",
+  "source_updated_at": "2026-10-11T16:46:56Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Lightweight schema-v5 triage revalidation completed during the bounded scheduled run."
+    "glyph": "?",
+    "label": "Needs a current system-shortcut comparison",
+    "detail": "The Win+C behavior overlaps an existing Copilot-key report, while the separate Teams shortcut has not been isolated from Windows handling."
   },
   "next_action": {
-    "glyph": "🔗",
-    "label": "Monitor linked or assigned work",
-    "reason": "Existing ownership or handling evidence means duplicate agent work is not appropriate."
+    "glyph": "?",
+    "label": "Check both shortcuts with Keyboard Manager disabled",
+    "reason": "A current enabled/disabled comparison will separate the Copilot-key report from the distinct Teams shortcut and determine which layer handles each chord."
   },
+  "actions": [
+    {
+      "id": "issue-47950-system-shortcut-comparison",
+      "type": "request_info",
+      "label": "Check both shortcuts with Keyboard Manager disabled",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for giving the Windows 11 25H2 version and both outcomes. The Win+C-to-Settings behavior is already reported in #46301, which was closed as a duplicate of #35808; that does not cover the separate Win+Shift+Ctrl+Alt+T-to-Teams behavior. Could you confirm whether each shortcut still does this on v0.102.3001 when Keyboard Manager is disabled and when PowerToys is fully exited? Also, is the first input a physical Copilot key or a literal Win+C chord, and does the second shortcut still launch Teams in both tests?"
+      }
+    },
+    {
+      "id": "issue-47950-approve-system-shortcut-design",
+      "type": "approve_design",
+      "label": "Approve Windows shortcut-ownership investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Public ownership or handling evidence indicates this issue is already covered elsewhere; duplicate work should not be started.",
+    "status": "needs_information",
+    "rationale": "The report is from v0.99.1 on Windows 11 25H2 and describes two outcomes: Win+C opens the Windows Copilot-key settings page, while Win+Shift+Ctrl+Alt+T launches Teams. The first behavior closely matches #46301, which was closed as a duplicate of the still-open #35808; it should not be treated as a new independent Copilot-key fix. The distinct Teams behavior is not covered by that thread, and the report does not say whether it occurs with Keyboard Manager disabled or PowerToys exited.",
     "evidence": [
-      "Open Issue-Bug report #47950: Can't remap Windows + C and other 'hard-coded' shortcuts",
-      "Labels present: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage, Product-Keyboard Manager",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The issue lists PowerToys v0.99.1 and Windows 11 25H2.",
+      "The body says remapping Win+C to calc.exe opens Windows Settings at the Copilot-key customization page instead.",
+      "The alternative Win+Shift+Ctrl+Alt+T mapping reportedly opens Microsoft Teams.",
+      "Issue #46301 reports the same Win+C/Copilot settings behavior and was closed as a duplicate of #35808, which remains open.",
+      "No assignee or matching PR was found for #47950."
     ],
-    "recommended_action": "Monitor the existing owner or linked work.",
-    "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-    "source_updated_at": "06/18/2026 23:54:21"
+    "recommended_action": "Ask for a current comparison with Keyboard Manager disabled and PowerToys exited, and confirm whether the input is a physical Copilot key or the Win+C chord.",
+    "evaluated_at": "2026-11-05T22:30:32Z",
+    "source_updated_at": "2026-10-11T16:46:56Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A competing PowerToys fix is not applicable while existing ownership or handling covers the report."
+    "status": "proposed",
+    "rationale": "The Copilot-key portion is tracked elsewhere, but the separate Teams shortcut may be another Windows- or application-owned chord. If current testing shows PowerToys intercepts it yet the original action still fires, the remapping path may need to suppress the original shortcut; the handling layer is not yet established."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Handle only confirmed PowerToys-owned system shortcut conflicts",
+      "root_cause": "Windows may handle one or both chords before the requested Keyboard Manager action takes effect. The Win+C behavior is already tracked by #35808; the report provides no enabled/disabled comparison for the distinct Teams shortcut.",
+      "plan": [
+        "Compare both chords on current stable with Keyboard Manager enabled, disabled, and PowerToys exited.",
+        "For any remaining PowerToys-owned mapping failure, trace whether the original OS/application shortcut is still delivered after the remapped action.",
+        "Use a supported Windows integration path only for confirmed OS-owned shortcuts; otherwise keep the existing remapping path and explain the limitation.",
+        "Add regression coverage for the confirmed Win+C and Teams-chord behavior without duplicating the Copilot-key work tracked in #35808."
+      ],
+      "verification": [
+        "Confirm the current enabled/disabled behavior for both input chords and the exact action each opens.",
+        "Verify any PowerToys-owned remap suppresses the original action while unrelated Windows shortcuts remain unchanged."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The issue gives exact chords and outcomes, and the Copilot-key symptom has a direct related report, but the distinct Teams behavior and the layer that handles either chord are unverified."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated open Issue-Bug #47950: Can't remap Windows + C and other 'hard-coded' shortcuts.",
+    "summary": "Two Windows shortcuts reportedly bypass remapping: Win+C opens the Copilot-key settings page, and Win+Shift+Ctrl+Alt+T starts Teams.",
     "known_information": [
-      "Open Issue-Bug report #47950: Can't remap Windows + C and other 'hard-coded' shortcuts",
-      "Labels present: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage, Product-Keyboard Manager",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The report lists PowerToys v0.99.1 on Windows 11 25H2.",
+      "Win+C is configured to launch calc.exe but instead opens Windows Settings at the Copilot-key customization page.",
+      "Win+Shift+Ctrl+Alt+T is reported to launch Teams instead of the selected target.",
+      "Issue #46301 reports the same Win+C/Copilot settings behavior and was closed as a duplicate of #35808; #35808 remains open.",
+      "The report does not include an enabled/disabled comparison, screenshot, or current-version retest."
     ],
     "inferences": [
-      "The available public evidence does not yet confirm a single root cause or implementation path."
+      "The Win+C symptom may be the same Windows Copilot-key handling tracked in #35808 rather than an independent Keyboard Manager defect.",
+      "The Teams shortcut may be owned by Windows, Teams, or the input device, but the issue does not identify which layer handles it."
     ],
-    "analysis": "The existing ownership or handling signal is sufficient to avoid duplicating work.",
+    "analysis": "The two shortcuts should not be collapsed into one defect. The Win+C behavior has an existing open tracking issue, while the Teams shortcut is a distinct, unverified case. A current comparison with Keyboard Manager disabled and PowerToys exited is the smallest test that determines whether a separate PowerToys fix is justified.",
     "initial_investigation": [
-      "Reviewed the live issue metadata, labels, public discussion count, and current artifact freshness.",
-      "Checked the schema-v5 action contract for this revalidation."
+      "Refreshed the complete issue body and comment, including the version, Windows 11 25H2, both input chords, and both actual outcomes.",
+      "Compared the Win+C symptom with #46301 and its duplicate target #35808; did not treat the duplicate closure as a fix.",
+      "Searched for reports or PRs for the exact Teams chord; none were found.",
+      "Confirmed the issue has no assignee."
     ],
-    "information_gaps": []
-  },
-  "actions": []
+    "information_gaps": [
+      {
+        "information": "Whether both shortcut outcomes persist on v0.102.3001 with Keyboard Manager disabled and with PowerToys fully exited, and whether Win+C comes from a physical Copilot key or a literal chord",
+        "why_needed": "This determines whether Windows or another component owns the behavior and whether the distinct Teams shortcut needs separate PowerToys investigation.",
+        "how_to_collect": "On v0.102.3001, test each chord with Keyboard Manager enabled, then disabled, then with PowerToys exited; report what opens and whether the first input is a physical Copilot key or Win+C.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  }
 }

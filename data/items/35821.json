@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 35821,
+  "title": "ctrl + alt + '=(+)' shortcut not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/35821",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:29:54Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:32:14.485Z",
+  "generated_at": "2026-11-05T14:32:14.485Z",
+  "evaluated_at": "2026-11-05T14:32:14.485Z",
+  "source_updated_at": "2026-10-11T16:48:07Z",
+  "comments": 3,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting current-build keyboard details",
+    "detail": "The only reported failure is on PowerToys 0.86.0. The issue does not identify the active layout, physical key, or left/right modifiers needed to separate an OEM_PLUS shortcut from an AltGr sequence."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter consistently sees Ctrl+Alt with the equals/plus key fail after remapping Caps Lock to Ctrl, while other combinations work, but the only tested build is 0.86.0 and the issue does not specify the active keyboard layout, whether the physical key is '=' or Shift+'=', or which Ctrl/Alt keys are used. Current Keyboard Manager code has explicit AltGr handling, so the exact modifier sequence matters; the report does not yet establish a current code defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body lists PowerToys 0.86.0 and says Caps Lock is remapped to Left Ctrl.",
+      "The author clarified that Ctrl+Alt+'+(=)' fails while other shortcuts work, but did not identify the physical key sequence, keyboard layout, or left/right modifiers.",
+      "Similar reports #35819 and #35820 were closed without a maintainer explanation; related #23301 was later marked fixed, but none confirms that this exact current-build behavior is resolved.",
+      "The issue is open and unassigned, with no newer reproduction in its three-comment history."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:29:54Z"
-  }
+    "recommended_action": "Request a current-build reproduction that records the active layout, exact physical key, modifier sides, and whether Right Alt/AltGr is involved; if it still fails, collect a fresh diagnostic immediately afterward.",
+    "evaluated_at": "2026-11-05T14:32:14.485Z",
+    "source_updated_at": "2026-10-11T16:48:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A modifier/virtual-key mismatch on the equals/plus key is plausible, particularly if the reported Ctrl+Alt sequence is produced through AltGr, but the old build and missing layout details prevent a confident diagnosis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Match the equals/plus shortcut with the actual layout-specific modifier sequence",
+      "root_cause": "The configured Ctrl+Alt shortcut may not match the virtual-key and modifier events generated for the physical equals/plus key after Caps Lock is remapped to Ctrl, especially on layouts that use Right Alt as AltGr.",
+      "plan": [
+        "Reproduce on a current build with the reported Caps Lock-to-Ctrl remap and capture the physical key, active layout, and left/right modifier events.",
+        "If the trace shows a mismatch in Keyboard Manager's modifier or OEM-key matching, normalize that sequence without changing unrelated shortcut matching.",
+        "Add regression coverage for Ctrl+Alt with the equals/plus key, including AltGr and shifted/unshifted variants."
+      ],
+      "verification": [
+        "Verify the exact reported shortcut on the reporter's active layout and confirm the other combinations continue to work.",
+        "Run focused Keyboard Manager shortcut-remapping tests for the equals/plus key and AltGr variants."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The issue identifies a repeatable key combination, but the report is from 0.86.0 and omits the keyboard layout and modifier sides; the proposed AltGr/OEM-key interaction is only a hypothesis."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After remapping Caps Lock to Ctrl, Ctrl+Alt with the equals/plus key is not recognized, while other tested shortcuts work.",
+    "known_information": [
+      "The report lists PowerToys 0.86.0, Microsoft Store installation, and running as administrator.",
+      "The author says the failure occurs across programs and that other Ctrl+Alt combinations work.",
+      "The issue does not specify the active keyboard layout, physical key sequence, or whether the modifiers are left/right Ctrl and Alt.",
+      "The issue remains open and unassigned."
+    ],
+    "inferences": [
+      "The equals/plus key may generate different virtual-key or modifier events depending on layout; Right Alt may act as AltGr, but the report does not establish that it is being used."
+    ],
+    "analysis": "The old version and missing input details leave several distinct paths plausible: the physical '=' key, Shift+'=' for '+', or a layout-specific AltGr sequence. Current source contains explicit AltGr handling, but no evidence connects that branch to this report. Ask for the exact current reproduction before treating the low-confidence hypothesis as a code defect.",
+    "initial_investigation": [
+      "Read the full issue body and all three comments; confirmed there is no current-build test or outstanding information request.",
+      "Checked the related #35819 and #35820 reports and #23301; those reports do not establish that this exact failure has been fixed.",
+      "Inspected the current Keyboard Manager event handler's AltGr and shortcut-matching paths; the issue lacks the layout and modifier details needed to identify a failing branch."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "The active Windows keyboard layout, exact physical key sequence ('=' alone or Shift+'='), and whether Ctrl/Alt are left or right, including any Right Alt/AltGr use.",
+        "why_needed": "These inputs determine whether Keyboard Manager receives an OEM equals key with Ctrl+Alt or a layout-specific AltGr sequence.",
+        "how_to_collect": "Retest the same Caps Lock-to-Ctrl mapping on the current PowerToys build and describe the active input layout, physical key pressed, and left/right modifier keys."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic archive if the shortcut still fails on a current build.",
+        "why_needed": "A current trace is needed to distinguish a stale 0.86.0 issue from a current shortcut-matching defect.",
+        "how_to_collect": "Immediately after reproducing the failure, add a comment containing /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the layout-specific shortcut investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest with the exact keyboard layout",
+      "comment": {
+        "target": "issue",
+        "number": 35821,
+        "body": "Thanks for confirming that other Ctrl+Alt shortcuts work and that this one fails after mapping Caps Lock to Ctrl. The report lists PowerToys 0.86.0, and the exact key sequence is still ambiguous. Could you please:\n1. Retest on the current PowerToys version and state the active Windows keyboard layout, whether you press the physical `=` key or Shift+`=`, and whether Ctrl/Alt are left or right (including Right Alt/AltGr).\n2. If it still fails, comment `/bugreport` immediately after reproducing.\nThose details will show whether the failing input is the equals/plus key itself or a layout-specific AltGr sequence."
+      }
+    }
+  ]
 }

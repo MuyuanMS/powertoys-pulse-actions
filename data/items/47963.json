@@ -2,106 +2,135 @@
   "schemaVersion": 5,
   "number": 47963,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[Keyboard Manager] in the new editor, deleting a remapping doesn't work",
+  "url": "https://github.com/microsoft/PowerToys/issues/47963",
   "track": "fix",
   "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-13T07:18:43.4524709Z",
-  "evaluated_at": "2026-09-13T07:18:43.452Z",
-  "source_updated_at": "2026-07-12T07:47:17Z",
-  "status": {
-    "glyph": "",
-    "label": "reproducible",
-    "detail": "The sequence is detailed and corroborated, but the persistence mechanism needs code confirmation."
-  },
-  "next_action": {
-    "glyph": "",
-    "label": "Reproduce the legacy-to-new-editor deletion sequence.",
-    "reason": "The sequence is detailed and corroborated, but the persistence mechanism needs code confirmation."
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve reproduce keyboard manager editor deletion design"
-    },
-    {
-      "type": "reproduce",
-      "label": "Reproduce Keyboard Manager editor deletion",
-      "note": "Verify the public reproduction before selecting an implementation path.",
-      "reproduce": {
-        "expected_result": "Deleted remappings stay deleted after reopening.",
-        "version_requirement": "PowerToys 0.99.1 or newer",
-        "steps": [
-          "Create a remapping with the old editor.",
-          "Enable and open the new editor.",
-          "Delete it, close the editor, and reopen it."
-        ],
-        "module": "Keyboard Manager",
-        "prerequisites": [
-          "Windows 11",
-          "A remapping created with the old editor"
-        ],
-        "title": "Verify legacy remapping deletion"
-      }
-    }
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "confidence": {
-    "score": 68,
-    "level": "yellow",
-    "rationale": "The sequence is detailed and corroborated, but the persistence mechanism needs code confirmation."
+  "comments": 1,
+  "generated_at": "2026-11-05T22:02:34Z",
+  "evaluated_at": "2026-11-05T22:02:34Z",
+  "source_updated_at": "2026-10-11T16:46:59Z",
+  "status": {
+    "glyph": "?",
+    "label": "Retest legacy deletion on current stable",
+    "detail": "The issue gives a detailed classic-to-new-editor deletion sequence and an attached PowerToys report from v0.99.1; current-build behavior remains unconfirmed."
   },
   "judgment": {
     "status": "reproducible",
-    "rationale": "The sequence is detailed and corroborated, but the persistence mechanism needs code confirmation.",
+    "rationale": "The reporter provides a concrete 13-step sequence: create mappings in the classic editor, delete them in the new editor, close and reopen, then compare deletion through the classic and new editors. A PowerToys report ZIP is attached, and a later commenter added +1 without independent reproduction details. The report is from v0.99.1 and there is no linked PR or assignee, so a current-build retest is still needed before treating the behavior as present or assigning a persistence fix.",
     "evidence": [
-      "The report gives a numbered old/new editor sequence.",
-      "A diagnostic ZIP is attached and the reporter identifies legacy remappings.",
-      "Another commenter reports the same symptom."
+      "The report identifies PowerToys v0.99.1 and gives a detailed classic/new editor deletion and reopen sequence.",
+      "A PowerToys report ZIP is attached to the issue.",
+      "The July 12 comment is only +1 and does not provide a separate reproduction.",
+      "No assignee or matching PR was found in the live issue and PR searches."
     ],
-    "recommended_action": "Reproduce the legacy-to-new-editor deletion sequence.",
-    "evaluated_at": "2026-09-13T07:18:43.452Z",
-    "source_updated_at": "2026-07-12T07:47:17Z"
+    "recommended_action": "Retest the legacy-to-new-editor deletion sequence on v0.102.3001 and reproduce locally by tracing whether the deleted entry remains after save and reopen.",
+    "evaluated_at": "2026-11-05T22:02:34Z",
+    "source_updated_at": "2026-10-11T16:46:59Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No current linked fix covers the reported path; the direction remains evidence-limited.",
+    "rationale": "If the issue still reproduces, the new editor appears not to persist deletion of at least some legacy-created mappings. The exact state-conversion or save boundary is not established, so this remains a hypothesis rather than an implementation-ready design.",
     "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "Keyboard Manager's new editor does not persist deletion of remappings created by the old editor.",
-    "known_information": [
-      "The report gives a numbered old/new editor sequence.",
-      "A diagnostic ZIP is attached and the reporter identifies legacy remappings.",
-      "Another commenter reports the same symptom."
-    ],
-    "inferences": [
-      "The new editor may serialize legacy remappings differently, leaving deleted entries persisted."
-    ],
-    "analysis": "The detailed sequence and corroboration support maintainer reproduction; the persistence boundary remains a hypothesis.",
-    "initial_investigation": [
-      "No linked fix or ownership signal is present.",
-      "Labels identify Keyboard Manager."
-    ],
-    "information_gaps": []
   },
   "proposed_fixes": [
     {
-      "title": "Reproduce Keyboard Manager editor deletion",
-      "root_cause": "The new editor may not persist deletion state for legacy remappings; this is a hypothesis.",
+      "title": "Persist deletions of legacy-created mappings",
+      "root_cause": "The new editor may save from stale or separately converted profile state, allowing a deleted legacy mapping to be re-emitted when the editor closes or reopens. The report does not establish which persistence step fails.",
       "plan": [
-        "Confirm the affected module path and trigger.",
-        "Trace the relevant state, input, layout, or persistence boundary.",
-        "Implement the smallest targeted correction with focused regression coverage."
+        "Reproduce with one mapping created in the classic editor and inspect the profile before deletion, after the new editor saves, and after reopening.",
+        "Trace the legacy-to-new editor load, delete, and serialization path to find where the removed entry is retained.",
+        "Update the smallest shared profile-conversion or save path so deletion is applied to the canonical mapping collection.",
+        "Add regression coverage for deleting a legacy-created mapping, reopening the new editor, and preserving unrelated mappings."
       ],
       "verification": [
-        "Run the maintainer reproduction on the current supported build.",
-        "Verify the reported edge case and normal behavior."
+        "On the current supported build, verify a deleted legacy-created mapping stays absent after closing and reopening the new editor.",
+        "Verify deleting a new-editor-created mapping and retaining adjacent mappings still work."
       ],
       "confidence": {
-        "score": 68,
+        "score": 62,
         "level": "yellow",
-        "rationale": "The sequence is detailed and corroborated, but the persistence mechanism needs code confirmation."
+        "rationale": "The old/new editor sequence and attached report strongly point to persistence, but the current build and the exact conversion/save boundary have not been verified."
       }
     }
-  ]
+  ],
+  "issue_context": {
+    "summary": "Deleting a mapping created in the classic Keyboard Manager editor reportedly does not persist when deletion is performed in the new editor.",
+    "known_information": [
+      "The report lists PowerToys v0.99.1 and Keyboard Manager.",
+      "The reporter describes creating mappings in the classic editor, deleting them in the new editor, and seeing them return after reopening.",
+      "The reporter says deleting through the classic editor does not remove those legacy mappings from the new editor, while deleting them in the new editor eventually works for newly created mappings.",
+      "A PowerToys report ZIP is attached; the only later comment is a +1."
+    ],
+    "inferences": [
+      "The new editor may not reconcile or persist deletion against the canonical profile state for legacy-created mappings.",
+      "The deletion symptom may be related to, but is not proven identical to, the toggle-state mismatch reported in #47962."
+    ],
+    "analysis": "The report is detailed enough for a maintainer reproduction, and the attached report should not be requested again. No linked PR or owner was found. Because the report is from v0.99.1, first determine whether the deletion failure persists on current stable; if it does, inspect the editor's legacy mapping load/delete/save boundary rather than assuming a specific serialization bug.",
+    "initial_investigation": [
+      "Read the full issue body, the +1 comment, labels, assignees, and attached-report reference.",
+      "Searched for PRs referencing the issue; none were returned.",
+      "Compared #47962, which reports enabled/disabled toggles disagreeing with remapping state; that is related but does not directly document the legacy-mapping deletion sequence."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether deleting a classic-editor-created mapping in the new editor still fails to persist after close and reopen on PowerToys v0.102.3001",
+        "why_needed": "The original report is from v0.99.1, so a current retest determines whether the defect still needs investigation and whether the proposed persistence hypothesis remains relevant.",
+        "how_to_collect": "On v0.102.3001, create one mapping in the classic editor, switch to the new editor, delete it, close and reopen the editor, and report whether it returns.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-47963-current-build-retest",
+      "type": "request_info",
+      "label": "Retest legacy mapping deletion on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the detailed classic-to-new-editor deletion sequence and the attached PowerToys report. Since the report is from v0.99.1, could you confirm whether this still reproduces on v0.102.3001? Please create a mapping in the classic editor, delete it in the new editor, close and reopen the editor, and say whether the mapping returns."
+      }
+    },
+    {
+      "id": "issue-47963-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce legacy mapping deletion",
+      "note": "The report already has a detailed sequence and a diagnostic ZIP; verify persistence locally before selecting an implementation path.",
+      "reproduce": {
+        "title": "Verify deletion of classic-editor mappings",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "At least one mapping created in the classic editor",
+          "Both classic and new Keyboard Manager editors available"
+        ],
+        "steps": [
+          "Create a shortcut mapping in the classic editor.",
+          "Enable and open the new editor, delete that mapping, close the editor, and reopen it.",
+          "Switch back to the classic editor and delete the mapping there; return to the new editor and check whether it remains.",
+          "Create a mapping in the new editor, delete it, close and reopen, and compare the result with the legacy-created mapping."
+        ],
+        "expected_result": "A mapping deleted in either editor remains absent after the editor is closed and reopened, while unrelated mappings remain unchanged."
+      }
+    },
+    {
+      "id": "issue-47963-approve-fix-investigation",
+      "type": "approve_design",
+      "label": "Approve legacy mapping deletion investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Retest legacy deletion on current stable",
+    "reason": "The report is reproducible in principle, but the observed version is v0.99.1 and the current persistence boundary is unverified."
+  }
 }

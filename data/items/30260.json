@@ -5,29 +5,75 @@
   "stage": "owned_elsewhere",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-23T11:00:18Z",
+  "generated_at": "2026-11-05T12:09:55.8071662Z",
+  "evaluated_at": "2026-11-05T12:09:55.8071662Z",
+  "source_updated_at": "2026-10-30T18:05:31Z",
   "status": {
     "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication."
+    "label": "Active draft fix",
+    "detail": "The issue remains assigned to stefansjfw. Draft PR #49950 directly addresses bounded thumbnail-provider execution and cleanup; it is not merged or released."
   },
   "next_action": {
     "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Review draft PR #49950",
+    "reason": "Keep the fix with the existing draft rather than start parallel work; leave the issue open until the PR is merged and the behavior is verified."
   },
   "actions": [],
   "confidence": "High",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "An active draft PR covers the reported unbounded thumbnail-helper wait, and the issue remains assigned upstream. The new report strengthens the evidence but does not justify a competing implementation.",
     "evidence": [
-      "The issue is assigned to stefansjfw, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue is open and currently assigned to stefansjfw.",
+      "The 2026-10-22 comment describes a long-running COM Surrogate and identifies an infinite wait on the thumbnail helper.",
+      "The 2026-10-30 comment reports the issue on PowerToys 0.102.3001 and confirms the current failure paths.",
+      "Current main's ThumbnailProvider.cpp calls ShellExecuteEx and then WaitForSingleObject with INFINITE; temporary-file cleanup follows only after the wait.",
+      "Current PdfThumbnailProvider/Program.cs and SvgThumbnailProvider/Program.cs still show a modal MessageBox for an invalid argument count.",
+      "PR #49950 is an open draft that changes the shared thumbnail provider; it is not merged."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-23T11:00:18Z"
-  }
+    "recommended_action": "Continue through draft PR #49950 and keep the issue open until the fix is merged and the affected preview providers are verified.",
+    "evaluated_at": "2026-11-05T12:09:55.8071662Z",
+    "source_updated_at": "2026-10-30T18:05:31Z"
+  },
+  "schemaVersion": 5,
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open draft PR #49950 contains a concrete change to bound thumbnail-provider execution and cleanup. It is a candidate fix, not a released resolution.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49950"
+    ]
+  },
+  "issue_context": {
+    "summary": "The thumbnail-provider report now includes a current reproduction of a shell hang and persistent COM Surrogate CPU use. An open draft PR already targets bounded provider execution.",
+    "known_information": [
+      "The original report names PowerToys 0.76 and does not provide deterministic reproduction steps.",
+      "The 2026-10-22 comment describes dllhost.exe remaining active for about 13 hours and identifies an unbounded wait for the renderer process.",
+      "The 2026-10-30 comment reports the mechanism on PowerToys 0.102.3001 and provides measurements from a stuck COM Surrogate.",
+      "Current main's src/modules/previewpane/FileExplorerDllExporter/ThumbnailProvider.cpp calls ShellExecuteEx, waits with WaitForSingleObject(m_process, INFINITE), and deletes the temporary input only after the wait returns.",
+      "Current main's PdfThumbnailProvider/Program.cs and SvgThumbnailProvider/Program.cs display a modal MessageBox when the helper receives the wrong number of arguments.",
+      "The issue is assigned to stefansjfw. PR #49950 is open, marked draft, and changes ThumbnailProvider.cpp; it has not been merged."
+    ],
+    "inferences": [
+      "A helper that never exits can keep the COM provider call blocked and prevent Explorer from completing thumbnail work.",
+      "The invalid-argument MessageBox is a separate potential hang path; the issue evidence does not establish that it caused the reported normal thumbnail request."
+    ],
+    "analysis": "The current code confirms the unbounded wait described in the thread, and the recent reproduction shows the problem persists in a current release. PR #49950 is the appropriate existing fix path. The issue should remain open because the PR is still a draft and has not been verified as a released fix.",
+    "initial_investigation": [
+      "Refreshed the complete public issue body and all 15 comments through 2026-10-30.",
+      "Checked the current upstream ThumbnailProvider.cpp and both PDF and SVG helper entry points.",
+      "Checked current assignees and PR #49950 state, head, and changed-file list."
+    ],
+    "information_gaps": []
+  },
+  "url": "https://github.com/microsoft/PowerToys/issues/30260",
+  "title": "PT causes COM Surrogate to eat a lot of CPU and makes File Explorer hang and die",
+  "labels": [
+    "Issue-Bug",
+    "Status-In progress",
+    "Severity-High",
+    "Product-File Explorer",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "comments": 15
 }

@@ -6,9 +6,9 @@
   "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-10-20T16:40:11Z",
-  "evaluated_at": "2026-10-20T16:40:11Z",
-  "source_updated_at": "2026-10-19T13:33:27Z",
+  "generated_at": "2026-11-05T00:00:00Z",
+  "evaluated_at": "2026-11-05T00:00:00Z",
+  "source_updated_at": "2026-10-21T16:39:10Z",
   "url": "https://github.com/microsoft/PowerToys/issues/19277",
   "title": "SVG Thumbnails not showing as thumbnails.",
   "labels": [
@@ -18,92 +18,117 @@
   ],
   "assignees": [],
   "comments": 20,
+  "confidence": "Medium",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design candidate",
+    "detail": "The June report links SVG artwork visibility to Windows light/dark mode. Current code returns a transparent WebView2 capture and does not set a fixed theme background; provider fallback and contrast symptoms still need separation."
+  },
+  "next_action": "Reproduce the same dark and light SVG samples across Windows themes and inspect the captured transparency before choosing a background policy.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue remains open; the 2026-06 reporter says Windows color mode changes SVG thumbnail visibility. The 2026-10-19 SageThumbs recommendation is a disclosed third-party workaround, not a PowerToys fix. The renderer-background hypothesis is plausible but unconfirmed.",
+    "rationale": "The latest accessible report says SVG thumbnail backgrounds change between Windows light and dark modes and can hide dark artwork. Current main sets the WebView2 default background to transparent and the shared style helper only adjusts SVG sizing/centering, so host compositing is plausible but not proven. The original Edge-icon fallback reports may be a separate failure mode. A maintainer reproduction and minimal sample should distinguish them before implementation.",
     "evidence": [
-      "Original report: PowerToys 0.60.0 displayed an Edge icon instead of an SVG thumbnail; screenshots and a diagnostic ZIP were attached.",
-      "A 2025 reporter confirmed persistence on PowerToys 0.89.0.",
-      "A 2026 reporter says light/dark Windows color mode changes the SVG thumbnail background and can hide dark artwork.",
-      "A 2026-10-19 commenter recommends SageThumbs and discloses being its author."
+      "The issue remains open and is labeled Issue-Bug, Priority-1, and Product-File Explorer; it has no assignee.",
+      "The original report says PowerToys 0.60.0 displayed an Edge icon instead of an SVG thumbnail; other comments report blank, black, or incomplete thumbnails, including a 2025 report on v0.89.0.",
+      "A 2026-06-30 commenter says Windows theme changes the SVG thumbnail background between white and black and dark artwork can become invisible; they also report clearing Explorer's thumbnail cache after changing the theme.",
+      "GitHub records a comment-deleted timeline event by a maintainer on 2026-10-21; the deleted content is not used as evidence.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, SvgThumbnailProvider.cs:115-120 sets WebView2.DefaultBackgroundColor to Color.Transparent; SvgPreviewHandlerHelper.cs:155-223 injects sizing/centering CSS without setting a fixed theme background.",
+      "A direct pull-request search for this issue returned no linked PR."
     ],
-    "recommended_action": "Approve a focused design investigation that confirms thumbnail provider behavior across Windows themes.",
-    "evaluated_at": "2026-10-20T16:40:11Z",
-    "source_updated_at": "2026-10-19T13:33:27Z"
+    "recommended_action": "Approve a focused design that separates transparent-background contrast from provider failures and validates both against a minimal SVG sample.",
+    "evaluated_at": "2026-11-05T00:00:00Z",
+    "source_updated_at": "2026-10-21T16:39:10Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A repository-side change is plausible, but the current causal hypothesis requires verification."
+    "rationale": "A theme-dependent contrast problem appears repository-fixable, but current code deliberately captures a transparent surface and the issue also contains unrelated provider-fallback symptoms. A stable background must not be chosen until the captured pixels and expected transparency are verified.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "The issue groups older Edge-icon/blank-thumbnail reports with a June 2026 theme-contrast report; current source captures a transparent SVG surface, so theme compositing is plausible but unconfirmed.",
+    "known_information": [
+      "The original report uses PowerToys 0.60.0 and says File Explorer shows an Edge icon instead of an SVG thumbnail; screenshots and a diagnostic ZIP were attached.",
+      "A 2025 commenter confirmed a related symptom on PowerToys 0.89.0.",
+      "A 2026-06-30 commenter reports white/black thumbnail backgrounds across Windows light/dark modes and says dark artwork can become invisible; the commenter cleared the thumbnail cache after changing the theme.",
+      "The accessible comments end with the June 2026 report. GitHub records a maintainer deleting a comment on 2026-10-21; its content is not relied on.",
+      "Current main sets WebView2.DefaultBackgroundColor to transparent; the shared SVG styling helper adjusts sizing/centering without assigning a fixed background."
+    ],
+    "inferences": [
+      "The transparent thumbnail capture may be composited by Explorer against a theme-dependent surface, but that has not been demonstrated from a sample.",
+      "The original Edge-icon fallback, blank thumbnails, and theme-contrast report may represent more than one failure mode."
+    ],
+    "analysis": "A small reproducible sample is needed before choosing an opaque or transparent background policy. The existing code does not set a fixed light/dark canvas, but that alone does not prove a renderer defect; a theme-specific reproduction should inspect the actual captured thumbnail and compare it with the preview pane.",
+    "initial_investigation": [
+      "Read the current issue body, accessible comments, labels, assignees, and timeline through 2026-10-21T16:39:10Z; the deleted comment body was not used.",
+      "Read current upstream source at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs:115-120 and previewpane/common/Utilities/SvgPreviewHandlerHelper.cs:155-223.",
+      "Checked for a directly linked pull request; none was returned by the issue-number search."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "sample_file",
+        "information": "A minimal SVG sample that demonstrates the theme-dependent visibility change, or a simplified copy with the same background/artwork colors.",
+        "why_needed": "A sample distinguishes SVG-embedded background/contrast from transparency and Explorer host compositing without relying on screenshots alone.",
+        "how_to_collect": "Attach a minimal, non-sensitive SVG and state whether it reproduces in both light and dark modes; do not include personal file paths or unrelated files."
+      }
+    ]
   },
   "proposed_fixes": [
     {
       "title": "Keep SVG thumbnail artwork visible across Windows themes",
-      "root_cause": "Hypothesis: the thumbnail provider uses a theme-dependent canvas that can blend with or obscure dark artwork; the thread does not show that this explains icon-fallback cases.",
-      "confidence": {
-        "rationale": "The recent report isolates a theme-dependent symptom, but the thread also includes unrelated icon-fallback cases and no source trace confirms one cause.",
-        "level": "yellow",
-        "score": 66
-      },
-      "verification": [
-        "Compare identical dark and light SVG samples in Windows light and dark modes, including after clearing Explorer thumbnail cache.",
-        "Confirm the SVG preview pane and existing provider fallback behavior remain unchanged."
-      ],
+      "root_cause": "Hypothesis: the SVG thumbnail is captured with a transparent WebView2 background, and Explorer composites that transparency against a theme-dependent surface; dark artwork can then blend into a dark surface. This cannot explain Edge-icon fallback or every blank-thumbnail report.",
       "plan": [
-        "Trace SVG thumbnail background and theme selection in light and dark modes.",
-        "Separate provider failures returning an Edge icon from successful renders with low-contrast artwork.",
-        "If confirmed, use a stable transparent/contrast policy and add tests for dark and light SVG samples."
-      ]
+        "Use the same minimal dark-artwork, light-artwork, and transparent SVG samples in Windows light and dark modes; clear the Explorer thumbnail cache between captures.",
+        "Inspect whether the provider returns a valid thumbnail with alpha or falls back to the Edge icon, and compare the thumbnail with the SVG preview pane.",
+        "If host compositing causes the contrast failure, select a documented background/contrast policy that preserves transparent and light artwork; add theme regression coverage without conflating provider failures."
+      ],
+      "verification": [
+        "The same SVG remains distinguishable in light and dark Windows modes after cache refresh, and transparent/light artwork is not unexpectedly obscured.",
+        "Provider failures remain distinguishable from low-contrast successful renders, and SVG preview-pane behavior is unchanged."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The reporter provides a theme-specific observation and current code returns a transparent capture, but no sample or pixel-level reproduction confirms the compositor or distinguishes other failure modes."
+      }
     }
   ],
-  "issue_context": {
-    "summary": "Multiple reports describe incorrect or invisible SVG thumbnails; the latest maintainer-relevant clue associates visibility with Windows color mode, while a third-party extension is only a workaround.",
-    "known_information": [
-      "Original report: PowerToys 0.60.0 displayed an Edge icon instead of an SVG thumbnail; screenshots and a diagnostic ZIP were attached.",
-      "A 2025 reporter confirmed persistence on PowerToys 0.89.0.",
-      "A 2026 reporter says light/dark Windows color mode changes the SVG thumbnail background and can hide dark artwork.",
-      "A 2026-10-19 commenter recommends SageThumbs and discloses being its author."
-    ],
-    "inferences": [
-      "A theme-dependent thumbnail background may hide otherwise-rendered artwork, but this does not explain all Edge-icon or blank-thumbnail reports.",
-      "The third-party extension is a workaround and does not establish that PowerToys is fixed."
-    ],
-    "analysis": "The issue remains actionable. The recent theme clue needs verification against the thumbnail provider before selecting a fix, and no third-party workaround should be treated as resolution.",
-    "initial_investigation": [
-      "Reviewed the complete live body, 20 comments, labels, and linked SVG issue family.",
-      "No current PowerToys PR or owner-backed fix was identified."
-    ],
-    "information_gaps": []
-  },
   "actions": [
     {
       "type": "approve_design",
-      "description": "Approve a focused design investigation that confirms thumbnail provider behavior across Windows themes.",
-      "label": "Approve SVG thumbnail design"
+      "label": "Approve SVG theme-contrast investigation",
+      "note": "Confirm the captured pixels and separate theme contrast from provider-fallback reports before choosing a background policy."
     },
     {
       "type": "reproduce",
+      "label": "Reproduce SVG thumbnail theme behavior",
       "reproduce": {
-        "version_requirements": "Current supported PowerToys build",
         "module": "SVG Thumbnail / File Explorer",
+        "version_requirement": "Current supported PowerToys build.",
         "prerequisites": [
-          "Use a dark-artwork SVG and a light-artwork SVG.",
-          "Compare Windows light/dark color modes and clear Explorer thumbnail cache between comparisons."
+          "One minimal dark-artwork SVG, one light-artwork SVG, and a transparent SVG.",
+          "Windows light and dark modes; PowerToys SVG thumbnails enabled."
+        ],
+        "setup": [
+          "Use the same sample files and clear the Explorer thumbnail cache between theme changes."
         ],
         "steps": [
-          "Enable the PowerToys SVG thumbnail provider.",
-          "Compare the same files as Explorer thumbnails in Windows light mode and note artwork visibility versus Edge icon fallback.",
-          "Repeat in dark mode and after refreshing the thumbnail cache.",
-          "Compare with the SVG preview pane."
+          "Capture the Explorer thumbnail for each sample in Windows light mode.",
+          "Switch to dark mode, clear the cache, and capture the same samples again.",
+          "Record whether each result is a valid thumbnail with transparency, low contrast, blank, or an Edge icon.",
+          "Compare each sample with the SVG preview pane."
         ],
-        "expected_result": "SVG artwork remains distinguishable in both Windows color modes; provider failures are distinguishable from contrast issues."
-      },
-      "label": "Reproduce SVG thumbnail theme behavior"
+        "expected_result": "Valid SVG artwork remains distinguishable across themes; transparent, low-contrast, and provider-fallback results can be identified separately."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request a minimal SVG sample",
+      "comment": {
+        "target": "issue",
+        "number": 19277,
+        "body": "Thanks for describing the light/dark background change and cache refresh. Current PowerToys captures the SVG thumbnail with a transparent WebView2 background, so a small sample would help distinguish an SVG-embedded background from Explorer compositing that transparency. If you can share a minimal, non-sensitive SVG (or simplified copy) that shows the issue, please attach it and note whether it reproduces in both Windows light and dark modes. No unrelated files or personal paths are needed."
+      }
     }
-  ],
-  "status": {
-    "detail": "The issue remains open; the 2026-06 reporter says Windows color mode changes SVG thumbnail visibility. The 2026-10-19 SageThumbs recommendation is a disclosed third-party workaround, not a PowerToys fix. The renderer-background hypothesis is plausible but unconfirmed.",
-    "glyph": "🎯",
-    "label": "Design candidate"
-  },
-  "next_action": "Approve a focused design investigation that confirms thumbnail provider behavior across Windows themes."
+  ]
 }

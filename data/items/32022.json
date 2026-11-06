@@ -2,67 +2,109 @@
   "schemaVersion": 5,
   "number": 32022,
   "kind": "issue",
-  "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "author": "Robovh",
-  "generated_at": "2026-09-14T00:53:55.2254937Z",
-  "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-  "source_updated_at": "2024-03-21T16:25:09Z",
+  "repository": "microsoft/PowerToys",
   "title": "Keyboard Manager",
   "url": "https://github.com/microsoft/PowerToys/issues/32022",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 0,
+  "generated_at": "2026-11-05T19:20:00Z",
+  "evaluated_at": "2026-11-05T19:20:00Z",
+  "source_updated_at": "2026-10-11T16:47:48Z",
   "status": {
-    "glyph": "ℹ️",
-    "label": "Waiting on author",
-    "detail": "Revalidated during scheduled update run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Confirm Bluetooth F13 capture",
+    "detail": "The report distinguishes wired and Bluetooth behavior, but was filed on PowerToys 0.79.0."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "Revalidation determined status 'waiting_on_author' based on current assignees, labels, and discussion.",
+    "status": "needs_information",
+    "rationale": "The report says an F13-F24 macro key is detected by Keyboard Manager over wired USB but not Bluetooth, while a generic key from the same keyboard is detected over either connection. The issue is open and unassigned with no comments or attachments and lists version 0.79.0. The exact keyboard model, current version, and whether Windows receives the Bluetooth F-key event are missing.",
     "evidence": [
-      "Title: Keyboard Manager",
-      "Assignees: ",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage"
+      "The issue gives a wired-versus-Bluetooth comparison using the same macro keyboard.",
+      "F13-F24 is detected over wired USB but not Bluetooth; a generic key is detected in both modes.",
+      "The report lists PowerToys 0.79.0, is open and unassigned, and has no comments or attachments."
     ],
-    "recommended_action": "Wait for author feedback.",
-    "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-    "source_updated_at": "2024-03-21T16:25:09Z"
+    "recommended_action": "Ask for the keyboard model/firmware and a current-version comparison, including whether the Bluetooth F-key event is visible outside Keyboard Manager.",
+    "evaluated_at": "2026-11-05T19:20:00Z",
+    "source_updated_at": "2026-10-11T16:47:48Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Revalidated issue in stage 'waiting_on_author': a repository fix attempt is not yet actionable."
+    "status": "proposed",
+    "rationale": "If Windows exposes the F13-F24 event over Bluetooth but Keyboard Manager does not capture it, the capture path may handle that HID event differently from USB. The report does not identify the device or confirm current behavior."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Capture F13-F24 macro keys consistently over Bluetooth",
+      "root_cause": "The wired/Bluetooth contrast suggests a transport- or device-specific difference in how F13-F24 events reach Keyboard Manager, while generic keys work over both transports. The available evidence does not establish whether Windows or Keyboard Manager drops the event.",
+      "plan": [
+        "Identify the keyboard model/firmware and confirm whether Windows receives the Bluetooth F13-F24 event.",
+        "Reproduce with the same keyboard over USB and Bluetooth on current stable PowerToys.",
+        "If the event reaches Windows but is missed by Keyboard Manager, correct handling of the relevant HID key usage in the capture path.",
+        "Add regression coverage for F13-F24 and a generic key over both transports."
+      ],
+      "verification": [
+        "Verify the same F13-F24 key is displayed by Keyboard Manager over wired USB and Bluetooth.",
+        "Verify generic-key capture remains unchanged on both transports.",
+        "Confirm the behavior with the affected keyboard and current stable PowerToys."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The report isolates a transport difference, but the device, Bluetooth HID event, and current-version behavior are unknown."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated PowerToys bug report: Keyboard Manager",
+    "summary": "Keyboard Manager reportedly detects an F13-F24 macro key over wired USB but not Bluetooth, while a generic key is detected in either mode.",
     "known_information": [
-      "Title: Keyboard Manager",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Upstream issue revalidated during scheduled update run."
+      "The report lists PowerToys 0.79.0 and compares the same macro keyboard over wired USB and Bluetooth.",
+      "F13-F24 is detected over USB but not Bluetooth; a generic key is detected over both.",
+      "The issue is open and unassigned with no comments or attachments."
     ],
     "inferences": [
-      "Behavior may depend on local environment or configuration."
+      "The difference may involve how the Bluetooth device or Windows exposes the F13-F24 event, but the report does not establish which component drops it."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The wired/Bluetooth comparison and generic-key control are useful existing evidence. The next discriminating facts are the device model/firmware, whether Windows sees the Bluetooth F-key event outside Keyboard Manager, and whether current stable reproduces the difference.",
     "initial_investigation": [
-      "Read issue metadata and comments for issue.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the live issue body, labels, state, assignees, and full discussion; there are no comments or attachments.",
+      "Searched issue timeline references; no linked fix or duplicate surfaced."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Keyboard model/firmware and whether the Bluetooth F13-F24 event is visible outside Keyboard Manager",
+        "why_needed": "This distinguishes a transport/device event issue from Keyboard Manager's capture handling.",
+        "how_to_collect": "State the keyboard model and firmware if known, and check whether the same Bluetooth F-key is recognized in another shortcut capture field or keyboard event viewer.",
+        "evidence_type": "other_software"
+      },
+      {
+        "information": "Whether the wired-versus-Bluetooth difference persists on current stable PowerToys",
+        "why_needed": "The report is from PowerToys 0.79.0, so a later release may already have changed key capture.",
+        "how_to_collect": "Repeat the existing USB/Bluetooth comparison on current stable and report the exact PowerToys version.",
+        "evidence_type": "powertoys_version"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "issue-32022-confirm-bluetooth-fkey",
+      "type": "request_info",
+      "label": "Confirm Bluetooth F-key capture",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the useful USB/Bluetooth comparison and for noting that generic keys work over both connections. Could you share:\n1. The macro keyboard model and firmware if known, and whether the same Bluetooth F13-F24 key is recognized in another shortcut-capture field or keyboard event viewer.\n2. Whether the difference still occurs on current stable PowerToys, including the exact version tested.\n\nNo diagnostic upload is needed for these details."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Bluetooth F-key capture fix direction"
+    }
+  ]
 }

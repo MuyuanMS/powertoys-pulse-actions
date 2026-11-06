@@ -1,33 +1,130 @@
 {
+  "schemaVersion": 5,
   "number": 41760,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Release v0.94 with the new hotkey conflict detection system introduced causes conflict with screen capture utility that registered on the print screen button. The print screen button seems to be hijacked and doing nothing.",
+  "url": "https://github.com/microsoft/PowerToys/issues/41760",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:56:42Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:28Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce Print Screen capture interception",
+    "detail": "Screenpresso reportedly stops receiving Print Screen after PowerToys 0.94 launches; a similar screenshot-utility report was closed into a separate hotkey-conflict discussion."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter gives a useful before/after test: Screenpresso receives Print Screen with PowerToys exited and stops receiving it after PowerToys launches. A bot links similar issue #41643, where a Greenshot Print Screen conflict was redirected to #41544, but #41544 primarily discusses the new Settings conflict warnings and does not establish that a third-party screen-capture hotkey is actually intercepted. The event-ownership failure therefore needs its own focused reproduction rather than being treated as handled by the warning thread.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.94.0, Windows 11 build 26100, elevated execution, and Screenpresso 2.1.25.",
+      "The reporter says Print Screen works in Screenpresso after exiting PowerToys and stops working after launching PowerToys.",
+      "The issue says the behavior began after the 0.94 update and that no PowerToys settings changes were made between upgrades.",
+      "A similar issue #41643 reports a Greenshot Print Screen problem when PowerToys is selected and was redirected to #41544, which discusses hotkey-conflict detection notifications rather than proving the same event interception."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:56:42Z"
-  }
+    "recommended_action": "Reproduce with Screenpresso registered for Print Screen and PowerToys 0.94 or current stable, then identify whether Keyboard Manager or another PowerToys component consumes the key before the capture utility.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:28Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If PowerToys consumes Print Screen while a third-party capture utility owns the shortcut, the responsible hotkey registration or keyboard hook should preserve the capture utility's behavior. The issue does not yet identify which PowerToys component owns the event."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve third-party Print Screen shortcut handling",
+      "root_cause": "A PowerToys component may register or consume Print Screen after startup, preventing Screenpresso from receiving the key even though it worked before PowerToys launched; the consuming path is unconfirmed.",
+      "plan": [
+        "Reproduce the exit-PowerToys versus launch-PowerToys comparison with Screenpresso registered for Print Screen.",
+        "Compare behavior with Keyboard Manager enabled and disabled and identify whether any PowerToys hotkey registration or hook consumes the key.",
+        "Correct only the confirmed event-ownership conflict while preserving PowerToys shortcuts and third-party capture registrations.",
+        "Add regression coverage for Print Screen with an external capture utility and for PowerToys running with Keyboard Manager both enabled and disabled."
+      ],
+      "verification": [
+        "Screenpresso receives Print Screen while PowerToys is running in the supported configuration.",
+        "PowerToys' own configured shortcuts continue to work and do not create an unintended Print Screen handler.",
+        "Exiting PowerToys and relaunching it does not change the capture utility's key ownership."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The reporter supplies a clear startup comparison, but the report does not identify which PowerToys component consumes the key or whether the behavior remains on current stable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Print Screen works in Screenpresso while PowerToys is exited but reportedly stops reaching the capture utility after PowerToys launches.",
+    "known_information": [
+      "The report lists PowerToys 0.94.0, Windows 11 build 26100, elevated execution, and Screenpresso 2.1.25.",
+      "The report describes a before/after test with PowerToys exited versus running.",
+      "A bot-linked Greenshot issue #41643 was closed in favor of #41544, a discussion about hotkey-conflict warnings; that routing does not prove event-interception coverage for this Screenpresso report."
+    ],
+    "inferences": [
+      "A PowerToys hotkey registration or input hook may be consuming Print Screen, but the issue does not identify the responsible component."
+    ],
+    "analysis": "A similar conflict-warning report is not enough to mark the actual key-delivery failure handled. Reproduce the input-ownership change and isolate the component before choosing a code path.",
+    "initial_investigation": [
+      "Read the issue and its bot-generated similar-issue comment.",
+      "Reviewed closed issue #41643 and its redirect to #41544.",
+      "Read #41544's maintainer discussion; it focuses on conflict detection and system shortcut warnings and does not establish a fix for a third-party Print Screen handler being starved."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Screenpresso still stops receiving Print Screen on current stable, and whether the behavior changes when Keyboard Manager is disabled",
+        "why_needed": "The report is tied to PowerToys 0.94 and does not isolate the component that consumes the key.",
+        "how_to_collect": "Confirm the current PowerToys version, repeat the Screenpresso test with PowerToys running, and compare with Keyboard Manager enabled versus disabled.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41760-confirm-current-printscreen-conflict",
+      "type": "request_info",
+      "label": "Confirm the current Print Screen conflict",
+      "primary": true,
+      "comment": {
+        "body": "You reported that Screenpresso receives Print Screen when PowerToys is exited but stops receiving it after PowerToys 0.94 launches. Could you confirm whether this still happens on current stable, and whether disabling Keyboard Manager changes the result?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Screenpresso Print Screen ownership",
+      "reproduce": {
+        "title": "Compare Print Screen with PowerToys and Keyboard Manager",
+        "module": "PowerToys",
+        "version_requirement": "PowerToys 0.94.0 or newer",
+        "prerequisites": [
+          "Screenpresso configured to capture Print Screen",
+          "PowerToys installed"
+        ],
+        "setup": [
+          "Preserve the current Screenpresso hotkey configuration and note whether PowerToys is running as administrator."
+        ],
+        "steps": [
+          "Exit PowerToys fully and press Print Screen; verify whether Screenpresso captures it.",
+          "Launch PowerToys with Keyboard Manager enabled and repeat the capture test.",
+          "Disable Keyboard Manager, restart PowerToys if required, and repeat the test.",
+          "Compare whether the capture utility receives the key in each state."
+        ],
+        "expected_result": "Screenpresso continues to receive Print Screen in supported configurations, or the responsible PowerToys component is isolated by the comparison."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Print Screen event-ownership investigation"
+    }
+  ]
 }

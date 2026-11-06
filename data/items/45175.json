@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 45175,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-01-29T06:27:03Z",
+  "generated_at": "2026-11-05T20:56:19.4695777+08:00",
+  "evaluated_at": "2026-11-05T20:56:19.4695777+08:00",
+  "source_updated_at": "2026-10-11T16:48:54Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45175",
+  "title": "Keys cannot be mapped correctly in Chromium-based browsers",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "Needs current remap repro",
+    "detail": "The report describes swapping Ctrl and Alt and losing an Alt+T browser shortcut. It includes a January diagnostic archive and browser versions, but there is no current-build reproduction or exact confirmation of whether both modifier directions are mapped."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the exact modifier mapping direction and a current-build comparison in Chromium and a plain text editor.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The author reports PowerToys 0.97.0, Windows build 26200, Chrome and Edge versions, and a January bug-report ZIP. The failure occurs after swapping Ctrl and Alt: pressing Ctrl (mapped to Alt)+T does not invoke the expected browser function. The issue is unassigned and has no comments; the 2026-10-11 activity only changed product labels. Current Keyboard Manager handles modifier remaps by intercepting the source virtual-key event and injecting the configured target; the report does not establish whether the swap is bidirectional, whether the same mapping fails outside Chromium, or whether the behavior persists on a current build.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The open issue is labeled Issue-Bug, Needs-Triage, and Product-Keyboard Manager; it has no assignee and no public comments.",
+      "The body lists PowerToys 0.97.0, Windows build 26200, .NET 9.0.12, Chrome 144, Edge 144, and an attached PowerToysReport ZIP.",
+      "The author says Ctrl and Alt are swapped and pressing Ctrl (mapped to Alt)+T fails to invoke the expected browser shortcut; the report does not specify whether both Ctrl-to-Alt and Alt-to-Ctrl mappings are configured.",
+      "The 2026-10-11 activity only changes product labels; no directly linked pull request was found.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardEventHandlers.cpp:414-420 looks up a mapping by the received virtual-key code and :475-517 resets modifier state and injects the target key event. This source path does not by itself establish the cause of the reported browser-specific behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-01-29T06:27:03Z"
-  }
+    "recommended_action": "Ask for the current-build mapping directions and a controlled browser versus plain-editor comparison before selecting a fix.",
+    "evaluated_at": "2026-11-05T20:56:19.4695777+08:00",
+    "source_updated_at": "2026-10-11T16:48:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A modifier remap defect is plausible, but current evidence does not establish the exact mapping pair, whether other applications reproduce the failure, or whether it remains on a current build."
+  },
+  "issue_context": {
+    "summary": "Swapping Ctrl and Alt reportedly prevents an Alt+T shortcut from working in Chromium browsers when invoked through the remapped Ctrl key.",
+    "known_information": [
+      "The report lists PowerToys 0.97.0 and a January 2026 PowerToysReport ZIP.",
+      "The author lists Windows build 26200, Chrome 144, Edge 144, and .NET 9.0.12.",
+      "The reported flow is Ctrl mapped to Alt plus T failing to invoke the expected browser function.",
+      "The issue has no comments or assignees; the 2026-10-11 timeline events only change labels."
+    ],
+    "inferences": [
+      "Modifier injection or application-specific handling may be involved, but the report does not show whether an Alt-to-Ctrl reverse mapping is also configured.",
+      "A Chromium-specific shortcut interaction is possible, but the issue does not compare the same remap in a plain editor or other application."
+    ],
+    "analysis": "The January archive and application versions are already present, so do not ask for them again. The useful next evidence is the precise one-way or bidirectional mapping configuration, current-build behavior, and whether the same remapped sequence works outside Chromium. Only request a fresh /bugreport if the author confirms that the current supported build still reproduces.",
+    "initial_investigation": [
+      "Read the live issue body, labels, assignees, empty comments, and timeline through 2026-10-11T16:48:54Z.",
+      "Confirmed the existing PowerToysReport ZIP and browser/Windows versions; no directly linked pull request was found.",
+      "Read current upstream source at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp:414-420 and :475-517."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "Whether Ctrl-to-Alt and Alt-to-Ctrl are both configured, and the exact source/target key rows.",
+        "why_needed": "A one-way mapping and a bidirectional swap exercise different key-event sequences and can produce different modifier state.",
+        "how_to_collect": "Share only the two relevant Keyboard Manager rows or state explicitly which directions are configured; unrelated settings are not needed."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether the issue persists on a current supported build and whether the same remapped Ctrl+T sequence fails in a plain text editor as well as Chrome/Edge.",
+        "why_needed": "This separates a current Keyboard Manager modifier issue from a Chromium-specific shortcut or an already-fixed old-build behavior.",
+        "how_to_collect": "Retest the same mapping on the current build in Chrome or Edge and a plain text editor; state the exact key sequence and expected/actual result."
+      }
+    ]
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve modifier state for remapped Chromium shortcuts",
+      "root_cause": "Hypothesis: the Ctrl-to-Alt injected event or modifier-state reset may be interpreted differently by Chromium than by other applications. The report does not establish whether both directions are mapped or whether the behavior is Chromium-specific.",
+      "plan": [
+        "Capture the exact one-way or bidirectional modifier mapping and reproduce on a current supported build in a browser and a plain text editor.",
+        "Trace the low-level source key and injected modifier events for the confirmed failing sequence.",
+        "If Keyboard Manager drops or misorders the modifier event, make the smallest correction and add a regression test for the confirmed mapping sequence."
+      ],
+      "verification": [
+        "The confirmed remapped Alt+T sequence invokes the expected browser shortcut on the current build.",
+        "The same mapping behaves consistently in a plain text editor and the inverse Alt-to-Ctrl mapping remains correct when configured."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The report gives a concrete shortcut and existing diagnostics, but the mapping direction, cross-application behavior, and current-build status remain unknown."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve current modifier remap investigation",
+      "note": "Proceed with a code design only if the current-build browser/editor comparison confirms a Keyboard Manager defect."
+    },
+    {
+      "type": "request_info",
+      "label": "Request modifier directions and current repro",
+      "comment": {
+        "target": "issue",
+        "number": 45175,
+        "body": "The report already includes the January diagnostic ZIP and browser/Windows versions. To distinguish a modifier-remap issue from a Chromium-specific shortcut, could you share:\n- Whether the mapping is Ctrl-to-Alt only or also Alt-to-Ctrl, and the exact relevant mapping rows.\n- Whether the same sequence still fails on a current PowerToys build in Chrome/Edge and in a plain text editor, with the physical keys pressed and expected/actual result.\nIf it still reproduces on the current build, a fresh /bugreport immediately after the failure would help; there is no need to re-upload the January archive."
+      }
+    }
+  ]
 }

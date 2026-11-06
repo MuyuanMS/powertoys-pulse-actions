@@ -1,33 +1,125 @@
 {
+  "schemaVersion": 5,
   "number": 47538,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager's switch image and text display are incorrect",
+  "url": "https://github.com/microsoft/PowerToys/issues/47538",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-12T12:54:01Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:29:49Z",
+  "evaluated_at": "2026-11-05T20:29:49Z",
+  "source_updated_at": "2026-10-11T16:47:23Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce switch localization and visual state",
+    "detail": "The reporter says a Keyboard Manager switch label follows the Chinese system language while PowerToys is set to English; an attached recording demonstrates the switch behavior."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report identifies a concrete language mismatch: with PowerToys display language set to English, a Keyboard Manager switch label remains in Chinese because it follows the system language. The attached recording is supplied as the reproduction reference. The likely source is the toggle content being resolved from system-language resources rather than the selected PowerToys language, but the code path and separate switch-image symptom need maintainer reproduction before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.99.1 and Keyboard Manager.",
+      "The reporter says the switch label follows the system language instead of the selected PowerToys language.",
+      "The reporter explains that the displayed Chinese text `关` means `Off`.",
+      "A recording named `Administrator_ PowerToys Settings 2026-05-01 12-08-39.mp4` is attached.",
+      "The issue has no comments or assignees.",
+      "Issue #47612 concerns Shift-symbol versus text in shortcut labels and is not the same toggle-localization behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:54:01Z"
-  }
+    "recommended_action": "Reproduce with a Chinese Windows system language and English PowerToys display language, then bind toggle content to the PowerToys language resource if the mismatch is confirmed.",
+    "evaluated_at": "2026-11-05T20:29:49Z",
+    "source_updated_at": "2026-10-11T16:47:23Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If reproduced, the toggle's On/Off content should resolve from PowerToys' selected language rather than the Windows system language. The separate visual-state complaint remains to be isolated from the recording."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use the PowerToys display language for Keyboard Manager toggle labels",
+      "root_cause": "The affected switch may obtain its On/Off text from system-language resources instead of the language selected in PowerToys Settings.",
+      "plan": [
+        "Reproduce the reported switch operation with Windows in Chinese and PowerToys display language set to English, using the attached recording as the sequence reference.",
+        "Trace the affected Keyboard Manager toggle's On/Off content binding and identify whether it uses system-language resources.",
+        "If confirmed, resolve the toggle text from the same PowerToys language resource context used by surrounding Settings labels.",
+        "Add a localization regression check for English PowerToys on a Chinese system and for the inverse language pairing."
+      ],
+      "verification": [
+        "The switch's On/Off labels follow the selected PowerToys display language when it differs from the Windows system language.",
+        "The switch visual state continues to match the enabled setting during the operations in the supplied recording.",
+        "Other Keyboard Manager settings and non-English PowerToys languages remain correctly localized."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The language mismatch is explicitly described, but the recording and source binding have not been independently replayed or traced; the switch-image symptom is also not fully described in text."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keyboard Manager switch is reported to show system-language text even when PowerToys is set to English, alongside a separate visual switch-state complaint.",
+    "known_information": [
+      "The issue lists PowerToys 0.99.1 and Keyboard Manager.",
+      "The reporter says the switch label follows the system language instead of the PowerToys display language.",
+      "The reporter identifies `关` as the Chinese label meaning `Off`.",
+      "A PowerToys Settings recording is attached and is the reference for the switch operation.",
+      "Issue #47612 concerns modifier-symbol text in shortcut displays, not toggle labels."
+    ],
+    "inferences": [
+      "The toggle may use OS-localized content rather than PowerToys' selected language resources."
+    ],
+    "analysis": "The localization mismatch has a clear repro environment and likely direction, while the separate switch-image issue is only described by reference to the attached recording. Reproduce the recording first and keep any visual-state defect separate from the language fix unless the same control path explains both.",
+    "initial_investigation": [
+      "Read the issue body and verified there are no comments, assignees, or newer textual clarification.",
+      "Downloaded the supplied archive and confirmed it contains the named MP4 recording; no frame-level claims are made here.",
+      "Read issue #47612 and its maintainer comment; it covers shortcut modifier labels and does not establish duplicate coverage for toggle localization."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact expected and actual switch-image state shown during the recorded operation",
+        "why_needed": "The text identifies the language mismatch but does not state which image/state transition is wrong, so that part should not be conflated with localization.",
+        "how_to_collect": "Replay the attached recording while reproducing the toggle sequence and record the affected setting and visual state.",
+        "evidence_type": "gif_video"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the Keyboard Manager language mismatch",
+      "primary": true,
+      "reproduce": {
+        "title": "Check Keyboard Manager switch labels with different app and system languages",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.99.1 or current stable",
+        "prerequisites": [
+          "Windows system language set to Chinese",
+          "PowerToys display language set to English",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Use the reporter's attached PowerToys Settings recording as the reference for the switch operation."
+        ],
+        "steps": [
+          "Open the Keyboard Manager settings shown in the recording.",
+          "Perform the demonstrated operation on the affected switch.",
+          "Compare the displayed On/Off label and switch visual state with the selected PowerToys language and actual setting state."
+        ],
+        "expected_result": "The label follows the PowerToys display language, and the switch image matches the setting's actual enabled/disabled state."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the toggle-language fix"
+    }
+  ]
 }

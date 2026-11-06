@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 32344,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "CapsLock and Ctrl remapping changes Japanese IME mode and can leave Ctrl stuck",
+  "url": "https://github.com/microsoft/PowerToys/issues/32344",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-16T08:02:45Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:43Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm Japanese IME modifier behavior on current release",
+    "detail": "The original report describes an intermittent stuck-Ctrl and IME-mode change with CapsLock/Ctrl remaps; related issue 3397 documents similar Japanese IME interception but does not establish a current fix."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original report says CapsLock-to-Ctrl and Ctrl-to-CapsLock mappings can change Japanese IME mode and leave Ctrl active after Shift is pressed. A later commenter describes a different JIS mapping and an additional mouse-scroll symptom. Related issue #3397 documents Japanese IME interception of CapsLock/modifier events and similar stuck-modifier behavior, but it remains open and does not show that this specific configuration is resolved. Current behavior and the reporter's keyboard layout are unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report lists PowerToys 0.80.0 on Windows 10 22H2 and both Microsoft and Google Japanese IMEs.",
+      "The original mapping swaps CapsLock and left Ctrl; holding the remapped Ctrl and pressing Shift reportedly changes IME mode and can leave Ctrl stuck.",
+      "A later commenter reports a distinct JIS mapping and a mouse-scroll side effect.",
+      "Related issue #3397 discusses Japanese IME interception of CapsLock/modifier events and similar stuck-modifier symptoms; it remains open without a linked fix.",
+      "The issue is open and unassigned."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-16T08:02:45Z"
-  }
+    "recommended_action": "Ask whether the original mapping still reproduces on current stable, which keyboard layout is active, and whether the stuck modifier occurs with the original steps; keep the separate mouse-scroll report distinct.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:43Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the original scenario persists, Keyboard Manager may not fully suppress or release CapsLock/modifier events before Japanese IME processing. Issue #3397 provides related historical evidence, but the exact mapping, keyboard layout, and current behavior need confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Japanese IME modifier state consistent during CapsLock remapping",
+      "root_cause": "The IME may process CapsLock or modifier state before Keyboard Manager's low-level hook can suppress it, leaving the IME mode changed or the remapped Ctrl state stuck. The report's specific current path is unverified.",
+      "plan": [
+        "Confirm the original Ctrl/CapsLock mapping and stuck-modifier sequence on current stable with the reporter's Japanese IME and keyboard layout.",
+        "Compare the sequence with Keyboard Manager disabled and inspect the related event-handling behavior documented in #3397.",
+        "Identify which key-down/up event or IME shortcut is not suppressed or released.",
+        "If Keyboard Manager mishandles a supported sequence, correct the modifier-state handling and add a regression test for the confirmed layout."
+      ],
+      "verification": [
+        "Verify the original mapping does not unexpectedly switch Japanese IME mode.",
+        "Verify Ctrl is released after the reported Shift/CapsLock sequence.",
+        "Test Microsoft and Google Japanese IMEs separately when available."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The symptom is specific and #3397 documents related IME event behavior, but the reporter's current layout and reproduction are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Swapping CapsLock and left Ctrl reportedly changes Japanese IME mode when Shift is pressed and can leave Ctrl stuck.",
+    "known_information": [
+      "The original report lists PowerToys 0.80.0 on Windows 10 22H2 and Microsoft and Google Japanese IMEs.",
+      "The original mapping swaps CapsLock and left Ctrl; the reporter describes an intermittent stuck-Ctrl state after pressing Shift.",
+      "A later comment has a different JIS mapping and separately reports a mouse-scroll side effect.",
+      "Issue #3397 contains historical analysis of Japanese IME interception and stuck modifiers but remains open without a linked fix."
+    ],
+    "inferences": [
+      "The IME may consume CapsLock/modifier transitions before Keyboard Manager can suppress them, but the exact behavior depends on the active logical keyboard layout and needs current reproduction."
+    ],
+    "analysis": "The related issue is useful context but does not establish that this configuration is covered or fixed. Ask for the original reporter's current result and layout, and do not conflate the later comment's scroll behavior with the original key-state symptom.",
+    "initial_investigation": [
+      "Read the complete issue and all comments, including the later report with a different JIS mapping.",
+      "Reviewed #3397, which documents similar Japanese IME key-event interception and stuck modifier behavior; it remains open and does not link a fix for this exact configuration."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the original CapsLock/Ctrl mapping still changes IME mode or leaves Ctrl stuck on current stable, and the active keyboard layout",
+        "why_needed": "Japanese IME handling can differ by logical keyboard layout; current reproduction and layout are needed to determine whether the original behavior persists and whether it is covered by #3397.",
+        "how_to_collect": "On current stable PowerToys, repeat the original mapping and Shift sequence, report the PowerToys version, Windows keyboard layout (for example JIS or US), active Japanese IME, and whether Ctrl remains stuck. Keep any separate mouse-scroll symptom distinct.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-32344-confirm-ime-modifier-state",
+      "type": "request_info",
+      "label": "Confirm Japanese IME modifier behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for documenting the CapsLock/Ctrl swap and the IME-mode/stuck-Ctrl behavior. Could you confirm whether the original steps still reproduce on current stable PowerToys, and include your Windows keyboard layout (for example JIS or US), active Japanese IME, and exact PowerToys version? The later mouse-scroll report uses a different mapping, so please keep it separate from whether Ctrl remains stuck in your original setup."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Japanese IME modifier investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce CapsLock/Ctrl remapping with Japanese IME",
+      "note": "Keep the original mapping separate from the later JIS/mouse-scroll report and compare with issue 3397.",
+      "reproduce": {
+        "title": "Verify CapsLock/Ctrl remapping with Japanese IME",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Japanese IME enabled",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Map CapsLock to left Ctrl.",
+          "Map left Ctrl to CapsLock."
+        ],
+        "steps": [
+          "Switch to the Japanese IME.",
+          "Hold Shift and press the physical left Ctrl key, which is mapped to CapsLock.",
+          "Observe whether the IME mode changes and whether Ctrl remains active after the keys are released."
+        ],
+        "expected_result": "The configured remaps should not unexpectedly change IME mode or leave Ctrl stuck after key release."
+      }
+    }
+  ]
 }

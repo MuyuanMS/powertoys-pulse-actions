@@ -1,33 +1,130 @@
 {
+  "schemaVersion": 5,
   "number": 41894,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Back up doesn't save new backup location",
+  "url": "https://github.com/microsoft/PowerToys/issues/41894",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:56:24Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T23:38:39Z",
+  "evaluated_at": "2026-11-05T23:38:39Z",
+  "source_updated_at": "2026-10-11T04:38:34Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "▶",
+    "label": "Verify destination-specific backup creation",
+    "detail": "The reporter sees no new backup after changing the folder; current backup decisions compare settings content, so the selected destination and baseline need to be verified together."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce with a new empty destination",
+    "reason": "A controlled empty-folder test will show whether the configured path is honored and whether a destination change produces a complete snapshot when settings are otherwise unchanged."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-41894-reproduce-empty-backup-destination",
+      "type": "reproduce",
+      "label": "Reproduce backup to a new empty folder",
+      "primary": true,
+      "note": "The current report is specific enough for a maintainer to test the destination change without requesting generic logs.",
+      "reproduce": {
+        "title": "Verify a new backup destination with unchanged settings",
+        "module": "General settings backup and restore",
+        "version_requirement": "PowerToys 0.101.2362 or newer",
+        "prerequisites": [
+          "Windows 11 25H2",
+          "A working PowerToys settings backup and restore installation",
+          "A new empty writable directory outside the PowerToys installation"
+        ],
+        "setup": [
+          "Do not change any PowerToys settings before the test.",
+          "Choose a new empty directory as the backup destination."
+        ],
+        "steps": [
+          "Set the backup destination to the new empty directory and confirm the selected path is shown.",
+          "Run Save backup without changing any settings.",
+          "Check whether a settings_*.ptb file appears in the selected directory and whether the backup list updates to that destination.",
+          "Reopen Settings and confirm the selected destination remains configured."
+        ],
+        "expected_result": "The configured destination remains selected and receives a complete backup archive even though the settings content matches the previous backup.",
+        "setup_prompt": "Create a temporary empty writable directory outside the PowerToys installation for a controlled backup-destination test."
+      }
+    },
+    {
+      "id": "issue-41894-approve-destination-aware-backup",
+      "type": "approve_design",
+      "label": "Approve destination-aware full backup creation",
+      "primary": false
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter confirms the behavior on PowerToys 0.101.2362 and says the new folder is not reflected in the backup flow. Current code reads the destination from the registry and compares normalized settings content to decide whether to create an archive; it does not treat a destination change as a snapshot change. A focused empty-destination reproduction is needed to confirm which baseline the backup flow uses before selecting the final implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report says changing the backup directory and saving produces a no-backup message because settings have not changed.",
+      "The 2026-10-11 follow-up confirms the issue remains on PowerToys 0.101.2362 and says the new folder is not reflected in the backup dropdown.",
+      "Current upstream SettingsBackupAndRestoreUtils.BackupSettingsInternal compares normalized exported settings content against the latest backup files when deciding whether to create an archive.",
+      "Current GeneralViewModel writes the selected destination to the registry; SettingsUtils.BackupSettings rereads that path before invoking the backup utility.",
+      "When the backup picker is launched from the backup command because the destination is empty, the folder-selection method is async void and the caller does not await it; the report does not establish that this path was used."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:56:24Z"
+    "recommended_action": "Reproduce with an unchanged settings set and a new empty destination, verifying both the path passed to BackupSettingsInternal and the archive/list result. If the new destination is not treated as needing a full snapshot, make the backup baseline destination-aware and refresh the backup list after the path changes.",
+    "evaluated_at": "2026-11-05T23:38:39Z",
+    "source_updated_at": "2026-10-11T04:38:34Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A destination change should make a complete snapshot available in the selected folder, but the code's no-op decision is based on normalized settings content. The exact baseline used after the reported destination change needs a current empty-folder reproduction.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Create a full snapshot when the backup destination changes",
+      "root_cause": "The backup decision compares normalized settings contents and does not directly account for a change in the configured destination. If the new destination is evaluated against an existing backup baseline rather than treated as having no snapshot, an unchanged settings set can produce no archive in the selected folder.",
+      "plan": [
+        "Trace the selected path and latest-backup baseline from GeneralViewModel through SettingsUtils.BackupSettings into BackupSettingsInternal for a new empty destination.",
+        "Treat a destination with no backup snapshot as requiring a complete archive, even when the settings content matches a snapshot stored elsewhere.",
+        "Refresh the backup list after the destination is saved and add regression coverage for switching from a populated destination to a new empty one without changing settings."
+      ],
+      "verification": [
+        "Selecting a new empty destination and saving without changing settings creates a complete .ptb archive in that folder.",
+        "The selected destination remains configured after reopening Settings and the backup list reflects the new folder.",
+        "Saving again to the same destination with unchanged settings retains the existing no-op behavior."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The current code confirms a content-only comparison and the reporter confirms a current-version failure, but the exact baseline used after changing destinations must be established with an empty-folder reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Changing the settings backup folder does not appear to create or surface a backup in the selected location.",
+    "known_information": [
+      "The original report uses PowerToys 0.94.1 on Windows 11 25H2 and says saving after changing the backup directory reports that no settings changed.",
+      "The latest commenter reports the issue on PowerToys 0.101.2362 and says the new directory is not reflected in the backup dropdown.",
+      "Current SettingsBackupAndRestoreUtils reads the destination from a registry value and compares normalized settings content when deciding whether an archive is needed.",
+      "Current SettingsUtils.BackupSettings rereads the registry-backed destination before invoking the backup utility."
+    ],
+    "inferences": [
+      "A destination change may need to trigger a full snapshot even when the settings contents match a prior backup.",
+      "If the backup command itself opens the folder picker for an initially empty destination, its unawaited async selection path could pass stale state; the report does not say whether that occurred."
+    ],
+    "analysis": "The report combines two observable outcomes: the backup command says there is nothing to save, and the new location is absent from the backup list. Current code persists the selected path, but the archive decision is content-based. A test with a genuinely empty destination separates a destination/baseline defect from unchanged-content behavior or a stale picker call; fix only the branch confirmed by that test.",
+    "initial_investigation": [
+      "Read the issue body and both comments, including the current-version follow-up.",
+      "Traced the registry-backed destination setter/getter and the BackupSettings wrapper; the normal wrapper rereads the configured path.",
+      "Inspected BackupSettingsInternal: it compares normalized settings content and returns NothingToBackup when no file differs.",
+      "Noted a separate async void picker call when BackupConfigsClick starts with an empty path; current evidence does not establish that the reporter used this path."
+    ],
+    "information_gaps": []
   }
 }

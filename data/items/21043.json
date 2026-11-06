@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 21043,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Caps lock to Ctrl key mapping not working on external keyboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/21043",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-06-24T08:27:04Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T22:20:45Z",
+  "evaluated_at": "2026-11-05T22:20:45Z",
+  "source_updated_at": "2026-10-11T16:46:56Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current Bluetooth baseline",
+    "detail": "The report is from v0.62.1 and describes device- and connection-specific behavior that has not been retested on current Windows and PowerToys builds."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Confirm external Caps Lock behavior on current stable",
+    "reason": "A current baseline with the remap disabled will distinguish a PowerToys mapping failure from a keyboard or Bluetooth input-path difference."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-21043-current-bluetooth-baseline",
+      "type": "request_info",
+      "label": "Confirm external Caps Lock behavior on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for distinguishing the built-in keyboard, the external keyboard, and other remaps. A later KB7120W report also says the same mapping works over its USB receiver but not Bluetooth, while another commenter reports a similar symptom on Linux, so the input path matters. The original report is from v0.62.1 and does not give the Windows build or the external keyboard model. Could you confirm on v0.102.3001 whether the external Caps Lock still fails over Bluetooth, whether it toggles Caps Lock with Keyboard Manager disabled, and the exact keyboard model and Windows build? If available, compare the same mapping over its USB receiver."
+      }
+    },
+    {
+      "id": "issue-21043-approve-input-path-investigation",
+      "type": "approve_design",
+      "label": "Approve Keyboard Manager input-path investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original report says the built-in keyboard and other external-key mappings work, while the external Caps Lock key does not; a later comment narrows one Dell KB7120W report to Bluetooth rather than its USB receiver, and another says they see the symptom under Linux. Those details suggest the device/connection path is important but do not establish whether the defect is in PowerToys, Windows Bluetooth input, or the keyboard. The only PowerToys version in the report is v0.62.1, and the original model and Windows build are absent.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys v0.62.1 and says a Bluetooth-connected external Dell keyboard does not send the expected Caps Lock-to-Ctrl action.",
+      "The built-in keyboard and other external-key remaps reportedly work; the external Ctrl-to-Caps Lock mapping also works.",
+      "A commenter reports the same with a Dell KB740.",
+      "A Dell KB7120W commenter says the behavior occurs over Bluetooth but not through the USB receiver.",
+      "Another commenter reports a similar symptom under Linux; no assignee or matching PR was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-06-24T08:27:04Z"
+    "recommended_action": "Ask whether the Bluetooth failure still occurs on v0.102.3001 and whether the external Caps Lock key works natively with Keyboard Manager disabled.",
+    "evaluated_at": "2026-11-05T22:20:45Z",
+    "source_updated_at": "2026-10-11T16:46:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the issue persists only when Keyboard Manager is enabled, the input-event handling for an external Caps Lock key may need correction. If the key also fails natively or only over Bluetooth, the report may instead originate in the device/connection path; the current evidence does not decide between these cases."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle external Caps Lock input consistently",
+      "root_cause": "The external keyboard may deliver a different or missing Caps Lock event over Bluetooth, or Keyboard Manager may fail to recognize that event for remapping. The reports across multiple Dell models, USB receiver versus Bluetooth, and Linux do not yet isolate a PowerToys defect.",
+      "plan": [
+        "Reproduce with the reported external keyboard on current Windows and PowerToys, first with Keyboard Manager disabled and then with Caps Lock mapped to Left Ctrl.",
+        "Compare Bluetooth and USB-receiver input and inspect the key identity reaching Keyboard Manager only if the native baseline succeeds.",
+        "Correct the narrow event-recognition/remapping path if the failure is within Keyboard Manager.",
+        "Add regression coverage for external Caps Lock remapping while preserving built-in keyboard and non-Caps-Lock mappings."
+      ],
+      "verification": [
+        "With Keyboard Manager disabled, verify whether external Caps Lock toggles Caps Lock over Bluetooth.",
+        "With the remap enabled, verify external Caps Lock produces Ctrl on the current stable build.",
+        "Verify built-in keyboard behavior, other external remaps, and the USB-receiver comparison remain unchanged."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The original symptom is specific and repeat reports identify a Bluetooth/USB distinction, but a Linux report and the lack of a current Windows reproduction leave the owning layer uncertain."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Caps Lock-to-Ctrl reportedly fails only on a Bluetooth-connected external keyboard, while the built-in keyboard and other remaps work.",
+    "known_information": [
+      "The original report uses PowerToys v0.62.1 and an unspecified Dell Bluetooth keyboard.",
+      "The reporter says built-in-keyboard remapping, external Delete-to-Y, and external Ctrl-to-Caps Lock work.",
+      "A Dell KB7120W commenter reports the Caps Lock mapping works through a USB receiver but not Bluetooth.",
+      "A separate commenter reports a similar symptom under Linux.",
+      "There is no current-version retest, Windows build, original device model, assignee, or matching PR."
+    ],
+    "inferences": [
+      "The input event or device behavior may differ between Bluetooth and the USB receiver.",
+      "The Linux report raises the possibility of a device-level issue but does not prove that the PowerToys report is external to PowerToys."
+    ],
+    "analysis": "The existing reports provide a useful connection-mode comparison but predate current PowerToys by several releases. The key discriminator is whether the external Caps Lock key works natively with Keyboard Manager disabled on current Windows; only then should a PowerToys-specific event path be pursued. No additional generic diagnostic archive is needed at this stage.",
+    "initial_investigation": [
+      "Refreshed the complete issue body and all three comments, including the Dell KB740/KB7120W reports, Bluetooth-versus-receiver detail, and Linux observation.",
+      "Searched related PowerToys issues and PRs for the reported Caps Lock/Bluetooth symptom; no separate covering issue or PR was found.",
+      "Confirmed the issue has no assignee."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the Bluetooth failure still occurs on v0.102.3001, the exact keyboard model and Windows build, and whether external Caps Lock works natively with Keyboard Manager disabled",
+        "why_needed": "The current report is from v0.62.1, and a native failure would point away from Keyboard Manager while a working native key followed by a remap failure would isolate the PowerToys path.",
+        "how_to_collect": "On v0.102.3001, test the external keyboard over Bluetooth with Keyboard Manager disabled, then enable Caps Lock-to-Left Ctrl and repeat; report the device model, Windows build, and USB-receiver result if available.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

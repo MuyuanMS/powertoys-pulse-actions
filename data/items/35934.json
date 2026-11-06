@@ -1,33 +1,140 @@
 {
+  "schemaVersion": 5,
   "number": 35934,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Key remapping issues",
+  "url": "https://github.com/microsoft/PowerToys/issues/35934",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:29:06Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T23:03:22Z",
+  "evaluated_at": "2026-11-05T23:03:22Z",
+  "source_updated_at": "2026-10-11T15:46:42Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current sleep-resume retest",
+    "detail": "A commenter confirmed that remaps stopped working after sleep on v0.95.0 and listed exact mappings, but no result exists for a current build."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Retest remaps after sleep without restarting",
+    "reason": "Testing before sleep, after resume, and after recovery controls will show whether Keyboard Manager stops receiving or processing events across resume."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-35934-reproduce-resume-remap",
+      "type": "reproduce",
+      "label": "Reproduce remap loss after sleep",
+      "primary": true,
+      "note": "The reporter supplied an explicit v0.95.0 confirmation and exact mappings; verify the same failure on a current build before assigning a hook-lifecycle change.",
+      "reproduce": {
+        "title": "Verify Keyboard Manager remaps after sleep",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "Use the reporter's remappings when available: Ctrl (right)+Left to Home and Win+Num4 to Previous Track.",
+          "Keep a text editor focused for the Home control and a media player available for the Previous Track control."
+        ],
+        "setup": [
+          "Configure both listed remappings and confirm each works before sleep."
+        ],
+        "steps": [
+          "Put the computer to sleep and resume it without restarting PowerToys.",
+          "Test both remappings before changing Keyboard Manager settings or restarting the application.",
+          "If either fails, toggle Keyboard Manager off and on and test again; then restart PowerToys only as a final recovery control.",
+          "Record which control restores remapping and add `/bugreport` immediately after a persistent post-resume failure."
+        ],
+        "expected_result": "Both remappings continue working after resume; if they stop, the test identifies whether toggling Keyboard Manager or restarting PowerToys restores the hook behavior."
+      }
+    },
+    {
+      "id": "issue-35934-request-current-resume-result",
+      "type": "request_info",
+      "label": "Confirm current post-resume behavior",
+      "comment": {
+        "body": "Thanks for confirming on v0.95.0 and listing the remappings. Could you retest on PowerToys v0.102.3001 or newer with Ctrl (right)+Left to Home and Win+Num4 to Previous Track? Verify both before sleep, then after waking before restarting PowerToys, and tell us whether toggling Keyboard Manager off/on restores them or only restarting does. If the failure persists, add `/bugreport` immediately after the post-resume test."
+      }
+    },
+    {
+      "id": "issue-35934-approve-resume-recovery-design",
+      "type": "approve_design",
+      "label": "Approve post-resume hook investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original report is broad, but a commenter confirmed on v0.95.0 that remappings stopped after sleep until PowerToys restarted and provided ten concrete mappings. This is enough for a maintainer retest; the old build and missing post-resume trace do not justify a definitive code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue originally lists PowerToys 0.86.0 and reports application conflicts plus remappings sometimes failing after sleep.",
+      "A commenter confirmed the sleep/resume failure on PowerToys 0.95.0 and said remapping did not work again until the program restarted.",
+      "The commenter supplied exact navigation and media remaps, including Ctrl (right)+Left to Home and Win+Num4 to Previous Track.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 installs the low-level keyboard hook through StartLowlevelKeyboardHook when no hook handle is present; the saved discussion and inspected hook path do not establish what state changes across sleep."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:29:06Z"
+    "recommended_action": "Retest representative navigation and media remaps on the current build, test after resume before restarting, and inspect hook/event state only if the failure persists.",
+    "evaluated_at": "2026-11-05T23:03:22Z",
+    "source_updated_at": "2026-10-11T15:46:42Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If remapping resumes only after a PowerToys restart, a missing or stale Keyboard Manager hook after system resume may need to be revalidated or re-established. No post-resume hook trace or current-build result is available yet.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Keyboard Manager remapping after system resume",
+      "root_cause": "The issue reports that the low-level remap path stops after sleep and recovers after restarting PowerToys. If the hook becomes unavailable or stale across resume while the process remains alive, the current hook lifecycle may not re-establish it; the report does not identify which state is lost.",
+      "plan": [
+        "Reproduce on a current build with the navigation and media controls from the issue, testing after resume before toggling or restarting PowerToys.",
+        "Trace whether the low-level hook remains installed and whether source events reach HandleKeyboardHookEvent after resume.",
+        "If the hook or its event processing is lost, revalidate and re-establish only the affected Keyboard Manager hook state after resume.",
+        "Add a regression test or focused lifecycle test for resume recovery while preserving normal remapping and toggle-off behavior."
+      ],
+      "verification": [
+        "The configured navigation and media remaps work before sleep and immediately after resume without restarting PowerToys.",
+        "A recovery path does not install duplicate hooks or change normal Keyboard Manager enable/disable behavior.",
+        "The failure is still observable in a test when the relevant hook/event state is deliberately unavailable, and recovery restores it."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The author-confirmed restart recovery suggests a lifecycle issue, but the report is old and no current hook/event trace proves what fails after resume."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager remappings reportedly stop working after the computer resumes from sleep and recover only after restarting PowerToys.",
+    "known_information": [
+      "The original report lists PowerToys 0.86.0 and says remappings sometimes stop after sleep.",
+      "A commenter confirmed the behavior on PowerToys 0.95.0 and listed specific navigation and media remappings.",
+      "The commenter says remapping did not work again until PowerToys restarted.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 starts the low-level keyboard hook through StartLowlevelKeyboardHook when the hook handle is absent; the report has no current post-resume trace."
+    ],
+    "inferences": [
+      "Restart-only recovery is consistent with a hook or event-processing lifecycle problem, but it does not prove that the hook itself is lost.",
+      "The original issue also mentions application conflicts, but the comment provides no concrete conflict reproduction; this artifact focuses on the better-specified sleep/resume symptom."
+    ],
+    "analysis": "The v0.95.0 comment materially strengthens the original report by confirming a specific post-resume failure and listing controls. Current source shows the hook installation path, but not a proven resume failure. Preserve the exact before/after-restart comparison and do not prescribe hook reinstallation until a current retest localizes the failure.",
+    "initial_investigation": [
+      "Read the current issue body and its sole comment, including the current-to-that-reporter v0.95.0 confirmation and all listed mappings.",
+      "Checked the saved issue timeline for a linked fix; none was present.",
+      "Inspected KeyboardManager::StartLowlevelKeyboardHook and HandleKeyboardHookEvent in current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368; the source establishes normal hook installation and event handling, not post-resume behavior."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the listed remappings still fail after sleep on PowerToys v0.102.3001 or newer, and whether toggling Keyboard Manager or restarting PowerToys restores them",
+        "why_needed": "A current result distinguishes an unfixed lifecycle defect from historical device, driver, or OS behavior and localizes the recovery path.",
+        "how_to_collect": "Test Ctrl (right)+Left to Home and Win+Num4 to Previous Track before sleep, after resume without restarting, then after toggling Keyboard Manager; add `/bugreport` immediately after a persistent failure.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

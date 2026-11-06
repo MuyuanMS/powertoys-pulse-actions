@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 34278,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "El administrador de teclado no abre las opciones al dar clic en \"Reasignar una tecla\" y \"Reasignar un acceso directo\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/34278",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-13T12:12:25Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T22:09:00Z",
+  "evaluated_at": "2026-11-05T22:09:00Z",
+  "source_updated_at": "2026-10-11T16:46:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm whether the remap dialogs still fail",
+    "detail": "The report is from v0.83.0 and includes a screenshot, but does not identify a current-build result or the exact Keyboard Manager entry point."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The Spanish report says that in PowerToys v0.83.0, clicking either \"Remap a key\" or \"Remap a shortcut\" makes the cursor appear busy but opens no options dialog. A screenshot is attached, but there are no comments, no assignee, and no current-build retest. Search found no direct matching report or PR. Because the editor and its launch path may have changed since v0.83.0, first confirm whether both buttons still fail on v0.102.3001 and whether Keyboard Manager was opened from the Settings page or another entry point.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys v0.83.0 from the Microsoft Store and says both remapping buttons show a busy cursor without opening a dialog.",
+      "A screenshot is attached; there are no issue comments or assignees.",
+      "The report does not state the Windows version, exact editor launch path, or current-build behavior.",
+      "No direct matching issue or PR was found in the focused searches."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-13T12:12:25Z"
+    "recommended_action": "Ask whether both remapping buttons still fail on v0.102.3001 and how Keyboard Manager is opened; reproduce the same actions from the reported entry point.",
+    "evaluated_at": "2026-11-05T22:09:00Z",
+    "source_updated_at": "2026-10-11T16:46:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current stable still reproduces, the remapping-dialog activation path may fail before presenting its editor, but the v0.83.0 report does not distinguish an app activation error from a stale or changed UI path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Keyboard Manager remapping dialog activation",
+      "root_cause": "The remap controls may fail to activate or present their dialog after being clicked, or the reported control may belong to a UI path that has since changed. No activation error or current reproduction is available.",
+      "plan": [
+        "Reproduce both remap-button clicks on the current supported build from the exact Keyboard Manager entry point.",
+        "Trace the button command through dialog creation and activation, recording any initialization or navigation failure.",
+        "Correct the narrow activation or navigation failure if it still exists.",
+        "Add UI coverage that invokes both buttons and asserts the corresponding remapping dialog becomes visible."
+      ],
+      "verification": [
+        "Verify both remapping buttons open the expected dialog on the current supported build.",
+        "Verify closing one dialog and opening the other does not leave a busy state or block further Settings interaction."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The report is limited to v0.83.0 and does not include launch-path or current-build evidence; dialog activation is only a broad mechanism to investigate."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "In PowerToys v0.83.0, clicking either Keyboard Manager remapping button reportedly shows a busy cursor but opens no options dialog.",
+    "known_information": [
+      "The report is written in Spanish and lists PowerToys v0.83.0 from the Microsoft Store.",
+      "The reporter says both \"Remap a key\" and \"Remap a shortcut\" fail to open their dialogs.",
+      "A screenshot is attached; the report has no comments or assignees."
+    ],
+    "inferences": [
+      "The failure could be in dialog activation or navigation, but the report does not establish whether the same UI path exists on current stable."
+    ],
+    "analysis": "The screenshot supports the reported UI state, but it does not show the current app version or how the Keyboard Manager page was opened. A current retest from the PowerToys Settings entry point will distinguish an active dialog-launch defect from an old UI path or version-specific behavior. No report archive is needed for this first discriminator.",
+    "initial_investigation": [
+      "Read the full Spanish issue body, screenshot reference, labels, and current discussion; no comments or assignees are present.",
+      "Searched for similar remapping-button failures and PR references; no direct current covering issue or fix was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether both remapping dialogs still fail on v0.102.3001 and the exact entry point used to open Keyboard Manager",
+        "why_needed": "The report is from v0.83.0 and does not identify the launch path; current behavior and entry point are needed to reproduce the same UI path.",
+        "how_to_collect": "On v0.102.3001, open Keyboard Manager from PowerToys Settings, click each remapping button once, and report whether a dialog opens; if you use another entry point, identify it.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-34278-current-dialog-retest",
+      "type": "request_info",
+      "label": "Retest the remapping dialogs on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Gracias por describir que ambos botones dejan el cursor ocupado sin abrir el cuadro y por adjuntar la captura. El reporte es de v0.83.0. ¿Puedes confirmar si también ocurre en v0.102.3001 al abrir Keyboard Manager desde Configuración de PowerToys y pulsar ambos botones?\n\nCould you confirm whether both remapping dialogs still fail on v0.102.3001, and whether you open Keyboard Manager from the PowerToys Settings page or another entry point?"
+      }
+    },
+    {
+      "id": "issue-34278-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager dialog launch",
+      "note": "The issue includes a screenshot, but current version and entry point are unknown; verify both controls from Settings.",
+      "reproduce": {
+        "title": "Verify remapping dialog activation",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled"
+        ],
+        "steps": [
+          "Open Keyboard Manager from the PowerToys Settings page.",
+          "Click \"Remap a key\" and verify whether its dialog appears.",
+          "Close it, click \"Remap a shortcut\", and verify whether its dialog appears."
+        ],
+        "expected_result": "Each button opens the corresponding remapping dialog and leaves the Settings page responsive."
+      }
+    },
+    {
+      "id": "issue-34278-approve-dialog-activation-investigation",
+      "type": "approve_design",
+      "label": "Approve remapping dialog activation investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Confirm the current remapping dialog behavior",
+    "reason": "The only report is from v0.83.0 and current UI activation has not been checked."
   }
 }

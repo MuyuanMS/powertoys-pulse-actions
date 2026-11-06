@@ -1,33 +1,127 @@
 {
+  "schemaVersion": 5,
   "number": 45435,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:56:23Z",
+  "generated_at": "2026-11-05T13:20:11Z",
+  "evaluated_at": "2026-11-05T13:20:11Z",
+  "source_updated_at": "2026-10-11T16:48:49Z",
+  "title": "[Keyboard Manager] Spanish UI causes overlapping",
+  "url": "https://github.com/microsoft/PowerToys/issues/45435",
+  "author": "duardor968",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "Reproducible localized-layout issue",
+    "detail": "The reporter supplied exact Spanish, Windows 11 24H2, 125% scale, 1920x1200, dark-theme steps and a screenshot. Current main still uses fixed dialog/control widths, a plausible cause that needs a targeted reproduction."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Reproduce the reported Spanish dialog layout on a current build, then design a responsive layout that keeps labels and controls visible at 125% scaling.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives an exact sequence, an always-reproducible result, and a screenshot under a concrete display configuration. Current main still constrains the remapping dialog and inner mapping grid to fixed dimensions, which is a plausible contributor but has not been confirmed against the specific clipped controls.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.97.1, Spanish UI, Windows 11 24H2, 125% display scale, 1920x1200 resolution, dark theme, and reproducibility as Always.",
+      "The reported steps are to open Keyboard Manager, choose 'Reasignar accesos directos', add a shortcut remapping, and inspect the dialog; the issue includes a screenshot and describes truncated labels and overlapping or misaligned controls.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardManagerEditorUI/Pages/MainPage.xaml:823-835 gives the ContentDialog Width 760, MinWidth 800, MaxWidth 900, and hosts UnifiedMappingControl.",
+      "At the same revision, KeyboardManagerEditorUI/Controls/UnifiedMappingControl.xaml:16-28 sets the inner Grid Width to 720 and allocates two content columns with star sizing."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:56:23Z"
-  }
+    "recommended_action": "Reproduce with the reported Spanish settings and identify which controls clip before approving a responsive-width and text-layout change.",
+    "evaluated_at": "2026-11-05T13:20:11Z",
+    "source_updated_at": "2026-10-11T16:48:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A localized dialog with fixed outer and inner widths is a plausible cause of truncation at 125% scaling, but the exact affected control and whether current main still reproduces the defect require a focused UI reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make the shortcut-remapping dialog adapt to localized text",
+      "root_cause": "The dialog is bounded to 800-900 effective pixels while its mapping grid is fixed at 720 pixels. Long Spanish labels may exceed the available control width or expose a layout constraint that is hidden in shorter English strings; this is a source-backed hypothesis, not a confirmed reproduction on current main.",
+      "plan": [
+        "Reproduce the issue with the reported Spanish locale, Windows 11 24H2, dark theme, 125% scaling, and 1920x1200 resolution; record the exact clipped or overlapping controls.",
+        "Replace the inner fixed-width assumption with available-width layout and ensure long localized labels wrap, resize, or remain accessible without overlapping adjacent controls.",
+        "Keep the dialog within the available window bounds and preserve the existing two-column mapping workflow at larger widths.",
+        "Add or extend UI validation for Spanish at 100%, 125%, and 150% scaling, including the specific labels and controls identified by reproduction."
+      ],
+      "verification": [
+        "The add-shortcut-remapping dialog has no overlapping controls and no truncated labels at the reported Spanish/125% configuration.",
+        "Repeat the same checks at 100% and 150% scaling and with a longer supported localization.",
+        "Confirm the mapping workflow remains usable at narrow window sizes and at the current maximum dialog width."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The issue is described as always reproducible and includes a screenshot; current main retains fixed dimensions, but the precise failing control and current-build behavior have not been verified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Adding a shortcut remapping in Keyboard Manager reportedly causes Spanish labels and controls to overlap, misalign, or become truncated.",
+    "known_information": [
+      "The issue reports PowerToys 0.97.1 from the Microsoft Store and provides a three-step reproduction.",
+      "The reported environment is Windows 11 24H2, Spanish PowerToys UI, dark theme, 125% display scale, and 1920x1200 resolution; the reporter says the issue reproduces Always.",
+      "A screenshot is already attached to the issue; no diagnostic archive is needed to evaluate this visual layout problem.",
+      "Current main has a ContentDialog with Width 760, MinWidth 800, and MaxWidth 900, hosting a mapping control whose root Grid has Width 720."
+    ],
+    "inferences": [
+      "Fixed content dimensions may leave insufficient width for Spanish strings or scaling-dependent control measurements.",
+      "The exact affected label/control and whether current main still reproduces the same overlap remain unconfirmed."
+    ],
+    "analysis": "The public report is specific enough for a maintainer to reproduce without asking the reporter for more information. Current source retains fixed dialog and content widths, making responsive layout the leading design direction. The screenshot and current XAML do not identify which specific child control causes the visible overlap, so a reproduction should precede an implementation-level design.",
+    "initial_investigation": [
+      "Read the live issue body, labels, attachment reference, and current metadata; there are no issue comments or assignees.",
+      "Inspected current upstream main at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: Pages/MainPage.xaml:823-835 and Controls/UnifiedMappingControl.xaml:16-28.",
+      "No linked pull request or duplicate covering this report was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "Which exact child controls or labels still overlap or truncate on the current build under the reported configuration.",
+        "why_needed": "The attached screenshot establishes the visual symptom, but identifying the affected controls on current main is needed to choose a responsive layout change without guessing.",
+        "how_to_collect": "Reproduce the issue using the supplied steps and capture the dialog with the affected controls visible; the existing issue screenshot need not be reuploaded."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve responsive dialog design",
+      "note": "Use the supplied reproduction to identify the failing controls before selecting the narrowest responsive layout change."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Spanish dialog layout",
+      "note": "The report already supplies an exact visual configuration and screenshot; reproduce before requesting diagnostics.",
+      "reproduce": {
+        "title": "Check Spanish shortcut-remapping dialog layout",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.97.1 or newer; record the exact build",
+        "prerequisites": [
+          "Windows 11 24H2",
+          "PowerToys language set to Spanish",
+          "Display scale set to 125%",
+          "1920x1200 resolution",
+          "Dark theme"
+        ],
+        "setup": [
+          "Open Keyboard Manager and navigate to shortcut remappings."
+        ],
+        "steps": [
+          "Click 'Reasignar accesos directos'.",
+          "Click 'Agregar reasignación de acceso directo'.",
+          "Inspect the dialog for overlapping controls, misalignment, or truncated labels."
+        ],
+        "expected_result": "The dialog's labels, buttons, and controls remain fully visible and do not overlap.",
+        "setup_prompt": "Set a Windows 11 test machine to Spanish, dark theme, 125% scaling, and 1920x1200, then follow the issue's add-shortcut-remapping steps."
+      }
+    }
+  ]
 }

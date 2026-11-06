@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 44232,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-01T13:28:41Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "generated_at": "2026-11-05T11:54:36.06Z",
+  "evaluated_at": "2026-11-05T11:54:36.06Z",
+  "source_updated_at": "2026-11-01T09:04:51Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/44232",
+  "title": "文件管理器鼠标右键菜单中没有PowerRename",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 13,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current source has a plausible partial-registration repair gap, but the reporter's old per-user environment and the newer registry-workaround reports do not establish the affected registry state. Confirm the sentinel/handler-key condition before implementation."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "proposed_fixes": [
+    {
+      "title": "Repair missing PowerRename handler registrations when the sentinel remains",
+      "root_cause": "Hypothesis: PowerRename's runtime registration helper trusts its ContextMenuRegistered sentinel and matching InprocServer32 path without checking the two declared context-menu handler keys. If either handler key is missing while the sentinel remains, EnsureRegistered can skip recreating it and Explorer may not show the command.",
+      "plan": [
+        "Reproduce on a clean Windows 10 per-user installation and record the PowerRename sentinel, CLSID InprocServer32 path, and both declared handler keys without changing registry state.",
+        "If the partial-registration condition is confirmed, update runtime_shell_ext::EnsureRegistered to validate every declared contextMenuHandlerKeyPaths and repair missing or mismatched entries even when the sentinel and DLL path are present.",
+        "Add focused tests for missing handler keys with a retained sentinel, while preserving the intended per-user registration scope and avoiding HKLM mirroring."
+      ],
+      "verification": [
+        "Use a disposable Windows 10 profile to confirm a clean current per-user install exposes PowerRename for single- and multi-file selections on its configured menu surface.",
+        "In a separate disposable test profile, simulate a missing handler key while retaining the sentinel and verify startup repairs the expected HKCU registration.",
+        "Verify normal and extended-only menu behavior and confirm no machine-wide registry writes are introduced."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "Current upstream code directly shows that existing-sentinel repair does not validate PowerRename's declared handler keys, but no reporter registry snapshot proves that this state caused the missing menu."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerRename is missing from the Windows 10 context menu in an older per-user report, while later users report related missing shell entries and an unverified registry workaround.",
+    "known_information": [
+      "The original report names PowerToys 0.96.1, Windows 10 build 19045, an elevated per-user installation, and says PowerRename is absent for both multiple-file and single-file selections.",
+      "A more recent commenter says PowerRename and File Locksmith are both missing and links a January 2026 diagnostic archive; another November 1 comment reports getting File Locksmith to appear after a claimed registry workaround: https://github.com/microsoft/PowerToys/issues/44232#issuecomment-6555308308",
+      "The latest comments describe copying user CLSID data into the machine registry. This is community-reported and unvalidated; it is not a supported or recommended fix.",
+      "Current PowerRename source declares two HKCU handler paths: AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt and Directory\\background\\ShellEx\\ContextMenuHandlers\\PowerRenameExt.",
+      "Current runtime_shell_ext::EnsureRegistered checks the sentinel and InprocServer32 path, then checks a representative file association only when one is configured. PowerRename configures no representative association, and the existing-sentinel branch does not verify its declared handler paths before deciding whether to repair.",
+      "Related issue #51316 reports cross-tool context-menu duplication/visibility problems, but does not establish the cause of this Windows 10 PowerRename report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-01T13:28:41Z"
-  }
+    "inferences": [
+      "A stale per-user registration sentinel with one or more missing handler keys could explain the missing PowerRename entry.",
+      "The later machine-wide registry workaround may reflect a different install-scope or shell-registration condition and does not prove that the original per-user issue has the same root cause."
+    ],
+    "analysis": "The issue is still open and the prior artifact's ownership rationale was unsupported: the saved report has no assignee. Current source provides a concrete repair-gap hypothesis in the existing-sentinel path, but the original report is from 0.96.1 and the latest workaround reports do not expose the relevant registry state. Reproduce on a clean current Windows 10 per-user install, inspect registrations read-only, and do not recommend importing HKCU keys into HKLM.",
+    "initial_investigation": [
+      "Read the full issue body and all 13 comments, including the original per-user/elevated Windows 10 details, later missing-entry reports, and the November 1 community workaround.",
+      "Inspected current upstream PowerRename RuntimeRegistration.h and the shared shell_ext_registration.h implementation.",
+      "Confirmed the PowerRename spec declares two HKCU handler paths and no representative file association; the shared helper's existing-sentinel branch does not validate those handler paths before deciding to rewrite them.",
+      "Checked related issue #51316; it covers a broader provider/visibility report but is not a verified duplicate or fix for #44232.",
+      "Did not run or recommend the community registry-copy script or modify any installation."
+    ],
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The current helper has a concrete registration-repair gap that fits the symptom, but the live reports do not prove the affected registry state. Keep the design yellow and require a maintainer reproduction before implementation.",
+    "evidence": [
+      "The original issue reports a missing PowerRename entry for single and multiple files on Windows 10 with a per-user installation.",
+      "Current PowerRename registration declares two handler paths, while the shared helper can skip rewriting them when the sentinel and CLSID server path are already present.",
+      "Later users report related missing entries, but their machine-scope workaround does not establish the original cause."
+    ],
+    "recommended_action": "Reproduce on a clean current Windows 10 per-user install and verify whether an existing sentinel masks missing handler keys before approving the focused repair.",
+    "evaluated_at": "2026-11-05T11:54:36.06Z",
+    "source_updated_at": "2026-11-01T09:04:51Z"
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve PowerRename registration repair",
+      "primary": true,
+      "id": "issue-44232-approve-registration-repair"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce missing PowerRename registration on Windows 10",
+      "id": "issue-44232-reproduce-registration-gap",
+      "reproduce": {
+        "title": "Compare PowerRename menu visibility with per-user handler registrations",
+        "module": "PowerRename",
+        "version_requirement": "Use current stable PowerToys on Windows 10 22H2 build 19045; compare against 0.96.1 only if the historical report must be reproduced.",
+        "prerequisites": [
+          "Use a disposable Windows 10 profile with PowerRename enabled.",
+          "Prepare harmless single-file and multiple-file selections."
+        ],
+        "setup": [
+          "Do not import registry data or run community scripts that copy HKCU registrations into HKLM.",
+          "Inspect existing registrations read-only; any partial-state simulation belongs only in a separate disposable test profile."
+        ],
+        "steps": [
+          "Open Explorer's context menu for one file and for multiple files; test the normal menu and the extended menu when the PowerRename setting requires it.",
+          "Record the HKCU ContextMenuRegistered sentinel, the PowerRename CLSID InprocServer32 value, and the AllFileSystemObjects and Directory-background PowerRenameExt handler keys.",
+          "In a separate disposable test profile, simulate one missing handler key while retaining the sentinel and DLL path, then restart PowerToys and record whether registration is repaired and the menu entry appears."
+        ],
+        "expected_result": "PowerRename appears on the configured menu surface for supported selections; if a handler key is missing while the sentinel remains, startup restores it within the intended per-user registration scope."
+      }
+    }
+  ],
+  "summary": "A current helper gap may leave PowerRename's menu entry missing when handler keys disappear but its per-user registration sentinel remains.",
+  "next_action": "Reproduce the stale-sentinel case on Windows 10 before approving a focused registration repair."
 }

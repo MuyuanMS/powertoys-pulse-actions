@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 17916,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "CapsLock key beeps even after remapping to CTRL when Toggle Keys (Settings > Accessibility) is on",
+  "url": "https://github.com/microsoft/PowerToys/issues/17916",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-23T19:46:57Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Status-Reproducible",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T20:40:00Z",
+  "evaluated_at": "2026-11-05T20:40:00Z",
+  "source_updated_at": "2026-10-11T16:47:33Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Recheck Toggle Keys behavior on current Windows and PowerToys",
+    "detail": "A maintainer reproduced the beep and suspected Windows handles the physical Caps Lock before Keyboard Manager; a member still saw it on 0.85.1."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report says Windows Toggle Keys beeps on physical Caps Lock even after Keyboard Manager maps Caps Lock to Ctrl, while the remapped Ctrl behavior itself works. A maintainer reproduced the beep and suspected that Windows processes the physical Caps Lock before Keyboard Manager can change it. A member reported the symptom still present in PowerToys 0.85.1. The actual Caps Lock toggle state and current stable behavior are not recorded.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.57.2 and Windows 10 with Toggle Keys enabled.",
+      "Caps Lock-to-Ctrl works for copy/paste, but Toggle Keys still beeps on the physical key.",
+      "A maintainer reproduced the behavior and suspected OS-first handling.",
+      "A member confirmed the beep remained on PowerToys 0.85.1.",
+      "The issue is open and marked Status-Reproducible; no linked fix was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-23T19:46:57Z"
-  }
+    "recommended_action": "Reproduce on current stable and verify whether the OS toggles Caps Lock state as well as beeping; then determine whether the notification can be suppressed without changing Toggle Keys behavior.",
+    "evaluated_at": "2026-11-05T20:40:00Z",
+    "source_updated_at": "2026-10-11T16:47:33Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the issue persists, Keyboard Manager may be unable to suppress the OS accessibility notification for the physical key before the hook receives it. Whether the beep can be prevented without a driver-level change remains unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid Toggle Keys responding to a remapped Caps Lock",
+      "root_cause": "Windows Toggle Keys may observe the physical Caps Lock event before Keyboard Manager remaps it, causing a beep even though the application receives Ctrl.",
+      "plan": [
+        "Reproduce on current Windows and PowerToys with Toggle Keys enabled and Caps Lock mapped to Ctrl.",
+        "Record whether Toggle Keys changes the Caps Lock state or only emits a beep.",
+        "Trace whether the physical event can be suppressed before the accessibility notification without a filter driver.",
+        "If the existing hook architecture cannot suppress it, document the limitation rather than changing the Toggle Keys feature or claiming a fix."
+      ],
+      "verification": [
+        "Verify whether the beep and Caps Lock state change occur after remapping.",
+        "Verify Ctrl remains functional after remapping.",
+        "Verify Toggle Keys still reports genuine Caps Lock presses when Caps Lock is not remapped."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "Maintainer reproduction confirms the symptom and suggests OS-first handling, but current behavior and whether the beep can be suppressed in the hook architecture are unresolved."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Toggle Keys beeps on the physical Caps Lock key after Keyboard Manager maps that key to Ctrl.",
+    "known_information": [
+      "The report lists PowerToys 0.57.2 and Windows 10 with Toggle Keys enabled.",
+      "Caps Lock-to-Ctrl works for ordinary Ctrl actions, but Toggle Keys still beeps.",
+      "A maintainer reproduced the symptom; a member reports it remains on 0.85.1."
+    ],
+    "inferences": [
+      "Windows may process the physical Caps Lock event before Keyboard Manager remaps it, but the report does not confirm whether Caps Lock state changes or only the notification is emitted."
+    ],
+    "analysis": "The issue is confirmed but its expected OS interaction and feasibility of suppression are unresolved. Recheck the state effect on current stable before concluding whether this is a product bug or a platform limitation.",
+    "initial_investigation": [
+      "Read the report and all three comments, including the maintainer's reproduction and the member's 0.85.1 confirmation.",
+      "No linked fix or pull request was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "On current stable, whether Toggle Keys only beeps or also changes Caps Lock state when Caps Lock is remapped to Ctrl",
+        "why_needed": "This distinguishes an accessibility notification triggered by the physical key from a remapping failure and establishes whether suppression is feasible.",
+        "how_to_collect": "Enable Windows Toggle Keys, map Caps Lock to Ctrl, press Caps Lock on current stable, and check both the beep and resulting Caps Lock state.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Toggle Keys beep after Caps Lock remap",
+      "reproduce": {
+        "title": "Check Toggle Keys after remapping Caps Lock",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys",
+        "prerequisites": [
+          "Windows Toggle Keys enabled",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Map Caps Lock to Ctrl (Left)."
+        ],
+        "steps": [
+          "Press the physical Caps Lock key.",
+          "Observe whether Windows beeps and whether Caps Lock state changes.",
+          "Use Ctrl+C/Ctrl+V to confirm the remapped Ctrl behavior."
+        ],
+        "expected_result": "The physical key produces the configured Ctrl behavior without an unintended Caps Lock state change or Toggle Keys notification."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Toggle Keys event-order investigation"
+    }
+  ]
 }

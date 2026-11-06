@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 46188,
+  "title": "using powertoys to override cntrl+numkeys hotkeys",
+  "url": "https://github.com/microsoft/PowerToys/issues/46188",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:52:59Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:58:49.3Z",
+  "generated_at": "2026-11-05T14:58:49.3Z",
+  "evaluated_at": "2026-11-05T14:58:49.3Z",
+  "source_updated_at": "2026-10-11T16:47:56Z",
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm whether the Keyboard Manager engine crash still occurs",
+    "detail": "The attached v0.97.2 report contains two KeyboardManagerEngine crash events with exception c0000409; the log does not identify a cause or prove timing against the remap failures."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue reports intermittent Ctrl+numeric-key remaps reverting during Razer Synapse automation and one later successful run. The attached v0.97.2 archive contains two KeyboardManagerEngine Application Error events with exception c0000409 at 14:51:30Z and 14:56:42Z; logs show abort/stack output without symbols. This is direct crash evidence in the diagnostic window but does not establish that either crash caused remap reversion or persists on current stable.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.97.2, Windows 11 Pro 25H2, and Razer Synapse 4.0.86.",
+      "Ctrl+numeric-key mappings reportedly output text initially and later revert during automated input; a later run succeeded for several minutes.",
+      "The attached report records two KeyboardManagerEngine crash events on 2026-03-17 with exception c0000409.",
+      "The stack is unresolved and the archive does not tie crash times to the exact failed attempts."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:52:59Z"
-  }
+    "recommended_action": "Retest the same mapping and Razer sequence on v0.102.3001; if remaps revert or the engine exits, capture a fresh /bugreport immediately and include the occurrence time.",
+    "evaluated_at": "2026-11-05T14:58:49.3Z",
+    "source_updated_at": "2026-10-11T16:47:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The archive proves two KeyboardManagerEngine crashes on 0.97.2, which could stop remapping, but the crash cause and timing against the failures are unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent engine crashes during automated numeric-key remaps",
+      "root_cause": "KeyboardManagerEngine terminates with exception c0000409 during the reported automation window; a crash could stop remapping, but the archive does not identify the failing path or prove causality.",
+      "plan": [
+        "Correlate the archived crash times with the failed remap attempts and Razer sequence.",
+        "Retest on v0.102.3001 with the same mappings and record the first failure or engine exit.",
+        "Use a current crash dump or symbolized stack to fix the failing engine path and add a regression test."
+      ],
+      "verification": [
+        "KeyboardManagerEngine remains running and mapped numeric-key input continues producing the configured output.",
+        "The behavior persists for longer than the previous multi-minute successful run."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "Two concrete engine crashes are present, but the old archive has no resolved stack and no timing correlation to failed remap attempts."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Ctrl+numeric-key remaps reportedly revert during Razer Synapse automation; the supplied report records two KeyboardManagerEngine crashes.",
+    "known_information": [
+      "The report describes Ctrl+numeric-key mappings sent by Razer Synapse.",
+      "The failures occurred in two of three tests, while a later test succeeded for several minutes.",
+      "The attached v0.97.2 diagnostics contain two KeyboardManagerEngine crash events with exception c0000409.",
+      "No resolved stack or exact timing of the failed attempts is available."
+    ],
+    "inferences": [
+      "The engine crashes may explain why remapping stops, but may be independent of the reported failures."
+    ],
+    "analysis": "The report already contains engine crash evidence, so do not request generic logs. A current-build retest and time-correlated archive only if the problem recurs will establish whether the crash path remains.",
+    "initial_investigation": [
+      "Read the issue and mapping images; the reporter already supplied the setup.",
+      "Inspected attached engine logs and Application Error records: two crashes with exception c0000409 appear during the 0.97.2 report window.",
+      "The stack lacks resolved symbols and event times cannot be tied to the exact failed attempts.",
+      "The reporter identifies Razer Synapse and a later successful multi-minute run."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "why_needed": "The existing crash evidence is from 0.97.2.",
+        "information": "Whether remap reversion or an engine crash reproduces on v0.102.3001.",
+        "how_to_collect": "Repeat the same mapped numeric-key automation on v0.102.3001."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "why_needed": "The old report has no resolved stack and no timing correlation to failed attempts.",
+        "information": "A fresh report with the occurrence time if the current engine crashes or mappings revert again.",
+        "how_to_collect": "Immediately after a current failure, comment /bugreport before restarting and include local time and whether KeyboardManagerEngine exited."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest issue 46188 on the current build",
+      "comment": {
+        "target": "issue",
+        "number": 46188,
+        "body": "Thanks for the mapping images, Razer version, and the report that a later test ran for several minutes without changes. I inspected the attached v0.97.2 report: it contains two KeyboardManagerEngine crashes with exception c0000409, but the stack is unresolved and the archive does not show whether either crash coincided with a failed remap.\n\nCould you please:\n1. Retest the same numeric-key automation on v0.102.3001.\n2. If the remaps revert or the engine exits, comment /bugreport immediately afterward and include the local occurrence time before restarting.\nThis will tell us whether the old engine crash remains and whether it explains the remapping failure."
+      }
+    }
+  ]
 }

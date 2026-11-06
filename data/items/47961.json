@@ -2,123 +2,117 @@
   "schemaVersion": 5,
   "number": 47961,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-29T16:58:58Z",
+  "repository": "microsoft/PowerToys",
   "title": "[Keyboard Manager] the new editor doesn't show targeted process name for disabled chords",
   "url": "https://github.com/microsoft/PowerToys/issues/47961",
-  "labels": [
-    "Issue-Bug"
-  ],
+  "track": "fix",
+  "stage": "triaged",
+  "owes": "maintainer",
+  "pending_author": false,
   "assignees": [],
-  "comments": 0,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T22:36:07Z",
+  "evaluated_at": "2026-11-05T22:36:07Z",
+  "source_updated_at": "2026-10-11T16:46:55Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
+    "glyph": "!",
+    "label": "The disabled-list template omits the app label",
+    "detail": "The screenshot shows app names on neighboring remappings but not under Disabled; current upstream MainPage.xaml confirms the disabled template has no AppName binding."
   },
   "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "▶",
+    "label": "Approve the disabled-list app-label design",
+    "reason": "Current source and the reporter's screenshot directly confirm that app-specific scope is not displayed in the disabled-chord list."
   },
+  "actions": [
+    {
+      "id": "issue-47961-approve-app-label-design",
+      "type": "approve_design",
+      "label": "Approve disabled-list app-label design",
+      "primary": true
+    },
+    {
+      "id": "issue-47961-clarify-disabled-key-scope",
+      "type": "request_info",
+      "label": "Clarify the disabled-key app-scope regression",
+      "comment": {
+        "body": "Thanks for confirming that the process label is still missing in v0.100.2 and for noting the separate specificity problem after changing an app-specific disabled chord into a disabled key. The screenshot and current source confirm the missing list label; to keep the second behavior distinct, could you share the exact chord and target process name, the steps used to convert it to a disabled key, and the resulting behavior that shows the app scope was lost? Please include the current PowerToys version if you retest it."
+      }
+    }
+  ],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The primary display defect is directly supported by the screenshot and current upstream XAML: the remapping item templates bind AppName, while the DisabledList item template displays the shortcut and controls without any AppName binding. A separate comment reports a specificity regression after converting an app-specific disabled chord to a disabled key; that is not proven to share the display defect and needs its own concrete repro.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The report provides a v0.99.1 repro with an app-specific disabled chord and includes a screenshot plus a PowerToys diagnostic ZIP.",
+      "The screenshot shows the app label 'matlab' beside neighboring app-specific remappings, while the entries in the Disabled section have no app label.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 binds AppName in the regular remapping list template but not in the DisabledList template in src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.",
+      "A commenter says the label omission persists in v0.100.2 and separately reports that converting an app-specific disabled chord to a disabled key breaks specificity.",
+      "No assignee or direct fix PR was found for #47961."
     ],
-    "recommended_action": "Plumb the targeted-process label through the disabled-chord list item renderer in the new Keyboard Manager editor.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-29T16:58:58Z"
+    "recommended_action": "Add the target-app label to disabled-list rows and separately collect a precise repro for the reported app-specific conversion regression.",
+    "evaluated_at": "2026-11-05T22:36:07Z",
+    "source_updated_at": "2026-10-11T16:46:55Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
+    "rationale": "The disabled-list rendering is confirmed to omit AppName even though the same Remapping model and the regular remapping templates expose it. The separate key-conversion symptom is not included in this fix without a reproducer."
   },
   "proposed_fixes": [
     {
-      "title": "Targeted fix for [Keyboard Manager] the new editor doesn't show targeted process name for disabled chords",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "title": "Show app scope on disabled shortcut rows",
+      "root_cause": "The DisabledList DataTemplate in MainPage.xaml renders the shortcut and toggle but has no AppName display binding, unlike the regular remapping template. As a result, app-specific disabled chords appear indistinguishable from all-app disabled chords.",
       "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
+        "Add the same conditional app-name label used by the regular remapping item template to the DisabledList item template.",
+        "Keep the label bound to the disabled Remapping.AppName value and hidden for all-app entries.",
+        "Add or extend a UI test with one app-specific disabled chord and one all-app disabled chord to verify that only the scoped entry shows its process name.",
+        "Verify that editing, toggling, and deleting disabled entries still behave as before."
       ],
       "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
+        "An app-specific disabled chord shows its target process name in the Disabled section.",
+        "An all-app disabled chord does not show a misleading process label.",
+        "The existing screenshot repro passes and the disabled mapping's saved app scope is unchanged."
       ],
       "confidence": {
-        "score": 70,
-        "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+        "score": 93,
+        "level": "green",
+        "rationale": "The omission is explicit in the current upstream DisabledList template and matches the supplied screenshot; a narrowly scoped display binding addresses the reported primary defect."
       }
     }
   ],
   "issue_context": {
-    "summary": "Open PowerToys report: [Keyboard Manager] the new editor doesn't show targeted process name for disabled chords",
+    "summary": "The new Keyboard Manager editor does not show the target process name beside app-specific disabled chords, and a commenter separately reports an app-scope regression when converting a disabled chord to a disabled key.",
     "known_information": [
-      "Title: [Keyboard Manager] the new editor doesn't show targeted process name for disabled chords",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report lists PowerToys v0.99.1 and supplies numbered steps for creating app-specific remap and disable entries.",
+      "The issue includes a screenshot and a diagnostic ZIP; the screenshot shows 'matlab' beside app-specific remappings, while disabled rows show no process label.",
+      "A commenter confirms the missing process label in v0.100.2 and separately says converting an app-specific disabled chord to a disabled key breaks specificity.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 renders AppName in regular remapping rows but not in the DisabledList template.",
+      "No assignee or linked fix PR was found for #47961."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "Because both list templates bind the same Remapping model but only the regular template renders AppName, the primary defect is a presentation omission rather than evidence that the underlying app scope was lost.",
+      "The app-scope loss after converting a disabled chord may be a separate persistence or conversion defect; the comment does not provide enough steps to assign it to the same code path."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The process-label defect is implementation-ready without requesting another diagnostic archive: the reporter already supplied a screenshot and ZIP, and current upstream XAML confirms the missing binding. Keep the separate conversion/scope complaint as an independent evidence gap rather than expanding the proposed display fix.",
     "initial_investigation": [
-      "Read metadata and labels for #47961.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the full issue and the comment, including the v0.100.2 persistence claim and the separate disabled-chord-to-key specificity claim.",
+      "Inspected the supplied screenshot; it shows app labels for neighboring remappings and no label on rows under Disabled.",
+      "Read current upstream MainPage.xaml at commit 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368; the disabled-row template contains no AppName binding while regular remapping rows do.",
+      "Compared closed #46240, which was fixed by #46377 and released in v0.99.0 for creating disabled keys/shortcuts; it does not cover displaying target-app scope on disabled rows.",
+      "Compared #49352 and #48541; they describe distinct duplicate physical backslash key identity problems, not disabled-row app labels."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "The exact chord and target process, steps to convert the app-specific disabled chord into a disabled key, and the resulting behavior that demonstrates loss of app scope",
+        "why_needed": "The comment describes a second possible bug independent of the confirmed label omission; a precise repro is needed before recommending a separate persistence or conversion fix.",
+        "how_to_collect": "Retest the conversion on the current editor and provide the source chord, process name, PowerToys version, and which applications still have the key disabled afterward.",
+        "evidence_type": "repro_steps"
       }
     ]
-  },
-  "actions": [
-    {
-      "id": "design-47961",
-      "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
-    },
-    {
-      "type": "reproduce",
-      "label": "Reproduce [Keyboard Manager] the new editor d",
-      "reproduce": {
-        "title": "Local reproduction for #47961",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
-        "prerequisites": [
-          "PowerToys running"
-        ],
-        "setup": [],
-        "steps": [
-          "Launch PowerToys and open the affected module for #47961.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
-        ],
-        "expected_result": "Module functions without error or unexpected termination."
-      }
-    }
-  ]
+  }
 }

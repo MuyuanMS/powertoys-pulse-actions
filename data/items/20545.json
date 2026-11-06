@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 20545,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager Special Keys Stick (e.g. windows key)",
+  "url": "https://github.com/microsoft/PowerToys/issues/20545",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-28T16:24:56Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T21:49:04.365Z",
+  "evaluated_at": "2026-11-05T21:49:04.365Z",
+  "source_updated_at": "2026-10-11T16:47:01Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Retest the stuck Windows-key remap on current stable",
+    "detail": "The reporter confirmed the stuck-key symptom in 2024, but the report uses PowerToys 0.62.0 and lacks a current-build retest."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says Sony WH-1000XM3 media controls are routed through a Win+8 buffer shortcut and then remapped to keyboard media keys; after a headphone Next Track event, the Windows key reportedly remains pressed until manually pressed twice. The reporter confirmed in 2024 that the symptom persisted, but the report is from PowerToys 0.62.0 and there is no current-build confirmation or later configuration detail. Ask whether the exact buffer mapping still causes the stuck modifier on current stable.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.62.0 and describes Sony WH-1000XM3 touchpad media commands.",
+      "The reporter uses Win+8 as a buffer for the headphone Next Track command, then remaps that shortcut to the keyboard Next Track action.",
+      "The actual failure is a stuck Windows key that makes the keyboard unusable until the physical key is pressed twice.",
+      "A maintainer asked in October 2024 whether it still occurred; the reporter replied yes, but did not provide a current PowerToys version or updated reproduction.",
+      "The current issue is open, has two comments, and has no assignees; a targeted issue search found no separate Win+8 headphone report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-28T16:24:56Z"
-  }
+    "recommended_action": "Ask whether the exact Win+8 buffer mapping still leaves the Windows key stuck on v0.102.3001, and confirm the source media event and configured remaps.",
+    "evaluated_at": "2026-11-05T21:49:04.365Z",
+    "source_updated_at": "2026-10-11T16:47:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A current reproduction is needed to determine whether the stuck modifier persists in the present shortcut injection path and whether the headphone media event is necessary to trigger it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate the stuck modifier after a headphone media shortcut",
+      "root_cause": "The injected Win+8 chord may fail to release its Windows modifier when the media control triggers the mapped shortcut, but this mechanism is unconfirmed and the report predates current stable.",
+      "plan": [
+        "Reproduce the exact headphone-to-Win+8-to-media-key mapping on a current supported build.",
+        "Record whether the Windows modifier remains logically down after the action and compare with a direct keyboard trigger of the same shortcut.",
+        "If the failure persists, trace injected key-down/key-up handling and add a focused regression test for the confirmed trigger."
+      ],
+      "verification": [
+        "Confirm the Windows key is released after each headphone media command.",
+        "Verify the same shortcut still produces the intended media action and does not interfere with ordinary Windows-key input."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The reporter confirmed the old symptom in 2024, but there is no current-build reproduction or evidence identifying a specific missing key-up path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Sony WH-1000XM3 Next Track event routed through a Win+8 buffer reportedly leaves the Windows key stuck.",
+    "known_information": [
+      "The report lists PowerToys 0.62.0 and Sony WH-1000XM3 media controls.",
+      "The configuration uses Win+8 as an intermediate shortcut and maps it to the keyboard Next Track action.",
+      "The reporter confirmed in 2024 that the Windows key still became stuck."
+    ],
+    "inferences": [
+      "A missing or mismatched injected key-up may leave the Windows modifier down, but the available report does not establish that mechanism."
+    ],
+    "analysis": "The historical reply confirms that the symptom was not immediately resolved, but it does not establish current behavior. Retest the exact mapping and compare it with a direct keyboard trigger before investigating the event pipeline.",
+    "initial_investigation": [
+      "Read the report, image reference, labels, and full two-comment discussion.",
+      "Searched for the Win+8 headphone scenario; no separate matching issue was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the same Win+8 buffer mapping still leaves the Windows key stuck on v0.102.3001",
+        "why_needed": "The report is from 0.62.0 and the only reporter confirmation dates to 2024; current reproduction is needed before tracing a key-up failure.",
+        "how_to_collect": "On v0.102.3001, trigger the headphone Next Track command through the same Win+8 mapping, then report whether the Windows key remains down and whether a direct keyboard trigger behaves differently.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-20545-current-stuck-key",
+      "type": "request_info",
+      "label": "Retest the stuck Windows-key mapping on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 20545,
+        "body": "Thanks for confirming earlier that the Windows key stayed stuck with the headphone mapping. Since the report is from PowerToys 0.62.0, could you confirm whether the same Win+8 buffer mapping still leaves the Windows key stuck on v0.102.3001? Please include which headphone media command triggers it and whether a direct keyboard trigger of the same shortcut behaves differently."
+      }
+    },
+    {
+      "id": "approve-design-20545",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

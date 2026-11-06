@@ -1,64 +1,115 @@
 {
   "schemaVersion": 5,
   "number": 46134,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "author",
-  "pending_author": true,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-28T15:18:07Z",
   "title": "Settings: Keyboard Manager editor shortcut is triggered even after being cleared",
   "url": "https://github.com/microsoft/PowerToys/issues/46134",
   "labels": [
-    "Issue-Bug"
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
-  "comments": 0,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:52:54.291Z",
+  "generated_at": "2026-11-05T14:52:54.291Z",
+  "evaluated_at": "2026-11-05T14:52:54.291Z",
+  "source_updated_at": "2026-10-11T16:47:57Z",
+  "comments": 6,
   "status": {
-    "glyph": "ℹ️",
-    "label": "Triage revalidated",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Confirm what a cleared shortcut persists on the current build",
+    "detail": "Current Keyboard Manager defaults to Win+Shift+Q when the editor shortcut setting is missing, while omitting a parsed shortcut with key code zero from the hotkey list."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation.",
+    "status": "needs_information",
+    "rationale": "The reporter says Win+Shift+Q still opens the Keyboard Manager editor after its shortcut is cleared and later notes other modules may behave similarly; issue #43356 reports a related Mouse Jump symptom. Current main source defaults to Win+Shift+Q when the EditorShortcut setting is absent, but includes the hotkey only when its key code is nonzero. The UI saved representation after Clear and whether the issue reproduces on current stable are the discriminating facts.",
     "evidence": [
-      "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation."
+      "The reporter lists PowerToys 0.98 dev build and says Win+Shift+Q opens the Keyboard Manager editor after its shortcut is cleared.",
+      "A collaborator comment points to the editor defaulting behavior when unassigned; the reporter says other modules may be affected.",
+      "Current upstream Keyboard Manager parses EditorShortcut and applies Win+Shift+Q when the setting is not parsed and no key is set (src/modules/keyboardmanager/dll/dllmain.cpp, lines 162-190).",
+      "Current get_hotkeys() includes the editor shortcut only when its key is nonzero (same file, lines 367-380).",
+      "Related issue #43356 reports Mouse Jump still responding to its default shortcut after clearing it, but it concerns a different module.",
+      "The issue has no current stable-build reproduction or diagnostic archive."
     ],
-    "recommended_action": "A maintainer or triage automation already asked for the missing evidence or retest.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-28T15:18:07Z"
+    "recommended_action": "Retest on v0.102.3001 after clearing the Keyboard Manager editor shortcut and confirm whether the setting remains visibly empty and whether the default shortcut still opens the editor.",
+    "evaluated_at": "2026-11-05T14:52:54.291Z",
+    "source_updated_at": "2026-10-11T16:47:57Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository code fix is not yet actionable for issue in stage 'waiting_on_author'."
+    "status": "proposed",
+    "rationale": "If clearing removes the setting instead of persisting an explicit disabled state, Keyboard Manager initialization restores the default Win+Shift+Q; the UI persistence behavior needs confirmation."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Persist an explicitly cleared editor shortcut as disabled",
+      "root_cause": "Clearing the editor shortcut may remove the EditorShortcut setting, causing Keyboard Manager to treat it like a first-run configuration and restore Win+Shift+Q.",
+      "plan": [
+        "Reproduce on v0.102.3001 and inspect the saved EditorShortcut representation after clearing the field.",
+        "If Clear removes the setting, persist an explicit disabled value distinct from a missing first-run setting.",
+        "Keep the default only for a genuinely unconfigured installation and add tests for first run, changed shortcut, cleared shortcut, and restart."
+      ],
+      "verification": [
+        "Verify a first-run profile still uses Win+Shift+Q.",
+        "Verify clearing the shortcut prevents the default from opening the editor after save and restart.",
+        "Verify setting a new shortcut and then clearing it persists the disabled state."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "Current code explicitly restores the default when the setting is absent and skips registration for key code zero, but it is unknown whether the current editor persists a cleared value or removes the setting."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Open PowerToys report: Settings: Keyboard Manager editor shortcut is triggered even after being cleared",
+    "summary": "Clearing the Keyboard Manager editor shortcut reportedly leaves its default Win+Shift+Q active.",
     "known_information": [
-      "Title: Settings: Keyboard Manager editor shortcut is triggered even after being cleared",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The report lists PowerToys 0.98 dev build and says clearing the editor shortcut does not stop Win+Shift+Q from opening it.",
+      "A collaborator noted that the editor default is restored when no shortcut is assigned; the reporter says other modules such as Color Picker and Mouse Jump may also be affected.",
+      "Current Keyboard Manager source applies Win+Shift+Q when EditorShortcut is absent/unparsed and includes a shortcut in get_hotkeys() only when its key code is nonzero.",
+      "Issue #43356 reports a similar clear-then-default-shortcut behavior in Mouse Jump, but is a different module report."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "The UI may remove the setting when cleared, which would be interpreted like a first-run configuration; alternatively, the current release may persist a disabled key code."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "Current source separates a missing setting (default Win+Shift+Q) from a parsed zero key code (not included in the hotkey list). Confirming what the current UI persists after Clear and whether the default still fires will determine whether the defect is in serialization or already resolved. The related Mouse Jump report is a cross-module signal, not proof of a shared implementation.",
     "initial_investigation": [
-      "Read metadata and labels for #46134.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the complete issue and all six comments, including the reporter note that other modules may be affected.",
+      "Checked related issue #43356; it describes a similar clear-then-default behavior for Mouse Jump.",
+      "Inspected current upstream Keyboard Manager initialization and get_hotkeys(): absent setting restores Win+Shift+Q, while a zero key code is not returned for registration.",
+      "The issue was reported on a 0.98 dev build and has not established current stable behavior."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "On v0.102.3001, clear the Keyboard Manager editor shortcut, save, restart PowerToys, then report whether the field is still empty and whether Win+Shift+Q opens the editor.",
+        "information": "Whether the editor shortcut remains empty and Win+Shift+Q still opens the editor on v0.102.3001 after clearing and restarting.",
+        "why_needed": "Current code restores the default for a missing setting but skips a parsed zero-code shortcut, so the persisted cleared state determines the path."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "how_to_collect": "Identify the module and shortcut row that was cleared, then test only that default shortcut after save and restart.",
+        "information": "Whether the same behavior is for the Keyboard Manager editor shortcut or another module shortcut, and the exact affected row if another module.",
+        "why_needed": "Keyboard Manager and Mouse Jump shortcuts use different module paths; issue #43356 is related but is not an established duplicate."
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest the cleared editor shortcut",
+      "comment": {
+        "target": "issue",
+        "number": 46134,
+        "body": "Thanks for the concrete Win+Shift+Q reproduction and the note that other modules may be affected. Current Keyboard Manager source restores Win+Shift+Q when the EditorShortcut setting is missing, but omits a parsed shortcut whose key code is zero; the saved state after Clear therefore matters.\n\nOn v0.102.3001, could you please:\n1. Clear the Keyboard Manager editor shortcut, save and restart PowerToys, then report whether the field remains empty and whether Win+Shift+Q still opens the editor.\n2. If you meant another module instead, name the module and exact cleared shortcut row.\nThis will show whether clearing is persisted as disabled or treated as an absent setting."
+      }
+    }
+  ]
 }

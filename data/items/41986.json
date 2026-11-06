@@ -1,33 +1,132 @@
 {
+  "schemaVersion": 5,
   "number": 41986,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[Keyboard Manager] Cannot remap digit row keys on French AZERTY keyboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/41986",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:05:25Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T20:19:19Z",
+  "evaluated_at": "2026-11-05T20:19:19Z",
+  "source_updated_at": "2026-10-11T16:47:26Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Verify shifted AZERTY key remapping",
+    "detail": "PowerToys 0.97.2 restored the AltGr output for the AZERTY digit-row key, but Shift still reportedly sends the remapped curly apostrophe instead of 4."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The French AZERTY report describes a specific digit-row key whose base remap to curly apostrophe overrides the expected Shift+key output of 4. The reporter later confirmed a partial improvement on PowerToys 0.97.2: AltGr again produces an opening brace, but Shift still produces the remapped apostrophe and a Shift+key override has no effect. The reporter also confirmed ZoomIt was disabled, so the symptom should not be attributed to ZoomIt.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.94.1 on a French AZERTY layout and identifies the fifth digit-row key.",
+      "The expected layout behavior is base apostrophe, Shift+key produces 4, and AltGr+key produces an opening brace.",
+      "After remapping the base key to curly apostrophe, the issue says the Shift and AltGr outputs are overridden.",
+      "On PowerToys 0.97.2, the reporter says AltGr works again but Shift still produces curly apostrophe and a Shift+key override has no effect.",
+      "The reporter confirmed ZoomIt was disabled; the issue remains with ZoomIt off."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:05:25Z"
-  }
+    "recommended_action": "Reproduce the residual Shift+AZERTY failure on current stable and ensure the base key remap does not override the distinct shifted digit output.",
+    "evaluated_at": "2026-11-05T20:19:19Z",
+    "source_updated_at": "2026-10-11T16:47:26Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The 0.97.2 update restored the AltGr output but left the shifted digit remap broken. Keyboard Manager should preserve the layout's Shift+key output or apply an explicit Shift+key mapping rather than reusing the base-key output."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve shifted outputs for AZERTY digit-row remaps",
+      "root_cause": "The base-key remap may be applied to the virtual key without preserving the AZERTY layout's modifier-dependent Shift output, causing Shift+the same physical key to produce the base remapped character.",
+      "plan": [
+        "Reproduce the 5th AZERTY digit-row key remap to curly apostrophe on current stable and record base, Shift, and AltGr outputs.",
+        "Trace how Keyboard Manager resolves the source virtual key and modifier state for this AZERTY key.",
+        "Update mapping resolution so the base remap does not erase the layout's shifted 4 output and explicit Shift remaps are honored.",
+        "Add regression tests for the base, Shift, and AltGr variants on French AZERTY."
+      ],
+      "verification": [
+        "The base key produces the configured curly apostrophe.",
+        "Shift+the key produces 4 unless the user explicitly configures a different Shift mapping.",
+        "AltGr+the key continues to produce an opening brace.",
+        "Other AZERTY digit-row remaps and non-AZERTY layouts remain unchanged."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The 0.97.2 report establishes a residual Shift-specific failure after an AltGr improvement, but current-build behavior and the exact virtual-key/modifier resolution path need confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remapping one French AZERTY digit-row key to curly apostrophe reportedly overrides the Shift+key digit output, even after a later update restored AltGr behavior.",
+    "known_information": [
+      "The issue lists PowerToys 0.94.1 and Windows 11 with a French AZERTY keyboard.",
+      "The target digit-row key normally produces apostrophe, 4 with Shift, and an opening brace with AltGr.",
+      "PowerToys 0.97.2 restored AltGr output for the reporter, but Shift still produces the base remapped apostrophe.",
+      "A Shift+key-specific remap reportedly has no effect.",
+      "The reporter says ZoomIt was disabled and the issue remained."
+    ],
+    "inferences": [
+      "The base-key remap may be overriding modifier-dependent layout output, but the current event/key resolution path has not been traced."
+    ],
+    "analysis": "The 0.97.2 update only partially addressed the reported behavior. Keep the remaining Shift path distinct from the restored AltGr output and verify it on current stable before selecting a broader layout change.",
+    "initial_investigation": [
+      "Read the body and all five comments, including the 0.97.2 partial-fix report and confirmation that ZoomIt is disabled.",
+      "No maintainer reproduction, linked fix, or active assignee is identified in the current discussion."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the Shift+key override still fails on current stable and the exact current behavior of base, Shift, and AltGr variants",
+        "why_needed": "The last concrete update is PowerToys 0.97.2 and only reports a partial improvement; current behavior determines whether the Shift path remains defective.",
+        "how_to_collect": "Repeat the same AZERTY digit-row remap on current stable and report the output for the base key, Shift+key, and AltGr+key.",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41986-confirm-current-azerty-shift",
+      "type": "request_info",
+      "label": "Confirm current AZERTY Shift output",
+      "primary": true,
+      "comment": {
+        "body": "You reported on PowerToys 0.97.2 that AltGr again produces `{` but Shift still produces the remapped curly apostrophe instead of `4`. Could you confirm whether this remains on current stable and report the output for the base key, Shift+key, and AltGr+key?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce base, Shift, and AltGr AZERTY outputs",
+      "reproduce": {
+        "title": "Check modifier outputs for a French AZERTY digit-row remap",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.97.2 or newer",
+        "prerequisites": [
+          "Windows with a French AZERTY layout",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Remap the fifth digit-row key to curly apostrophe."
+        ],
+        "steps": [
+          "Press the key without modifiers and record the output.",
+          "Press Shift+the key and record the output.",
+          "Press AltGr+the key and record the output.",
+          "If configured, add a separate Shift+key mapping to 4 and repeat."
+        ],
+        "expected_result": "The base remap produces curly apostrophe, Shift produces 4 unless explicitly remapped, and AltGr produces an opening brace."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the AZERTY modifier-output fix"
+    }
+  ]
 }

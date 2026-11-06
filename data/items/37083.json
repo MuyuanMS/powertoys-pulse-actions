@@ -2,87 +2,129 @@
   "schemaVersion": 5,
   "number": 37083,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard shortcut mappings fail in some applications.",
+  "url": "https://github.com/microsoft/PowerToys/issues/37083",
   "track": "fix",
-  "stage": "triage_revalidation",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:25:27",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:27Z",
+  "status": {
+    "glyph": "?",
+    "label": "Reproduce shortcut failure in Task Manager search",
+    "detail": "A user reproduced a custom shortcut failure in Task Manager search on PowerToys 0.100.2; another commenter could not reproduce the original Control Panel symptom."
+  },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bounded revalidation found that current evidence is insufficient to confirm a specific fix path.",
+    "status": "actionable_design",
+    "rationale": "The original report combines failures in Explorer/Control Panel with PowerToys Run not working in Task Manager. A later user supplied numbered steps and reproduced a custom shortcut failure in Task Manager search on PowerToys 0.100.2; another commenter could reproduce that Task Manager case but not the original Control Panel symptom. This is sufficient to pursue the narrow Task Manager search failure, while keeping the broader app list unconfirmed.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The original report lists PowerToys 0.87.1 and says some shortcuts fail in Explorer's search/path bar and Control Panel.",
+      "The original report also says PowerToys Run does not work in Task Manager.",
+      "A July 2026 commenter reports on PowerToys 0.100.2 that custom shortcuts are ignored in Task Manager after opening it and invoking a mapped shortcut.",
+      "A second commenter reproduced the Task Manager case but could not reproduce the original Control Panel symptom.",
+      "The original report says PowerToys was running as administrator, while a commenter says elevation solved the issue for their case but not for all Win32 apps."
     ],
-    "recommended_action": "Collect a current reproduction and /bugreport diagnostics before detailed design.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:25:27"
+    "recommended_action": "Investigate the reproduced Task Manager search case on current stable, distinguishing app elevation and input focus from the unconfirmed Explorer/Control Panel reports.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:27Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A current report and diagnostics are needed before a defensible PowerToys fix design can be selected."
+    "rationale": "Keyboard Manager should apply configured shortcuts in supported application contexts; a current 0.100.2 reproduction in Task Manager search supports a focused investigation of input delivery and process elevation."
   },
-  "proposed_fixes": {
-    "title": "Revalidate the current failure path",
-    "root_cause": "The available public evidence does not isolate a confirmed root cause.",
-    "plan": [
-      "Collect a current reproduction and diagnostic archive.",
-      "Use the evidence to identify the owning module before proposing a code change."
-    ],
-    "verification": [
-      "Confirm the behavior on a supported current build and compare it with the collected diagnostics."
-    ],
-    "confidence": {
-      "score": 30,
-      "rationale": "Multiple plausible causes remain until current evidence is supplied.",
-      "level": "red"
+  "proposed_fixes": [
+    {
+      "title": "Apply Keyboard Manager shortcuts in Task Manager search",
+      "root_cause": "Keyboard Manager may not deliver remapped shortcuts to Task Manager's elevated or specially hosted search UI, even when the remapping engine is active; the exact process/input boundary needs confirmation.",
+      "plan": [
+        "Reproduce the same custom shortcut in Task Manager search and an ordinary text editor on current stable.",
+        "Record whether Task Manager and PowerToys run elevated and compare behavior with PowerToys administrator mode enabled.",
+        "Trace the input path for Task Manager's search field to determine whether focus, integrity level, or a hosted UI process accounts for the missed shortcut.",
+        "If a PowerToys-owned delivery gap is confirmed, correct the supported input path and add a focused regression test."
+      ],
+      "verification": [
+        "The configured shortcut performs its action in Task Manager search on supported execution levels.",
+        "The same shortcut continues to work in ordinary applications.",
+        "The test does not claim the separate Control Panel symptom is fixed unless independently reproduced."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The Task Manager search case was reported as reproduced on 0.100.2, but the exact mapping and elevation boundary are not recorded and the original Control Panel symptom was not reproduced."
+      }
     }
-  },
+  ],
   "issue_context": {
-    "summary": "Keyboard shortcut mappings fail in some applications.",
+    "summary": "Keyboard Manager shortcuts reportedly fail in some applications; the best-scoped current case is a custom shortcut ignored in Task Manager search on PowerToys 0.100.2.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:25:27",
-      "."
+      "The original report lists PowerToys 0.87.1 and failures in Explorer search/path fields, Control Panel, and Task Manager.",
+      "A user supplied a Task Manager reproduction on PowerToys 0.100.2.",
+      "A second commenter reproduced the Task Manager case but not the original Control Panel symptom.",
+      "The original report says PowerToys ran as administrator; a later commenter says elevation helped their case but not every Win32 app."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "Task Manager's elevation or search UI process may affect shortcut delivery, but the thread does not identify which boundary is responsible."
     ],
-    "analysis": "A current diagnostic package is the smallest evidence needed to separate stale, environment-specific, and code defects.",
+    "analysis": "Treat the current Task Manager search reproduction as the actionable subcase. Do not claim a general fix for Explorer and Control Panel based on comments that could not reproduce those paths.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue and all five comments, including the PowerToys 0.100.2 reproduction and the explicit inability to reproduce the original Control Panel symptom.",
+      "Reviewed linked generic reports #32324 and #36253; they do not establish the Task Manager search path or its cause."
     ],
-    "information_gaps": {
-      "evidence_type": "bugreport_zip",
-      "information": "A fresh current-version diagnostic archive captured immediately after reproducing the report.",
-      "why_needed": "To distinguish a PowerToys-owned defect from environment-specific or already-fixed behavior.",
-      "how_to_collect": "Please reproduce, then comment /bugreport immediately after the failure."
-    }
+    "information_gaps": [
+      {
+        "information": "The exact custom mapping and whether the Task Manager search failure persists on current stable with the same PowerToys elevation setting",
+        "why_needed": "The 0.100.2 comment gives a minimal sequence but not the shortcut itself or the elevation state needed to reproduce the input boundary.",
+        "how_to_collect": "Confirm the current PowerToys version, the exact configured shortcut and action, whether PowerToys and Task Manager are elevated, and whether the shortcut still fails in Task Manager search.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
   "actions": [
     {
-      "id": "request-info-37083",
+      "id": "issue-37083-confirm-taskmanager-shortcut",
       "type": "request_info",
-      "label": "Request fresh bug report diagnostics",
+      "label": "Confirm the current Task Manager shortcut case",
       "primary": true,
-      "confirm": true,
       "comment": {
-        "target": "issue",
-        "number": 37083,
-        "body": "Thanks for the report. Please reproduce this on a supported current PowerToys version, then comment `/bugreport` immediately after the failure. Include the PowerToys version, Windows version, and a short numbered description of the expected and actual result."
+        "body": "A commenter reproduced a custom shortcut being ignored in Task Manager search on PowerToys 0.100.2, while another could not reproduce the Control Panel case. Could you confirm the exact shortcut and action, whether PowerToys and Task Manager run elevated, and whether the Task Manager search failure still occurs on current stable?"
       }
     },
     {
-      "id": "approve-design-37083",
+      "type": "reproduce",
+      "label": "Reproduce the shortcut in Task Manager search",
+      "reproduce": {
+        "title": "Compare shortcut delivery in Task Manager and a text editor",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
+        "prerequisites": [
+          "A custom Keyboard Manager shortcut mapping",
+          "Task Manager and a standard text editor"
+        ],
+        "setup": [
+          "Record the exact mapping and whether PowerToys and Task Manager are running elevated."
+        ],
+        "steps": [
+          "Invoke the configured shortcut in a standard text editor and confirm its action.",
+          "Open Task Manager, focus its search field, and invoke the same shortcut.",
+          "Repeat with PowerToys running as administrator if it is not already elevated.",
+          "Record whether the failure is limited to Task Manager search or occurs in other Task Manager UI."
+        ],
+        "expected_result": "The same supported shortcut behaves consistently in Task Manager search and a standard text editor, or the failure is isolated to a specific Task Manager input context."
+      }
+    },
+    {
       "type": "approve_design",
-      "label": "Approve focused triage design",
-      "primary": false,
-      "confirm": true,
-      "note": "Draft only; no upstream action was posted."
+      "label": "Approve the Task Manager shortcut investigation"
     }
   ]
 }

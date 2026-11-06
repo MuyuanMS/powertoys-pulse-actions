@@ -2,91 +2,118 @@
   "schemaVersion": 5,
   "number": 33749,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "author": "tianon",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-08-01T16:28:18Z",
+  "repository": "microsoft/PowerToys",
   "title": "Windows Terminal as Keyboard Manager shortcut does not get focus properly",
   "url": "https://github.com/microsoft/PowerToys/issues/33749",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
     "Needs-Repro",
     "Needs-Triage",
-    "Needs-Team-Response"
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 19,
+  "generated_at": "2026-11-05T20:57:00Z",
+  "evaluated_at": "2026-11-05T20:57:00Z",
+  "source_updated_at": "2026-10-11T16:47:14Z",
   "status": {
     "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Advance triage state based on revalidation findings."
+    "label": "Reproduce the foreground-focus handoff",
+    "detail": "PowerToys 0.100.2 reproductions with Notepad and Windows Terminal show a newly launched app stays behind Keyboard Manager when its Settings window is focused, while launching from the desktop gives it focus."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The author confirmed the issue on PowerToys 0.100.2 with a numbered Notepad reproduction, and earlier reports show Windows Terminal launching behind Keyboard Manager. The thread distinguishes a focused Keyboard Manager Settings window from the desktop: a new app stays behind when Settings has focus, while it receives focus when the desktop is foreground. Current main source starts CreateOrShowProcessForShortcut on a detached thread from KeyboardEventHandlers.cpp; the new-process path launches via the configured elevation route and only performs post-launch handling for a hidden window, unlike the explicit existing-window show path. This supports investigating a foreground-activation handoff, though Windows foreground-lock rules and launch helper behavior still need to be verified before choosing an implementation.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Repro, Needs-Triage, Needs-Team-Response",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "The original report lists PowerToys 0.82.0 and describes Ctrl+Alt+T launching Windows Terminal without bringing it to the foreground.",
+      "The author later confirmed on PowerToys 0.100.2 that Ctrl+Alt+P can launch Notepad behind Keyboard Manager when the Settings window remains focused.",
+      "The author says the same issue occurs with both Windows Terminal and Notepad.",
+      "A later test found that with Keyboard Manager's default already-running action, the new window appears in the background on the first shortcut press and gets focus on a second press; when other windows are minimized and the desktop is foreground, it gets focus immediately.",
+      "The report is open with 19 comments and no assignees; the thread includes current repro steps and a focused-versus-desktop comparison.",
+      "Current main KeyboardEventHandlers.cpp dispatches CreateOrShowProcessForShortcut from a detached thread; that function's new-process path launches the application and only explicitly handles the Hidden window case afterward."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-08-01T16:28:18Z"
+    "recommended_action": "Reproduce the focused-Settings versus foreground-desktop cases on current stable, then trace foreground activation across the detached launch path and preserve Windows' foreground rules.",
+    "evaluated_at": "2026-11-05T20:57:00Z",
+    "source_updated_at": "2026-10-11T16:47:14Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository code fix is not yet actionable for issue in stage 'needs_information'."
+    "status": "proposed",
+    "rationale": "The failure depends on whether Keyboard Manager or the desktop is foreground when the shortcut launches an application. The current asynchronous launch path provides a concrete place to investigate whether the input-origin foreground activation context is lost, but no runtime trace confirms the mechanism."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Preserve foreground activation when a shortcut launches a new application",
+      "root_cause": "The shortcut handler launches a new application from a detached worker without an explicit foreground-activation handoff; when Keyboard Manager Settings owns the foreground, Windows foreground-lock rules may leave the new window behind.",
+      "plan": [
+        "Reproduce on PowerToys 0.100.2 and Windows 11 25H2 with Keyboard Manager Settings focused, using Ctrl+Alt+P to launch C:\\Windows\\System32\\notepad.exe with the Start another action.",
+        "Repeat with the desktop foreground and with the default Show window action; record the launched process and foreground window before and after the shortcut.",
+        "Trace the input event through KeyboardEventHandlers.cpp's detached CreateOrShowProcessForShortcut path and the selected launch helper to determine where foreground eligibility is lost.",
+        "If the asynchronous launch drops the initiating input's foreground context, add a Windows-supported foreground handoff at the appropriate launch boundary rather than forcing SetForegroundWindow from an arbitrary worker.",
+        "Add regression coverage for new-process launches, already-running Show window behavior, minimized windows, and hidden-window settings."
+      ],
+      "verification": [
+        "A newly launched application receives focus on the first shortcut press when Keyboard Manager Settings is focused, matching the reported expected behavior.",
+        "The same launch continues to receive focus when the desktop is foreground.",
+        "Already-running and Hidden launch behaviors remain unchanged, and the implementation respects Windows foreground activation restrictions."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The foreground-dependent failure is reproduced on 0.100.2 and the current asynchronous launch path is a plausible contributor, but Windows activation policy and the helper launch behavior must be traced before selecting the handoff."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Open PowerToys report: Windows Terminal as Keyboard Manager shortcut does not get focus properly",
+    "summary": "A shortcut-launched application remains behind Keyboard Manager when its Settings window is focused, while it receives focus when the desktop is foreground.",
     "known_information": [
-      "Title: Windows Terminal as Keyboard Manager shortcut does not get focus properly",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Repro, Needs-Triage, Needs-Team-Response",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report lists PowerToys 0.82.0 and Windows Terminal, with Ctrl+Alt+T configured to launch wt.exe.",
+      "The author later confirmed a numbered reproduction on PowerToys 0.100.2 using Ctrl+Alt+P to launch Notepad.",
+      "The app remains behind Keyboard Manager when Settings is focused; the author reports that it receives focus when the desktop is foreground.",
+      "The behavior has been reported for both Windows Terminal and Notepad.",
+      "Current main KeyboardEventHandlers.cpp dispatches CreateOrShowProcessForShortcut from a detached thread, and the new-process path does not contain the same explicit show-existing-window call."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "The detached launch path may lose the foreground activation context associated with the keyboard shortcut, but Windows foreground restrictions and helper behavior need to be traced."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The current-version reproduction and foreground-dependent comparison justify a focused launch investigation. Do not prescribe an unconditional foreground API call: first trace the launcher and Windows activation rules, then hand off foreground permission at the correct boundary if the asynchronous dispatch is responsible.",
     "initial_investigation": [
-      "Read metadata and labels for #33749.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the issue body and all 19 comments, including the 0.100.2 Notepad confirmation, default already-running behavior, desktop-focus comparison, and latest request for target programs that do not reproduce.",
+      "Inspected current main src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp: the shortcut path invokes CreateOrShowProcessForShortcut from a detached thread; the new-process path starts the process through an elevation/launch helper and only explicitly hides it for the Hidden setting.",
+      "Compared the referenced older commit's commented ShowProgram call with current main; the current code has moved to a different launch path, so the old line alone is not treated as proof of the current defect."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-repro-diagnostics-33749",
-      "type": "request_info",
-      "label": "Request repro steps and diagnostics",
-      "primary": true,
-      "comment": {
-        "body": "Thanks for reporting this issue. The report identifies the behavior (\"Windows Terminal as Keyboard Manager shortcut does not get focus properly\"), but additional diagnostic evidence is needed to determine the exact failure mechanism and isolate whether this is a code regression or configuration issue.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including exact Windows and PowerToys versions.\r\n2. A fresh diagnostic archive captured immediately after reproducing by adding a comment containing /bugreport.\r\n\r\nThese details will help us investigate the failing path and prepare a targeted fix."
+      "type": "approve_design",
+      "label": "Approve the foreground-activation investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the shortcut launch focus failure",
+      "note": "The reporter supplied a current-version Notepad reproduction and a desktop-versus-Settings foreground comparison.",
+      "reproduce": {
+        "title": "Compare shortcut-launched app focus by foreground context",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 on Windows 11 25H2, running without elevation",
+        "prerequisites": [
+          "Open PowerToys Settings to Input / Output > Keyboard Manager.",
+          "Create a Key or shortcut remap from Ctrl+Alt+P to Open App with C:\\Windows\\System32\\notepad.exe.",
+          "Set If already running to Start another."
+        ],
+        "steps": [
+          "Leave Keyboard Manager Settings open and focused.",
+          "Press Ctrl+Alt+P once.",
+          "Observe whether the new Notepad window becomes foreground or remains behind Keyboard Manager.",
+          "Minimize other windows so the desktop is foreground, then press Ctrl+Alt+P again.",
+          "Compare the foreground window in the second case with the first."
+        ],
+        "expected_result": "The newly launched Notepad window receives focus on the first shortcut press in both foreground contexts, without violating Windows foreground activation rules."
       }
     }
   ]

@@ -3,78 +3,126 @@
   "number": 13044,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidated",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T21:16:42.3414802Z",
-  "evaluated_at": "2026-09-12T21:16:42.3414802Z",
-  "source_updated_at": "2026-08-05T03:17:50Z",
+  "generated_at": "2026-11-05T13:20:11Z",
+  "evaluated_at": "2026-11-05T13:20:11Z",
+  "source_updated_at": "2026-10-11T16:48:44Z",
+  "title": "Remaped keys CTRL+C/V to ALT+C/V insert @copiedString@ into PowerShell 7.1.4 console",
+  "url": "https://github.com/microsoft/PowerToys/issues/13044",
+  "author": "siegfriedcw",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 13,
+  "status": {
+    "glyph": "⌨",
+    "label": "Console-host remap behavior needs isolation",
+    "detail": "A later commenter reports the @text@ symptom on PowerToys 0.100.2 in ConEmu/RDP, while Windows Terminal has been reported as unaffected. Current source emits synthetic modifier/action events, but the failing layer is not yet isolated."
+  },
+  "next_action": "Reproduce the v0.100.2 ConEmu/RDP case and trace the generated modifier/action sequence before approving a Keyboard Manager code change.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue has strong historical reproduction detail, but the public thread is stale and does not confirm whether the legacy PowerShell console still exhibits the @-insertion bug on current builds.",
+    "status": "reproducible",
+    "rationale": "The original Ctrl+C/V-to-Alt+C/V scenario is concrete, and a 2026 commenter reports that the @text@ symptom persists on v0.100.2 when PowerShell runs under ConEmu or RDP. The report also distinguishes Windows Terminal, but current evidence does not establish whether the defect is in Keyboard Manager's injected event sequence or a console-host interaction.",
     "evidence": [
-      "Commenters reproduced the issue on PowerShell 7.1.4 and later confirmed it on v0.61 and v0.73.",
-      "One commenter reported that the bug does not happen inside Windows Terminal.",
-      "There is no current-version diagnostics package or maintainer confirmation showing the present state."
+      "The original report lists PowerToys 0.45.0, Windows 10 21H1, a German keyboard, and remaps Ctrl+C/V to Alt+C/V; pasting into PowerShell 7.1.4 inserts @ around copied text while Ctrl+V works.",
+      "A 2022 commenter reported similar @ characters with other shortcut remaps in PowerShell and ConEmu, but not Windows Terminal.",
+      "In July 2026, a commenter reported the symptom on PowerToys v0.100.2 when PowerShell runs in ConEmu or over RDP from a local Windows 11 Enterprise 25H2 installation to Windows Server 2019.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardEventHandlers.cpp:833-858 emits target modifier and action-key input events for shortcut remaps, and Helpers.cpp:265-310 defines modifier key-down/up event ordering.",
+      "A maintainer previously stated that the cause was unknown and may require a fix in the console team."
     ],
-    "recommended_action": "Request current-version reproduction details and targeted diagnostics before selecting a code fix.",
-    "evaluated_at": "2026-09-12T20:15:36.184Z",
-    "source_updated_at": "2026-08-05T03:17:50Z"
+    "recommended_action": "Reproduce on a current build in the reported console hosts and compare the emitted/observed key sequence with Windows Terminal; only design a Keyboard Manager change if the trace isolates a defect in its injected events.",
+    "evaluated_at": "2026-11-05T13:20:11Z",
+    "source_updated_at": "2026-10-11T16:48:44Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The current public evidence does not yet identify a defensible PowerToys code fix."
+    "status": "proposed",
+    "rationale": "A Keyboard Manager shortcut-injection interaction remains a plausible code-fix direction, but issue discussion and current source do not yet identify which layer creates the extra @ characters."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Make shortcut remapping interoperable with legacy console hosts",
+      "root_cause": "Hypothesis: a console host or remote-console path interprets the synthesized Alt modifier/action-key sequence differently from Windows Terminal, resulting in literal @ characters. Current source shows the input sequence used for shortcut remaps, but no current trace proves that this sequence is malformed or that Keyboard Manager rather than the host is responsible.",
+      "plan": [
+        "Reproduce Ctrl+C/V-to-Alt+C/V on a current PowerToys build in PowerShell under ConEmu and over RDP, with Windows Terminal and direct Ctrl+V as controls.",
+        "Trace the Keyboard Manager-generated key-down/key-up sequence and the target console's observed modifier state around copy and paste; identify whether the @ characters originate in Keyboard Manager, the console host, or the remote-input layer.",
+        "If the trace identifies an invalid or incompatible Keyboard Manager event sequence, make the smallest correction to modifier/action event ordering or lifetime and add regression coverage for console and Windows Terminal hosts.",
+        "If the sequence is correct and the failure is host-specific, document the boundary and coordinate with the console owner rather than changing unrelated remapping behavior."
+      ],
+      "verification": [
+        "In the reported PowerShell/ConEmu and RDP scenario, remapped Alt+V pastes the copied string without surrounding @ characters.",
+        "Direct Ctrl+V remains correct, and the same test in Windows Terminal remains unchanged.",
+        "Other shortcut remaps continue to deliver balanced modifier and action-key down/up events."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The symptom was reported on v0.100.2 in ConEmu/RDP, but maintainers have not isolated whether the fault is in Keyboard Manager, the console host, or remote input; the proposed code path is a hypothesis to test, not a confirmed root cause."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Shortcut remaps echo @ in legacy PowerShell consoles, while Windows Terminal was reported to avoid the problem.",
+    "summary": "Remapping Ctrl+C/V to Alt+C/V reportedly causes PowerShell to paste copied text with extra @ characters in some console hosts.",
     "known_information": [
-      "The issue is open and has 13 comments.",
-      "The original report used PowerShell 7.1.4 and remapped Ctrl+C/V to Alt+C/V.",
-      "Later commenters reproduced similar @ insertion on older PowerToys versions.",
-      "A commenter noted that Windows Terminal does not show the same behavior."
+      "The original report lists PowerToys 0.45.0, Windows 10 21H1, a German keyboard, and PowerShell 7.1.4; Ctrl+V pastes correctly while the remapped Alt+V inserts @ around the text.",
+      "A 2022 commenter reported similar extra @ characters with other shortcut remaps in PowerShell and ConEmu but not Windows Terminal.",
+      "A July 2026 commenter reported the issue on PowerToys v0.100.2 with PowerShell in ConEmu or on an RDP session to Windows Server 2019; PowerToys runs on the local Windows 11 Enterprise 25H2 machine.",
+      "A maintainer stated that the cause was unknown and that a fix might belong to the console team.",
+      "Current main's shortcut-remap path synthesizes target modifier and action-key events; the discussion does not include a current event trace."
     ],
     "inferences": [
-      "The failure appears host-specific to classic console environments rather than a generic shortcut remap loss.",
-      "The key-up or release ordering path is the most likely place to investigate if the bug still exists."
+      "The difference between ConEmu/RDP and Windows Terminal suggests the console or remote-input path may affect how the injected shortcut is interpreted.",
+      "A Keyboard Manager event-ordering or modifier-lifetime defect remains possible but is not established by the available source or comments."
     ],
-    "analysis": "The thread has useful historical reproduction detail but not enough current evidence to choose a code fix safely.",
+    "analysis": "The v0.100.2 report establishes that the symptom is not limited to the original PowerShell 7.1.4 setup, but it does not isolate a code-level cause. Current Keyboard Manager code emits target modifier and action-key events for shortcut remaps; the next useful step is a maintainer reproduction with a trace that compares the event sequence across the affected host and Windows Terminal. Do not prescribe a speculative event-order change until the trace identifies Keyboard Manager as the failing layer.",
     "initial_investigation": [
-      "Read the issue body, comment thread, and stale-automation events.",
-      "Checked the host-specific follow-ups that contrasted PowerShell and Windows Terminal."
+      "Read the live issue body and all 13 comments, including the original exact remap, the ConEmu/Windows Terminal distinction, the unanswered maintainer question to the original reporter, and the later v0.100.2 RDP report.",
+      "Inspected upstream main at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: KeyboardEventHandlers.cpp:833-858 and Helpers.cpp:265-310.",
+      "No linked pull request or covering fix was found."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "A current repro in a classic PowerShell console, plus a comparison run in Windows Terminal.",
-        "why_needed": "To confirm whether the old host-specific @ insertion is still present and to localize the responsible layer.",
-        "how_to_collect": "Reproduce on current builds, then capture /bugreport immediately after the failure."
+        "evidence_type": "module_trace",
+        "information": "Whether Keyboard Manager's injected key-down/key-up sequence is malformed or is correctly delivered but interpreted unexpectedly by ConEmu/RDP.",
+        "why_needed": "The current report proves the symptom in a later environment but does not distinguish a Keyboard Manager defect from a console-host or remote-input issue.",
+        "how_to_collect": "Reproduce under the affected host and compare a maintainer trace of Keyboard Manager's generated events and the target console's observed modifier state with a Windows Terminal control."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-13044",
-      "type": "request_info",
-      "label": "Request current repro evidence",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 13044,
-        "body": "Please provide the current PowerToys and Windows versions, numbered reproduction steps, and a fresh /bugreport captured immediately after reproducing the issue."
-      },
-      "note": "Draft only; no upstream comment was posted."
+      "type": "approve_design",
+      "label": "Approve console-input investigation",
+      "note": "Proceed to a Keyboard Manager design only if reproduction and event tracing isolate its generated input sequence as the cause."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce PowerShell console paste",
+      "note": "A later commenter already reports v0.100.2 and RDP; use the existing evidence and do not request another generic log archive.",
+      "reproduce": {
+        "title": "Test remapped paste in PowerShell console hosts",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer; record the exact build",
+        "prerequisites": [
+          "PowerToys with Keyboard Manager enabled on the local Windows machine",
+          "PowerShell Core or Windows PowerShell",
+          "ConEmu or an RDP session to a Windows host",
+          "Windows Terminal available as a comparison host"
+        ],
+        "setup": [
+          "Configure Ctrl+C to Alt+C and Ctrl+V to Alt+V in Keyboard Manager.",
+          "Copy the text LoremIpsum from Notepad."
+        ],
+        "steps": [
+          "Paste into PowerShell using the remapped Alt+V in ConEmu or the RDP console.",
+          "Repeat in Windows Terminal and with direct Ctrl+V as controls.",
+          "Record the exact pasted text and compare the key-event sequence around the extra characters."
+        ],
+        "expected_result": "The pasted text is exactly LoremIpsum in each supported console host, without leading or trailing @ characters.",
+        "setup_prompt": "On a current Windows test system, configure Ctrl+C/V to Alt+C/V, copy LoremIpsum from Notepad, and compare paste behavior in PowerShell under ConEmu, RDP, and Windows Terminal."
+      }
     }
-  ],
-  "title": "Remaped keys CTRL+C/V to ALT+C/V insert @copiedString@ into PowerShell 7.1.4 console",
-  "url": "https://github.com/microsoft/PowerToys/issues/13044",
-  "author": "siegfriedcw",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Keyboard Shortcut Manager"
-  ],
-  "comments": 13,
-  "confidence": "Low"
+  ]
 }

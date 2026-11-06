@@ -1,33 +1,83 @@
 {
+  "schemaVersion": 5,
   "number": 39697,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:02:34Z",
+  "generated_at": "2026-11-05T13:52:17Z",
+  "evaluated_at": "2026-11-05T13:52:17Z",
+  "source_updated_at": "2026-10-11T16:48:29Z",
+  "title": "Keyboard Manager -> Send Text appears to be limited to 27 chars",
+  "url": "https://github.com/microsoft/PowerToys/issues/39697",
+  "author": "mzomparelli",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Verify long text on current build",
+    "detail": "Current upstream SendTextInput iterates through the full string with no visible 27-character guard, but the issue has no sample text or current-build retest."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the exact text/configuration and a current-build comparison before deciding whether a fix is needed.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue reports truncation at 27 characters on PowerToys 0.91.1 but gives no sample string, action configuration, or target application. Current upstream main's SendTextInput loop iterates over text.size() without a 27-character cutoff; later merged text-remapping changes address other dropped-input cases but do not explicitly cover this issue, so a current retest is needed rather than assuming it is fixed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.91.1 on Windows 11 24H2 build 26100.4061 and says Send Text stops at 27 characters.",
+      "The issue has no comments and does not include the text sample, configured mapping, or target application.",
+      "At upstream main 8cfe69247aef8aabadeeafbdafaecab293a2a7f3, src/modules/keyboardmanager/common/Helpers.cpp:317-325 iterates over the complete text string; no 27-character cap appears in that function.",
+      "Merged PR #46794 addresses text replacement regressions introduced in 0.98.0, and merged PR #48571 hardens dropped key-to-text events, but neither explicitly links or tests issue #39697."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:02:34Z"
-  }
+    "recommended_action": "Ask for the exact text and target app, then retest on 0.100.2 or newer to establish whether the 27-character truncation remains and whether it is configuration- or target-specific.",
+    "evaluated_at": "2026-11-05T13:52:17Z",
+    "source_updated_at": "2026-10-11T16:48:29Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Current main shows no fixed 27-character limit, and the report lacks the sample and application needed to establish a present defect. Do not propose a code change until a current test confirms truncation."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A PowerToys 0.91.1 Keyboard Manager Send Text action reportedly stops inserting text after 27 characters.",
+    "known_information": [
+      "The issue is open and labeled Issue-Bug for Keyboard Manager.",
+      "The report lists PowerToys 0.91.1 and Windows 11 24H2 build 26100.4061.",
+      "The reported symptom is that Send Text stops at 27 characters; there is no text sample, target app, configuration, or follow-up comment.",
+      "Current upstream main's SendTextInput implementation loops through the full string without an apparent 27-character guard."
+    ],
+    "inferences": [
+      "A control-specific limit, configuration/editor limit, injection failure, or regression could explain the observed cutoff, but the available report does not distinguish these possibilities.",
+      "The current implementation and later text-input fixes may have changed behavior since 0.91.1, but no direct coverage for this issue was found."
+    ],
+    "analysis": "The symptom has a measurable threshold, but the exact input and target are missing. The first step is to retest a known string longer than 27 characters on a current build and compare the same mapping in Notepad and the original target; then investigate only if the threshold remains.",
+    "initial_investigation": [
+      "Read the live issue body, labels, and comment state; there are no comments or assignees.",
+      "Inspected current upstream main at 8cfe69247aef8aabadeeafbdafaecab293a2a7f3: Helpers.cpp:317-325 iterates over text.size() and contains no 27-character cutoff.",
+      "Reviewed merged PRs #46794 and #48571; they concern other text-replacement/dropped-input cases and do not claim to resolve #39697."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact string longer than 27 characters, Send Text mapping configuration, target application, and whether the same cutoff remains on PowerToys 0.100.2 or newer.",
+        "why_needed": "Without a sample string and target, the reported threshold cannot be separated from an editor/configuration limit or application-specific input behavior.",
+        "how_to_collect": "Retest a known string of at least 40 characters on 0.100.2 or newer in Notepad and the original target; report the exact text, inserted length, and mapping configuration."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Verify the 27-character text cutoff",
+      "comment": {
+        "target": "issue",
+        "number": 39697,
+        "body": "Thanks for reporting that Send Text stops at 27 characters. The report lists PowerToys 0.91.1 but does not include the input string or target app; current main iterates across the full configured text and has later text-input changes. Could you please provide:\n1. The exact Send Text mapping and a sample string longer than 27 characters.\n2. The target app and the number of characters inserted when retested on PowerToys 0.100.2 or newer.\n3. Whether the same sample is truncated in Notepad and in the original target.\nThis will distinguish a current injection limit from a configuration or target-control limit."
+      }
+    }
+  ]
 }

@@ -2,32 +2,105 @@
   "number": 37634,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-27T17:23:48Z",
+  "generated_at": "2026-11-05T12:09:55.8071662Z",
+  "evaluated_at": "2026-11-05T12:09:55.8071662Z",
+  "source_updated_at": "2026-10-27T12:49:15Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🎯",
+    "label": "Monitor remapping can force minimized launch",
+    "detail": "Current Workspaces code matches saved and live monitors by ordinal number. If that number changes, the missing-monitor fallback explicitly marks the app minimized; a comment reports that correcting the saved monitor numbers restored normal launches."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "➡️",
+    "label": "Queue a stable-monitor identity design",
+    "reason": "The source branch and the monitor-number workaround align; review a design that resolves saved display identity before invoking the missing-monitor fallback."
   },
-  "actions": [],
+  "actions": [
+    {
+      "id": "approve-design-37634",
+      "type": "approve_design",
+      "label": "Queue detailed design for Workspaces monitor remapping",
+      "primary": true,
+      "confirm": true,
+      "note": "Starts a fork-side design workflow; no upstream write occurs."
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "A 2025 commenter reports that the saved monitor number changes and that correcting the workspace JSON restores normal launches. Current main matches apps to saved and live monitors by number, and explicitly sets launchMinimized when no current monitor matches. This directly connects the reported symptom to a code path.",
     "evidence": [
-      "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports saved workspace applications launching minimized; the latest 2026-10-27 comment confirms the problem continues on a new computer but does not include a version.",
+      "An earlier commenter reports that a monitor-number mismatch in the saved workspace caused minimized launches and that correcting the saved monitor number restored normal behavior.",
+      "Current WorkspacesWindowArranger/WindowArranger.cpp:486-491 finds the saved monitor by matching val.number to app.monitor.",
+      "Current WorkspacesWindowArranger/WindowArranger.cpp:500-519 repeats the number-only match against live monitors; when there is no match it sets launchMinimized = true.",
+      "Current WorkspacesLib/WorkspacesData.h:64-68 stores stable monitor id and instanceId fields alongside the ordinal number."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-27T17:23:48Z"
-  }
+    "recommended_action": "Queue a focused design that resolves saved monitors by stable display identity before treating a monitor-number change as a missing display.",
+    "evaluated_at": "2026-11-05T12:09:55.8071662Z",
+    "source_updated_at": "2026-10-27T12:49:15Z"
+  },
+  "schemaVersion": 5,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current code directly forces the minimized state when the saved ordinal monitor cannot be matched, while the workspace data model also persists stable display identity.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "Workspaces can launch saved applications minimized after monitor numbering changes. A prior report says updating the saved monitor numbers restores normal launches, and current code has an explicit minimized fallback when the saved number is absent.",
+    "known_information": [
+      "The original report used PowerToys 0.88.0 and says saved workspace applications began launching minimized.",
+      "A later commenter reports that changing the saved monitor-number and corresponding application monitor values restored normal launches after the display numbering changed.",
+      "The 2026-10-27 comment reports the symptom on a new computer but does not provide a current PowerToys version or topology.",
+      "Current WorkspacesWindowArranger/WindowArranger.cpp matches both saved and live monitors using the application's numeric monitor field.",
+      "If no live monitor has the saved number, current code selects the primary monitor, changes launchMinimized to true, and uses the primary work area.",
+      "Current WorkspacesLib/WorkspacesData.h stores monitor id and instanceId in addition to number."
+    ],
+    "inferences": [
+      "If the same physical display is assigned a new ordinal after a topology change, the number-only lookup can miss it and trigger the minimized fallback even when the saved application was not minimized."
+    ],
+    "analysis": "The current source contains a direct explanation for the minimized symptom: a missing ordinal match sets launchMinimized to true. The saved model already carries stable display identifiers, but this lookup does not use them. A design should preserve explicit saved minimized state and reserve the fallback for a genuinely absent display.",
+    "initial_investigation": [
+      "Refreshed the issue body, all nine comments, labels, assignees, and current update time.",
+      "Checked current WorkspacesWindowArranger/WindowArranger.cpp around moveWindow and SizeWindowToRect.",
+      "Checked the current WorkspacesLib/WorkspacesData.h monitor identity fields."
+    ],
+    "information_gaps": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve saved Workspaces monitors by stable display identity",
+      "root_cause": "WindowArranger::moveWindow resolves the saved application monitor and current HMONITOR by ordinal number only. If enumeration changes that number, the lookup fails and the fallback explicitly launches the app minimized.",
+      "plan": [
+        "In WindowArranger::moveWindow, resolve the application's saved monitor record, then find the live display by its stable id and instanceId before using ordinal-number fallback for legacy data.",
+        "Preserve the saved application's minimized/maximized state when the same physical display is found under a new number; reserve the current missing-monitor behavior for a display that is genuinely absent.",
+        "Add regression coverage for monitor renumbering with stable identity preserved, plus a separate test for a physically disconnected saved monitor."
+      ],
+      "verification": [
+        "Save a workspace with a normal window on the second of two monitors, then change monitor enumeration numbers while keeping the same display identities.",
+        "Launch the workspace and verify the window remains normal and lands on the same physical display.",
+        "Verify an intentionally minimized application stays minimized and that a genuinely absent display still follows the documented fallback."
+      ],
+      "confidence": {
+        "score": 89,
+        "level": "green",
+        "rationale": "The current code explicitly sets the minimized state on a failed number-only lookup, and the issue discussion reports that correcting the saved number restores normal launches."
+      }
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/issues/37634",
+  "title": "Launching Workspace now always launches applications minimized?",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Workspaces"
+  ],
+  "assignees": [
+    "vanzue"
+  ],
+  "comments": 9
 }

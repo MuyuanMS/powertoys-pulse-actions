@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 34062,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "The if running option for remap shortcuts is not working as expected",
+  "url": "https://github.com/microsoft/PowerToys/issues/34062",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:56:03Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T21:49:37.856Z",
+  "evaluated_at": "2026-11-05T21:49:37.856Z",
+  "source_updated_at": "2026-10-11T16:47:01Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Retest the running-app behavior on current stable",
+    "detail": "The report uses PowerToys 0.82.1 and Calculator; the launch code selects an existing process by the configured executable name, so an app-specific comparison would distinguish the path."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says Alt+O launches calc.exe, but with Calculator already open the Show Window, Do Nothing, Close, and End Task choices all start another window. The report is from PowerToys 0.82.1 and has no current-build test or comments. The current launch path compares the configured executable filename with running process names before applying these choices; a packaged Calculator process may not match calc.exe, but that is only a hypothesis. Ask for a current retest and comparison with a classic executable.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.82.1 from Microsoft Store and a non-admin user session.",
+      "The reporter tried both C:\\Windows\\System32\\calc.exe and C:\\Windows\\SysWOW64\\calc.exe with multiple if-running choices; a second Calculator window opens instead of applying the selected action.",
+      "The report has no comments or assignees and is from an older PowerToys build.",
+      "The current implementation derives the process name from the configured executable filename and checks running process names before applying the if-running action; the issue does not establish whether Calculator is the only affected app.",
+      "A repository issue search found no separate Calculator/if-running report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:56:03Z"
-  }
+    "recommended_action": "Ask whether the same behavior persists on v0.102.3001 when Calculator is already running, and compare Show Window with a classic executable such as Notepad.",
+    "evaluated_at": "2026-11-05T21:49:37.856Z",
+    "source_updated_at": "2026-10-11T16:47:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A current comparison between Calculator and a classic executable will determine whether process identification is app-specific before selecting a code change."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate process matching for the if-running action",
+      "root_cause": "The Calculator launcher may expose a running process name different from calc.exe, while the implementation searches for the configured executable filename; this possibility is not confirmed by the report.",
+      "plan": [
+        "Retest Show Window with Calculator already running on a current supported build.",
+        "Compare with a classic executable and record whether each if-running choice recognizes the existing process.",
+        "If the failure is app-specific, trace the process identity and window enumeration path and add a focused regression test."
+      ],
+      "verification": [
+        "Confirm Show Window restores an existing supported target instead of launching another instance.",
+        "Confirm Do Nothing, Close, and End Task apply to the intended running process when the app is already open."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The report clearly describes the failure but uses 0.82.1 and does not establish whether it affects only the packaged Calculator or ordinary executables too."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Keyboard Manager shortcut if-running choices reportedly launch another Calculator window instead of acting on the existing one.",
+    "known_information": [
+      "The report lists PowerToys 0.82.1, Microsoft Store installation, and non-admin execution.",
+      "Alt+O launches Calculator through either System32 or SysWOW64 calc.exe.",
+      "When Calculator is already open, Show Window, Do Nothing, Close, and End Task are reported to launch another window.",
+      "There are no comments or assignees."
+    ],
+    "inferences": [
+      "Calculator may run under a process name different from calc.exe, but the report does not include process identity and the behavior is unconfirmed on current stable."
+    ],
+    "analysis": "The code uses the configured executable filename to locate a running process before applying the selected action. Retesting with Calculator and a classic executable separates process-name mismatch from a general if-running failure.",
+    "initial_investigation": [
+      "Read the full report, both configured executable paths, all four reported running actions, labels, comments, and assignees.",
+      "Inspected KeyboardEventHandlers.cpp: CreateOrShowProcessForShortcut derives the process name from the launch path, calls GetProcessIdByName, and then applies ShowWindow/Close/EndTask behavior.",
+      "Searched the issue tracker for Calculator/if-running reports; no other matching issue was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Show Window still launches a second Calculator window on v0.102.3001, and whether the same action works for a classic executable",
+        "why_needed": "The report is from 0.82.1 and the code matches by process name; an app comparison is needed to tell a Calculator-specific identity issue from a general behavior defect.",
+        "how_to_collect": "On v0.102.3001, open Calculator manually, trigger the Alt+O shortcut with Show Window selected, then compare with a classic executable such as Notepad and report the results.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-34062-current-if-running-test",
+      "type": "request_info",
+      "label": "Retest the if-running action on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 34062,
+        "body": "Thanks for listing both calc.exe paths and the if-running choices you tried. Since the report is from PowerToys 0.82.1, could you confirm whether Show Window still launches a second Calculator window on v0.102.3001 when Calculator is already open? Please compare with a classic app such as Notepad using the same shortcut action and report whether it recognizes the existing window."
+      }
+    },
+    {
+      "id": "approve-design-34062",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

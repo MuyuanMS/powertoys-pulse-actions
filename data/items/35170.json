@@ -1,33 +1,88 @@
 {
+  "schemaVersion": 5,
   "number": 35170,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:35:15Z",
+  "generated_at": "2026-11-05T13:52:17Z",
+  "evaluated_at": "2026-11-05T13:52:17Z",
+  "source_updated_at": "2026-10-11T16:48:32Z",
+  "title": "With Keyboard Remapping, source keys are also triggered",
+  "url": "https://github.com/microsoft/PowerToys/issues/35170",
+  "author": "chikai-ito",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Need current load-specific repro",
+    "detail": "The report says key remaps sometimes also emit the source key, and the author suspects high memory load. It is from PowerToys 0.76.2 and has no current-build test."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request a current-build repro with the mapping, target app, and load conditions before proposing an input-hook change.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue describes source and target keys both appearing intermittently and the author later suspects heavy application memory use, but provides no controlled reproduction, current version, or diagnostic capture. Related #32954 concerns browser-specific numpad output but does not confirm the same source-key leak or a covering fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.76.2 and gives 3 to 4 as an example where source key 3 sometimes also appears in a text editor.",
+      "The author later said the problem seemed associated with heavy memory use and could be resolved by closing resource-heavy tasks such as Chrome.",
+      "Related open issue #32954 describes numpad remaps producing wrong digits in browsers but does not establish a common cause or fix.",
+      "There is no current-build retest, exact load measurement, or attached diagnostic report in the thread."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:35:15Z"
-  }
+    "recommended_action": "Ask for a current-build retest of a single source-to-target mapping under normal and high-load conditions, with exact target app and a fresh /bugreport if the source leaks again.",
+    "evaluated_at": "2026-11-05T13:52:17Z",
+    "source_updated_at": "2026-10-11T16:48:32Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The reported build is 0.76.2 and the load correlation is unverified. No code change should be proposed until a current reproduction confirms the source-key leak and its conditions."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Keyboard Manager sometimes emits both the source key and its remapped target; the author suspects the issue occurs under heavy memory use.",
+    "known_information": [
+      "The issue reports PowerToys 0.76.2 and says source key 3 sometimes appears along with its target 4 in a text editor.",
+      "The author later said closing resource-heavy applications such as Chrome could resolve the problem.",
+      "The issue has two comments and no assignee or current-build reproduction."
+    ],
+    "inferences": [
+      "High system load could affect low-level input processing, but the report does not establish a hook timeout, dropped event, or other specific cause.",
+      "The browser-specific numpad symptom in #32954 may be related at a broad input-remapping level but is not a confirmed duplicate."
+    ],
+    "analysis": "The source-key leak is distinct from a remap that simply stops working, and the author's load observation is useful but unmeasured. Ask for the same mapping under normal and high load on a current build, then collect diagnostics immediately after a failure rather than attributing it to memory pressure.",
+    "initial_investigation": [
+      "Read the full issue body and both comments, including the author's suspected high-memory correlation.",
+      "Checked open related issue #32954; its browser-specific numpad symptom does not establish the same failure or a covering fix.",
+      "No linked fix or direct duplicate was established."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether source-key leakage persists on PowerToys 0.100.2 or newer, with the exact source-to-target mapping, target app, and a comparison under normal versus high load.",
+        "why_needed": "The report is intermittent and the proposed memory-load correlation has not been isolated from the target application or mapping.",
+        "how_to_collect": "Retest one simple mapping in Notepad on 0.100.2 or newer under normal conditions and while the suspected heavy application is running; note whether source and target both appear."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive captured immediately after a current source-key leak.",
+        "why_needed": "Current Keyboard Manager configuration and engine diagnostics may distinguish dropped suppression from a target-app issue.",
+        "how_to_collect": "If source and target both appear, comment /bugreport immediately after reproducing."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm source-key leakage under load",
+      "comment": {
+        "target": "issue",
+        "number": 35170,
+        "body": "Thanks for the report. It describes source key 3 appearing alongside its remapped target 4 and notes that closing resource-heavy apps may help. To determine whether this is still reproducible, could you please provide:\n1. A retest on PowerToys 0.100.2 or newer, naming the exact source-to-target mapping and target app.\n2. Whether the source key leaks under normal conditions and when the suspected heavy application is running.\n3. If it still occurs, a fresh diagnostic archive by commenting `/bugreport` immediately after the failure.\nThis will separate a current input-hook issue from app-specific or load-related behavior."
+      }
+    }
+  ]
 }

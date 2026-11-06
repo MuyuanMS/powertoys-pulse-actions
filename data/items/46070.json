@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 46070,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[KeyboardManager][Known issue] Icon not appearing in title bar and task bar",
+  "url": "https://github.com/microsoft/PowerToys/issues/46070",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:53:39Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T23:20:35Z",
+  "evaluated_at": "2026-11-05T23:20:35Z",
+  "source_updated_at": "2026-10-11T15:34:26Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Icon calls exist; packaged behavior is unclear",
+    "detail": "Current source assigns both a window icon and a title-bar icon, but the report does not identify its install channel and the linked WinUI issue describes packaged-build differences."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Confirm package channel and current icon behavior",
+    "reason": "The main branch already contains explicit icon assignments; identify whether the remaining failure is limited to packaged/published builds before changing asset resolution or timing."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-46070-confirm-package-and-icon-surfaces",
+      "type": "request_info",
+      "label": "Confirm install channel and missing icon surfaces",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for reporting the missing Keyboard Manager icons and linking WinUI Gallery #1512. Current PowerToys main already assigns a window icon and a title-bar icon, so the remaining question is whether this is specific to the packaged build. Could you confirm the installation package/channel for the affected build, whether both the title-bar and taskbar icons are missing, and whether the issue still reproduces on PowerToys v0.102.3001 or newer?"
+      }
+    },
+    {
+      "id": "issue-46070-approve-packaged-icon-design",
+      "type": "approve_design",
+      "label": "Approve packaged icon-resolution design"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report uses PowerToys 0.98.0 and points to a WinUI Gallery issue where packaged/published behavior differs from Visual Studio. Current upstream already calls SetIcon for the window and declares a TitleBar.IconSource; the project also copies Keyboard.ico to its output. The report does not specify the installation channel, so this is not evidence that the current code lacks icon assignments or that a PowerToys fix has shipped.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports that both the title-bar and taskbar icons are missing in PowerToys 0.98.0 and links WinUI-Gallery #1512.",
+      "At current upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368, MainWindow.xaml.cs calls SetIcon with Assets\\KeyboardManagerEditor\\Keyboard.ico and MainWindow.xaml declares an ImageIconSource for FluentIconsKeyboardManager.png.",
+      "The current KeyboardManagerEditorUI.csproj copies Keyboard.ico to the output directory; this establishes the asset declaration, not that the reporter's packaged build resolves it.",
+      "WinUI-Gallery #1512 includes reports that the icon can appear under Visual Studio but remain missing in Store or packaged/published builds."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:53:39Z"
+    "recommended_action": "Confirm the affected package channel, the missing icon surfaces, and current-build behavior; then reproduce in packaged and unpackaged builds before changing resource resolution or window-icon timing.",
+    "evaluated_at": "2026-11-05T23:20:35Z",
+    "source_updated_at": "2026-10-11T15:34:26Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A packaged-resource resolution or window-activation timing issue is plausible because the report's linked WinUI issue describes packaged/published behavior differing from Visual Studio, while current PowerToys source already makes explicit icon assignments. The install channel and current reproduction are not yet known.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve Keyboard Manager icons reliably in packaged builds",
+      "root_cause": "The window icon is assigned from a relative ICO path and the title bar uses an image resource; if either path is not available or the AppWindow icon is set before the packaged window is ready, packaged/published launches could omit one or both icons. This remains a hypothesis because the current source already contains both assignments.",
+      "plan": [
+        "Reproduce on a current packaged/published PowerToys build and an unpackaged development launch, recording title-bar and taskbar behavior separately.",
+        "Verify that Keyboard.ico and FluentIconsKeyboardManager.png are present and resolvable in the packaged output, and that the window's AppWindow receives the icon after creation.",
+        "If packaging or timing is the failing branch, use a package-resolved asset URI/path and assign the window icon at a lifecycle point where the AppWindow is available; preserve the existing title-bar icon resource.",
+        "Add a packaged-build regression check that verifies the title-bar and taskbar icons in the installed app."
+      ],
+      "verification": [
+        "A packaged/published current build and an unpackaged build both show the Keyboard Manager icon in the title bar and taskbar.",
+        "The installed output contains both referenced assets and the window icon assignment succeeds after the AppWindow is created."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The linked WinUI issue supports a packaged-versus-development discrepancy, but the report omits its install channel and current PowerToys source already assigns both icons; no current reproduction or asset-resolution failure has been established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter says the new Keyboard Manager UI has neither a title-bar nor taskbar icon in PowerToys 0.98.0 and links a WinUI Gallery packaged-icon issue.",
+    "known_information": [
+      "The issue reports PowerToys 0.98.0 and says both icons are missing, but the installation method is listed as unspecified.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 explicitly assigns Keyboard.ico to the window and FluentIconsKeyboardManager.png to the title bar.",
+      "The current Keyboard Manager project marks Keyboard.ico as content copied to the output directory.",
+      "WinUI-Gallery #1512 describes packaged/published behavior differing from Visual Studio; later comments report that the Store version remains affected."
+    ],
+    "inferences": [
+      "The remaining failure may be limited to a packaged or published installation, but the issue does not identify the affected channel.",
+      "If the current build still fails only when packaged, asset resolution or window-icon timing is a candidate; existing source calls mean the absence of an icon assignment is not the root cause."
+    ],
+    "analysis": "The issue was reported shortly after the current explicit icon assignments entered the new UI, and current main still contains those assignments. The linked WinUI Gallery report is relevant because its discussion distinguishes Visual Studio launches from packaged/published builds, but that does not prove the same failure path here. Confirm the install channel and current behavior before proposing a source change.",
+    "initial_investigation": [
+      "Read the issue body and linked WinUI-Gallery #1512 discussion; the PowerToys report has no comments and does not name the package channel.",
+      "Inspected current upstream MainWindow.xaml.cs, MainWindow.xaml, and KeyboardManagerEditorUI.csproj: the window and title bar both have icon assignments, and Keyboard.ico is copied to output.",
+      "Checked the original new-UI commit: the SetIcon call predates the issue, so its presence in current source cannot be treated as proof the reported behavior was fixed."
+    ],
+    "information_gaps": [
+      {
+        "information": "The affected installation package/channel, whether both icon surfaces are missing, and whether the issue still reproduces on a current build",
+        "why_needed": "The linked WinUI issue points to packaged/published behavior, but the report does not identify how PowerToys was installed or confirm the current behavior.",
+        "how_to_collect": "Name the affected install package/channel, confirm whether the title-bar and taskbar icons are both absent, and retest on PowerToys v0.102.3001 or newer.",
+        "evidence_type": "install_scope"
+      }
+    ]
   }
 }

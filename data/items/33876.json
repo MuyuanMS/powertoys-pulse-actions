@@ -2,92 +2,83 @@
   "schemaVersion": 5,
   "number": 33876,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "generated_at": "2026-09-12T08:53:17.873046Z",
-  "evaluated_at": "2026-09-12T08:53:17.873046Z",
-  "source_updated_at": "2026-08-19T17:46:10Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/33876",
+  "repository": "microsoft/PowerToys",
   "title": "Quick Accent conficts with Keyboard Manager remaps",
+  "url": "https://github.com/microsoft/PowerToys/issues/33876",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
     "Needs-Triage",
-    "Product-Quick Accent"
+    "Product-Quick Accent",
+    "Product-Keyboard Manager"
   ],
-  "assignees": null,
   "comments": 4,
+  "generated_at": "2026-11-05T21:16:00Z",
+  "evaluated_at": "2026-11-05T21:16:00Z",
+  "source_updated_at": "2026-10-11T16:47:12Z",
   "status": {
     "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
-  },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Ask only for the current evidence needed to confirm the failing path."
+    "label": "Retest after the shipped Quick Accent injection fix",
+    "detail": "The last confirmation was on 0.100.2. PowerToys 0.102.3001 includes PR #48572, which tags Quick Accent-injected Backspace events so Keyboard Manager ignores them."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The selected fast pass reviewed open bug report #33876 for Keyboard Shortcut Manager but found insufficient diagnostic logs or deterministic reproduction steps to design a code fix without speculation.",
+    "rationale": "The original report says Quick Accent's synthetic Backspace becomes the remapped slash when Backspace is swapped with another key. A later commenter confirmed the issue on 0.100.2 when Backspace is remapped, and a maintainer asked whether it persists on 0.100.2 or above. Since then, merged PR #48572 added dwExtraInfo=0x110 to Quick Accent's synthetic Backspace events; bit 0x1 is Keyboard Manager's explicit injected-event ignore flag, and that commit is included in current release v0.102.3001. The source change is a strong likely fix, but the issue has no post-release confirmation. Ask for the exact sequence on the current release rather than proposing a duplicate code change.",
     "evidence": [
-      "The issue is open and labeled as an Issue-Bug report for Keyboard Shortcut Manager.",
-      "Title: Quick Accent conficts with Keyboard Manager remaps",
-      "Area label: Keyboard Shortcut Manager",
-      "Issue body excerpt: ### Microsoft PowerToys version 0.82 ### Installation method Microsoft Store ### Running as admin Yes ### Area(s) with issue? Keyboard Manager, Quick Accent ### Steps to reproduce On Keyboard Manager swap backspace and a...",
-      "Latest public comment excerpt: Just closed my duplicate issue on the matter, this is still an issue in 0.100.2. Which I guess only affects users that remap the backspace key. if I'm understanding correctly. @CRt...",
-      "Fast revalidation read live issue body, labels, and 4 comment(s) on 2026-09-12T08:53:17.873046Z."
+      "The issue's PowerToys 0.82 repro swaps Backspace with slash, activates Quick Accent, and reports that deleting the original character inserts slash instead.",
+      "A later commenter reports the issue still on PowerToys 0.100.2 and says it appears limited to users who remap Backspace.",
+      "In current source, PowerAccent.Core/Tools/WindowsFunctions.cs tags synthetic VK_BACK input with 0x110.",
+      "CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG is 0x1, and KeyboardEventHandlers.cpp's GeneratedByKBM ignores events carrying that flag.",
+      "Merged PR #48572 adds the tag to Quick Accent input injection and is included in release v0.102.3001.",
+      "The issue remains open with four comments and no assignees; the current-release retest is unanswered."
     ],
-    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
-    "evaluated_at": "2026-09-12T08:53:17.873046Z",
-    "source_updated_at": "2026-08-19T17:46:10Z"
+    "recommended_action": "Ask whether the original Backspace-remap/Quick Accent sequence still inserts the remapped key on v0.102.3001, which includes the likely fix.",
+    "evaluated_at": "2026-11-05T21:16:00Z",
+    "source_updated_at": "2026-10-11T16:47:12Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path in Keyboard Shortcut Manager."
+    "rationale": "A likely correction is already shipped in v0.102.3001: Quick Accent marks synthetic Backspace as a Keyboard Manager-ignored event. Do not propose another fix until the reporter confirms whether this release resolves the exact scenario."
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Open PowerToys bug report for Keyboard Shortcut Manager: Quick Accent conficts with Keyboard Manager remaps",
+    "summary": "Quick Accent's synthetic Backspace reportedly becomes a remapped slash when Backspace is remapped; a likely injection-marker fix has since shipped and needs validation.",
     "known_information": [
-      "Issue #33876 is open and classified as an Issue-Bug report.",
-      "Title: Quick Accent conficts with Keyboard Manager remaps",
-      "Module: Keyboard Shortcut Manager",
-      "Body excerpt: ### Microsoft PowerToys version 0.82 ### Installation method Microsoft Store ### Running as admin Yes ### Area(s) with issue? Keyboard Manager, Quick Accent ### Steps to reproduce On Keyboard Manager swap backspace and a...",
-      "Fast revalidation covered live upstream activity through 2026-08-19T17:46:10Z."
+      "The original report lists PowerToys 0.82 and remapping Backspace to slash.",
+      "The report says choosing an accented character causes slash to be inserted instead of deleting the original character.",
+      "A commenter reported the same issue on 0.100.2 when Backspace is remapped.",
+      "PR #48572 added the 0x110 injection tag to Quick Accent's synthetic keyboard events; this contains the Keyboard Manager ignore bit 0x1 and is included in v0.102.3001."
     ],
     "inferences": [
-      "The reported symptom may be specific to certain environment configurations, input hardware, or permission levels."
+      "The shipped injection tag should prevent Keyboard Manager from translating Quick Accent's synthetic Backspace, but the issue has not been retested after that change."
     ],
-    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report for Keyboard Shortcut Manager but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "analysis": "Current source aligns with the reported failure path: Quick Accent synthesizes VK_BACK, and Keyboard Manager has an explicit flag for ignoring injected input. The merged change marks those events, making the latest release a discriminating retest. Wait for that result before suggesting another code change.",
     "initial_investigation": [
-      "Read issue metadata, labels, assignees, body, and 4 public comment(s).",
-      "Revalidated selected issue metadata during the scheduled bounded run."
+      "Read the current issue body and all four comments, including the 0.100.2 confirmation and minimized question about newer builds.",
+      "Inspected PowerAccent.Core/Tools/WindowsFunctions.cs and KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp for the injected-key marker and ignore path.",
+      "Verified PR #48572 is merged and its commit is included in tag v0.102.3001."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
-        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "Whether Quick Accent still inserts the remapped slash instead of deleting the original character on PowerToys v0.102.3001 with Backspace remapped",
+        "why_needed": "The latest release includes a change that marks Quick Accent's synthetic Backspace as input Keyboard Manager must ignore; the original behavior was last confirmed on 0.100.2.",
+        "how_to_collect": "On v0.102.3001, remap Backspace to slash, activate Quick Accent, choose an accent, and report whether the original character is deleted or slash is inserted.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   },
   "actions": [
     {
-      "id": "request-repro-diagnostics-33876",
+      "id": "issue-33876-retest-quickaccent-backspace-tag",
       "type": "request_info",
-      "label": "Request repro steps and diagnostics for #33876",
+      "label": "Retest Quick Accent with the current Backspace-remap fix",
       "primary": true,
       "comment": {
-        "body": "Thanks for the report. The issue describes a problem in Keyboard Shortcut Manager (\"Quick Accent conficts with Keyboard Manager remaps\") and the triage revalidation reviewed the reported details, but additional diagnostic evidence is needed to confirm the exact failing code path and rule out environment-specific conflicts.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact Windows build and PowerToys version.\r\n2. A fresh diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThese details will help maintainers investigate the behavior in Keyboard Shortcut Manager and prepare an appropriate fix plan."
+        "body": "Thanks for confirming this on PowerToys 0.100.2 when Backspace is remapped. Since v0.102.3001 includes PR #48572's Quick Accent input-injection change, could you retest the same Backspace-to-slash plus Quick Accent sequence on v0.102.3001 and confirm whether it still inserts `/` instead of deleting the original character?"
       }
     }
   ]

@@ -1,33 +1,132 @@
 {
+  "schemaVersion": 5,
   "number": 28458,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager remapping disables the advanced touchpad desktop gesture",
+  "url": "https://github.com/microsoft/PowerToys/issues/28458",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-02-25T17:04:12Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Repro",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce the virtual-desktop gesture with modifier remapping",
+    "detail": "Swapping Alt and Ctrl reportedly disables the configured touchpad virtual-desktop gesture; the report is from 0.73.0 and later comments speculate this may be inherent."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says the Ctrl+Win+Arrow virtual-desktop shortcut and an advanced touchpad gesture stop working after swapping Alt and Ctrl in Keyboard Manager, and return when Keyboard Manager is disabled. A later commenter argues modifier remaps can conflict with hard-coded system chords, but this is community speculation and does not establish whether the current behavior is expected or a PowerToys defect. The report is from 0.73.0.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.73.0 and an advanced touchpad gesture configured to switch virtual desktops without animation.",
+      "The reporter says swapping Alt and Ctrl disables the gesture and that disabling Keyboard Manager or PowerToys restores it.",
+      "A second user reported the same issue on Windows 10 in 2023.",
+      "A 2025/2026 commenter argues modifier swapping may inherently affect hard-coded chords; no maintainer confirms that conclusion.",
+      "The issue is open and labeled Needs-Repro."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-02-25T17:04:12Z"
-  }
+    "recommended_action": "Reproduce on current stable with the documented mapping and touchpad gesture, and ask whether the issue persists and whether Ctrl+Win+Arrow works when invoked directly while remapping is active.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:38Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The symptom is consistent with the system gesture's Ctrl+Win+Arrow chord being transformed by the Alt/Ctrl remap. Current behavior and the intended boundary between physical-key remapping and OS-generated gesture shortcuts need verification before concluding that it is an unavoidable limitation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve the virtual-desktop gesture while remapping Alt and Ctrl",
+      "root_cause": "The touchpad gesture may emit Ctrl+Win+Arrow and Keyboard Manager may transform that chord when Alt and Ctrl are swapped, so Windows no longer receives the shortcut used to switch desktops. The issue does not establish whether the gesture input is remappable or should be exempt.",
+      "plan": [
+        "Reproduce on current stable with the reported Alt/Ctrl swap and advanced touchpad gesture enabled.",
+        "Compare the gesture with a direct Ctrl+Win+Arrow keypress while the remap is active.",
+        "Trace whether the gesture-generated shortcut enters the Keyboard Manager remapping path.",
+        "If the remap unexpectedly intercepts supported system gesture input, preserve the gesture or document the supported behavior and add regression coverage."
+      ],
+      "verification": [
+        "Verify the touchpad gesture switches virtual desktops with the remapping enabled, if that input path is supported.",
+        "Verify direct keyboard shortcuts still follow the configured Alt/Ctrl remap.",
+        "Verify disabling Keyboard Manager is not required to use the configured gesture."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The on/off contrast and exact system chord support the interception hypothesis, but the gesture's event path and expected remapping boundary are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Swapping Alt and Ctrl reportedly disables an advanced touchpad gesture that switches virtual desktops using Ctrl+Win+Arrow.",
+    "known_information": [
+      "The report lists PowerToys 0.73.0 and an advanced touchpad gesture configured to switch desktops without animation.",
+      "The reporter says the gesture stops working with Alt/Ctrl remapping and returns when Keyboard Manager or PowerToys is disabled.",
+      "A second user reported the same issue on Windows 10.",
+      "A later commenter speculates that modifier remapping inherently conflicts with hard-coded chords, but no maintainer has confirmed that conclusion."
+    ],
+    "inferences": [
+      "The gesture may emit Ctrl+Win+Arrow through the same input path as physical keys and have that chord transformed, but this remains unverified."
+    ],
+    "analysis": "The issue needs a current-build reproduction before classifying it as a product defect or inherent OS behavior. Compare the gesture and direct keyboard chord with the remap enabled; do not treat a commenter speculation as a product decision.",
+    "initial_investigation": [
+      "Read the full report and all comments, including the later speculation about hard-coded system chords.",
+      "No linked fix or covering issue was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the gesture still fails on current stable and whether direct Ctrl+Win+Arrow works while the Alt/Ctrl remap is active",
+        "why_needed": "This distinguishes an issue specific to the touchpad gesture's event path from the expected effect of remapping the physical modifiers.",
+        "how_to_collect": "On current stable, enable the reported Alt/Ctrl swap and advanced touchpad gesture; test the gesture and then press Ctrl+Win+Arrow directly. Report the PowerToys and Windows versions and both results.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-28458-confirm-touchpad-gesture",
+      "type": "request_info",
+      "label": "Confirm gesture behavior with modifier remapping",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for giving the virtual-desktop chord and the PowerToys on/off comparison. Could you confirm whether this still happens on current stable PowerToys and Windows, and whether pressing Ctrl+Win+Arrow directly works while the Alt/Ctrl remap is active? Comparing the direct chord with the touchpad gesture will show whether the gesture follows a different input path."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the touchpad gesture investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the touchpad virtual-desktop gesture issue",
+      "note": "Compare the touchpad-generated chord with the same direct keyboard shortcut.",
+      "reproduce": {
+        "title": "Verify touchpad desktop gesture with Alt/Ctrl remapping",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Windows with virtual desktops",
+          "Keyboard Manager enabled",
+          "Advanced touchpad gesture configured"
+        ],
+        "setup": [
+          "Swap Alt and Ctrl in Keyboard Manager.",
+          "Enable the touchpad gesture that switches virtual desktops without animation."
+        ],
+        "steps": [
+          "Use the touchpad gesture and observe whether the virtual desktop changes.",
+          "While the remap remains enabled, press Ctrl+Win+Left/Right directly.",
+          "Disable Keyboard Manager and repeat the gesture for comparison."
+        ],
+        "expected_result": "The configured touchpad gesture should switch virtual desktops; the direct key chord should follow the configured modifier remapping."
+      }
+    }
+  ]
 }

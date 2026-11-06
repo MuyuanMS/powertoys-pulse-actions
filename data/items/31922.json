@@ -2,67 +2,114 @@
   "schemaVersion": 5,
   "number": 31922,
   "kind": "issue",
-  "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "author": "glott",
-  "generated_at": "2026-09-14T00:53:55.2254937Z",
-  "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-  "source_updated_at": "2024-03-27T13:41:41Z",
+  "repository": "microsoft/PowerToys",
   "title": "Remapping ALT + NumPad # breaks KBM when using Right ALT",
   "url": "https://github.com/microsoft/PowerToys/issues/31922",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "assignees": [],
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "assignees": [],
   "comments": 0,
+  "generated_at": "2026-11-05T15:15:59Z",
+  "evaluated_at": "2026-11-05T15:15:59Z",
+  "source_updated_at": "2026-10-11T16:47:51Z",
   "status": {
-    "glyph": "ℹ️",
-    "label": "Waiting on author",
-    "detail": "Revalidated during scheduled update run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Confirm current AltGr behavior",
+    "detail": "The report is precise but dates from v0.79.0; current-version and layout confirmation are needed."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "Revalidation determined status 'waiting_on_author' based on current assignees, labels, and discussion.",
+    "status": "needs_information",
+    "rationale": "The report provides a specific Left Alt versus Right Alt comparison for an app-specific Alt+NumPad-to-text mapping and describes a persistent shortcut-state failure until restart. Current Keyboard Manager code has an AltGr-specific state path, but the supplied reproduction is old and the keyboard layout is unknown; current behavior and the exact AltGr key representation must be confirmed before treating this as an active defect.",
     "evidence": [
-      "Title: Remapping ALT + NumPad # breaks KBM when using Right ALT",
-      "Assignees: ",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage"
+      "The reporter lists PowerToys 0.79.0 and says Left Alt plus NumPad produces the configured text.",
+      "The same mapping with Right Alt causes Right Ctrl to behave like Alt and other Keyboard Manager shortcuts to stop working until PowerToys is restarted.",
+      "The issue has no comments, attachments, assignee, or recorded outstanding request for author evidence.",
+      "Current-main KeyboardEventHandlers.cpp tracks Right Alt when paired with Left Ctrl and preserves AltGr state during shortcut release; current tests cover AltGr state handling but not this exact app-specific Alt+NumPad-to-text sequence."
     ],
-    "recommended_action": "Wait for author feedback.",
-    "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-    "source_updated_at": "2024-03-27T13:41:41Z"
+    "recommended_action": "Confirm whether the exact sequence still reproduces on current stable PowerToys and identify the keyboard layout and how the trigger is represented before designing a state-management change.",
+    "evaluated_at": "2026-11-05T15:15:59Z",
+    "source_updated_at": "2026-10-11T16:47:51Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Revalidated issue in stage 'waiting_on_author': a repository fix attempt is not yet actionable."
+    "status": "proposed",
+    "rationale": "If still present, the failure is consistent with the AltGr-generated Left Ctrl component being released or retained incorrectly as an app-specific text shortcut completes. Current source already contains AltGr handling, so the exact reported sequence must be retested before changing that logic."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Keep AltGr state balanced for app-specific text remaps",
+      "root_cause": "The Right Alt/AltGr trigger may leave the synthetic Left Ctrl component in the wrong state when the Alt+NumPad text remap completes, which would explain why unrelated Keyboard Manager shortcuts remain unusable until restart. Whether this exact text-remap path is still affected is unconfirmed.",
+      "plan": [
+        "Reproduce the reported app-specific Alt+NumPad-to-text mapping on a current stable build using a layout that exposes Right Alt as AltGr.",
+        "Trace the Right Alt and synthetic Left Ctrl down/up sequence through shortcut completion and verify the engine's state is balanced afterward.",
+        "If the state is still corrupted, correct the AltGr-specific release/reset handling for text targets and add a regression test matching the reported sequence.",
+        "Verify that subsequent unrelated remappings work without restarting PowerToys."
+      ],
+      "verification": [
+        "With the same layout and mapping, confirm Left Alt and Right Alt behavior separately.",
+        "After the Right Alt text mapping fires, invoke a second unrelated Keyboard Manager remap and confirm it still works.",
+        "Run the focused AltGr shortcut-remapping regression tests."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The reported symptom fits AltGr modifier-state corruption and current code has an AltGr-specific path, but the report predates that path and gives no keyboard layout or current-release result."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated PowerToys bug report: Remapping ALT + NumPad # breaks KBM when using Right ALT",
+    "summary": "An app-specific Alt+NumPad text remap works with Left Alt, but Right Alt causes a persistent Keyboard Manager modifier/shortcut failure until restart.",
     "known_information": [
-      "Title: Remapping ALT + NumPad # breaks KBM when using Right ALT",
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Upstream issue revalidated during scheduled update run."
+      "The issue reports PowerToys 0.79.0, installed by auto-update and running as administrator.",
+      "The reporter says Left Alt plus NumPad produces the configured text for a specific executable.",
+      "Using Right Alt produces a Right Ctrl/Alt state problem and prevents other Keyboard Manager shortcuts until restart.",
+      "No keyboard layout, current-version test, comments, attachment, or assignee is recorded."
     ],
     "inferences": [
-      "Behavior may depend on local environment or configuration."
+      "Right Alt may be acting as AltGr, which Windows can represent with a Left Ctrl component; the issue does not identify the active layout.",
+      "The failure may be in modifier-state cleanup for the text-remap path, but existing AltGr handling in current main means the 2024 report may already have changed behavior."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The Left-versus-Right Alt contrast and restart workaround point to modifier-state corruption rather than the text payload itself. The current source already contains AltGr-specific shortcut handling, but existing regression coverage does not match this exact app-specific Alt+NumPad-to-text sequence. A current-release check and layout description are the smallest evidence needed before changing that code.",
     "initial_investigation": [
-      "Read issue metadata and comments for issue.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the complete issue; it has one exact repro sequence and no later author or maintainer discussion.",
+      "Read current-main KeyboardEventHandlers.cpp: the shortcut path recognizes Right Alt paired with Left Ctrl and guards modifier release during AltGr shortcut completion.",
+      "Reviewed current-main AltGr regression coverage; it tests AltGr state with another shortcut but not an app-specific Alt+NumPad text mapping.",
+      "Checked current assignment and issue status; the issue is open, unassigned, and has no real outstanding author request."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Whether the reported failure still reproduces on current stable PowerToys",
+        "why_needed": "The only supplied version is 0.79.0, and current code has an AltGr-specific shortcut-state path.",
+        "how_to_collect": "Test the same app-specific Alt+NumPad-to-text mapping on v0.102.3001 or later stable and report the exact version and whether restart is still required.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "information": "The Windows keyboard language/layout and how the editor displays the Right Alt trigger",
+        "why_needed": "AltGr and ordinary Right Alt can produce different modifier event sequences, which determines whether the AltGr state path is involved.",
+        "how_to_collect": "State the active Windows keyboard layout/language and the exact displayed trigger from Keyboard Manager.",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "issue-31922-confirm-current-altgr-repro",
+      "type": "request_info",
+      "label": "Confirm current AltGr reproduction and layout",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the precise Left Alt versus Right Alt steps and for noting that the other Keyboard Manager shortcuts stay broken until restart. Current Keyboard Manager code has an AltGr-specific state path, but the report is from v0.79.0 and the exact keyboard layout is not recorded.\n\nPlease confirm:\n1. Does the same app-specific Alt+NumPad-to-text mapping still fail on current stable PowerToys (v0.102.3001 or later)? If it does, does PowerToys still need to be restarted afterward?\n2. What Windows keyboard language/layout are you using, and does Keyboard Manager display the trigger as Right Alt or AltGr?\n\nThis will tell us whether the old behavior remains and whether AltGr-specific modifier handling is implicated. No additional upload is necessary for this check."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve AltGr text-remap state investigation"
+    }
+  ]
 }

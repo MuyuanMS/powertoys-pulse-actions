@@ -1,33 +1,122 @@
 {
+  "schemaVersion": 5,
   "number": 24475,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "FancyZones does not notice when taskbar auto-hide is disabled",
+  "url": "https://github.com/microsoft/PowerToys/issues/24475",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-04-02T19:47:37Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T23:38:39Z",
+  "evaluated_at": "2026-11-05T23:38:39Z",
+  "source_updated_at": "2026-10-10T20:26:09Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "▶",
+    "label": "Refresh work areas after taskbar changes",
+    "detail": "The current reporter confirms the stale-zone behavior on Windows 11 and PowerToys 0.101.2362; current FancyZones refreshes for SPI_SETWORKAREA notifications."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce the auto-hide transition on current Windows",
+    "reason": "Confirm whether disabling auto-hide delivers the work-area notification FancyZones currently handles, then refresh cached work areas on the actual taskbar transition."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-24475-reproduce-taskbar-autohide-transition",
+      "type": "reproduce",
+      "label": "Reproduce taskbar auto-hide transition",
+      "primary": true,
+      "note": "The original report has a clear sequence; verify it on a current Windows 11 and PowerToys build before choosing which shell notification to handle.",
+      "reproduce": {
+        "title": "Verify FancyZones work-area refresh after disabling taskbar auto-hide",
+        "module": "FancyZones",
+        "version_requirement": "PowerToys 0.101.2362 or newer",
+        "prerequisites": [
+          "Windows 11 with FancyZones enabled",
+          "Taskbar auto-hide enabled and the taskbar at the bottom of the display"
+        ],
+        "setup": [
+          "Keep taskbar auto-hide enabled while starting or restarting FancyZones so it initializes with the taskbar hidden."
+        ],
+        "steps": [
+          "Disable taskbar auto-hide without restarting Windows or FancyZones.",
+          "Shift-drag a window into a zone that reaches the bottom of the display.",
+          "Check whether the window's bottom edge remains above the visible taskbar."
+        ],
+        "expected_result": "FancyZones recomputes the work area after auto-hide is disabled, so the window is positioned above the visible taskbar.",
+        "setup_prompt": "On Windows 11, enable FancyZones and taskbar auto-hide, then restart FancyZones while the taskbar remains hidden."
+      }
+    },
+    {
+      "id": "issue-24475-approve-taskbar-workarea-refresh",
+      "type": "approve_design",
+      "label": "Approve taskbar-state work-area refresh",
+      "primary": false
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The original report gives a specific state transition, and a Windows 11 commenter reconfirmed it on PowerToys 0.101.2362. Current FancyZones handles WM_SETTINGCHANGE only when wParam is SPI_SETWORKAREA, then invalidates cached work areas. If the auto-hide transition does not deliver that message, the cached bounds remain stale; a current reproduction should identify the exact shell notification before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue describes starting FancyZones while the taskbar is auto-hidden, disabling auto-hide without restarting, and then snapping a window into the old full-height zone.",
+      "A 2026-10-10 comment confirms the behavior on PowerToys 0.101.2362 and Windows 11 build 10.0.26200.9457.",
+      "Current upstream FancyZones.cpp handles WM_SETTINGCHANGE only when wParam equals SPI_SETWORKAREA and then calls OnDisplayChange(WorkArea), which updates cached work areas.",
+      "The issue's expected geometry is the current work area with the visible taskbar excluded."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-04-02T19:47:37Z"
+    "recommended_action": "Reproduce on a current Windows 11 build and observe the work-area notifications when auto-hide is disabled. Update FancyZones to invalidate cached work areas for the notification that actually accompanies this transition, then verify the snapped window remains above the taskbar.",
+    "evaluated_at": "2026-11-05T23:38:39Z",
+    "source_updated_at": "2026-10-10T20:26:09Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report matches stale cached work-area geometry, and current code has a single explicit work-area invalidation gate for SPI_SETWORKAREA. The exact Windows notification accompanying the auto-hide transition should be confirmed before selecting the handler.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Invalidate FancyZones work areas on taskbar auto-hide changes",
+      "root_cause": "FancyZones refreshes cached work areas for WM_SETTINGCHANGE only when wParam is SPI_SETWORKAREA. If Windows reports a taskbar auto-hide transition through a different shell notification, the cached work-area geometry can remain at the dimensions captured while the taskbar was hidden.",
+      "plan": [
+        "Reproduce the issue on current Windows 11 and capture which setting or shell message is delivered when auto-hide is disabled.",
+        "In FancyZones::WndProc, route the confirmed taskbar/work-area transition to OnDisplayChange(DisplayChangeType::WorkArea) so UpdateWorkAreas recalculates the current monitor bounds.",
+        "Add or extend a test for changing taskbar auto-hide after FancyZones initialization, and retain the existing display-change and work-area-change behavior."
+      ],
+      "verification": [
+        "With auto-hide enabled at FancyZones startup, disabling it without restarting refreshes the bottom zone to exclude the taskbar.",
+        "Re-enabling auto-hide refreshes the zone to the monitor edge.",
+        "Existing display-resolution, taskbar-position, and virtual-desktop work-area behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The stale-geometry symptom is confirmed on a recent Windows 11 build and current code has an explicit work-area refresh gate, but the exact message emitted by the auto-hide transition needs a current reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones can retain a work area that extends behind the taskbar after taskbar auto-hide is disabled.",
+    "known_information": [
+      "The original report gives steps that start FancyZones while the taskbar is hidden, disable auto-hide, and then snap a window into a bottom zone.",
+      "A 2026-10-10 commenter reports the issue on PowerToys 0.101.2362 and Windows 11 build 10.0.26200.9457.",
+      "Current upstream FancyZones::WndProc refreshes work areas for WM_SETTINGCHANGE when wParam is SPI_SETWORKAREA and for WM_DISPLAYCHANGE."
+    ],
+    "inferences": [
+      "The taskbar auto-hide transition may not reach FancyZones through the SPI_SETWORKAREA branch, leaving previously cached geometry in use.",
+      "Routing the actual transition notification through the existing WorkArea refresh path should update zone bounds without changing normal zone layout behavior."
+    ],
+    "analysis": "The issue's sequence isolates a stale work-area cache: FancyZones is initialized while the taskbar is hidden, and the mismatch appears only after auto-hide is disabled. Current code already has a cache invalidation route for work-area changes, but only for SPI_SETWORKAREA. Confirm the notification delivered by the current Windows build before adding another message or shell hook.",
+    "initial_investigation": [
+      "Read the full issue and all four comments; the latest commenter supplied a current Windows 11 and PowerToys version.",
+      "Inspected current upstream FancyZones.cpp: WM_SETTINGCHANGE checks SPI_SETWORKAREA and calls OnDisplayChange(WorkArea); that path invokes UpdateWorkAreas."
+    ],
+    "information_gaps": []
   }
 }

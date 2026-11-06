@@ -1,33 +1,130 @@
 {
+  "schemaVersion": 5,
   "number": 42183,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-10-17T17:14:28Z",
+  "generated_at": "2026-11-05T00:00:00Z",
+  "evaluated_at": "2026-11-05T00:00:00Z",
+  "source_updated_at": "2026-10-23T18:06:06Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/42183",
+  "title": "Mouse Without Borders Consuming Too much RAM (16.8 GB)",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproducible",
+    "detail": "Two reports tie sustained memory growth to clipboard sharing. Current image-transfer code has a concrete undisposed-image candidate, but its contribution still needs a controlled reproduction."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Reproduce repeated image clipboard transfers while measuring memory on both paired machines before approving a fix.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The original report describes 11–17 GB after hibernation and includes a bug-report ZIP plus Event Viewer XML. A later commenter on v0.102.2933.0 reports client memory rising from under 100 MB to about 1 GB in roughly an hour, with clipboard sharing disabled slowing the growth. Current Mouse Without Borders code serializes clipboard images and disposes the MemoryStream without disposing the Image. This is a credible resource-lifetime hypothesis, not proof that image copies explain every report or the 11–17 GB peak.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The open issue is labeled Issue-Bug and Product-Mouse Without Borders and has no assignee.",
+      "The original author reports 11–17 GB after hibernation and supplied a bug-report ZIP and Event Viewer XML; those private diagnostics were not inspected or treated as source proof.",
+      "A 2026-10-23 commenter reports v0.102.2933.0 client memory rising from below 100 MB to about 1 GB in about an hour, and says disabling clipboard sharing slows but does not stop it.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, FormHelper.cs:276-307 obtains ClipboardMMHelper.GetImage(), serializes it, and disposes the stream but not the Image; IClipboardHelper.cs:468-487 returns System.Windows.Forms.Clipboard.GetImage().",
+      "A direct pull-request search for this issue returned no linked PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-10-17T17:14:28Z"
-  }
+    "recommended_action": "Reproduce the memory growth with image-only clipboard updates and compare the main and helper processes on both paired machines.",
+    "evaluated_at": "2026-11-05T00:00:00Z",
+    "source_updated_at": "2026-10-23T18:06:06Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current clipboard-image serialization branch leaves the returned Image undisposed while disposing only its MemoryStream. That is a specific candidate for unmanaged-memory growth, but image-transfer frequency and the growing process have not been established.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "The original report describes a very large Mouse Without Borders memory increase after hibernation; a later report describes gradual client growth that is slowed by disabling clipboard sharing.",
+    "known_information": [
+      "The original report lists PowerToys 0.93.0, Windows 11 23H2, and memory use of 11–17 GB; it includes a bug-report ZIP and Event Viewer XML.",
+      "A later commenter reports v0.102.2933.0, client memory rising from below 100 MB to about 1 GB in about an hour, and slower growth when clipboard sharing is disabled.",
+      "The issue has no assignee and has two accessible public comments."
+    ],
+    "inferences": [
+      "Clipboard synchronization is implicated by the later commenter, but the issue does not establish which machine or process owns the growing allocation.",
+      "The current image-transfer path has a potential unmanaged-image lifetime leak; this may explain growth when image clipboard data is handled, but does not by itself explain the hibernate trigger or all reported memory levels."
+    ],
+    "analysis": "A focused maintainer reproduction is justified before designing a broad memory fix. Current main provides a narrow image-serialization lifetime candidate: FormHelper.cs obtains an Image and serializes it, but only disposes the MemoryStream. The supplied diagnostics are acknowledged but were not inspected.",
+    "initial_investigation": [
+      "Read the live issue body, both public comments, labels, assignees, and attachment links through 2026-10-23T18:06:06Z.",
+      "Read current upstream source at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: MouseWithoutBorders/App/Helper/FormHelper.cs:276-307 and App/Class/IClipboardHelper.cs:468-487.",
+      "Checked for a directly linked pull request; none was returned by the issue-number search."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether growth follows image clipboard updates versus text-only updates, and which paired machine/process grows.",
+        "why_needed": "This distinguishes the undisposed image path from other clipboard traffic and identifies the process that owns the reported allocation.",
+        "how_to_collect": "Compare image-only and text-only clipboard updates; reply with the host/client role, process name, and approximate memory change. No need to re-upload existing diagnostic files."
+      }
+    ]
+  },
+  "proposed_fixes": [
+    {
+      "title": "Dispose clipboard images after serialization",
+      "root_cause": "Hypothesis: each clipboard-image event creates an Image through System.Windows.Forms.Clipboard.GetImage(); FormHelper serializes it to PNG but does not dispose the Image. Repeated events could retain native image memory. The reports tie growth to clipboard sharing but do not prove this path is the dominant cause.",
+      "plan": [
+        "Reproduce repeated image clipboard updates and measure memory for MouseWithoutBorders.exe and its helper on both paired machines; compare text-only and sharing-disabled controls.",
+        "Confirm the returned Image lifetime and determine whether growth tracks undisposed image objects.",
+        "If confirmed, dispose each returned Image after PNG serialization on success and failure paths, then add focused regression coverage."
+      ],
+      "verification": [
+        "Repeated image transfers must not cause unbounded memory growth in either paired process, and clipboard contents must still arrive correctly.",
+        "Text-only synchronization and the clipboard-sharing-disabled control must retain their existing behavior."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "The missing Image disposal is visible in the exact current transfer path and plausibly retains unmanaged memory, but transfer frequency and the growing process have not been established."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve clipboard image lifetime fix",
+      "note": "Confirm the image-ownership hypothesis before changing the transfer path."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce clipboard image memory growth",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version_requirement": "Use the reported v0.102.2933.0 and a current supported build when available.",
+        "prerequisites": [
+          "Two paired Windows machines with Mouse Without Borders enabled.",
+          "Clipboard sharing enabled; repeat separately with it disabled."
+        ],
+        "setup": [
+          "Record baseline memory for MouseWithoutBorders.exe and its clipboard helper on both machines."
+        ],
+        "steps": [
+          "Copy a series of image clipboard payloads from one machine and allow each transfer to complete.",
+          "Monitor private bytes and handle counts for both processes on both machines for about an hour; repeat with text-only clipboard updates.",
+          "Repeat after hibernation/resume and with clipboard sharing disabled as a control."
+        ],
+        "expected_result": "Clipboard transfers complete while process memory remains bounded; image-only activity does not produce a continuing per-transfer memory increase."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Clarify clipboard growth conditions",
+      "comment": {
+        "target": "issue",
+        "number": 42183,
+        "body": "Thanks for the supplied ZIP and Event Viewer XML, and for noting that disabling clipboard sharing slows the growth. To distinguish image transfers from other clipboard traffic, could you confirm whether repeated image copies grow memory faster than text-only updates, and which PC/process (host or client, MouseWithoutBorders.exe or its helper) climbs? No need to send the existing files again."
+      }
+    }
+  ]
 }

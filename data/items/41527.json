@@ -1,33 +1,128 @@
 {
+  "schemaVersion": 5,
   "number": 41527,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remapped key randomly appears in Google Chrome",
+  "url": "https://github.com/microsoft/PowerToys/issues/41527",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:08:22Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:55:00Z",
+  "evaluated_at": "2026-11-05T20:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:32Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce browser-only French key remap behavior",
+    "detail": "The French ²-to-backslash remap reportedly fails and emits stray characters in Chrome and Edge, while working in most other applications."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report provides the source key, intended output, both Keyboard Manager send methods, two affected Chromium browsers, and working behavior in most other applications. That is sufficient for a focused reproduction, but the event path and exact context of the stray insertion are not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter uses a French keyboard and maps ² to backslash.",
+      "Both Send Text and Send Key methods were tried.",
+      "Chrome 139 and Edge 139 reportedly print the original key instead of applying the remap and sometimes insert the mapped character during ordinary typing.",
+      "The remap works in most other applications."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:08:22Z"
-  }
+    "recommended_action": "Reproduce both configured send methods in Chrome and Edge, compare them with a non-Chromium text editor, and determine whether the unwanted input is produced by remap injection or browser key processing.",
+    "evaluated_at": "2026-11-05T20:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If reproduced, Keyboard Manager should deliver the configured output exactly once in Chromium without forwarding the source key or inserting output during unrelated typing. The exact injection path must be confirmed before choosing a code change."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent stray or missing input for French key remaps in Chromium",
+      "root_cause": "The Keyboard Manager remap may be generating or suppressing keyboard events in a way that Chromium handles differently from the applications where the same mapping works; this remains a hypothesis.",
+      "plan": [
+        "Reproduce the ²-to-backslash mapping separately with Send Text and Send Key in Chrome and Edge, then compare with a non-Chromium editor.",
+        "Trace source and injected events for the remapped key and for ordinary typing to identify whether the source key leaks or output is injected spuriously.",
+        "Correct the event suppression or output path identified by the trace and add regression coverage for both mapping methods."
+      ],
+      "verification": [
+        "The ² key produces one backslash in Chrome and Edge with each supported send method.",
+        "Ordinary typing in both browsers never inserts a backslash unless the remapped key is pressed.",
+        "The same mapping continues to work in a non-Chromium application."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The reporter isolates a browser-specific symptom and has tested both send methods, but no current reproduction or event trace identifies the failing boundary."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A French-layout ²-to-backslash remap reportedly leaks or loses input in Chrome and Edge despite working in most other applications.",
+    "known_information": [
+      "The issue was reported on PowerToys 0.93.0, Windows build 26100, Chrome 139, and Edge 139.",
+      "The reporter tried both Send Text and Send Key.",
+      "The reporter says the remap works in most applications but not in Chrome or Edge."
+    ],
+    "inferences": [
+      "The browser-only difference may involve how injected text or key events are interpreted, but no event trace confirms that."
+    ],
+    "analysis": "The same reported symptom across Chrome and Edge, with success in most other applications, makes a focused browser comparison more useful than requesting generic diagnostics. Reproduction should first establish whether the failure occurs in the address bar, web content, or both.",
+    "initial_investigation": [
+      "Read the issue body and all comments; there are no comments or author replies.",
+      "Reviewed #28031, a broad older report that keyboard remapping generally fails in browsers; its version and symptom do not establish that it covers this French-layout stray-input case."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the stray insertion occurs in both browser chrome and web-page text fields, and whether the same behavior remains on current stable",
+        "why_needed": "This distinguishes browser-wide event handling from a particular text-input surface and verifies that the 0.93-era report is still current.",
+        "how_to_collect": "Confirm the current PowerToys version and whether the symptom occurs in the address bar and a plain web-page text field using each of the two existing mappings.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41527-confirm-browser-surfaces",
+      "type": "request_info",
+      "label": "Confirm affected browser input surfaces",
+      "primary": true,
+      "comment": {
+        "body": "You reported that the ²-to-backslash mapping fails and sometimes inserts stray characters in Chrome and Edge with both Send Text and Send Key. Could you confirm whether this still happens on your current PowerToys version, and whether it occurs in both the address bar and a plain web-page text field?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the French key remap in Chromium",
+      "reproduce": {
+        "title": "Compare ²-to-backslash remapping across browser input surfaces",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.93.0 or newer",
+        "prerequisites": [
+          "Windows with a French keyboard layout",
+          "Chrome and Edge installed",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Configure the physical ² key to send a backslash using Send Text, then repeat with Send Key."
+        ],
+        "steps": [
+          "In Chrome, type ordinary text in the address bar and a plain web-page text field without pressing ²; check for stray backslashes.",
+          "Press ² in each field and record whether a backslash, ², or another character appears.",
+          "Repeat both checks in Edge.",
+          "Repeat the same mapping and checks in a non-Chromium text editor."
+        ],
+        "expected_result": "The mapped key sends exactly one backslash in each application, and ordinary typing does not insert a backslash."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the browser remapping investigation"
+    }
+  ]
 }

@@ -2,76 +2,114 @@
   "schemaVersion": 5,
   "number": 47941,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[Keyboard Manager] Editor Randomly Activates / Deactivates Shortcuts; Toggles On \"Allow Chords\" On Its Own",
+  "url": "https://github.com/microsoft/PowerToys/issues/47941",
   "track": "fix",
-  "stage": "triage",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-17T15:59:17Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T22:20:45Z",
+  "evaluated_at": "2026-11-05T22:20:45Z",
+  "source_updated_at": "2026-10-11T16:46:57Z",
   "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+    "glyph": "?",
+    "label": "Needs a current editor-state repro",
+    "detail": "The report describes unexpected chord-toggle and shortcut activation changes, but has no current-version repro or exact before/after state."
   },
   "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
+    "glyph": "?",
+    "label": "Confirm current Allow chords and remapping behavior",
+    "reason": "A current repro and the affected profile state will distinguish a persisted editor-state defect from the related, not-reproduced toggle report."
   },
   "actions": [
     {
+      "id": "issue-47941-current-editor-state",
+      "type": "request_info",
+      "label": "Confirm current Allow chords and remapping behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for confirming that you're using the new editor. Your report describes both an unexpected `Allow chords` toggle after saving a Right Alt shortcut and other mappings becoming disabled when you turn that option off. A related report (#49085) mentions the toggle, but a commenter could not reproduce it in v0.100.2, and it does not establish why other mappings are disabled. Could you confirm whether this still happens on v0.102.3001? If it does, please record the exact shortcut you added, whether the affected mappings are in the same profile, and the states of `Allow chords` and those mappings immediately before saving and after reopening."
+      }
+    },
+    {
+      "id": "issue-47941-approve-state-isolation",
       "type": "approve_design",
-      "label": "Approve design",
-      "description": "Approve fork-side implementation design for issue 47941"
+      "label": "Approve Keyboard Manager state-isolation design"
     }
   ],
-  "confidence": "Medium",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "rationale": "The reporter says the new editor is in use and describes two distinct state changes, but does not provide an exact current-version sequence or show whether the affected mappings belong to one profile. A related open report #49085 covers automatic Allow chords activation, yet a commenter could not reproduce that symptom on v0.100.2; the report also does not explain the separate mapping deactivation. A comment points to #47806 for unrequested deactivation, but that reference does not establish a fix or coverage here.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The body says saving a Right Alt remap is followed by Allow chords being enabled without user action.",
+      "The body separately says turning Allow chords off leaves other shortcuts disabled.",
+      "A commenter confirms use of the new editor.",
+      "A later commenter could not reproduce the toggle but notes that #49085 reports it in v0.100.2.",
+      "Another commenter references #47806 for unrequested mapping deactivation; no assignee or matching PR was found."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-17T15:59:17Z"
+    "recommended_action": "Ask whether both behaviors still reproduce on v0.102.3001 and capture the exact mapping and profile state before saving and after reopening.",
+    "evaluated_at": "2026-11-05T22:20:45Z",
+    "source_updated_at": "2026-10-11T16:46:57Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+    "rationale": "If current reproduction confirms the report, a likely fix is to keep the chord-enable preference and unrelated mapping activation state independent across save, reload, and profile changes. The persistence path and triggering state are not yet established."
   },
   "proposed_fixes": [
     {
-      "title": "Needs diagnostic information",
-      "root_cause": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+      "title": "Keep chord and mapping activation state independent",
+      "root_cause": "The editor may be persisting or restoring the Allow chords option together with unrelated shortcut activation state. The report does not yet show whether the change occurs during save, reload, or profile selection.",
       "plan": [
-        "Investigate and isolate the failure path in the owning module.",
-        "Apply the targeted fix to restore expected behavior.",
-        "Verify with regression tests and reproduction steps."
+        "Reproduce both state changes on the current stable build using the new editor and record the selected profile and mapping states before and after reopening.",
+        "Trace the editor save/load path for the chord preference and shortcut activation flags, keeping the two state values independent.",
+        "Correct the state update so changing Allow chords cannot activate or deactivate unrelated mappings.",
+        "Add regression coverage for save/reload and profile switching with Right Alt shortcut mappings."
       ],
-      "verification": "Reproduce original steps and verify expected behavior.",
+      "verification": [
+        "After saving and reopening, Allow chords retains only the value explicitly selected by the user.",
+        "Turning Allow chords off does not change activation state for unrelated mappings in the same or another profile."
+      ],
       "confidence": {
-        "score": 85,
-        "level": "green",
-        "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The issue identifies a specific editor setting and two reproducible-looking state transitions, but the exact save/load or profile path is unknown and a related report was not reproduced."
       }
     }
   ],
   "issue_context": {
-    "summary": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "known_information": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "inferences": [
-      "Behavior consistent with reported symptoms in the affected component."
+    "summary": "Keyboard Manager's new editor reportedly enables Allow chords after saving a Right Alt shortcut and can leave other mappings disabled when that option is turned off.",
+    "known_information": [
+      "The reporter says they use the new editor and that the issue occurs after saving a Right Alt remap.",
+      "The body reports both an unexpected Allow chords toggle and unrelated shortcuts becoming disabled.",
+      "The issue has no screenshot, report archive, or current PowerToys version.",
+      "A related issue #49085 reports automatic Allow chords activation; a commenter could not reproduce it on v0.100.2.",
+      "A comment refers to #47806 for unrequested mapping deactivation, but no verified fix is established."
     ],
-    "analysis": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
-    "initial_investigation": "Reviewed issue description, labels, and module ownership.",
+    "inferences": [
+      "The two symptoms may share a persistence or profile-state path, but the report does not establish that they have the same cause.",
+      "The related #49085 report does not cover the separate mapping deactivation symptom."
+    ],
+    "analysis": "The existing report is too old and underspecified to distinguish a current editor defect from a state/profile interaction. The next useful evidence is a current-version repro that records the selected shortcut, profile, and exact state changes. A generic diagnostic archive is not the next discriminating input.",
+    "initial_investigation": [
+      "Refreshed the complete issue body and all three comments; confirmed the author mentioned the new editor and no assignee is present.",
+      "Compared the reported toggle with related issue #49085 and retained the commenter’s non-reproduction caveat.",
+      "Recorded the #47806 reference without treating it as a verified covering fix.",
+      "Searched for PRs referencing #47941; none were returned."
+    ],
     "information_gaps": [
       {
-        "evidence_type": "bugreport_zip",
-        "information": "PowerToys diagnostic /bugreport ZIP or detailed reproduction steps.",
-        "why_needed": "To confirm module logs, settings state, and exact failure context.",
-        "how_to_collect": "Please reproduce the issue and submit a comment with /bugreport to generate diagnostic logs."
+        "information": "Whether both state changes still reproduce on v0.102.3001, and whether turning Allow chords off disables unrelated mappings in the same or another profile",
+        "why_needed": "The issue does not give a precise current version or state transition, and the related toggle report was not reproduced on v0.100.2.",
+        "how_to_collect": "On v0.102.3001, save a Right Alt shortcut in the new editor, reopen it, and record the selected profile plus the Allow chords and unrelated-mapping states before saving and after reopening.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   }

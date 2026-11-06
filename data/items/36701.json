@@ -1,33 +1,132 @@
 {
+  "schemaVersion": 5,
   "number": 36701,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager mapping of keys causes wacom device express keys to not function properly.",
+  "url": "https://github.com/microsoft/PowerToys/issues/36701",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:25:02Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:46Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm Wacom shortcut behavior on current release",
+    "detail": "The report gives a specific Ctrl-to-Win remap and Wacom ExpressKey example, but it is from PowerToys 0.87.1 and has no current-version or driver detail."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says Wacom ExpressKeys configured to send Ctrl+Z are transformed to Win+Z while Keyboard Manager remaps Ctrl to Win, and that disabling Keyboard Manager restores the Wacom behavior. The issue has no comments or current-version confirmation. The Wacom driver version and whether ordinary keyboard input is remapped correctly would help distinguish input injection/device behavior from a general remap regression.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.87.1 on Windows 11 and a Wacom Intuos Pro PTH-451.",
+      "The reporter configured Keyboard Manager to remap Ctrl to Win and Wacom ExpressKeys to send Ctrl+Z; the observed result is Win+Z.",
+      "The reporter says disabling Keyboard Manager restores the Wacom ExpressKey behavior.",
+      "Wacom's configuration software and Adobe Illustrator 29.1 are listed; no driver version or comments are present.",
+      "The issue is open and unassigned; no linked fix was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:25:02Z"
-  }
+    "recommended_action": "Ask for current-version confirmation, Wacom driver version, and a comparison with the same remap from a physical keyboard; reproduce the input path before choosing whether the behavior is a defect or a supported-scope limitation.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:46Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds still rewrite Wacom-generated Ctrl+Z to Win+Z, the interaction between Keyboard Manager remapping and the tablet driver's keyboard events needs investigation. The report alone does not establish whether those events are supported input or how they are produced."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve the expected remap for Wacom ExpressKey shortcuts",
+      "root_cause": "Keyboard Manager may apply the Ctrl-to-Win remap to Wacom-generated shortcut events in a way that changes the tablet action, or the tablet driver may emit an event sequence that differs from a physical keyboard. The report does not yet identify which mechanism applies.",
+      "plan": [
+        "Confirm the behavior on current stable with the reported Ctrl-to-Win mapping and Wacom ExpressKey action.",
+        "Compare the same Ctrl+Z input from a physical keyboard and the tablet.",
+        "Trace the event path and clarify whether the remap should apply to this input source.",
+        "If supported input is mishandled, correct it and add a focused regression test."
+      ],
+      "verification": [
+        "Verify the Wacom ExpressKey's shortcut behavior in Illustrator with the mapping active.",
+        "Compare tablet input with a physical keyboard using the same shortcut.",
+        "Verify disabling Keyboard Manager is no longer required to obtain the intended Wacom action."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The symptom and workaround are specific, but current behavior, driver details, and the origin of the tablet's keyboard events are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Wacom ExpressKey configured for Ctrl+Z reportedly produces Win+Z when Keyboard Manager remaps Ctrl to Win; disabling Keyboard Manager restores the tablet action.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1, Windows 11, and a Wacom Intuos Pro PTH-451.",
+      "Keyboard Manager remaps Ctrl to Win while a Wacom ExpressKey is configured to send Ctrl+Z.",
+      "The reporter says the Wacom action works when Keyboard Manager is disabled.",
+      "No comments, current-version confirmation, or Wacom driver version are present."
+    ],
+    "inferences": [
+      "The tablet may send shortcut events through a path that interacts differently with Keyboard Manager than physical keyboard input; the report does not establish the event mechanism."
+    ],
+    "analysis": "The report is detailed enough to reproduce the mapping, but the old PowerToys version and missing driver/input-path comparison prevent a specific root-cause claim. Do not assume whether tablet-generated input is in the supported remap scope.",
+    "initial_investigation": [
+      "Read the full report, including the exact remap, tablet model, application, workaround, labels, state, and comments.",
+      "No linked fix or cross-reference was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the issue persists on current stable, the Wacom tablet driver version, and whether physical-keyboard Ctrl+Z is remapped as expected",
+        "why_needed": "This comparison distinguishes a stale report from a device-event interaction and helps identify whether the problem is specific to Wacom-generated shortcut input.",
+        "how_to_collect": "On current stable PowerToys, repeat the Wacom ExpressKey Ctrl+Z test, note the Wacom driver version from its settings/about page, and test Ctrl+Z from a physical keyboard with the same Ctrl-to-Win remap enabled.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36701-confirm-wacom-input-path",
+      "type": "request_info",
+      "label": "Confirm Wacom remap behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for giving the exact Ctrl-to-Win mapping and Wacom ExpressKey Ctrl+Z setup, and for noting that disabling Keyboard Manager restores it. Could you confirm whether this still happens on current stable PowerToys, include the Wacom driver version, and say whether Ctrl+Z from a physical keyboard is remapped correctly while the same mapping is enabled? That comparison will help isolate the tablet input path; no generic log bundle is needed at this stage."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Wacom input-path investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the Wacom ExpressKey remap",
+      "note": "Compare tablet and physical-keyboard input with the same Keyboard Manager mapping enabled.",
+      "reproduce": {
+        "title": "Compare Wacom and physical keyboard shortcuts",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Windows 11",
+          "Keyboard Manager enabled",
+          "Wacom Intuos Pro PTH-451 with its configuration software"
+        ],
+        "setup": [
+          "Map Ctrl to Win in Keyboard Manager.",
+          "Configure a Wacom ExpressKey to send Ctrl+Z."
+        ],
+        "steps": [
+          "In Illustrator, invoke Ctrl+Z from a physical keyboard and record the result.",
+          "Invoke the configured Wacom ExpressKey and record whether it behaves as Ctrl+Z or Win+Z.",
+          "Repeat with Keyboard Manager disabled and compare."
+        ],
+        "expected_result": "The Wacom ExpressKey should produce the expected shortcut behavior, consistent with the reporter's intended remap and the corresponding physical-keyboard test."
+      }
+    }
+  ]
 }

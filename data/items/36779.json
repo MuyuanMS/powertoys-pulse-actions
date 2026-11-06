@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 36779,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Shortcut remapping for Keyboard Manager is not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/36779",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:23:59Z",
+  "stage": "waiting_on_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2025-01-29T19:36:17Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T19:55:00Z",
+  "evaluated_at": "2026-11-05T19:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:37Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting the existing remap and docked-keyboard clarification",
+    "detail": "A January 29, 2025 comment asks whether locking and unlocking restores the Win+Shift+S remap; a second commenter asks whether the issue occurs with a keyboard connected through a dock. Neither has a response from the reporter."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "waiting_on_author",
+    "rationale": "The report says Win+Shift+S is configured for no action but still opens the Windows screenshot UI, on PowerToys 0.87.1. A commenter asks whether locking and unlocking restores remapping, and another asks whether a keyboard connected through a dock is expected to work; neither question has an author response. Similar-issue bot suggestions do not establish coverage, and the separately referenced #35556 was closed as a duplicate of #32385, a broader Shift-state problem rather than this exact disabled-shortcut scenario.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report lists PowerToys 0.87.1 and says Win+Shift+S is configured for no action but still invokes the Windows screenshot shortcut.",
+      "A second commenter asks whether the mapping should work with a keyboard connected through a dock.",
+      "A January 29, 2025 commenter asks whether locking and unlocking restores the remap; no reporter response is present.",
+      "Issue #35556 was closed as a duplicate of #32385, which concerns Shift state becoming soft-deactivated and does not prove that the Win+Shift+S disabled mapping is covered."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:23:59Z"
-  }
+    "recommended_action": "Preserve the existing wait for the reporter to confirm whether lock/unlock restores the shortcut and whether the mapping is used on a docked keyboard; do not post a duplicate request.",
+    "evaluated_at": "2026-11-05T19:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:37Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds still pass Win+Shift+S through despite a no-action mapping, the OS may consume the reserved shortcut before Keyboard Manager suppresses it, or the mapping may not be applied to the active keyboard. Current behavior and dock/lock conditions need confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Suppress supported shortcuts mapped to no action",
+      "root_cause": "The remapping pipeline may not suppress a reserved Win+Shift+S event before Windows invokes the screenshot UI, or the active keyboard may not receive the configured mapping.",
+      "plan": [
+        "Check whether the existing mapping still reproduces on current stable and inspect the source/destination shown in the issue screenshot.",
+        "Test with the built-in keyboard and, if available, the dock-connected keyboard described by a commenter.",
+        "Check whether locking and unlocking restores the mapping, without treating that workaround as a permanent fix.",
+        "If the combination is supported, ensure the no-action mapping suppresses the OS action; otherwise present a clear reserved-shortcut limitation."
+      ],
+      "verification": [
+        "Verify the configured no-action mapping prevents the screenshot UI on supported keyboards.",
+        "Verify mapping behavior after lock/unlock and after restarting PowerToys.",
+        "Verify other Win+Shift shortcuts are not unintentionally suppressed."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The failed Win+Shift+S behavior is specific, but current behavior, OS reservation constraints, and dock/lock conditions are unanswered."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Win+Shift+S reportedly still opens the Windows screenshot UI after Keyboard Manager maps it to no action.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1 and includes a screenshot of the mapping.",
+      "The expected result is no action; the actual result is the Windows screenshot shortcut.",
+      "A commenter asks whether locking and unlocking restores the mapping; another asks about a dock-connected keyboard."
+    ],
+    "inferences": [
+      "The OS may intercept the reserved shortcut before Keyboard Manager suppresses it, but this has not been demonstrated."
+    ],
+    "analysis": "The existing unanswered questions already request the discriminating lock/unlock and dock details. A maintainer can also reproduce the no-action mapping on current stable without posting a duplicate comment.",
+    "initial_investigation": [
+      "Read the issue body and all comments, including the mapping screenshot reference and unanswered follow-ups.",
+      "Reviewed #35556 and #32385; the former is closed as a duplicate of the latter, which addresses a distinct soft-deactivated Shift symptom."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether lock/unlock restores the Win+Shift+S mapping and whether the same behavior occurs with a dock-connected keyboard on current stable",
+        "why_needed": "These conditions distinguish an OS-reserved shortcut limitation from stale mapping state or an external-keyboard path.",
+        "how_to_collect": "Reply to the existing comments with the current PowerToys version, whether Win+L followed by sign-in restores the mapping, and whether the failure occurs on the built-in and dock-connected keyboards.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Win+Shift+S no-action mapping",
+      "note": "The existing lock/unlock and docked-keyboard questions remain unanswered; do not post duplicates.",
+      "reproduce": {
+        "title": "Test the Win+Shift+S no-action mapping",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "A keyboard available for remapping"
+        ],
+        "setup": [
+          "Use the mapping shown in the issue screenshot: map Win+Shift+S to no action."
+        ],
+        "steps": [
+          "Press Win+Shift+S on the configured keyboard.",
+          "Repeat with a dock-connected keyboard if available.",
+          "Lock and unlock Windows, then test the mapping again."
+        ],
+        "expected_result": "The no-action mapping prevents the screenshot UI on supported keyboards and behaves consistently after lock/unlock."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the reserved-shortcut investigation"
+    }
+  ]
 }

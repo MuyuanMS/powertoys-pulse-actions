@@ -1,33 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 46980,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager sequence-to-text mapping uses paste in protected fields",
+  "url": "https://github.com/microsoft/PowerToys/issues/46980",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:51:14Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:40Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm sequence input behavior on current release",
+    "detail": "A shortcut sequence reportedly inserts text by paste, which is blocked by password fields and SSH terminals; current-version behavior is unconfirmed."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter lists PowerToys 0.98.1 and says a Ctrl+` E sequence used to type text character-by-character but now behaves like Ctrl+V, which a protected third-party password field blocks. Another user confirms the paste behavior is incompatible with SSH terminals. The report requests a choice between pasting text and emitting keystrokes; no current-version confirmation is present.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.98.1 from WinGet on Windows 11 Pro 25H2 with Polish locale.",
+      "The reporter says the Ctrl+` E sequence previously typed the target text but now behaves like Ctrl+V in a third-party password field.",
+      "A second user confirms the behavior is a Ctrl+V operation and says it is incompatible with SSH terminals.",
+      "The reporter does not disclose the third-party application name; the report has no diagnostic attachment."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:51:14Z"
-  }
+    "recommended_action": "Ask whether current stable still emits paste for the sequence action and whether an explicit keystroke-sequence option would cover the use case; do not ask for the protected app name or password contents.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:40Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reporter and a second user describe paste-based output as incompatible with protected fields and SSH terminals. A separate keystroke-sequence mode could preserve the existing paste behavior while supporting targets that block paste, but the latest version behavior and desired configuration are unconfirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Offer keystroke-sequence output alongside paste-based text insertion",
+      "root_cause": "The new Keyboard Manager sequence action appears to emit its text through the clipboard/paste path, which protected fields and some SSH terminals reject. The report asks for a choice between paste and character-by-character input.",
+      "plan": [
+        "Confirm the current editor's output mode for sequence-to-text mappings and the exact behavior in a protected field or SSH terminal.",
+        "Add an explicit output choice if the current behavior is paste-only: paste text or emit a keystroke sequence.",
+        "Preserve the current paste mode as the default unless product requirements specify otherwise.",
+        "Add focused tests for both modes and a target that blocks clipboard paste."
+      ],
+      "verification": [
+        "Verify paste mode continues to insert text in ordinary editable fields.",
+        "Verify keystroke-sequence mode types the configured characters into a protected field or SSH terminal that blocks Ctrl+V.",
+        "Verify no password or other sensitive text is included in diagnostics or logs."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "Two users confirm paste-based behavior and the requested alternative is clear, but current-version behavior and product support expectations are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keyboard Manager sequence reportedly pastes text with Ctrl+V instead of emitting individual keystrokes, so protected password fields and SSH terminals reject it.",
+    "known_information": [
+      "The report lists PowerToys 0.98.1 from WinGet on Windows 11 Pro 25H2.",
+      "The configured Ctrl+` E sequence reportedly used to type text and now behaves like Ctrl+V.",
+      "A second user confirms the paste operation is incompatible with SSH terminals.",
+      "The original reporter intentionally does not disclose the protected third-party application name."
+    ],
+    "inferences": [
+      "The new editor may use clipboard paste for sequence text, but an explicit current-build comparison is still needed."
+    ],
+    "analysis": "The requested behavior is a choice of output mechanism rather than a request to bypass a specific application's security. Keep the report's privacy boundary: do not ask for the app name or any password contents.",
+    "initial_investigation": [
+      "Read the full issue and follow-up, including the exact sequence, versions, protected-field behavior, SSH confirmation, labels, and absence of diagnostics.",
+      "No linked fix or cross-reference was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether current stable still performs paste for sequence-to-text mappings and whether a selectable keystroke-sequence mode would resolve the reported use case",
+        "why_needed": "This determines whether the behavior is still present and confirms the desired distinction between paste and character-by-character output.",
+        "how_to_collect": "On current stable, test the sequence in a safe non-sensitive protected field or SSH terminal and report whether it pastes or types characters. Do not share the application name, password, or sensitive text.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-46980-confirm-sequence-output-mode",
+      "type": "request_info",
+      "label": "Confirm sequence output behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for describing the sequence and the protected-field limitation; the SSH follow-up also confirms that paste is not equivalent to typing characters. Could you confirm whether current stable still performs a Ctrl+V-style paste for this mapping, and whether a selectable keystroke-sequence mode would address the problem? Please do not share the application name, password, or any sensitive text."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the sequence-output option design"
+    }
+  ]
 }

@@ -1,47 +1,91 @@
 {
   "schemaVersion": 5,
   "number": 27568,
+  "title": "Keyboard Manager Doesn't Work in Task Manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/27568",
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Status-Reproducible",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 03:10:51",
+  "generated_at": "2026-11-05T14:24:48.007Z",
+  "evaluated_at": "2026-11-05T14:24:48.007Z",
+  "source_updated_at": "2026-10-11T16:48:08Z",
+  "comments": 8,
+  "status": {
+    "glyph": "↻",
+    "label": "Reproduce the focus-specific Task Manager behavior",
+    "detail": "A July 2026 commenter confirms remaps do not apply in Task Manager on PowerToys 0.100.2 / Windows 11 25H2, but the issue has conflicting elevation reports and no evidence that the behavior is a PowerToys defect rather than an integrity boundary."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "Task Manager and similar protected/system surfaces ignore remaps differently from normal apps.",
+    "status": "reproducible",
+    "rationale": "The original report gives a clear focused-window comparison and has a maintainer request for a bug report; the author later said the behavior was the same with PowerToys elevated and non-elevated. Other commenters report that running elevated fixed some cases or that higher-integrity apps/UAC prompts can block remaps. A July 2026 commenter confirms on PowerToys 0.100.2 and Windows 11 25H2 that remaps do not affect Task Manager. This is enough for a controlled maintainer reproduction, but it does not establish whether Task Manager is expected to ignore remaps or whether an injection failure exists.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The issue reports that a Caps Lock remap works in ordinary apps but not when Task Manager is focused; media-key remaps are also mentioned.",
+      "The original author said the behavior was the same when PowerToys ran as administrator or not.",
+      "A second commenter reported that running PowerToys as administrator fixed their case and mentioned other elevated apps and UAC prompts.",
+      "A July 29, 2026 commenter reports the same no-remap behavior on PowerToys 0.100.2 and Windows 11 25H2.",
+      "Current Keyboard Manager source contains explicit handling for input injection blocked by UIPI, but the public discussion does not establish Task Manager’s integrity level in the reported case."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 03:10:51"
+    "recommended_action": "Reproduce on a current build with an ordinary-app control and compare standard/elevated PowerToys sessions before deciding whether this is an expected privilege boundary or a fixable defect.",
+    "evaluated_at": "2026-11-05T14:24:48.007Z",
+    "source_updated_at": "2026-10-11T16:48:08Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "rationale": "Current-build no-remap behavior is corroborated, but the discussion contains conflicting elevation results and current code acknowledges UIPI-blocked injection. The intended behavior and target integrity boundary must be established before proposing a code change."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Keyboard Manager Doesn't Work in Task Manager",
+    "summary": "Keyboard Manager remaps reportedly stop applying when Task Manager is the focused window, while ordinary applications work.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 03:10:51",
-      "."
+      "The original report lists PowerToys 0.71.0 and Windows 11 Insider Preview; it says Caps Lock and media-key remaps work in ordinary apps but not Task Manager.",
+      "The original author reported the same behavior with PowerToys elevated and non-elevated.",
+      "A later commenter reported that elevating PowerToys fixed their case and that other elevated applications and UAC prompts can also block remaps.",
+      "A July 2026 commenter confirms the no-remap behavior on PowerToys 0.100.2 and Windows 11 25H2.",
+      "Current Keyboard Manager code comments identify UIPI as one reason input injection can be blocked, but the issue does not establish Task Manager’s integrity level."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The focus-specific behavior may be an integrity/UIPI boundary rather than a failure in normal remap handling, but conflicting elevation reports leave this unproven."
     ],
-    "analysis": "Task Manager and similar protected/system surfaces ignore remaps differently from normal apps.",
+    "analysis": "The current-build confirmation makes the symptom worth reproducing, while the contrasting reports show that a simple “Task Manager should behave like every app” assumption is insufficient. Compare the same remap in an ordinary app and Task Manager with controlled PowerToys elevation, then determine whether blocked injection is expected or a regression.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read all issue comments, including the original author’s admin/non-admin result, the later elevated-app reports, and the current 0.100.2 confirmation.",
+      "Inspected current main KeyboardEventHandlers.cpp, which explicitly handles injection blocked by UIPI; no Task Manager-specific behavior was found in the inspected source."
     ],
-    "information_gaps": null
+    "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Compare Task Manager and ordinary-app remaps",
+      "note": "Current-build behavior is corroborated, but the conflicting elevation reports require a controlled comparison before a fix is proposed.",
+      "reproduce": {
+        "title": "Verify Keyboard Manager remaps in Task Manager",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer on Windows 11",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "An ordinary text editor and Task Manager available",
+          "A harmless test remap that can be observed in both windows"
+        ],
+        "setup": [
+          "Configure Caps Lock to a harmless test key or shortcut and keep the original mapping for restoration."
+        ],
+        "steps": [
+          "Focus a text editor and press the source key to confirm the remap is active.",
+          "Focus Task Manager and press the same source key; record whether the remapped output occurs or the original Caps Lock behavior occurs.",
+          "Repeat with PowerToys running at the same elevation level as Task Manager, then with the other reported elevation mode if available.",
+          "If the behavior differs, record the PowerToys and Task Manager elevation states and whether the remap works in the ordinary-app control."
+        ],
+        "expected_result": "The test should establish whether Task Manager alone blocks the mapping and whether the result follows an elevation/UIPI boundary; the reports say the remap may be ignored only when Task Manager is focused."
+      }
+    }
+  ]
 }

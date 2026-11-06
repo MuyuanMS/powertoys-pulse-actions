@@ -1,33 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 36530,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Mouse without borders looses button press functionality randomly",
+  "url": "https://github.com/microsoft/PowerToys/issues/36530",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:26:12Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T23:38:39Z",
+  "evaluated_at": "2026-11-05T23:38:39Z",
+  "source_updated_at": "2026-10-10T08:32:44Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Separate endpoint recovery from service mode",
+    "detail": "Restarting both PCs restored clicks, while enabling service on the controller also restarted MWB; the failing endpoint and privilege effect remain unknown."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Confirm which endpoint restart restores clicks",
+    "reason": "A controlled one-endpoint restart and a later service-mode recurrence would separate input-channel recovery from the change in privilege."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-36530-request-endpoint-recovery-result",
+      "type": "request_info",
+      "label": "Confirm which endpoint restart restores clicks",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for confirming that the pointer remained visible while clicks and drags stopped on PowerToys 0.101.2362, and that stopping MWB on both PCs restored clicking. Enabling Use Service on the controller also restarts MWB, so that observation does not yet isolate the privilege change from a fresh input-channel start. If the failure recurs, could you:\n- Keep both service settings unchanged, restart only the controlled PC first, and report whether clicks return. If they do not, restart only the controlling PC and report that result.\n- Keep Use Service enabled on the controller after recovery and report whether the failure returns during normal use."
+      }
+    },
+    {
+      "id": "issue-36530-approve-button-input-recovery",
+      "type": "approve_design",
+      "label": "Approve remote button-input recovery investigation",
+      "primary": false
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The recent report confirms the symptom on both PCs with PowerToys 0.101.2362 and that stopping MWB restores clicking, but it does not identify which endpoint loses button delivery. Enabling service on the controller also restarts MWB, so it cannot distinguish an elevation effect from resetting the input channel. A low-confidence state-recovery hypothesis is worth testing, but the affected stage must be isolated before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report says the remote pointer remains visible while click and drag stop, and disconnecting/reconnecting or restarting the second desktop restores functionality.",
+      "The 2026-10-10 follow-up reports the symptom on both PCs with PowerToys 0.101.2362, says stopping MWB on both restored clicks, and says enabling Use Service only on the controller also restored clicks.",
+      "The commenter explicitly notes that changing service mode restarts MWB, so the recovery does not establish whether service privileges or restart caused the improvement.",
+      "Current upstream InputHook processes mouse-button down/up events separately from cursor-position data; the available report does not identify whether events are lost at the hook, transport, or receiving input stage."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:26:12Z"
+    "recommended_action": "Ask the reporter to restart only one endpoint at a time with service settings unchanged on the next recurrence, and to confirm whether the problem returns while Use Service remains enabled on the controller. Use that result to locate the failed remote-input stage before selecting a production change.",
+    "evaluated_at": "2026-11-05T23:38:39Z",
+    "source_updated_at": "2026-10-10T08:32:44Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The symptom is consistent with the remote button-input path becoming desynchronized while pointer updates continue, but current evidence does not locate the failure. A narrowly scoped recovery of button state when the affected input channel is re-established is a testable hypothesis, not a confirmed root cause.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover remote button input after a channel interruption",
+      "root_cause": "A remote input stage may stop delivering or accepting mouse-button down/up events while cursor-position updates remain active. Restarting MWB resets runtime state, but the current report does not establish whether the sender hook, transport, or receiver injection is responsible.",
+      "plan": [
+        "Use a two-endpoint test to observe whether button down/up events are captured by the controlling PC and received by the controlled PC while cursor movement continues.",
+        "Compare recovery after restarting only the controlling endpoint versus only the controlled endpoint, with Use Service unchanged, and repeat with service mode enabled only on the controller.",
+        "If the trace confirms stale button state across a remote-input channel restart, reconcile or clear that state when the channel is re-established and add a regression test for clicks and drags after the interruption."
+      ],
+      "verification": [
+        "On two paired PCs, repeated remote clicks and drags continue to work after the failure/recovery sequence with service mode disabled and enabled.",
+        "A simulated interruption while a button is held does not leave the receiver stuck and the next down/up pair is delivered.",
+        "Changing service mode is not required to restore click delivery unless the trace proves an elevation-dependent receiver limitation."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The report confirms that mouse movement can remain visible while clicks fail and that restarting MWB restores clicks, but there is no event trace or controlled endpoint restart to identify the failing stage."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders intermittently stops delivering remote clicks and drags even though the remote pointer remains visible.",
+    "known_information": [
+      "The original report used PowerToys 0.87.1 and says disconnecting/reconnecting or restarting the second desktop restores click and drag behavior.",
+      "The 2026-10-10 commenter reports the symptom on both PCs with PowerToys 0.101.2362 and says stopping MWB on both restored clicking.",
+      "Enabling Use Service only on the controlling PC also restored clicking, but changing service mode restarts MWB and does not isolate a privilege effect.",
+      "Current upstream InputHook handles mouse-button messages and pointer-position data in its low-level mouse hook path."
+    ],
+    "inferences": [
+      "The remote input path may be losing or retaining button state while pointer-position updates continue.",
+      "Restarting one endpoint at a time may reveal whether the failure is on the controlling or controlled side.",
+      "A persistent service-mode run may determine whether elevation prevents recurrence, but the existing observation is not long enough to establish that."
+    ],
+    "analysis": "The report has enough detail to establish a genuine, intermittent symptom but not enough to assign a production root cause. The recent follow-up narrows the symptom and recovery while explicitly acknowledging the service-mode/restart confound. Avoid attributing it to elevation or proposing a specific injector change until a one-endpoint restart or event trace identifies the failing stage.",
+    "initial_investigation": [
+      "Read the issue body and current follow-up; preserved the distinction between the reporter's observation and a confirmed service-mode fix.",
+      "Inspected current upstream InputHook.cs for low-level button and pointer event collection; no supplied trace identifies where remote button delivery stops."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether restarting only the controlled PC, then only the controlling PC, restores clicks while service settings remain unchanged",
+        "why_needed": "This distinguishes a receiver-side input/injection failure from a controlling-side hook or transport failure; restarting both endpoints cannot identify the affected stage.",
+        "how_to_collect": "On the next recurrence, restart only the controlled PC and test clicks; if they still fail, restart only the controlling PC and test again without changing Use Service.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether the failure returns after Use Service remains enabled on the controlling PC",
+        "why_needed": "The current service-mode observation also restarted MWB, so it does not establish whether the privilege change prevents recurrence.",
+        "how_to_collect": "Keep Use Service enabled on the controller after recovery and report whether the click failure returns during normal use.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

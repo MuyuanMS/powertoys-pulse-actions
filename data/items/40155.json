@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 40155,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "actionable_design",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-08T10:44:29Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "author": "johanlovescode",
+  "generated_at": "2026-11-05T23:58:31Z",
+  "evaluated_at": "2026-11-05T23:58:31Z",
+  "source_updated_at": "2026-10-09T13:24:53Z",
+  "title": "Workspaces can't launch Outlook",
+  "url": "https://github.com/microsoft/PowerToys/issues/40155",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
+  "comments": 9,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The latest reporter reproduced a malformed New Outlook launch path after deleting and re-capturing the workspace entry, while its AUMID remains correct. Current AppUtils::GetApp source uses substring matching against installed paths and returns the registered .exe path unchanged, which can falsely match a classic Outlook OUTLOOK.EXE prefix inside the malformed New Outlook path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original reporter confirmed that removing the trailing olk.exe from the captured path made the workspace launch.",
+      "An October 2026 reporter reproduced the same OUTLOOK.EXE\\olk.exe path after deleting and re-capturing the entry; the New Outlook AUMID was correct while application-path was not.",
+      "The reporter had classic Outlook installed and its App Paths entry pointed to the Office16 OUTLOOK.EXE location.",
+      "In WorkspacesLib/AppUtils.cpp, GetApp accepts appPathUpper.contains(installPathUpper); when the matched install path ends in .EXE, it returns the registered AppData path rather than the process path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-08T10:44:29Z"
-  }
+    "recommended_action": "Use a path-component-aware match for registered executable paths so a classic Outlook .exe cannot match as a parent of New Outlook\\olk.exe; verify the captured alias and AUMID remain intact.",
+    "evaluated_at": "2026-11-05T23:58:31Z",
+    "source_updated_at": "2026-10-09T13:24:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A current source-level false-positive path match aligns with the repeated malformed path and the reporter-confirmed alias workaround. A focused reproduction with both Outlook variants installed should verify the exact boundary before implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent executable-path prefix matches in Workspaces",
+      "root_cause": "GetApp treats any occurrence of a registered install path as a match. If classic Outlook is registered as an .exe and the New Outlook process path is nested textually beneath that .exe path, the resolver can return classic Outlook metadata and overwrite the real process path. The current report supports this interaction, but a controlled reproduction should confirm it.",
+      "plan": [
+        "In WorkspacesLib/AppUtils.cpp::GetApp, replace raw substring acceptance for installed paths with a path-aware comparison that requires a real directory boundary; when the registered path ends in .exe, require an exact executable-path match.",
+        "Preserve the process-derived executable alias for a nonmatching packaged app while retaining the separately captured AUMID/package identity.",
+        "Add regression coverage for New Outlook with classic Outlook installed, plus positive coverage for normal directory-prefix matches."
+      ],
+      "verification": [
+        "Install both classic Outlook and New Outlook, capture a workspace containing New Outlook, and verify application-path identifies the New Outlook app-execution alias rather than a child path under classic OUTLOOK.EXE.",
+        "Launch the captured workspace and confirm Outlook opens.",
+        "Verify exact classic executable matches and valid install-directory child paths continue to resolve."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The exact substring-matching branch and reporter-confirmed malformed path fit the defect closely, but the interaction has not yet been reproduced on a controlled system with both Outlook variants."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces repeatedly captures New Outlook with a malformed executable path below classic Outlook\\OUTLOOK.EXE, although the app AUMID is correct; manually using the New Outlook execution alias restores launch.",
+    "known_information": [
+      "The original report used PowerToys 0.90.1 and later comments show the issue remains in 0.100.2.",
+      "Removing the appended olk.exe from the original captured path restored launch.",
+      "The latest reporter deleted and re-captured the entry and obtained the same malformed path.",
+      "The latest reporter says the AUMID is correct, package-full-name is empty, and classic Outlook remains installed with an App Paths registration.",
+      "Current WorkspacesLib/AppUtils.cpp::GetApp uses substring matching for installed paths and returns a registered .exe path unchanged."
+    ],
+    "inferences": [
+      "A classic Outlook executable registration may be falsely matching the New Outlook process path because it appears as a textual prefix.",
+      "The defect appears isolated to the stored launch path rather than app identity, because the reporter reports the expected New Outlook AUMID."
+    ],
+    "analysis": "The issue has concrete, repeatable evidence and a narrowly implicated resolver branch. Use path-component-aware matching so a registered executable is not treated as a parent directory, while preserving true directory matches and the separately resolved packaged-app identity. The focused reproduction remains necessary before a code change.",
+    "initial_investigation": [
+      "Read the full issue and all nine comments, including the October 2026 reproduction and workaround.",
+      "Inspected current WorkspacesLib/AppUtils.cpp::GetApp: appPathUpper.contains(installPathUpper) can accept a registered path without checking component boundaries, and a matched .exe entry is returned unchanged.",
+      "Reviewed current Workspaces context capture behavior and related app identity fields; no covering fix or owner was found."
+    ],
+    "information_gaps": null
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Workspaces Outlook path fix",
+      "design": {
+        "title": "Prevent executable-path prefix matches in Workspaces"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce New Outlook capture with classic Outlook installed",
+      "note": "The repeated path and current resolver logic support a focused maintainer reproduction before implementation.",
+      "reproduce": {
+        "title": "Verify Outlook executable-path matching in Workspaces",
+        "module": "Workspaces",
+        "version_requirement": "PowerToys 0.100.2 or current main",
+        "prerequisites": [
+          "Windows with both New Outlook and classic Outlook installed.",
+          "Classic Outlook has an App Paths registration for OUTLOOK.EXE.",
+          "Workspaces is enabled."
+        ],
+        "setup": [
+          "Create a workspace that captures a New Outlook window.",
+          "If both Outlook variants are not available in a test environment, use a VM where both are registered."
+        ],
+        "steps": [
+          "Capture a workspace with New Outlook open.",
+          "Inspect the saved application-path and app-user-model-id fields.",
+          "Delete the captured workspace row, capture it again, and check whether the malformed path recurs.",
+          "Replace the path with the New Outlook app-execution alias and launch the workspace as a control."
+        ],
+        "expected_result": "New Outlook is captured with a launchable New Outlook executable path and its matching AUMID; classic Outlook registration does not produce a path beneath OUTLOOK.EXE."
+      }
+    }
+  ]
 }

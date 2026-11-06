@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 43424,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard manager's remapping failure with Stata",
+  "url": "https://github.com/microsoft/PowerToys/issues/43424",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-11-11T14:35:47Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T21:46:06.377Z",
+  "evaluated_at": "2026-11-05T21:46:06.377Z",
+  "source_updated_at": "2026-10-11T16:47:02Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❔",
+    "label": "Retest the Stata Alt+Tab failure on current stable",
+    "detail": "The report is from 0.95.1, has no discussion or assignee, and describes two Alt+Tab outcomes with a left Ctrl/Alt swap."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter lists PowerToys 0.95.1 on Windows 10 build 19045 and swaps left Alt with left Ctrl. They say Alt+Tab behaves differently when Stata is open: in one case it does not work; in another it opens the window selector but remains there after the keys are released. No comments or assignees clarify which outcome is current or whether it occurs outside Stata. Ask for a current-build retest and the exact observed result before proposing a fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.95.1, Windows 10 build 19045, non-elevated execution, and a per-user install.",
+      "The configuration swaps left Alt and left Ctrl.",
+      "With Stata open, the report describes Alt+Tab failing to open the selector or, in an earlier behavior, leaving the selector open after keys are released.",
+      "The issue has no comments or assignees and remains open.",
+      "A repository search for Stata Alt+Tab did not find another matching issue."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-11-11T14:35:47Z"
-  }
+    "recommended_action": "Ask whether the same swap causes either Alt+Tab failure on v0.102.3001, which outcome occurs in Stata, and whether it also occurs in another app.",
+    "evaluated_at": "2026-11-05T21:46:06.377Z",
+    "source_updated_at": "2026-10-11T16:47:02Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report is from 0.95.1 and has no discussion; current-version and app-scope confirmation are needed before attributing the behavior to Keyboard Manager."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Alt+Tab behavior with the left Alt/Ctrl swap in Stata",
+      "root_cause": "The left Alt/Ctrl remap may interact with Stata keyboard handling or the Windows task switcher, but the report does not show which layer causes the failure.",
+      "plan": [
+        "Reproduce the reported swap and Alt+Tab behavior on a current supported build.",
+        "Compare the exact selector behavior in Stata and one other application.",
+        "If the issue is reproducible and PowerToys-owned, trace shortcut processing for the confirmed outcome and add focused regression coverage."
+      ],
+      "verification": [
+        "Confirm Alt+Tab opens and closes the task switcher normally under the reported mapping on the current build.",
+        "Verify the result in Stata and one comparison application."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The report is from 0.95.1, has no replies, and describes two possible failure modes without establishing their current or application-specific scope."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With left Alt and left Ctrl swapped, Alt+Tab reportedly behaves incorrectly when Stata is open; the report describes both failure to open and a selector that remains open.",
+    "known_information": [
+      "The report lists PowerToys 0.95.1 on Windows 10 build 19045, running as a non-admin per-user install.",
+      "The reporter swaps left Alt and left Ctrl.",
+      "The issue reports an Alt+Tab failure when Stata is open, including no selector opening and an earlier state where the selector remains open after key release.",
+      "There are no comments or assignees."
+    ],
+    "inferences": [
+      "Stata may handle Alt/Ctrl input differently, but the report does not establish whether the remapping issue is application-specific or a general Alt+Tab regression."
+    ],
+    "analysis": "A current test needs to distinguish the two reported outcomes and determine whether the failure is limited to Stata. Do not infer an upstream owner or duplicate from the empty discussion.",
+    "initial_investigation": [
+      "Read the full issue report, version and OS details, labels, comments, and assignees.",
+      "Searched the repository issue tracker for Stata Alt+Tab reports; no matching duplicate or covering issue was found.",
+      "Confirmed Keyboard Manager processes remaps through a low-level keyboard hook; the report does not isolate a failing processing path."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the left Alt/left Ctrl swap still breaks Alt+Tab on v0.102.3001, which failure occurs in Stata, and whether another app behaves the same",
+        "why_needed": "The report is from 0.95.1 and describes two distinct outcomes; current reproduction and app scope determine whether a Keyboard Manager fix is applicable.",
+        "how_to_collect": "On v0.102.3001 with the same swap, test Alt+Tab in Stata and one other app; report whether the selector does not open or stays open after key release.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-43424-current-stata-alttab",
+      "type": "request_info",
+      "label": "Retest Stata Alt+Tab mapping on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 43424,
+        "body": "Thanks for listing the left Alt/left Ctrl swap and the two Alt+Tab behaviors in Stata. Since the report is from PowerToys 0.95.1, could you confirm whether the problem still occurs on v0.102.3001 with the same swap? Please say whether Alt+Tab fails to open the selector or leaves it open after key release in Stata, and whether it behaves the same in one other app."
+      }
+    },
+    {
+      "id": "approve-design-43424",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

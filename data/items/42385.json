@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 42385,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "\"Remap Keys\" Visually Styled as Heading but Not Defined with Semantic Heading Tag.",
+  "url": "https://github.com/microsoft/PowerToys/issues/42385",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:04:26Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Area-Accessibility",
+    "Needs-Triage",
+    "A11yE+D",
+    "A11ySev3",
+    "A11yWCAG",
+    "PowerToys_Win32",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T21:16:00Z",
+  "evaluated_at": "2026-11-05T21:16:00Z",
+  "source_updated_at": "2026-10-11T16:47:13Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Expose remapping section titles as UIA headings",
+    "detail": "The report gives a Narrator heading-navigation reproduction. Current Keyboard Manager editor section labels use a bold visual style but omit AutomationProperties.HeadingLevel."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report is a concrete accessibility defect: with Narrator and scan mode enabled, pressing H in the key-remapping dialog does not navigate to the visually prominent Remap Keys title, and the reporter says the same occurs in the shortcut-remapping dialog. In current KeyboardManagerEditorUI, section-title TextBlocks use BodyStrongTextBlockStyle without AutomationProperties.HeadingLevel; the Settings UI's SettingsGroup header demonstrates the established Level2 pattern. Add the semantic heading level to the corresponding remapping dialog headings and verify both dialogs with heading navigation. The report lists 0.94.2, so the exact current dialog/title relationship should be confirmed before finalizing affected controls.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.94.2 and gives numbered steps using Narrator, scan mode, and the H heading-navigation key.",
+      "The reporter says the Remap Keys title is visually prominent but is not announced or exposed as a semantic heading.",
+      "The report explicitly says the same issue occurs in the remap shortcut dialog.",
+      "Current KeyboardManagerEditorUI Pages/MainPage.xaml gives RemappingsHeader, TextMappingsHeader, ProgramsHeader, and UrlsHeader BodyStrongTextBlockStyle but no AutomationProperties.HeadingLevel.",
+      "Current SettingsGroup.xaml sets AutomationProperties.HeadingLevel=Level2 for a visually styled section header, providing an existing WinUI pattern.",
+      "The issue is open, has no comments or assignees, and is labeled Area-Accessibility, A11ySev3, A11yWCAG, and Product-Keyboard Manager."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:04:26Z"
-  }
+    "recommended_action": "Reproduce heading navigation in both current key and shortcut remapping dialogs, then add UIA heading levels to the matching section titles without changing their visual styling.",
+    "evaluated_at": "2026-11-05T21:16:00Z",
+    "source_updated_at": "2026-10-11T16:47:13Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current WinUI editor's section-heading TextBlocks are visually styled without semantic heading metadata, and the repository already uses AutomationProperties.HeadingLevel on comparable SettingsGroup headers. Confirm which current dialog controls correspond to the reported titles, then apply the same UIA semantics."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Expose Keyboard Manager remapping titles as semantic UIA headings",
+      "root_cause": "The remapping interface presents section titles with visual typography but does not set AutomationProperties.HeadingLevel on the corresponding UI Automation elements, so screen-reader heading navigation cannot identify them as headings.",
+      "plan": [
+        "Reproduce the issue on PowerToys 0.102.3001 in both the key-remapping and shortcut-remapping dialogs with Narrator enabled and scan mode active.",
+        "Identify the TextBlock or equivalent UIA element that displays each reported Remap Keys and Remap Shortcut title in the current editor.",
+        "Set AutomationProperties.HeadingLevel to the appropriate level (Level2, matching SettingsGroup.xaml) on those heading elements; preserve the existing text, visual style, and focus order.",
+        "Add or extend UI Automation coverage for both remapping dialogs so each visible section title is discoverable through heading navigation."
+      ],
+      "verification": [
+        "With Narrator and scan mode enabled, H navigation reaches and announces the key-remapping and shortcut-remapping section titles as headings.",
+        "The heading level is present on the corresponding UIA elements in both dialogs, while keyboard focus order and visual presentation remain unchanged."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The current editor has visually styled section titles without HeadingLevel and the repository supplies a matching Level2 pattern, but the report's exact dialog controls need to be identified on the current version."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Narrator heading navigation reportedly skips the visually styled Remap Keys title in the key-remapping dialog and the corresponding title in the shortcut-remapping dialog.",
+    "known_information": [
+      "The report lists PowerToys 0.94.2 with automatic updates.",
+      "The numbered reproduction starts Narrator, enables scan mode, opens the Keyboard Manager remap-key dialog, and presses H.",
+      "The reporter says the Remap Keys title looks like a heading visually but is not exposed as one, with the same issue in the shortcut-remapping dialog.",
+      "Current KeyboardManagerEditorUI section-title TextBlocks use BodyStrongTextBlockStyle without AutomationProperties.HeadingLevel.",
+      "SettingsGroup.xaml uses AutomationProperties.HeadingLevel=Level2 on its header TextBlock."
+    ],
+    "inferences": [
+      "Adding a UIA heading level to the current editor's equivalent title controls should restore heading navigation, but the exact relationship between the reported dialog titles and current UI elements must be checked on the current build."
+    ],
+    "analysis": "The report supplies a deterministic screen-reader navigation scenario and the current XAML contains visually styled section titles without heading metadata. Use the existing SettingsGroup Level2 pattern rather than HTML heading tags, and verify both remapping dialogs because the report identifies both.",
+    "initial_investigation": [
+      "Read the current issue body, labels, full comment list (zero comments), and attachment URL.",
+      "Inspected KeyboardManagerEditorUI/Pages/MainPage.xaml and its Resources.resw: current list section headers are TextBlocks styled BodyStrong without HeadingLevel.",
+      "Inspected Settings.UI/SettingsXAML/Controls/SettingsGroup/SettingsGroup.xaml, which uses AutomationProperties.HeadingLevel=Level2 for its header."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the remapping-heading accessibility fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify heading navigation in both remapping dialogs",
+      "note": "The report provides a Narrator heading-navigation scenario; the current editor controls should be checked because the report lists 0.94.2.",
+      "reproduce": {
+        "title": "Check Keyboard Manager remapping headings with Narrator",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 on Windows 11",
+        "prerequisites": [
+          "Enable Narrator with Ctrl+Win+Enter and turn on scan mode.",
+          "Open Keyboard Manager and open the key-remapping dialog."
+        ],
+        "steps": [
+          "Press H to move to the next heading.",
+          "Check whether the visually prominent Remap Keys title is exposed and announced as a heading.",
+          "Repeat with the shortcut-remapping dialog open.",
+          "Inspect the corresponding UIA elements for their heading-level property."
+        ],
+        "expected_result": "Heading navigation reaches and announces the section title in both dialogs, and the corresponding UIA elements expose the appropriate heading level."
+      }
+    }
+  ]
 }

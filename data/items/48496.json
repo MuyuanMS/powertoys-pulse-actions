@@ -2,13 +2,13 @@
   "schemaVersion": 5,
   "number": 48496,
   "kind": "issue",
-  "track": "triage",
+  "track": "fix",
   "stage": "needs_information",
   "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-11T15:08:39.7870394Z",
-  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-  "source_updated_at": "2026-09-09T23:03:01Z",
+  "generated_at": "2026-11-05T00:00:00Z",
+  "evaluated_at": "2026-11-05T00:00:00Z",
+  "source_updated_at": "2026-10-23T04:28:36Z",
   "url": "https://github.com/microsoft/PowerToys/issues/48496",
   "title": "Peek utility does not run",
   "labels": [
@@ -17,79 +17,135 @@
     "Needs-Triage",
     "Product-Peek"
   ],
-  "assignees": null,
-  "comments": 1,
+  "assignees": [],
+  "comments": 2,
+  "confidence": "Low",
   "status": {
     "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
+    "label": "Needs Peek settings details",
+    "detail": "The report combines startup, shortcut, and unexpected-activation symptoms. The latest comment says Spacebar is configured but Ctrl+Space is required; current code has separate shortcut and single-Space settings."
   },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Ask only for the current evidence needed to confirm the failing path."
-  },
+  "next_action": "Request the current Peek shortcut/toggle values and separate reproduction steps for each symptom.",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
+    "rationale": "The original report includes a June bug-report archive and several symptoms; the October comment narrows one to Spacebar requiring Ctrl+Space. Current main has separate ActivationShortcut and EnableSpaceToActivate settings with a special single-Space focus hook, so the exact configured values and which symptom occurs in the current build are needed before selecting a fix.",
     "evidence": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: Peek utility does not run",
-      "Area label: Area-Setup/Install",
-      "Issue body excerpt: ### Microsoft PowerToys version from version 0.97.2 to the current version ### Installation method Microsoft Store ### Area(s) with issue? Peek ### Steps to reproduce The Peek utility is configured to run when I press the spacebar, but it doesn't. For it to work, I first have to click the PowerToys icon in the Windows system tray, and only when I display the...",
-      "Latest public comment excerpt: Same here",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) on 2026-09-11T15:08:39.7870394Z."
+      "The issue is open, unassigned, and labeled Issue-Bug, Area-Setup/Install, Needs-Triage, and Product-Peek.",
+      "The body reports shortcut failure until a tray interaction, occasional startup failure, and unwanted activation while renaming in File Explorer; a June 2026 bug-report ZIP is attached.",
+      "A 2026-10-23 commenter says Ctrl+Space is required although the shortcut is set to Spacebar.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, Peek dllmain.cpp reads ActivationShortcut separately from EnableSpaceToActivate (lines 111-138); single-Space activation has a separate foreground-eligibility hook (lines 141-167, 624-633).",
+      "The current UI-test helper configures Ctrl+Space while disabling single-Space activation; that test setup does not establish whether the issue reproduces with the reporter's bare-Space configuration."
     ],
-    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
-    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-    "source_updated_at": "2026-09-09T23:03:01Z"
+    "recommended_action": "Request the exact current Peek settings and isolate the Spacebar symptom from startup and text-entry activation before proposing a code change.",
+    "evaluated_at": "2026-11-05T00:00:00Z",
+    "source_updated_at": "2026-10-23T04:28:36Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
+    "status": "proposed",
+    "rationale": "A code change may be appropriate, but the report does not distinguish an ActivationShortcut mismatch from the separate single-Space toggle/focus path, and the startup and text-entry symptoms may be independent.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "Open PowerToys bug report for Area-Setup/Install: Peek utility does not run",
+    "summary": "The report bundles Peek shortcut failure, delayed activation after tray interaction, startup behavior, and unwanted Space activation while renaming; a later commenter reports needing Ctrl+Space despite configuring Spacebar.",
     "known_information": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: Peek utility does not run",
-      "Area label: Area-Setup/Install",
-      "Issue body excerpt: ### Microsoft PowerToys version from version 0.97.2 to the current version ### Installation method Microsoft Store ### Area(s) with issue? Peek ### Steps to reproduce The Peek utility is configured to run when I press the spacebar, but it doesn't. For it to work, I first have to click the PowerToys icon in the Windows system tray, and only when I display the...",
-      "Latest public comment excerpt: Same here",
-      "Fast revalidation covered live upstream activity through 2026-09-09T23:03:01.0000000Z."
+      "The body says the problem occurs from PowerToys 0.97.2 onward, uses the Microsoft Store installation, and includes a June 2026 bug-report ZIP.",
+      "The body describes shortcut failure until tray interaction, occasional startup failure, and unexpected activation during File Explorer rename.",
+      "A 2026-10-23 commenter says Ctrl+Space is needed despite setting Spacebar.",
+      "Current main has distinct ActivationShortcut and EnableSpaceToActivate settings; the latter controls a separate single-Space foreground hook."
     ],
     "inferences": [
-      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
+      "The Spacebar symptom could be a mismatch between the global shortcut setting and the separate single-Space toggle, but the current configuration is unknown.",
+      "The tray/startup and text-entry symptoms may have different causes from the reported Ctrl+Space requirement."
     ],
-    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "analysis": "Current source has a distinct code path for bare-Space activation and foreground eligibility. The report does not provide both setting values or current-build reproduction details, so avoid treating the symptoms as one defect or requesting a generic log bundle. A June archive exists, but a fresh archive is useful only if the current activation failure still reproduces.",
     "initial_investigation": [
-      "Read issue metadata, labels, assignees, body, and 1 public comment(s).",
-      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 1 public comment(s) during the scheduled bounded run."
+      "Read the complete current body, both comments, labels, assignees, and the June archive link through 2026-10-23T04:28:36Z.",
+      "Read current upstream source at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: src/modules/peek/peek/dllmain.cpp:111-167 and :624-633, plus current Peek UI-test settings.",
+      "No directly linked pull request was returned by the issue-number search."
     ],
     "information_gaps": [
       {
+        "evidence_type": "configuration_export",
+        "information": "The current Peek ActivationShortcut value and EnableSpaceToActivate toggle state.",
+        "why_needed": "These are separate settings and determine whether a bare-Space keypress should use the global shortcut or the single-Space focus hook.",
+        "how_to_collect": "Share the two Peek settings values from PowerToys Settings; do not include usernames or unrelated settings."
+      },
+      {
         "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
-        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
-        "how_to_collect": "Reply with numbered reproduction steps."
+        "information": "Which startup, tray-interaction, and rename-field symptoms still reproduce on the current version, with the exact key sequence for each.",
+        "why_needed": "The report bundles symptoms that may enter different code paths.",
+        "how_to_collect": "Give separate numbered steps and expected/actual results for each symptom that still occurs."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Exact current PowerToys and Windows versions for the latest failing activation.",
+        "why_needed": "The June diagnostic archive predates the October shortcut report and may not describe the current failing build.",
+        "how_to_collect": "Include the versions shown in PowerToys Settings > About and Windows Settings > System > About."
       },
       {
         "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "A fresh diagnostic archive only if the current activation failure still reproduces.",
+        "why_needed": "The existing June archive predates the recent Ctrl+Space report.",
+        "how_to_collect": "After reproducing on the current build, add a comment containing /bugreport; no need to re-upload the June archive."
       }
     ]
   },
+  "proposed_fixes": [
+    {
+      "title": "Make Peek Spacebar activation consistent with its settings",
+      "root_cause": "Hypothesis: a bare-Space ActivationShortcut and the separate EnableSpaceToActivate toggle can be configured or interpreted differently, causing the user to need Ctrl+Space or allowing activation during text entry. The current report does not establish whether either setting is enabled, and this hypothesis does not yet explain the startup symptom.",
+      "plan": [
+        "Capture the current ActivationShortcut and EnableSpaceToActivate values and reproduce the reported shortcut behavior on a current build.",
+        "Test the single-Space and modifier-shortcut paths separately in Explorer, including a filename-edit field, and record the first point where behavior diverges.",
+        "If confirmed, make the setting contract explicit and ensure the single-Space hook respects intended foreground eligibility; investigate startup separately if it persists."
+      ],
+      "verification": [
+        "With the stated settings, Peek activates from the configured shortcut after a clean start.",
+        "Space does not unexpectedly activate Peek while the user is editing a filename or another text field.",
+        "Startup behavior is recorded separately and is not claimed fixed by a shortcut-only change."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "Current source confirms distinct settings and focus-gating code, but the live report does not include their values or isolate the three symptoms."
+      }
+    }
+  ],
   "actions": [
     {
-      "id": "request-repro-diagnostics-48496",
       "type": "request_info",
-      "label": "Request repro steps and diagnostics",
-      "primary": true,
+      "label": "Request Peek settings and repro steps",
       "comment": {
-        "body": "Thanks for the report. The current issue identifies the affected behavior (\"Peek utility does not run\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for Area-Setup/Install and decide whether this should move to a concrete fix design."
+        "target": "issue",
+        "number": 48496,
+        "body": "Thanks for the detailed report and the June bug-report archive. The October comment says Ctrl+Space is required even though Spacebar is configured. Current Peek has separate ActivationShortcut and \"Enable single Space key activation\" settings, so please share:\n- The values of both settings and your current PowerToys/Windows versions.\n- Separate steps for each startup, tray-interaction, or rename-field symptom that still reproduces.\n- If activation still fails on the current build, add a fresh /bugreport immediately afterward; there is no need to re-upload the June archive."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve Peek Spacebar activation investigation",
+      "note": "Keep startup and text-entry behavior separate until the exact settings and reproduction identify the failing path."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Spacebar activation behavior",
+      "reproduce": {
+        "module": "Peek",
+        "version_requirement": "Use the reporter's current supported build and record the exact version.",
+        "prerequisites": [
+          "Peek enabled with its ActivationShortcut and EnableSpaceToActivate values recorded.",
+          "File Explorer available with a file rename field."
+        ],
+        "setup": [
+          "Start PowerToys cleanly and configure the reported Spacebar shortcut/toggle combination."
+        ],
+        "steps": [
+          "In File Explorer, select a supported file and press the configured Spacebar shortcut.",
+          "Repeat after opening and closing the PowerToys tray menu.",
+          "Place focus in a filename rename field and press Space; record whether Peek opens.",
+          "Repeat with the single-Space toggle changed while keeping the activation shortcut recorded."
+        ],
+        "expected_result": "Peek responds to the configured shortcut only in the intended foreground contexts and does not unexpectedly open while editing a filename."
       }
     }
   ]

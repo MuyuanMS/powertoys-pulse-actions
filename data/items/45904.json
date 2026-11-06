@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 45904,
+  "title": "Re Map Key on Keyboard NOT working",
+  "url": "https://github.com/microsoft/PowerToys/issues/45904",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "duplicate",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T13:54:11Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:32:14.485Z",
+  "generated_at": "2026-11-05T14:32:14.485Z",
+  "evaluated_at": "2026-11-05T14:32:14.485Z",
+  "source_updated_at": "2026-10-11T16:48:07Z",
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
+    "glyph": "…",
+    "label": "Awaiting the exact remap and persistence behavior",
+    "detail": "The issue mixes a Copilot-key remap with a row that reportedly cannot be deleted. The duplicate bot links #35808, but that does not establish whether this row-deletion behavior is the same problem."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the linked canonical issue or pull request and do not start duplicate work."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation.",
+    "status": "needs_information",
+    "rationale": "The author reports that remapping Left Ctrl to a Copilot key produced a configuration shown as Ctrl Left + Shift Right + F23, and says the entry cannot be deleted even after reinstalling. The direction and remap type are unclear, and reinstalling may preserve user settings; the sole comment is an automated possible-duplicate link to #35808, which covers Copilot-to-Ctrl remapping but not this reported deletion/persistence behavior. Ask for the exact row and whether it returns after an explicit delete/save/restart before assigning a code fix.",
     "evidence": [
-      "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
+      "The issue lists PowerToys 0.97.2 and says the Copilot key has replaced the former Right Ctrl key.",
+      "The body describes a Ctrl Left + Shift Right + F23 entry that the author cannot delete, but does not state whether it is under Remap a key or Remap a shortcut or show the exact source-to-target direction.",
+      "An automated possible-duplicate comment links #35808; that discussion covers Copilot-key remapping but does not establish the reported undeletable-entry behavior.",
+      "The issue remains open and unassigned, with no follow-up after the automated comment."
     ],
-    "recommended_action": "Monitor the linked canonical issue or pull request and do not start duplicate work.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T13:54:11Z"
-  }
+    "recommended_action": "Request a screenshot of the exact Keyboard Manager row and confirmation that it reappears after deleting, saving, and restarting on a current build; reassess only if the row persists.",
+    "evaluated_at": "2026-11-05T14:32:14.485Z",
+    "source_updated_at": "2026-10-11T16:48:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A stale or incorrectly serialized multi-key Copilot shortcut could explain the displayed entry, but the issue does not establish whether the user removed and saved the row or whether it reappears on a current build."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Persist deletion of a Copilot shortcut remap",
+      "root_cause": "If a Copilot-key shortcut row remains after explicit deletion and save, Keyboard Manager may be retaining or reconstructing a stale multi-key mapping in its editor or persisted settings.",
+      "plan": [
+        "Reproduce with the exact source and target row, distinguishing Remap a key from Remap a shortcut.",
+        "Check whether deleting the row updates the editor model and persisted Keyboard Manager configuration across restart.",
+        "If the row is recreated from stale state, fix the delete/save path and add a regression test for a Copilot multi-key shortcut."
+      ],
+      "verification": [
+        "Delete the confirmed row, save settings, restart PowerToys, and verify it remains absent.",
+        "Reopen Keyboard Manager and verify unrelated mappings remain unchanged."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The report does not clarify the mapping direction or deletion steps, and reinstalling may retain per-user settings. A current, explicit delete/save/restart reproduction is needed before attributing the behavior to the editor."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Copilot-key remap reportedly leaves a Ctrl Left + Shift Right + F23 entry that the author cannot remove, even after reinstalling PowerToys.",
+    "known_information": [
+      "The issue lists PowerToys 0.97.2 and identifies the Copilot key as replacing the former Right Ctrl position.",
+      "The author describes a Ctrl Left + Shift Right + F23 entry but does not identify the remap type, direction, or exact delete/save sequence.",
+      "An automated comment suggests #35808 as a possible duplicate; #35808 tracks Copilot-key-to-Ctrl remapping behavior.",
+      "The issue remains open and unassigned."
+    ],
+    "inferences": [
+      "The displayed sequence may be the Copilot key's multi-key shortcut representation, or a stale mapping, but the issue does not establish which."
+    ],
+    "analysis": "The automated duplicate suggestion is relevant to the Copilot-key mapping itself, but the inability to delete a row is a separate claim not established in #35808. Because PowerToys reinstall may leave user configuration intact, first verify the exact row and whether an explicit delete/save/restart removes it. If it reappears on a current build, that persistence is actionable evidence for an editor/settings investigation.",
+    "initial_investigation": [
+      "Read the full issue body, sole automated duplicate comment, labels, and assignee state.",
+      "Compared #35808's active Copilot-key discussion; it documents shortcut-only mappings and varied OEM sequences but no matching row-deletion failure.",
+      "Inspected the current shortcut-remapping implementation context; the report lacks the exact remap type and persisted-state behavior needed to identify a code path."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "The exact Keyboard Manager row, its remap type and source-to-target direction, and whether it reappears after explicit deletion, save, and restart on the current PowerToys version.",
+        "why_needed": "This distinguishes an expected multi-key Copilot shortcut representation or retained user configuration from a row that the editor fails to delete.",
+        "how_to_collect": "Open Keyboard Manager, capture only the relevant Remap a key or Remap a shortcut row, delete it with the row's remove control, save/apply, restart PowerToys, and report whether it returns."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the remap-row persistence investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm whether the Copilot remap row persists",
+      "comment": {
+        "target": "issue",
+        "number": 45904,
+        "body": "The issue says the Copilot-key remap leaves a `Ctrl (Left) + Shift (Right) + F23` entry that cannot be deleted. The automated link to #35808 covers Copilot-key remapping, but does not establish whether this row-deletion behavior is the same problem. On the current PowerToys version, could you please:\n1. Share a screenshot of only the relevant row and say whether it is under **Remap a key** or **Remap a shortcut**, including the source and target direction.\n2. Remove that row, save/apply the settings, restart PowerToys, and confirm whether it returns.\nThis will distinguish a retained user setting or shortcut representation from a row that the editor fails to delete."
+      }
+    }
+  ]
 }

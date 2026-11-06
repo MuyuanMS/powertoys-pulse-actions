@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 18102,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Key got stuck when alternate(latch) key is mapped for physical key",
+  "url": "https://github.com/microsoft/PowerToys/issues/18102",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-10-23T19:53:36Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Area-Localization",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T20:55:00Z",
+  "evaluated_at": "2026-11-05T20:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:31Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce stuck Japanese IME key remaps",
+    "detail": "The report describes VK242/VK245 remaps remaining logically pressed on a Japanese keyboard; related tracker #3397 covers a similar stuck-key symptom with Japanese IME."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue identifies the Japanese keyboard environment, VK242/VK245 source keys, and a stuck-key consequence that persists until locking and unlocking the screen. A commenter reports that VK242 can leave an Alt remap held and cites multi-key events from the JIS layout. Open issue #3397 describes a related stuck remap under Japanese IME, but its Caps Lock/VK240 case does not prove that these source keys share the same failure path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter describes remapping VK242/VK245 and says the resulting key can remain pressed until the screen is locked and unlocked.",
+      "A commenter reports a related VK242-to-Alt+PrintScreen case and notes the issue occurs with a JIS-specific key.",
+      "Issue #3397 remains open for a related remapped-key-stays-pressed failure when switching to Japanese IME.",
+      "No maintainer reproduction or current PowerToys version is present in this issue."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-10-23T19:53:36Z"
-  }
+    "recommended_action": "Reproduce VK242/VK245 source mappings on a JIS keyboard with Japanese IME enabled, distinguish source-key and destination-key release events, and compare the result with #3397 without treating the reports as identical.",
+    "evaluated_at": "2026-11-05T20:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:31Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A code fix may need to preserve balanced key-up state for JIS/IME-generated multi-key events. The related tracker #3397 is not a confirmed fix or duplicate for VK242/VK245 remaps."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Balance key state for Japanese IME toggle-key remaps",
+      "root_cause": "The JIS keyboard or Japanese IME may emit multiple virtual-key transitions for a toggle key, while Keyboard Manager tracks only the remapped key's expected down/up sequence; this is a hypothesis pending reproduction.",
+      "plan": [
+        "Reproduce the VK242/VK245-to-physical-key mappings with Japanese IME active and record which source and destination key events remain down.",
+        "Compare the event sequence with the stuck Caps Lock remap in open issue #3397 to determine whether the same IME transition is involved.",
+        "If Keyboard Manager leaves injected key state unmatched, update its event tracking to release the remapped key on all source-key and IME transition paths.",
+        "Add regression tests for both release orders and for the JIS toggle-key event sequence."
+      ],
+      "verification": [
+        "VK242/VK245 remaps release cleanly after each press on a JIS keyboard with Japanese IME enabled.",
+        "Switching input mode and using unrelated keys does not leave a modifier or remapped key held.",
+        "Existing Japanese IME and ordinary-layout remapping tests continue to pass."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The issue and related reports establish a concrete stuck-key symptom, but there is no maintainer reproduction or event trace proving the exact shared state failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a Japanese keyboard, remapping VK242/VK245 reportedly leaves a key logically pressed until the screen is locked and unlocked.",
+    "known_information": [
+      "The issue body reports PowerToys 0.57.2 and a Japanese keyboard.",
+      "The reporter describes remapping VK242/VK245 and a stuck-key effect.",
+      "A commenter reports a similar VK242 source-key failure with an Alt remap.",
+      "Open issue #3397 tracks a related stuck remapped key while changing to Japanese IME, but uses a different source-key case."
+    ],
+    "inferences": [
+      "The problem may involve JIS/IME-generated multiple virtual-key events and unmatched key state; this has not been confirmed for this mapping."
+    ],
+    "analysis": "The related tracker is useful counterevidence and a comparison point, but it does not establish a fix or complete coverage. A focused reproduction of the specific VK242/VK245 mapping is needed before merging or rerouting the reports.",
+    "initial_investigation": [
+      "Read the issue and all three comments, including the report's key description and the related links to #3397 and #13955.",
+      "Reviewed #3397 and its Japanese IME discussion; it remains open and concerns a distinct Caps Lock/VK240 scenario.",
+      "No current-version confirmation or maintainer reproduction is documented."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the VK242/VK245 remap still sticks on current stable, and the exact source and destination mapping used",
+        "why_needed": "This confirms the old report remains current and determines which key-up transitions must be exercised.",
+        "how_to_collect": "Confirm the current PowerToys version, Japanese IME mode, whether the logical layout is JIS/kbd106, and one exact VK242 or VK245 source-to-destination mapping that reproduces the stuck state.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-18102-confirm-current-jis-mapping",
+      "type": "request_info",
+      "label": "Confirm the current JIS key mapping",
+      "primary": true,
+      "comment": {
+        "body": "Your report describes VK242/VK245 remaps sticking on a Japanese keyboard. Could you confirm whether this still happens on current stable, which exact source-to-destination mapping reproduces it, and whether the Windows logical layout is JIS/kbd106 with Japanese IME active?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Japanese IME toggle-key state",
+      "reproduce": {
+        "title": "Check VK242/VK245 key release under Japanese IME",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys",
+        "prerequisites": [
+          "Japanese IME enabled",
+          "JIS keyboard or Windows JIS/kbd106 logical layout",
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Configure a VK242 or VK245 source key to a physical destination key, recording the exact mapping."
+        ],
+        "steps": [
+          "Press and release the mapped source key while Japanese IME is active.",
+          "Use unrelated keys and check whether the remapped key or modifier remains held.",
+          "Repeat while changing the IME mode and with the alternative VK242/VK245 key if available.",
+          "Compare with the same destination mapping from an ordinary non-toggle source key."
+        ],
+        "expected_result": "Each source press produces the configured destination action and returns all remapped key state to released without locking or unlocking the screen."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Japanese IME key-state investigation"
+    }
+  ]
 }

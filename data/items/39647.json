@@ -1,33 +1,138 @@
 {
+  "schemaVersion": 5,
   "number": 39647,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-11-09T15:43:51Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T13:40:00Z",
+  "generated_at": "2026-11-05T13:40:00Z",
+  "evaluated_at": "2026-11-05T13:40:00Z",
+  "source_updated_at": "2026-10-11T16:48:36Z",
+  "title": "There is a keyboard remapping that doesn´t work",
+  "url": "https://github.com/microsoft/PowerToys/issues/39647",
+  "author": "DgBodego",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "AltGr punctuation remap needs verification",
+    "detail": "Screenshots show Alt (Left)+grave to { working and Alt (Left)+plus to } failing, while the report says AltGr on a Spanish layout. Current main has explicit AltGr handling, but capture/runtime key identity is not verified."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Confirm the active keyboard layout, exact physical chord including Shift, and behavior on a current build; compare the two source events using the reproduction steps.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue supplies an asymmetric reproduction and screenshots: the grave-key mapping produces {, but the plus-key mapping does not. The screenshot records the source modifier as Alt (Left), whereas the report describes AltGr on a Spanish layout; current upstream main explicitly recognizes AltGr as right Alt with left Ctrl and has regression tests for that path. This makes an editor/runtime representation mismatch for a layout-dependent OEM punctuation key a testable, low-confidence hypothesis.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report describes an English keyboard setup with Spanish keyboard distribution and says AltGr+grave maps to { successfully while AltGr+plus is unresponsive.",
+      "The screenshots show saved mappings Alt (Left)+grave to { and Alt (Left)+plus to }; Notepad shows the first working and the second producing no character.",
+      "The report lists PowerToys 0.91.1 and Windows 11 Pro 24H2 build 26100.4061. No comments, assignees, or linked fix are present.",
+      "At upstream main 8cfe69247aef8aabadeeafbdafaecab293a2a7f3, KeyboardEventHandlers.cpp:669-679 detects AltGr as VK_RMENU while VK_LCONTROL is down, and OSLevelShortcutRemappingTests.cpp:2374 onward covers AltGr state handling. This confirms the code path exists but does not prove it handles this captured OEM key sequence."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-11-09T15:43:51Z"
-  }
+    "recommended_action": "Reproduce both saved mappings on a current build with the Spanish keyboard layout, record the exact key events and stored source shortcut, then correct capture/runtime normalization only if the plus-key path differs.",
+    "evaluated_at": "2026-11-05T13:40:00Z",
+    "source_updated_at": "2026-10-11T16:48:36Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted AltGr/OEM-key normalization change may be warranted if the editor and runtime represent the Spanish-layout plus chord differently. Current evidence supports investigation, not a confirmed implementation; the screenshot/prose modifier mismatch and old PowerToys version are the material uncertainties."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve AltGr identity for layout-dependent punctuation shortcuts",
+      "root_cause": "The saved screenshot records Alt (Left) for both shortcuts, while the report says the physical modifier is AltGr. Current main identifies AltGr from the VK_LCONTROL+VK_RMENU event pair. The failing plus chord may also use a different physical OEM key or Shift state than the shortcut editor saved, causing a capture/runtime match mismatch; this hypothesis is unconfirmed.",
+      "plan": [
+        "Reproduce both screenshot mappings on a current build with the active Spanish keyboard layout and confirm the physical key sequence for plus, including Shift.",
+        "Trace editor-captured source key/modifier data and runtime events for the working grave key and failing plus key; compare VK_LCONTROL, VK_RMENU, VK_OEM_PLUS, Shift, and the stored Shortcut representation.",
+        "If the editor and runtime disagree about the AltGr or OEM-plus representation, normalize capture and matching so both use the same physical chord while preserving the distinction between left Alt and AltGr where required.",
+        "Add regression coverage for AltGr+grave and AltGr+plus on the Spanish layout, including required Shift state, and verify ordinary Alt shortcuts remain unchanged."
+      ],
+      "verification": [
+        "On the reported Windows 11 24H2 setup, both saved mappings produce { and } in Notepad when their corresponding AltGr chords are pressed.",
+        "Focused tests cover the captured source modifier and OEM-key sequence for both mappings, including key-up cleanup and any required Shift state.",
+        "Existing ordinary left-Alt shortcuts and AltGr state tests continue to pass."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The screenshots and report disagree on whether the source is left Alt or AltGr, and the failing plus key may be layout- or Shift-dependent. Current main has AltGr-specific handling, but no current-build reproduction or exact event trace establishes a defect in that path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a Spanish keyboard layout, the reporter says an AltGr+grave mapping outputs { but an AltGr+plus mapping intended to output } does nothing.",
+    "known_information": [
+      "The report lists PowerToys 0.91.1 and Windows 11 Pro 24H2 build 26100.4061.",
+      "The reporter says the keyboard setup is English with a Spanish keyboard distribution.",
+      "The attached Keyboard Manager screenshot shows Alt (Left)+grave to { and Alt (Left)+plus to }; a Notepad screenshot shows the first mapping working and the second producing no character.",
+      "Current upstream main 8cfe69247aef8aabadeeafbdafaecab293a2a7f3 recognizes AltGr when right Alt is pressed while left Ctrl is down and contains AltGr shortcut-state tests."
+    ],
+    "inferences": [
+      "The displayed Alt (Left) source may not represent the reported physical AltGr event, or the reporter may be using a different modifier than the screenshot suggests.",
+      "The Spanish-layout plus key may depend on a different physical OEM key or Shift state than the shortcut editor saved; this remains unconfirmed.",
+      "A capture/runtime key identity mismatch is plausible but cannot be inferred from the screenshots alone."
+    ],
+    "analysis": "The asymmetric result and screenshots are enough for a maintainer to attempt the reported sequence, but they do not establish the precise chord: the prose says AltGr while the UI shows Alt (Left), and plus may be a shifted/layout-dependent key. Current main has explicit AltGr recognition, so compare captured shortcut data with runtime events before any code change.",
+    "initial_investigation": [
+      "Read the complete issue body and all screenshots, including the saved source/target rows and observed Notepad output; no comments or assignees exist.",
+      "Checked upstream main at 8cfe69247aef8aabadeeafbdafaecab293a2a7f3: KeyboardEventHandlers.cpp:669-679 recognizes the VK_LCONTROL+VK_RMENU AltGr sequence; key-up handling is at 994-1007.",
+      "Checked OSLevelShortcutRemappingTests.cpp:2374 onward; current tests cover AltGr state reset but not the reported Spanish-layout punctuation mappings.",
+      "No linked fix or direct duplicate was established."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "The exact active Windows keyboard-layout name and the physical keys used for each mapping, including whether Shift is held for plus; confirm whether failure persists on PowerToys 0.100.2 or newer.",
+        "why_needed": "The screenshots record Alt (Left), but the report says AltGr, and plus may have a layout-dependent Shift/OEM-key sequence. These facts distinguish editor capture from runtime matching failures.",
+        "how_to_collect": "Report the active keyboard-layout name from Windows Settings > Time & language > Language & region. Retest both mappings on 0.100.2 or newer and list the physical keys, including Shift, for each chord."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve AltGr punctuation investigation",
+      "note": "Investigate capture/runtime normalization for the Spanish-layout plus key only after confirming the current build and exact chord."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm AltGr layout and source keys",
+      "comment": {
+        "target": "issue",
+        "number": 39647,
+        "body": "Thanks for the screenshots: they show the saved sources as Alt (Left)+grave and Alt (Left)+plus, while the report describes pressing AltGr on a Spanish layout; the plus chord may also require Shift. Could you confirm the exact active Windows keyboard-layout name, whether this still reproduces on PowerToys 0.100.2 or newer, and the physical keys (including Shift) used for each chord? These details distinguish a capture/runtime AltGr mismatch from a layout-dependent OEM-key combination."
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Spanish-layout punctuation mappings",
+      "note": "The issue includes enough detail and screenshots for a maintainer to test both mappings locally.",
+      "reproduce": {
+        "title": "Compare AltGr grave and plus remaps",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer; record the exact build",
+        "prerequisites": [
+          "Windows with the reported Spanish keyboard distribution active",
+          "Keyboard Manager enabled",
+          "Notepad available as a text target"
+        ],
+        "setup": [
+          "Configure the screenshot mappings: Alt (Left)+grave to { and Alt (Left)+plus to }.",
+          "Record the active keyboard layout and whether the plus source requires Shift."
+        ],
+        "steps": [
+          "Focus Notepad and press the reported AltGr+grave chord; record whether { is produced.",
+          "Press the reported AltGr+plus chord, including any required Shift; record whether } is produced.",
+          "Repeat after confirming the Keyboard Manager rows show the same source modifiers and physical keys as the report."
+        ],
+        "expected_result": "Both configured chords produce their respective brace characters, and the recorded source modifier/key events match the mappings captured in Keyboard Manager.",
+        "setup_prompt": "On a current PowerToys build with the Spanish keyboard layout active, configure the two issue mappings (Alt+grave to { and Alt+plus to }), then compare the captured source chord with the physical AltGr sequence and verify both outputs in Notepad."
+      }
+    }
+  ]
 }

@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 35401,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_information",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:33:37Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "author": "satihar0329",
+  "generated_at": "2026-11-06T00:23:05Z",
+  "evaluated_at": "2026-11-06T00:23:05Z",
+  "source_updated_at": "2026-10-07T19:29:40Z",
+  "title": "PowerToys settings not saving",
+  "url": "https://github.com/microsoft/PowerToys/issues/35401",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 3,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report says settings still fail after a clean reinstall in both per-user and machine-wide installs, while editing settings.json directly works; backup restoration also fails. Current source has a checked-settings-load failure path that returns before saving, and its IPC caller receives no persistence result, but the issue does not establish that this path caused the observed failure. A fresh diagnostic and the exact restore error are needed before treating that hypothesis as the confirmed root cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The latest report says the persistence problem remains after a clean uninstall and reinstall, including both per-user and machine-wide installations.",
+      "The reporter says manually editing settings.json works, while restoring from a PowerToys settings backup also fails.",
+      "In current source, apply_module_status_update logs and returns when checked general-settings loading fails; the Settings IPC caller does not receive a persistence-success result from that void operation.",
+      "The current public evidence does not include a fresh /bugreport captured immediately after a failed toggle, the enabled value at the failure boundary, or the exact backup-restore error."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:33:37Z"
-  }
+    "recommended_action": "Request one post-failure /bugreport, the observed enabled-state transition, and the exact restore error; then target the confirmed persistence path rather than assuming the checked-load branch is responsible.",
+    "evaluated_at": "2026-11-06T00:23:05Z",
+    "source_updated_at": "2026-10-07T19:29:40Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A candidate resilience fix is to propagate the checked load/write outcome through the Settings IPC boundary so the UI cannot imply that an unsaved change succeeded. The report has not yet confirmed that this is the failing branch."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Surface settings persistence failures to the Settings UI",
+      "root_cause": "The module-status update path can return before saving when checked general-settings loading fails, while its void IPC call does not communicate persistence success or failure to the UI. This is a plausible failure path, not yet a confirmed explanation for the reported symptom.",
+      "plan": [
+        "Return an explicit result from apply_module_status_update that distinguishes successful persistence from checked-load or write failure, and propagate that result through the Settings IPC boundary.",
+        "Have the Settings UI report the change as saved only after persistence succeeds; surface a recoverable, actionable error when it does not, without logging settings values.",
+        "Add focused tests for checked-load and write failures to verify the caller receives failure and the UI does not claim that the change was saved.",
+        "Use the requested restore error and post-failure diagnostics to determine whether backup restoration needs a separate fix rather than folding an unrelated path into this change."
+      ],
+      "verification": [
+        "Reproduce one module toggle and one backup restore after a clean install; record whether the UI state changes, whether the setting persists before restart, and the exact restore error.",
+        "Capture a fresh /bugreport immediately after the failed toggle, then verify the identified failure path is surfaced to the UI and successful writes still survive restart.",
+        "Run the focused failure-path tests and confirm neither diagnostic logging nor user-visible errors expose settings contents."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The current code contains a plausible silent-failure boundary, but the issue does not yet connect the reporter’s toggle or restore failure to that branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Settings changes reportedly do not persist across restart after a clean reinstall; editing settings.json directly works, and settings-backup restoration also fails.",
+    "known_information": [
+      "The reporter says the problem persists after a clean uninstall/reinstall and with both per-user and machine-wide installations.",
+      "The reporter says manual settings.json edits work, but PowerToys settings-backup restoration fails.",
+      "The current module-status update path has a checked-settings-load failure return, and its IPC caller does not receive a persistence result."
+    ],
+    "inferences": [
+      "The checked-load early return could explain a module toggle that appears to succeed but is not written, but no current issue evidence confirms that exact branch.",
+      "The backup-restore failure may be a separate path and should not be attributed to module-status persistence without its exact error."
+    ],
+    "analysis": "The issue is actionable for targeted evidence collection, but not for a confident root-cause patch yet. Obtain a diagnostic archive immediately after one failed toggle, determine whether the enabled state changed before restart, and collect only the exact restore error text. The candidate code change should make persistence failure observable and prevent a false success indication while the underlying failure is investigated.",
+    "initial_investigation": [
+      "Reviewed the refreshed issue report and latest discussion about clean reinstalls, install scope, direct settings-file edits, and backup restoration.",
+      "Inspected apply_module_status_update and its Settings IPC caller; the checked-load failure path returns without a success result being propagated to the caller.",
+      "No current evidence identifies the backup-restore failure path or proves the checked-load branch caused the reported toggle symptom."
+    ],
+    "information_gaps": [
+      {
+        "information": "For one failed module toggle, whether the enabled state changes in the UI and whether the corresponding value changes before restarting.",
+        "why_needed": "This separates a UI acknowledgement problem from a settings write or reload problem without requiring the reporter to share the full settings file.",
+        "how_to_collect": "After toggling, note the UI state and whether it remains after reopening Settings but before restarting; do not attach the full settings file.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the failed toggle.",
+        "why_needed": "The diagnostics can identify whether the checked-load or another persistence path failed at the time of the symptom.",
+        "how_to_collect": "Add a comment containing /bugreport immediately after reproducing the failed toggle.",
+        "evidence_type": "bugreport_zip"
+      },
+      {
+        "information": "The exact error text shown when restoring the settings backup, and whether the restore reports success or failure.",
+        "why_needed": "Backup restoration may be independent of module-status persistence; the error will identify whether it should be triaged as a separate path.",
+        "how_to_collect": "Copy only the restore dialog/error text and note whether the operation reports success; do not attach settings contents.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve persistence-result reporting design",
+      "design": {
+        "title": "Surface settings persistence failures to the Settings UI"
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request toggle diagnostics and restore error",
+      "comment": {
+        "body": "Thanks for confirming that the problem persists after a clean reinstall, that direct settings.json edits work, and that backup restoration also fails. The current code has a possible early return when general settings cannot be loaded, but the issue does not show whether that is the path you hit. Could you please provide:\r\n1. For one failed module toggle, whether the setting changes in the UI and whether it remains changed after reopening Settings but before restarting. Please do not attach the full settings file.\r\n2. A fresh diagnostic archive captured immediately after reproducing the failed toggle by adding a comment containing /bugreport.\r\n3. The exact error text from the backup-restore attempt and whether it reports success or failure; please share only the error text, not settings contents.\r\nThese details will distinguish a toggle-persistence failure from a separate backup-restore problem."
+      }
+    }
+  ]
 }

@@ -1,33 +1,115 @@
 {
+  "schemaVersion": 5,
   "number": 36193,
+  "title": "PowerToys v0.86.0: replacing keyboard keys not working in new release",
+  "url": "https://github.com/microsoft/PowerToys/issues/36193",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-01-08T14:26:09Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:58:49.3Z",
+  "generated_at": "2026-11-05T14:58:49.3Z",
+  "evaluated_at": "2026-11-05T14:58:49.3Z",
+  "source_updated_at": "2026-10-11T16:47:54Z",
+  "comments": 4,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm current remap behavior and Settings visibility",
+    "detail": "The original report says backslash mapped to right Ctrl is ignored on 0.86.0. A separate commenter reports Caps Lock disable works only while Settings is open; its 0.87.1 engine log shows settings reloads but no key failure."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original report describes backslash-to-right-Ctrl failing on 0.86.0 and provides a screenshot. Later comments from another user describe Caps Lock disable working only while Quick Access or Settings is open and attach a v0.87.1 report; the engine log contains initialization and settings reload entries but no key-event failure. These may be related but are not confirmed to share the original setup. Current build behavior and Settings visibility for the original mapping remain unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original reporter lists PowerToys 0.86.0 and says a wireless keyboard backslash key continues typing backslash instead of right Ctrl.",
+      "A commenter reports a distinct Caps Lock-disable symptom that occurs only while Quick Access or Settings is open.",
+      "The attached commenter report identifies v0.87.1; its Keyboard Manager engine log shows initialization and settings reload, with no error or key-failure trace.",
+      "The original reporter has not confirmed current stable behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-01-08T14:26:09Z"
-  }
+    "recommended_action": "Ask the original reporter to retest backslash-to-right-Ctrl on v0.102.3001 and compare with Settings visible/minimized; if it still fails, capture a current /bugreport.",
+    "evaluated_at": "2026-11-05T14:58:49.3Z",
+    "source_updated_at": "2026-10-11T16:47:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A current remap failure is applicable, but the original mapping and the separate Caps Lock/UI-state report may represent different issues and both are old."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep key remaps active when Settings is minimized",
+      "root_cause": "Keyboard Manager may not reload or apply mappings consistently when Settings is minimized, but this symptom comes from a different commenter and does not yet explain the original backslash mapping.",
+      "plan": [
+        "Retest the original backslash-to-right-Ctrl mapping on v0.102.3001 with Settings visible and minimized.",
+        "If the original reporter confirms a UI-state difference, trace the engine settings reload path around that transition.",
+        "Fix the demonstrated settings or engine state issue and add a test with Settings open and minimized."
+      ],
+      "verification": [
+        "Verify the original key emits right Ctrl consistently regardless of Settings visibility.",
+        "Verify the separate Caps Lock-disable symptom only if its reporter confirms the same current issue."
+      ],
+      "confidence": {
+        "score": 31,
+        "level": "red",
+        "rationale": "The original and commenter symptoms differ; the old diagnostic confirms settings reloads only and provides no current key-event evidence."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A backslash-to-right-Ctrl remap reportedly failed on v0.86.0; a separate commenter describes Caps Lock behavior that depends on Settings visibility.",
+    "known_information": [
+      "The original reporter says a wireless keyboard backslash key continued typing backslash instead of right Ctrl on v0.86.0.",
+      "A different commenter says Caps Lock-disable works only while Quick Access or Settings is open.",
+      "That commenter attached a v0.87.1 report; Keyboard Manager logs show initialization and settings reload but no failure trace.",
+      "The original reporter has not confirmed whether Settings visibility affects their mapping or tested a current build."
+    ],
+    "inferences": [
+      "The two symptoms may share a settings reload issue, but the users and mappings differ, so that connection is unproven."
+    ],
+    "analysis": "Do not attribute the separate commenter diagnostics to the original reporter. The next discriminator is a current retest of the original key mapping with Settings visible and minimized; do not request the same old logs again.",
+    "initial_investigation": [
+      "Read the issue body and all four comments, distinguishing the backslash mapping from the separate Caps Lock report.",
+      "Inspected the attached v0.87.1 engine log; it contains initialization and settings reload entries but no key-failure trace.",
+      "Confirmed the original issue lists v0.86.0 and has no current-build validation."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "why_needed": "The original report is from 0.86.0.",
+        "information": "Whether the original backslash-to-right-Ctrl remap fails on v0.102.3001.",
+        "how_to_collect": "Retest the same remap on v0.102.3001."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "why_needed": "UI-state dependence appears only in a separate commenter report and may not share the original failure.",
+        "information": "Whether opening Quick Access/Settings changes the original reporter remap result.",
+        "how_to_collect": "With the same backslash-to-right-Ctrl remap, compare a key press while Settings is visible and while minimized to the tray."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "why_needed": "The attached v0.87.1 archive belongs to a separate commenter and contains no key-failure trace.",
+        "information": "A current archive if the original mapping still fails on v0.102.3001.",
+        "how_to_collect": "Immediately after reproducing on the current build, comment /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Retest issue 36193 on the current build",
+      "comment": {
+        "target": "issue",
+        "number": 36193,
+        "body": "Thanks for the backslash-to-right-Ctrl report and screenshot. The thread later adds a separate user Caps Lock-disable case that only works while Settings is open; the attached v0.87.1 engine log shows settings reloads but no key-failure trace, so I cannot assume it is the same setup.\n\nCould you please:\n1. Retest your original backslash-to-right-Ctrl mapping on v0.102.3001 and report whether it still types backslash.\n2. If it still fails, compare one key press with Settings visible and minimized, then comment /bugreport immediately after a failure.\nThis will establish whether the original mapping is still broken and whether Settings visibility is relevant."
+      }
+    }
+  ]
 }

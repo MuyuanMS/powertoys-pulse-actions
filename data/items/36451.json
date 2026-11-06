@@ -3,15 +3,14 @@
   "number": 36451,
   "kind": "issue",
   "track": "triage",
-  "stage": "needs_information",
-  "owes": "maintainer",
+  "stage": "triage_revalidated",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-13T15:30:06.9719009Z",
-  "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-  "source_updated_at": "06/14/2026 12:59:33",
+  "generated_at": "2026-11-05T11:54:36.06Z",
+  "evaluated_at": "2026-11-05T11:54:36.06Z",
+  "source_updated_at": "2026-11-03T09:32:43Z",
   "url": "https://github.com/microsoft/PowerToys/issues/36451",
   "title": "PowerToys Run - System.InvalidOperationException: Cyclic reference found while evaluating the Style property on element",
-  "author": "nhwCoder",
   "labels": [
     "Issue-Bug",
     "Product-PowerToys Run",
@@ -21,73 +20,100 @@
     "MuyuanMS",
     "Copilot"
   ],
-  "comments": 30,
-  "status": {
-    "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "Lightweight schema-v5 triage revalidation completed during the bounded scheduled run."
-  },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "The issue needs specific evidence to identify a safe fix path."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The report remains insufficiently specific to select and verify a safe implementation path from public evidence.",
-    "evidence": [
-      "Open Issue-Bug report #36451: PowerToys Run - System.InvalidOperationException: Cyclic reference found while evaluating the Style property on element",
-      "Labels present: Issue-Bug, Product-PowerToys Run, Severity-High",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
-    ],
-    "recommended_action": "Request numbered reproduction steps and a fresh /bugreport archive.",
-    "evaluated_at": "2026-09-13T15:30:06.9719009Z",
-    "source_updated_at": "06/14/2026 12:59:33"
-  },
+  "comments": 34,
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable until the missing evidence isolates the failing path."
+    "status": "proposed",
+    "rationale": "Current 0.102.3001 reports and the WPF system-theme stack align with PowerToys Run's runtime ThemeMode and custom resource-dictionary updates. PR #47367 proposed a focused correction but is closed unmerged; the exact cause still needs a current-build reproduction."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Keep PowerToys Run's runtime theme resources on one update path",
+      "root_cause": "Hypothesis: WPF's Fluent theme manager continues to react to system theme changes while PowerToys Run replaces window resource dictionaries for high-contrast themes, allowing style invalidation to revisit a cyclic resource reference. The reported stack and current code path fit, but the failure has not been reliably reproduced.",
+      "plan": [
+        "Reassess the final changes in closed, unmerged PR #47367 against current main rather than treating that PR as a shipped fix.",
+        "Preserve Fluent static resources during window initialization, then avoid simultaneous WPF ThemeMode and custom high-contrast dictionary ownership at runtime; remove custom high-contrast dictionaries before restoring Light or Dark mode.",
+        "Add regression coverage for Light/Dark and High Contrast transitions, including a test that exercises the actual window resource update rather than only mapping Theme values."
+      ],
+      "verification": [
+        "Reproduce on the reported Windows 11 x64 build while PowerToys Run is open, then verify the cyclic-reference exception no longer occurs during repeated system-theme transitions.",
+        "Exercise entering and leaving High Contrast and verify the intended Fluent/custom resources and accessibility colors remain available.",
+        "Build and run the focused PowerToys Run tests; an enum-to-ThemeMode unit test alone does not validate resource-dictionary transitions."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The current report provides the exact WPF system-theme stack, current main contains the matching theme/resource updates, and the final PR diff targets that path; no reliable reproduction or merged fix proves causality."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated open Issue-Bug #36451: PowerToys Run - System.InvalidOperationException: Cyclic reference found while evaluating the Style property on element.",
+    "summary": "PowerToys Run continues to report a WPF cyclic-style-reference exception during system-theme processing on 0.102.3001.0; the proposed PR fix is not in current main.",
     "known_information": [
-      "Open Issue-Bug report #36451: PowerToys Run - System.InvalidOperationException: Cyclic reference found while evaluating the Style property on element",
-      "Labels present: Issue-Bug, Product-PowerToys Run, Severity-High",
-      "Public issue metadata and discussion were revalidated during the bounded scheduled run."
+      "The November 3 report identifies PowerToys 0.102.3001.0, Windows 11 build 10.0.26300, x64, the exact cyclic-reference exception, and a stack through ThemeManager.OnSystemThemeChanged, AddOrUpdateThemeResources, and SystemThemeFilterMessage: https://github.com/microsoft/PowerToys/issues/36451#issuecomment-6600083891",
+      "The reporter attached a PowerToys diagnostic archive but says no reliable reproduction scenario is known.",
+      "Earlier reports include a Windows light-to-dark change and an Auto Dark Mode report; the latter's NullReferenceException is a separate symptom and is not treated as proof of this root cause.",
+      "PR #47367 is closed, remains a draft, and has no merge commit. Its final diff changed PowerToys Run's startup/runtime ThemeMode and high-contrast resource handling.",
+      "Current upstream main still includes the Fluent application theme dictionary and the runtime ThemeManager path that applies Light/Dark ThemeMode while replacing custom high-contrast dictionaries."
     ],
     "inferences": [
-      "The available public evidence does not yet confirm a single root cause or implementation path."
+      "A conflict between WPF's system-theme resource update and PowerToys Run's custom high-contrast resources is a plausible cause, not a confirmed one.",
+      "The final changes in PR #47367 are a useful candidate direction, but they require review and transition-level regression coverage before being treated as a fix."
     ],
-    "analysis": "The report should receive a targeted evidence request before design work so triage can distinguish the relevant code path.",
+    "analysis": "The latest report is a current, concrete recurrence with a stack that points to WPF's system-theme resource update, and the commenter explicitly asks about PR #47367. That PR is closed and unmerged, and the relevant change is absent from current main. This supports a focused, confidence-scored design direction, but not a claim that the PR was released or that its hypothesis is proven. Reproduce the system/high-contrast transition on a current build before implementation.",
     "initial_investigation": [
-      "Reviewed the live issue metadata, labels, public discussion count, and current artifact freshness.",
-      "Checked the schema-v5 action contract for this revalidation."
+      "Read the current issue body and latest comments, including the November 3 current-version report, its exact stack, attached-report reference, and statement that no reliable reproduction is known.",
+      "Checked PR #47367's current state and final diff; it is closed, draft, and unmerged. The candidate adds a high-contrast ThemeMode.None path, preserves startup Fluent resources with a compatible fallback, and clears custom high-contrast dictionaries when returning to standard themes.",
+      "Fetched current upstream main ThemeManager.cs and App.xaml; confirmed the candidate high-contrast handling is not present and the Fluent dictionary remains loaded.",
+      "Inspected PowerLauncher.Helper.ThemeManager.SetSystemTheme: it sets Application.Current.ThemeMode and clears/adds custom high-contrast ResourceDictionaries on the runtime update path.",
+      "Kept the October 29 NullReferenceException report separate from the cyclic-reference defect rather than merging distinct exception types."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the reported behavior, including expected and actual results.",
-        "why_needed": "A deterministic reproduction is needed to select a safe owning code path and fix.",
-        "how_to_collect": "Reply with numbered reproduction steps on the issue."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostics can distinguish configuration, environment, and code failures.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The current-version stack, source path, and unmerged targeted PR provide enough evidence for one focused design direction. The exact trigger remains unknown, so a maintainer reproduction action and yellow confidence are retained.",
+    "evidence": [
+      "The November 3 report confirms the cyclic-reference exception on 0.102.3001.0 and Windows 11 x64 build 10.0.26300, with the WPF system-theme resource stack: https://github.com/microsoft/PowerToys/issues/36451#issuecomment-6600083891",
+      "The reporter explicitly says a reliable reproduction scenario is not known.",
+      "PR #47367, the proposed fix cited by the reporter, is closed and unmerged; current main does not contain its high-contrast ThemeMode/resource changes.",
+      "Current PowerToys Run source updates Application.Current.ThemeMode and custom high-contrast dictionaries through SetSystemTheme, matching the reported system-theme path."
+    ],
+    "recommended_action": "Reproduce the system/high-contrast transition on a current build, then review the focused theme-resource design rather than assuming PR #47367 shipped.",
+    "evaluated_at": "2026-11-05T11:54:36.06Z",
+    "source_updated_at": "2026-11-03T09:32:43Z"
   },
   "actions": [
     {
-      "id": "request-repro-diagnostics-36451",
-      "type": "request_info",
-      "label": "Request repro steps and diagnostics",
+      "type": "approve_design",
+      "label": "Approve PowerToys Run theme-resource design",
       "primary": true,
-      "comment": {
-        "body": "Thanks for reporting this. The public report identifies the symptom, but the exact failing path is not yet sufficiently isolated.\r\n\r\nPlease provide:\r\n1. Numbered reproduction steps from a clean PowerToys start, including expected versus actual behavior and the PowerToys/Windows versions.\r\n2. A fresh diagnostic archive captured immediately after reproducing by adding a comment containing /bugreport.\r\n\r\nThis evidence will determine the correct triage and fix path."
+      "id": "issue-36451-approve-theme-design"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce system-theme transition in PowerToys Run",
+      "id": "issue-36451-reproduce-theme-transition",
+      "reproduce": {
+        "title": "Exercise PowerToys Run during Windows theme transitions",
+        "module": "PowerToys Run",
+        "version_requirement": "First test PowerToys 0.102.3001.0 on Windows 11 x64 build 10.0.26300, then compare with a current build.",
+        "prerequisites": [
+          "Use a disposable Windows profile or VM with PowerToys Run available.",
+          "Keep PowerToys Run open while changing the Windows system theme."
+        ],
+        "setup": [
+          "Capture the exact PowerToys and Windows versions and the selected PowerToys Run theme.",
+          "If testing Auto Dark Mode, record it as a separate trigger; do not treat its reported NullReferenceException as the same failure."
+        ],
+        "steps": [
+          "Launch PowerToys Run and leave it open while switching Windows Settings > Personalization > Colors from Light to Dark and back.",
+          "Repeat with Windows High Contrast enabled and then disabled, recording whether the failure requires entering or leaving High Contrast.",
+          "If an exception appears, capture its timestamp and full stack with a fresh /bugreport and compare it with the reported ThemeManager.OnSystemThemeChanged path."
+        ],
+        "expected_result": "Repeated theme transitions complete without a cyclic-style-reference exception; any failure is tied to a specific transition and captured stack."
       }
     }
-  ]
+  ],
+  "summary": "Current-version cyclic-reference report aligns with PowerToys Run's theme-resource path; PR #47367 is an unmerged candidate, not a shipped fix.",
+  "next_action": "Reproduce the current system/high-contrast theme transition and review the focused resource-ownership design."
 }

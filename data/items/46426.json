@@ -1,33 +1,128 @@
 {
+  "schemaVersion": 5,
   "number": 46426,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "keyboard manager \"try the new editor\" toggle visual bug",
+  "url": "https://github.com/microsoft/PowerToys/issues/46426",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-24T10:20:39Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:48Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm editor-toggle state on current release",
+    "detail": "The toggle mismatch was reproduced by multiple users through 0.99.1, but no current-version result is recorded."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter describes switching back to the classic editor while the new-editor toggle remains blue even though the feature is off; another user confirmed on 0.99.1 that clicking the visually-on toggle re-enables the editor, and a second user confirmed. The issue is open and unassigned. Current stable behavior is unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report lists PowerToys 0.98.0 and Windows 11 Enterprise.",
+      "A follow-up says the mismatch also occurs on PowerToys 0.99.1 and provides a simpler reproduction: enable the new editor, switch back to classic, then observe the toggle.",
+      "A second user confirmed the issue.",
+      "The issue is open and unassigned with two comments."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-24T10:20:39Z"
-  }
+    "recommended_action": "Ask whether the toggle still shows an inconsistent state on current stable PowerToys; if so, use the existing simple reproduction before choosing a UI-state fix.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:48Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The follow-up says the toggle displays on while the new editor is actually off, and clicking it re-enables the editor. This supports a UI-state synchronization defect, though persistence on current stable remains unverified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep the new-editor toggle synchronized with the active editor",
+      "root_cause": "Switching back to the classic editor may leave the toggle's visual state bound to the old selection instead of the active editor setting. The described visual/action mismatch is consistent with stale UI state.",
+      "plan": [
+        "Confirm the state mismatch on current stable PowerToys using the simplified reporter reproduction.",
+        "Trace the new-editor toggle binding and the switch-to-classic state update.",
+        "Update the binding or state transition so the displayed toggle reflects the active editor setting.",
+        "Add UI regression coverage for switching to classic, reading the toggle, and switching back to the new editor."
+      ],
+      "verification": [
+        "After switching to the classic editor, verify the new-editor toggle displays off.",
+        "Verify clicking the off toggle enables the new editor exactly once and the displayed state becomes on.",
+        "Verify the selection persists correctly after closing and reopening Keyboard Manager."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The 0.99.1 follow-up gives a deterministic state mismatch and two users confirmed it, but current-release behavior and the binding path are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After switching from the new Keyboard Manager editor back to the classic editor, the new-editor toggle reportedly remains blue/on even though the feature is off.",
+    "known_information": [
+      "The original report lists PowerToys 0.98.0 on Windows 11 Enterprise.",
+      "A follow-up confirms the mismatch on 0.99.1 and says clicking the visually-on toggle re-enables the new editor.",
+      "A second user confirmed the issue.",
+      "The issue is open and unassigned; it has no diagnostic attachment."
+    ],
+    "inferences": [
+      "The toggle may not refresh its visual state when the active editor changes."
+    ],
+    "analysis": "The existing follow-up narrows the defect to state presentation and provides a simpler reproduction than the original restart sequence. The key remaining question is whether it persists on current stable; if it does, a focused UI-state test should distinguish a display binding issue from failed persistence.",
+    "initial_investigation": [
+      "Read the live issue body, screenshots references, labels, state, assignees, and both comments.",
+      "The May 2026 follow-up reproduces on 0.99.1 and identifies the toggle's displayed state and click behavior.",
+      "No linked fix or current-version confirmation was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the visual mismatch and re-enable behavior still occur on current stable PowerToys",
+        "why_needed": "The latest explicit version is 0.99.1, so a later release may already have fixed the state transition.",
+        "how_to_collect": "Repeat the simplified follow-up steps on current stable and report the exact PowerToys version and whether the toggle state matches the selected editor.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-46426-confirm-current-editor-toggle",
+      "type": "request_info",
+      "label": "Confirm editor-toggle state",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for simplifying the reproduction and confirming it on 0.99.1. Could you confirm whether the mismatch still occurs on current stable PowerToys? If so, please include the exact version and whether the toggle still appears on after switching to the classic editor, then re-enables the new editor when clicked. The existing reproduction is sufficient; no diagnostic upload is needed."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the editor-toggle state fix direction"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the editor-toggle mismatch",
+      "note": "The follow-up supplies a short, deterministic state-transition repro.",
+      "reproduce": {
+        "title": "Verify editor-toggle state after switching to classic",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys, 0.102.3001 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Enable the new Keyboard Manager editor."
+        ],
+        "steps": [
+          "Choose the option to switch back to the classic editor.",
+          "Inspect the new-editor toggle without clicking it.",
+          "If it appears on, click it once and observe which editor opens."
+        ],
+        "expected_result": "After switching to classic, the toggle should display off. Clicking it once should enable the new editor and display on."
+      }
+    }
+  ]
 }

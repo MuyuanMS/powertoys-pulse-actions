@@ -1,73 +1,120 @@
 {
-  "judgment": {
-    "recommended_action": "Run the three-tool modern/classic menu and update matrix; coordinate overlapping trackers without closing this report as fully covered.",
-    "evidence": [
-      "PowerToys0.100.2 from Microsoft Store: combined default/extended mode duplicates File Locksmith, PowerRename and Image Resizer in the classic menu; extended-only mode omits the configured commands. The report includes both menu screenshots.",
-      "The October22 follow-up reports registry-removal workarounds lasting only until an update, with a screenshot. It does not establish the source of every duplicate.",
-      "The October31 author reply distinguishes the closed historical reports from the still-open Image Resizer-only20255 and explicitly asks that the three-tool report not be dismissed as that partial duplicate.",
-      "Issue20255 remains open and covers Image Resizer duplication (also mentions PowerRename);49416 remains an open File Locksmith classic-menu request. Closed39699 is a historical File Locksmith duplicate report, not proof of a released all-tools correction.",
-      "The latest community comment argues that the three-tool menu bug deserves prioritization; it supplies no new test, covering repair or measured priority decision by the team. Retain the specific modern/classic three-tool reproduction rather than a blanket duplicate or registry-deletion workaround."
-    ],
-    "evaluated_at": "2026-11-01T04:02:39.0083130+00:00",
-    "rationale": "The report already provides a concrete menu-mode comparison and screenshots. The latest reply defeats a blanket handled/duplicate judgment: related trackers cover portions, but no linked repair establishes a single released correction for all three tools. Reproduce each tool and registration surface separately before choosing a fix; do not ask for generic logs or prescribe registry deletion.",
-    "status": "reproducible",
-    "source_updated_at": "2026-11-01T00:13:13Z"
-  },
+  "schemaVersion": 5,
+  "number": 51316,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51316",
+  "title": "File management tools either have duplicate context menu items or none at all in extended menu",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
   "pending_author": false,
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Product-Image Resizer",
+    "Needs-Triage",
+    "Product-File Locksmith"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T11:36:28Z",
+  "evaluated_at": "2026-11-05T11:36:28Z",
+  "source_updated_at": "2026-11-04T20:40:52Z",
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Registration/surface reconciliation is applicable, but the exact producer of duplication and missing classic commands remains unproven. Existing issues are partial coverage, not a verified all-tools fix."
+    "rationale": "The report provides a concrete modern/classic menu comparison and screenshots, but the producing provider for each duplicate or missing command is not yet isolated. Current source confirms that the tools have package-backed modern verbs and classic shell registrations; that is a testable hypothesis, not proof of a shared defect.",
+    "existing_fix_urls": []
   },
-  "kind": "issue",
-  "title": "File management tools either have duplicate context menu items or none at all in extended menu",
-  "stage": "triaged",
-  "schemaVersion": 5,
-  "url": "https://github.com/microsoft/PowerToys/issues/51316",
   "proposed_fixes": [
     {
-      "title": "Reconcile tool-specific menu registration and mode selection",
+      "title": "Align context-menu visibility with each tool's registration mode",
+      "root_cause": "Hypothesis: Windows 11 can expose both package-backed modern verbs and classic shell handlers, and the providers may not consistently agree with each tool's selected menu mode. Image Resizer also has both a package manifest and runtime-registered classic handler. The current report does not identify which provider causes each duplicate or missing entry.",
       "plan": [
-        "Reproduce the supplied combined/extended-only comparison for local image files and folders, recording modern versus classic entries separately for all three utilities.",
-        "In a disposable Store-install test account, compare package identities and classic handler registrations before/after a supported update; identify which provider owns each visible duplicate. Do not delete production-user registrations.",
-        "Inspect the confirmed provider and menu-mode guard in the affected tool, including packaged AppxManifest/IExplorerCommand.GetState and any classic handler. Implement only the demonstrated registration/visibility correction; do not merge unrelated tools under an assumed shared root cause.",
-        "Coordinate Image Resizer coverage with20255 and File Locksmith classic-menu coverage with49416. Add tool-specific assertions to existing context-menu UI tests and retain all three rows until each has a verified result."
+        "Reproduce the reported modes separately for File Locksmith and PowerRename and test Image Resizer independently, counting each command in the Windows 11 default menu and Show more options menu.",
+        "In a disposable Store-install test account, correlate each visible entry with its package-backed IExplorerCommand or classic shell handler; compare registrations before and after a supported update without deleting user registry entries.",
+        "Change only the provider and visibility guard demonstrated to be wrong, then add a tool-specific UI test that asserts exactly one command on each supported surface for each menu mode.",
+        "Keep Image Resizer separate because it does not expose the same extended-only setting; coordinate partial coverage with #20255 and #49416 without treating them as a complete fix."
+      ],
+      "verification": [
+        "On current stable, verify exactly one command for each enabled utility in the default and extended menus, and verify the configured extended-only behavior for File Locksmith and PowerRename.",
+        "Test Image Resizer with an image file and test File Locksmith/PowerRename with both image-file and folder selections where supported.",
+        "Repeat after a supported Store update or repair in a disposable account and confirm the duplicate does not return; do not use registry deletion as a workaround."
       ],
       "confidence": {
         "score": 62,
-        "rationale": "Screenshots, the mode comparison and update recurrence justify investigation. No registry/package snapshot or executed all-tools matrix identifies the owning duplicate providers, so the exact fix is not yet supported.",
-        "level": "yellow"
-      },
-      "root_cause": "Hypothesis: package-backed modern verbs and classic registrations do not consistently agree with each tool menu-mode choice, possibly compounded by registrations recreated during update. This is not yet a proven common cause.",
-      "verification": [
-        "Current stable versus the reported Store installation: exactly one configured command on each supported modern/classic surface, including combined and extended-only modes.",
-        "Repeat after update/repair in a disposable account; duplicates must not return and disabling a tool must hide its commands.",
-        "Compare image-file and folder selections and record unsupported surfaces explicitly rather than declaring all three tools fixed."
-      ]
+        "level": "yellow",
+        "rationale": "The screenshots and menu-mode comparison establish a repeatable symptom. Source confirms modern package and classic registration paths, but no executed provider-by-provider matrix identifies the failing registration or proves that all three tools share one root cause."
+      }
     }
   ],
+  "issue_context": {
+    "summary": "File Locksmith, PowerRename, and Image Resizer are duplicated in the extended context menu in one configuration, while the configured commands disappear in extended-only mode.",
+    "known_information": [
+      "The reporter uses PowerToys 0.100.2 from the Microsoft Store and supplied screenshots for combined and extended-only menu configurations.",
+      "The reporter says File Locksmith and PowerRename are set to appear in both default and extended menus; Image Resizer appears for image files.",
+      "A later commenter reports that registry-removal workarounds only last until a PowerToys update.",
+      "The reporter says existing historical issue #30321 covers only Image Resizer and asks that this three-tool report not be treated as fully covered by that partial duplicate.",
+      "The November 4 comment proposes a Windows menu-composition theory, but it does not include a provider-level test or registration trace."
+    ],
+    "inferences": [
+      "The package-backed modern verbs and classic shell handlers could interact differently across the default and extended menus, but the screenshots alone do not identify which provider creates each duplicate.",
+      "Image Resizer may have a separate cause because it does not expose the same extended-only setting as File Locksmith and PowerRename."
+    ],
+    "analysis": "File Locksmith and PowerRename each declare a windows.fileExplorerContextMenus package verb and also have classic shell handlers. Their modern IExplorerCommand implementations hide themselves when extended-only is selected, while their classic IContextMenu implementations gate on CMF_EXTENDEDVERBS. Image Resizer likewise declares a package-backed file-explorer verb and runtime-registers a classic extension. This confirms multiple providers that warrant a surface-by-surface test, but it does not prove which provider is shown twice or why the extended-only commands disappear. The existing #20255 and #49416 reports cover partial symptoms; neither establishes a released all-tools fix.",
+    "initial_investigation": [
+      "Read the current issue body, all five comments, attached menu screenshots, labels, and latest activity; the issue is open and unassigned.",
+      "Inspected FileLocksmithContextMenu/AppxManifest.xml and FileLocksmithContextMenu/dllmain.cpp, plus FileLocksmithExt/ExplorerCommand.cpp and PowerToysModule.cpp, for modern and classic visibility guards.",
+      "Inspected PowerRenameContextMenu/AppxManifest.xml and PowerRenameContextMenu/dllmain.cpp, plus PowerRenameExt.cpp, for its package-backed and classic registration paths.",
+      "Inspected ImageResizerContextMenu/AppxManifest.xml, imageresizer/dllmain.cpp, and ContextMenuHandler.cpp; Image Resizer registers both the package and classic extension, and the handler has no matching extended-only setting.",
+      "Reviewed related #20255 and #49416 as partial scope only; no verified fix covers all reported tools and menu modes."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which modern or classic provider creates each duplicate or missing command, and whether the same behavior recurs after a supported update",
+        "why_needed": "The three utilities have different registration and visibility paths, so the fix should target only the provider proven to be incorrect.",
+        "how_to_collect": "Run the supplied menu-mode matrix on a disposable Store-install account and compare package/classic-handler registrations before and after update, without removing production-user registry entries.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report already supplies a concrete menu-mode comparison and screenshots, and the new comment adds a hypothesis rather than evidence of a complete existing fix. Reproduce each tool and shell surface separately before finalizing a code-level design.",
+    "source_updated_at": "2026-11-04T20:40:52Z",
+    "evaluated_at": "2026-11-05T11:36:28Z",
+    "recommended_action": "Run the three-tool modern/classic menu matrix and correlate every entry with its registered provider; do not close this as a blanket duplicate or use registry-removal workarounds.",
+    "evidence": [
+      "The issue includes screenshots showing the combined and extended-only menu behavior on PowerToys 0.100.2 from the Store.",
+      "Current source contains package-backed and classic shell paths for all three utilities, with different mode guards.",
+      "The latest community theory does not establish a provider-level cause; related issues cover only portions of the reported scope."
+    ]
+  },
   "actions": [
     {
-      "id": "51316-reproduce-three-tools",
-      "label": "Reproduce all three menu-mode combinations",
-      "primary": true,
+      "type": "approve_design",
+      "label": "Approve provider-by-provider context-menu investigation"
+    },
+    {
       "type": "reproduce",
+      "label": "Reproduce all three menu-mode combinations",
       "reproduce": {
+        "title": "Check three utilities on modern and classic Explorer menus",
+        "module": "File Locksmith, PowerRename, and Image Resizer",
+        "version_requirement": "Compare the reported PowerToys 0.100.2 Microsoft Store build with current stable on Windows 11.",
         "prerequisites": [
-          "Windows11; enabled affected tools; disposable test account with a supported Store installation; local image file and folder."
+          "Use a disposable Windows user account with the Store installation and the affected utilities enabled.",
+          "Create a harmless local image file and a folder."
         ],
-        "version_requirement": "Reported PowerToys0.100.2 Microsoft Store versus current stable; use an isolated account for update/repair comparisons",
-        "expected_result": "Each enabled tool appears once on its configured supported surface. No duplicate should return after update; missing commands must be traced to their actual provider rather than inferred from closed historical reports.",
-        "module": "File Locksmith, PowerRename and Image Resizer",
-        "steps": [
-          "1. Select the image file. In combined default/extended mode, capture modern right-click and Show more options menus; count each affected command and identify its provider.",
-          "2. Set PowerRename and File Locksmith to extended-only. Repeat both menus and the folder selection; record Image Resizer separately, without inventing a setting it does not expose.",
-          "3. Repeat after a supported Store update/repair in the disposable account. Compare package and classic-handler registrations and note whether duplicates return.",
-          "4. Disable and re-enable each tool and rerun the same matrix. Correlate proven failures with the existing tool-specific trackers; keep uncovered rows on this issue."
-        ],
-        "title": "Check three tools on modern and classic Explorer menus",
         "setup": [
-          "Create a harmless image file and empty folder. Preserve existing settings and user data; do not run registry-removal workarounds."
+          "Preserve the user's existing settings and registrations; do not run registry-removal workarounds."
         ],
+        "steps": [
+          "With File Locksmith and PowerRename set to appear in both default and extended menus, open the default menu and Show more options for the image file and folder; count each command separately.",
+          "Set File Locksmith and PowerRename to extended-only and repeat both menu surfaces for the image file and folder.",
+          "Record Image Resizer separately because it does not expose the same extended-only setting.",
+          "Correlate each visible item with its package-backed or classic handler, then repeat after a supported Store update or repair in the disposable account."
+        ],
+        "expected_result": "Each enabled command appears exactly once on its configured supported menu surface. Any missing or duplicated item is linked to a specific provider, and an update does not recreate a removed entry.",
         "attachments": [
           {
             "url": "https://github.com/user-attachments/assets/4236891d-ee82-49aa-a44e-d724ae2ed1ac",
@@ -79,47 +126,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "51316-approve-registration-investigation",
-      "label": "Investigate the menu-registration fix plan",
-      "type": "approve_design"
     }
-  ],
-  "repository": "microsoft/PowerToys",
-  "evaluated_at": "2026-11-01T04:02:39.0083130+00:00",
-  "source_updated_at": "2026-11-01T00:13:13Z",
-  "generated_at": "2026-11-01T04:02:39.0083130+00:00",
-  "track": "triage",
-  "owes": "us",
-  "number": 51316,
-  "issue_context": {
-    "initial_investigation": [
-      "Read the full original report, all three comments and paginated timeline, including the latest author explanation of partial duplicate coverage.",
-      "Refreshed20255,49416 and39699. Their actual tool/surface scopes and open/closed states do not establish a released all-tools fix.",
-      "Inspected current main8827f848fbbac4afeedcae2907c71cd05fd5aa86 FileLocksmith AppxManifest, packaged command GetState and installer FileLocksmith.wxs. The packaged verb targets files/directories and its extended-mode guard hides that modern provider; this is not proof that every classic provider is present or duplicated.",
-      "Located existing FileLocksmithContextMenuTests and PowerRenameContextMenuTests for a maintainer matrix. No local Explorer execution, registry mutation or full implementation design was performed.",
-      "Reread the complete current body, comments, labels, ownership and linked-work timeline; separated new facts from label-only or unsupported community conclusions."
-    ],
-    "analysis": "The report already provides a concrete menu-mode comparison and screenshots. The latest reply defeats a blanket handled/duplicate judgment: related trackers cover portions, but no linked repair establishes a single released correction for all three tools. Reproduce each tool and registration surface separately before choosing a fix; do not ask for generic logs or prescribe registry deletion.",
-    "information_gaps": [
-      {
-        "evidence_type": "behavior_confirmation",
-        "information": "Which registered provider produces each duplicate or missing command on the two surfaces, and whether a supported update recreates it",
-        "how_to_collect": "Maintainer runs the supplied mode matrix on a disposable Store-install account and compares package/handler registrations before and after update, keeping each tool separate.",
-        "why_needed": "A common-looking symptom can have separate tool-specific registration and visibility causes; a targeted fix must name the actual provider."
-      }
-    ],
-    "known_information": [
-      "PowerToys0.100.2 from Microsoft Store: combined default/extended mode duplicates File Locksmith, PowerRename and Image Resizer in the classic menu; extended-only mode omits the configured commands. The report includes both menu screenshots.",
-      "The October22 follow-up reports registry-removal workarounds lasting only until an update, with a screenshot. It does not establish the source of every duplicate.",
-      "The October31 author reply distinguishes the closed historical reports from the still-open Image Resizer-only20255 and explicitly asks that the three-tool report not be dismissed as that partial duplicate.",
-      "Issue20255 remains open and covers Image Resizer duplication (also mentions PowerRename);49416 remains an open File Locksmith classic-menu request. Closed39699 is a historical File Locksmith duplicate report, not proof of a released all-tools correction.",
-      "The latest community comment argues that the three-tool menu bug deserves prioritization; it supplies no new test, covering repair or measured priority decision by the team. Retain the specific modern/classic three-tool reproduction rather than a blanket duplicate or registry-deletion workaround."
-    ],
-    "inferences": [
-      "Overlapping modern/classic providers or update registration may contribute, but no shared all-tools root cause has been established."
-    ],
-    "summary": "Three tools duplicate or lose classic menu commands depending on menu mode; partial historical duplicates do not establish a complete fix."
-  }
+  ]
 }

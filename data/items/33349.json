@@ -2,123 +2,128 @@
   "schemaVersion": 5,
   "number": 33349,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remap a shortcut is not working when targeting git-bash",
+  "url": "https://github.com/microsoft/PowerToys/issues/33349",
   "track": "fix",
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-28T14:10:45Z",
-  "title": "Remap a shortcut is not working when targeting git-bash",
-  "url": "https://github.com/microsoft/PowerToys/issues/33349",
-  "labels": [
-    "Issue-Bug"
-  ],
   "assignees": [],
-  "comments": 0,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 3,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:28Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Fix process targeting for Git Bash shortcuts",
+    "detail": "A user reproduced the Shift+A-to-B failure on PowerToys 0.100.2; targeting mintty.exe works, while targeting git-bash.exe does not identify its child terminal process."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The reporter says a Shift+A-to-B remap targeting git-bash.exe sends uppercase A, while the same mapping works in Chrome and when targeting all apps. A later commenter reproduced the problem on PowerToys 0.100.2 and reports that targeting mintty.exe works because PowerToys does not recognize mintty as a child of git-bash.exe. This current reproduction narrows the defect to process targeting for the Git Bash terminal child rather than a general shortcut failure.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The original report lists PowerToys 0.81.1 and a Shift+A-to-B shortcut targeting git-bash.exe, which produces A instead of b.",
+      "The reporter says the mapping works when targeting chrome.exe or All apps.",
+      "A commenter reproduced on PowerToys 0.100.2 with Git 2.53.0.2 and Windows 11 25H2.",
+      "The current-build commenter says targeting mintty.exe works, but PowerToys does not identify mintty as a child of git-bash.exe."
     ],
-    "recommended_action": "Investigate the targeted-process matching path for git-bash.exe so app-specific shortcut remaps reach the intended child window / process.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-28T14:10:45Z"
+    "recommended_action": "Correct or extend Keyboard Manager process targeting so shortcuts configured for git-bash.exe also apply to its mintty terminal child, while preserving app-specific targeting.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:28Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
+    "rationale": "A current-build reproduction and a working mintty.exe workaround isolate the failure to parent/child process identity resolution for Git Bash shortcut remaps."
   },
   "proposed_fixes": [
     {
-      "title": "Targeted fix for Remap a shortcut is not working when targeting git-bash",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "title": "Match Git Bash shortcut rules to the mintty terminal process",
+      "root_cause": "Keyboard Manager appears to match the configured git-bash.exe target against the wrong process identity; the interactive terminal runs in mintty.exe, which is not recognized as a child of the configured target.",
       "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
+        "Trace process identity and parent/child resolution for a Keyboard Manager shortcut targeted to git-bash.exe while a Git Bash terminal is active.",
+        "Use the supported process relationship or an explicit terminal-process target resolution so the git-bash.exe rule applies to its mintty.exe terminal process.",
+        "Preserve exact app targeting and ensure unrelated mintty instances do not inherit the rule unless they belong to the configured Git Bash process.",
+        "Add regression coverage for Git Bash, direct mintty.exe targeting, and other child-process application targets."
       ],
       "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
+        "A Shift+A-to-B remap targeted to git-bash.exe sends lowercase b in its terminal.",
+        "A remap targeted directly to mintty.exe continues to work.",
+        "The mapping remains scoped to the intended application and does not affect unrelated terminals."
       ],
       "confidence": {
-        "score": 70,
+        "score": 82,
         "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+        "rationale": "The current-build reproduction and mintty.exe workaround strongly isolate process targeting, but the precise process-resolution implementation and safe scope need code-level confirmation."
       }
     }
   ],
   "issue_context": {
-    "summary": "Open PowerToys report: Remap a shortcut is not working when targeting git-bash",
+    "summary": "A shortcut remap targeted to git-bash.exe reportedly fails because the interactive mintty.exe terminal process is not recognized as its child.",
     "known_information": [
-      "Title: Remap a shortcut is not working when targeting git-bash",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report maps Shift+A to b for git-bash.exe and observes uppercase A instead.",
+      "The reporter says the mapping works in Chrome and when targeting All apps.",
+      "A commenter reproduced on PowerToys 0.100.2 and reports that targeting mintty.exe works.",
+      "The commenter identifies the unrecognized mintty.exe child relationship as the observed difference."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "Process-target matching may need to resolve the Git Bash terminal child while keeping unrelated mintty processes outside the rule."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The current-version reproduction and specific working alternative provide stronger evidence than the older closed issue #24954, which concerns different Esc/Caps Lock mappings in cmd. Keep the current mintty process-target observation as the primary evidence.",
     "initial_investigation": [
-      "Read metadata and labels for #33349.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the issue body and all three comments, including the current-build maintainer-style reproduction and mintty.exe workaround.",
+      "Reviewed closed issue #24954; it describes different key remaps in cmd and does not establish coverage for this Git Bash child-process target failure."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "Whether the original reporter's mapping remains affected on current stable and whether targeting mintty.exe is an acceptable workaround for their configuration",
+        "why_needed": "This confirms whether the original report is still active and whether the current-build reproduction matches the reporter's Git Bash setup.",
+        "how_to_collect": "Confirm the current PowerToys and Git for Windows versions, repeat the mapping targeted to git-bash.exe, and compare with targeting mintty.exe.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   },
   "actions": [
     {
-      "id": "design-33349",
-      "type": "approve_design",
-      "label": "Design fix",
+      "id": "issue-33349-confirm-current-mintty-target",
+      "type": "request_info",
+      "label": "Confirm the Git Bash process-target behavior",
       "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+      "comment": {
+        "body": "A commenter reproduced the shortcut failure on PowerToys 0.100.2 and reports that targeting `mintty.exe` works while targeting `git-bash.exe` does not. Could you confirm whether your mapping still fails on current stable, and whether targeting `mintty.exe` works for your Git Bash installation?"
+      }
     },
     {
       "type": "reproduce",
-      "label": "Reproduce Remap a shortcut is not working whe",
+      "label": "Reproduce Git Bash terminal process targeting",
       "reproduce": {
-        "title": "Local reproduction for #33349",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
+        "title": "Compare git-bash.exe and mintty.exe shortcut targets",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
         "prerequisites": [
-          "PowerToys running"
+          "Git for Windows with Git Bash installed",
+          "Keyboard Manager enabled"
         ],
-        "setup": [],
+        "setup": [
+          "Configure Shift+A to send b, first targeting git-bash.exe and then targeting mintty.exe."
+        ],
         "steps": [
-          "Launch PowerToys and open the affected module for #33349.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
+          "Open a Git Bash terminal and press Shift+A with the shortcut targeted to git-bash.exe.",
+          "Repeat with the same mapping targeted directly to mintty.exe.",
+          "Repeat in Chrome or another application to confirm the global mapping behavior is unchanged.",
+          "Open a separate mintty process, if available, and check whether it incorrectly inherits the Git Bash-specific rule."
         ],
-        "expected_result": "Module functions without error or unexpected termination."
+        "expected_result": "The git-bash.exe-targeted shortcut applies in the Git Bash terminal, direct mintty.exe targeting remains functional, and unrelated applications or terminals are unaffected."
       }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Git Bash process-target fix"
     }
   ]
 }

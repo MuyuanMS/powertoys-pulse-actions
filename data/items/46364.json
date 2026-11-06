@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 46364,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Changing the shortcut for enabling/disabling the keyboard manager does not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/46364",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-21T16:32:11Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T18:55:00Z",
+  "evaluated_at": "2026-11-05T18:55:00Z",
+  "source_updated_at": "2026-10-11T16:47:50Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Clarify shortcut capture failure",
+    "detail": "The report does not distinguish keys missing in the editor from a shortcut that fails after saving."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report identifies the Keyboard Manager enable/disable shortcut editor and says pressing a shortcut is not detected, but it does not name the chord or say whether the capture field stays empty or the saved shortcut fails later. The issue is open and unassigned with no discussion or attachments. Current-version behavior is not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.98.0 installed from the Microsoft Store and identifies the Keyboard Manager enable/disable shortcut editor.",
+      "The only reproduction step is to open the shortcut editor and press a shortcut; the report says the editor does not see the keys.",
+      "There are no comments, attachments, or assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-21T16:32:11Z"
-  }
+    "recommended_action": "Ask which chord is affected, whether the capture field displays it, and whether the same failure remains on current stable PowerToys.",
+    "evaluated_at": "2026-11-05T18:55:00Z",
+    "source_updated_at": "2026-10-11T16:47:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the editor itself fails to capture the chord, the input-capture path may need correction; if capture succeeds but the shortcut does not take effect, the save or activation path is different. The present report cannot identify which path is faulty."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore capture and persistence of the enable/disable shortcut",
+      "root_cause": "The reported editor may not receive the pressed chord, but the report does not distinguish capture failure from a saved-shortcut activation failure. No specific implementation defect is established yet.",
+      "plan": [
+        "Confirm the exact chord and whether it appears in the capture field before saving.",
+        "Reproduce on current stable PowerToys and trace the identified capture or persistence path.",
+        "Fix the failing path without changing valid shortcut handling for other Keyboard Manager controls.",
+        "Add a focused regression test for capturing, saving, reopening, and invoking the reported chord."
+      ],
+      "verification": [
+        "Verify the reported chord appears in the editor and can be saved on current stable PowerToys.",
+        "Reopen the editor and confirm the same chord remains configured.",
+        "Confirm the configured chord toggles Keyboard Manager and existing shortcuts remain unaffected."
+      ],
+      "confidence": {
+        "score": 30,
+        "level": "red",
+        "rationale": "The report names the affected editor but omits the chord and does not establish whether capture or activation fails; the proposed path is only a hypothesis."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter says the Keyboard Manager enable/disable shortcut editor does not detect a pressed shortcut.",
+    "known_information": [
+      "The report lists PowerToys 0.98.0 from the Microsoft Store.",
+      "The affected flow is opening the Keyboard Manager enable/disable shortcut editor and pressing a shortcut.",
+      "The issue is open, unassigned, and has no comments or attachments."
+    ],
+    "inferences": [
+      "The failure may be in chord capture or in saving/activating the shortcut; the report does not distinguish these cases."
+    ],
+    "analysis": "The current report is too brief to locate the failure. The exact chord and whether it appears in the editor are the discriminating facts; a fresh diagnostic request is not justified until the failure path and current-version status are clearer.",
+    "initial_investigation": [
+      "Read the live issue body, labels, state, assignees, and full discussion; there are no comments or attachments.",
+      "Searched related PowerToys issue titles for shortcut-editor reports; no matching duplicate surfaced."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact chord and whether it appears in the capture field before saving",
+        "why_needed": "This distinguishes an input-capture failure from a failure that occurs after the shortcut is saved.",
+        "how_to_collect": "State the key combination and whether the editor displays it immediately after pressing the keys.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether the same behavior occurs on current stable PowerToys and the Windows version",
+        "why_needed": "The reported build is 0.98.0, so a later fix may already have changed the behavior.",
+        "how_to_collect": "Retest on current stable PowerToys, then report its exact version and Windows version.",
+        "evidence_type": "powertoys_version"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-46364-confirm-shortcut-capture",
+      "type": "request_info",
+      "label": "Confirm shortcut capture behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for reporting the shortcut editor issue and including the PowerToys version. To distinguish a capture problem from a shortcut that fails after saving, could you share:\n1. The exact key combination you pressed, and whether it appeared in the editor before you saved it.\n2. Whether the issue still happens on current stable PowerToys; if so, include the exact PowerToys and Windows versions.\n\nNo diagnostic upload is needed for this clarification."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the shortcut-capture fix direction"
+    }
+  ]
 }

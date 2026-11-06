@@ -1,33 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 34684,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard manager hotkey won't open Notion Calendar",
+  "url": "https://github.com/microsoft/PowerToys/issues/34684",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:53:38Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T23:03:22Z",
+  "evaluated_at": "2026-11-05T23:03:22Z",
+  "source_updated_at": "2026-10-11T15:48:32Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Verify the configured Notion Calendar path",
+    "detail": "The only supplied executable path contains the apparent placeholder YourAccount, and the report does not confirm that the target exists or that the shortcut is conflict-free."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Confirm the actual launch target and retest",
+    "reason": "The exact path, direct-launch result, and shortcut-conflict state determine whether the failure occurs before or during PowerToys process launch."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-34684-request-valid-launch-path",
+      "type": "request_info",
+      "label": "Confirm Notion Calendar launch path",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for providing the Notion Calendar executable path and the suggestion to check shortcut conflicts. In the path shown, is `YourAccount` the literal folder name or a privacy placeholder? Does the exact executable currently exist there and launch directly from Explorer? Please also confirm your PowerToys version, whether another shortcut uses the same hotkey, and whether pressing it shows a Keyboard Manager error toast. If the valid path still fails on a current build, add `/bugreport` immediately after retesting."
+      }
+    },
+    {
+      "id": "issue-34684-approve-launch-path-investigation",
+      "type": "approve_design",
+      "label": "Approve application-launch investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report gives a specific launch path and one comment suggests checking shortcut conflicts, but the path contains the apparent placeholder YourAccount and there is no confirmation that the file exists or opens directly. Current Keyboard Manager resolves the configured path, checks that the target exists, and reports a missing-target error before launching; the current evidence does not establish a PowerToys launch defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.84.0 and an executable path under the user's AppData\\Local\\Programs\\cron-web directory with the apparent YourAccount placeholder; it does not confirm whether that placeholder is literal or redacted.",
+      "The sole comment asks the reporter to check whether the hotkey conflicts with another mapping; the issue does not say whether that check was performed.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 expands the configured launch path, checks GetFileAttributesW, and returns a user-facing error if the program is missing; a later launch failure also produces an error toast.",
+      "The saved issue timeline contains no linked fix or current-build reproduction."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:53:38Z"
+    "recommended_action": "Confirm the real executable path and direct-launch behavior, check for a conflicting hotkey, and retest on a current build before changing the Keyboard Manager launch path.",
+    "evaluated_at": "2026-11-05T23:03:22Z",
+    "source_updated_at": "2026-10-11T15:48:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Keyboard Manager fix may apply if the exact existing executable path passes the path checks but the configured shortcut still cannot launch it. The current report may instead show a placeholder/nonexistent path or a shortcut conflict, so the candidate is low-confidence.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Launch a valid configured Notion Calendar executable",
+      "root_cause": "The report does not establish whether the configured target is a real path: the shown YourAccount segment may be a literal placeholder. If the target exists and direct launch works, a failure after the current path-validation checks could still occur in the selected process-launch branch, but no such result is reported.",
+      "plan": [
+        "Confirm the exact target path, that the file exists, that it launches directly, and that the configured hotkey is not assigned elsewhere.",
+        "Retest the shortcut on a current PowerToys build and record the displayed launch error, if any.",
+        "If a valid existing target still fails, trace the configured path through ExpandAndGetAbsolutePath, GetFileAttributesW, and the selected launch branch, then correct only the failing stage.",
+        "Add a regression test for the confirmed failing path, including the Notion Calendar executable name with spaces if that remains the actual target."
+      ],
+      "verification": [
+        "A valid, directly launchable Notion Calendar executable starts from the configured hotkey on the current build.",
+        "A nonexistent target continues to produce a clear missing-program error rather than a silent failure.",
+        "Existing launch behavior for valid paths and shortcut-conflict handling remains unchanged."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "The current source has explicit path validation and launch errors, while the reported path may be a placeholder and no current failure stage is known."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reported Keyboard Manager hotkey does not launch Notion Calendar, but the provided executable path may be a placeholder and the issue does not confirm path validity or shortcut-conflict status.",
+    "known_information": [
+      "The original report lists PowerToys 0.84.0 and an executable path under the user's AppData\\Local\\Programs\\cron-web directory with the apparent YourAccount placeholder.",
+      "The only comment recommends checking whether another mapping uses the same shortcut; no result is reported.",
+      "Current upstream at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 resolves the path, verifies that the file exists, and emits error toasts for a missing program or unsuccessful launch."
+    ],
+    "inferences": [
+      "If YourAccount is literal, the target may not exist and the observed behavior may follow the current missing-program guard.",
+      "If the path is anonymized and the executable exists, the launch branch or a shortcut conflict still needs to be isolated."
+    ],
+    "analysis": "The supplied reproduction path and commenter suggestion are enough to request a precise recheck, but not enough to assign a code defect. The current source already reports an invalid or missing executable path. A valid-path failure would justify a focused trace of the subsequent launch branch.",
+    "initial_investigation": [
+      "Read the issue body and its only comment; the author has not confirmed the conflict check or replied with a current reproduction.",
+      "Inspected CreateOrShowProcessForShortcut at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: it expands the configured path, checks GetFileAttributesW, and reports failures before/after process creation.",
+      "Read ProgramLauncherTests.cpp at the same revision; existing cases cover relative, environment-variable, long, and empty paths, but do not establish the reported target's validity or runtime launch result."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether YourAccount is literal or anonymized, whether the exact executable exists and launches directly, whether the hotkey conflicts, and the current PowerToys version/result",
+        "why_needed": "These checks distinguish an invalid example path or conflicting shortcut from a failure in the current PowerToys launch path.",
+        "how_to_collect": "Confirm the actual path and direct-launch result, verify the hotkey is unique, then retest on PowerToys v0.102.3001 or newer; add `/bugreport` immediately after a persistent failure.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 37039,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Unexpected behaviour - Keyboard Shortcut",
+  "url": "https://github.com/microsoft/PowerToys/issues/37039",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:20:40Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:40:00Z",
+  "evaluated_at": "2026-11-05T20:40:00Z",
+  "source_updated_at": "2026-10-11T16:47:34Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce repeated Spanish-layout punctuation remaps",
+    "detail": "Holding Ctrl while alternating the mapped dot/comma shortcuts reportedly stops producing the intended angle brackets after a few repetitions."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report lists PowerToys 0.87.1, Windows 10, and a Spanish-Mexico setup, with two exact mappings: Ctrl+dot to the '<' key and Ctrl+comma to Shift+'<'. The reporter says alternating the source keys while holding Ctrl initially emits the intended angle-bracket sequence, then falls back to literal punctuation after about three outputs. It occurs in any text input, with Notepad and Firefox named. No comments or current-version confirmation are present.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report includes the exact two shortcut mappings and the sequence of alternating dot/comma while Ctrl remains held.",
+      "The reporter observes the first few angle brackets and then literal dots/commas.",
+      "The report lists Spanish-Mexico and PowerToys 0.87.1; Notepad and Firefox are named test applications.",
+      "The issue is open and unassigned with no comments; no linked fix was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:20:40Z"
-  }
+    "recommended_action": "Reproduce the exact repeated-input sequence on current stable with the Spanish-Mexico layout and inspect whether the original Ctrl shortcut events leak after repeated remap dispatch.",
+    "evaluated_at": "2026-11-05T20:40:00Z",
+    "source_updated_at": "2026-10-11T16:47:34Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds reproduce the fallback, the repeated shortcut handling may lose a modifier or remap state after several injected outputs. The layout and repeated-input event path need confirmation before selecting an implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep repeated punctuation shortcut remaps active",
+      "root_cause": "When Ctrl remains held across alternating punctuation shortcut mappings, Keyboard Manager may stop consuming the source events or lose modifier state after repeated injected output. The report does not include a current build or event trace.",
+      "plan": [
+        "Reproduce the two mappings on current stable with Spanish-Mexico active.",
+        "Compare one-shot presses with rapid and slow alternation while Ctrl remains held.",
+        "Inspect modifier and key-up state around the third remapped output and identify where literal source punctuation resumes.",
+        "Correct the confirmed state transition and add a regression test for repeated modifier-held shortcut mappings."
+      ],
+      "verification": [
+        "Verify repeated Ctrl+dot/Ctrl+comma presses continue producing the intended angle brackets.",
+        "Verify Ctrl and punctuation keys are released correctly after each mapped output.",
+        "Verify ordinary punctuation and other Spanish-layout shortcuts remain unchanged."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The exact sequence and failure threshold are described, but current behavior and the event-state transition are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Repeated Ctrl+dot and Ctrl+comma mappings on a Spanish-Mexico setup reportedly fall back to literal punctuation after several outputs.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1, Windows 10, and Spanish-Mexico.",
+      "Ctrl+dot maps to '<'; Ctrl+comma maps to Shift+'<'.",
+      "Alternating the keys while holding Ctrl reportedly produces angle brackets at first, then literal dots/commas after about three outputs.",
+      "The reporter says the behavior occurs in any text input and names Notepad and Firefox."
+    ],
+    "inferences": [
+      "The modifier or remapping state may be lost after repeated injected output, but the report does not identify the failing event."
+    ],
+    "analysis": "The detailed sequence is suitable for maintainer reproduction. A current build and inspection around the first fallback output are needed before proposing a specific state-management change.",
+    "initial_investigation": [
+      "Read the report, exact mappings, Spanish-Mexico context, and named applications.",
+      "No comments or linked fix were present."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the exact repeated sequence still fails on current stable and which key/modifier state changes when literal punctuation returns",
+        "why_needed": "This determines whether the old behavior persists and pinpoints the event transition for a fix.",
+        "how_to_collect": "On current stable with Spanish-Mexico active, apply the exact two mappings, alternate dot and comma while holding Ctrl, and record the first iteration that emits literal punctuation.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce repeated Spanish punctuation remaps",
+      "reproduce": {
+        "title": "Test alternating punctuation remaps while Ctrl is held",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "Spanish-Mexico keyboard/input layout active"
+        ],
+        "setup": [
+          "Map Ctrl+dot to the '<' key.",
+          "Map Ctrl+comma to Shift+'<'"
+        ],
+        "steps": [
+          "Open a plain text input.",
+          "Hold Ctrl and alternate dot and comma repeatedly, first slowly and then quickly.",
+          "Record the first output that becomes a literal dot or comma."
+        ],
+        "expected_result": "Every source shortcut produces the configured angle-bracket output without losing Ctrl or emitting literal punctuation."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the repeated shortcut-state investigation"
+    }
+  ]
 }

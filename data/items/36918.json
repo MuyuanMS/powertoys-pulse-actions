@@ -1,33 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 36918,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "突然发现我的键盘管理器没有生效",
+  "url": "https://github.com/microsoft/PowerToys/issues/36918",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:22:04Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T20:25:00Z",
+  "evaluated_at": "2026-11-05T20:25:00Z",
+  "source_updated_at": "2026-10-11T16:47:35Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm the current all-mappings failure",
+    "detail": "The Chinese report says previously working single-key and shortcut remaps stopped working across apps while PowerToys was running; current-version and restart behavior are unknown."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter lists PowerToys 0.87.1 and says previously working remaps used to block accidental game shortcuts, but later neither single-key nor shortcut mappings worked in one app or all apps, even when PowerToys was run as administrator. The issue has no reporter follow-up. Similar reports #17344/#23231 track intermittent Keyboard Manager remapping failures, but the current report does not establish whether the same trigger or recovery applies.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The Chinese issue body lists PowerToys 0.87.1 and says Keyboard Manager remaps initially worked but later had no effect.",
+      "The report says both single-key and shortcut remaps fail, for one app and for all apps, while PowerToys appears to be running.",
+      "The only comment is an automated similar-issue suggestion; no author response or diagnostic attachment is present.",
+      "Open issue #17344 was closed in favor of #23231, an open tracker for inconsistent shortcut remapping; no fix linked to this report was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:22:04Z"
-  }
+    "recommended_action": "Ask whether the failure still occurs on current stable, whether toggling Keyboard Manager or restarting PowerToys restores any mapping, and whether the same mapping works outside the game.",
+    "evaluated_at": "2026-11-05T20:25:00Z",
+    "source_updated_at": "2026-10-11T16:47:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds reproduce a complete loss of single-key and shortcut mappings, Keyboard Manager may stop processing input after a state or lifecycle transition. The report does not identify a trigger or recovery path."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Keyboard Manager remaps active during normal use",
+      "root_cause": "Keyboard Manager may stop applying configured single-key and shortcut mappings after an unknown state transition while the process remains running. Similar intermittent failures exist, but a shared mechanism is not established.",
+      "plan": [
+        "Confirm current-version behavior and determine whether toggling Keyboard Manager or restarting PowerToys restores the mappings.",
+        "Compare one affected game mapping with the same mapping in a normal desktop application.",
+        "If the issue persists, capture a fresh diagnostic report immediately after the failure.",
+        "Trace the confirmed lifecycle or input-state failure and add regression coverage for single-key and shortcut remaps."
+      ],
+      "verification": [
+        "Verify configured single-key and shortcut mappings remain active across normal use and app changes.",
+        "Verify the failure does not recur after the identified state transition.",
+        "Verify games and ordinary desktop applications receive the intended mapped input."
+      ],
+      "confidence": {
+        "score": 52,
+        "level": "yellow",
+        "rationale": "The report clearly describes a broad remapping failure, but it is from 0.87.1 and lacks a trigger, current reproduction, and recovery details."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Previously working Keyboard Manager mappings reportedly stop affecting input across apps while PowerToys remains running.",
+    "known_information": [
+      "The report lists PowerToys 0.87.1 and describes single-key and shortcut remaps used to prevent accidental game shortcuts.",
+      "The reporter says neither mapping type works in one app or all apps after the failure appears.",
+      "No reporter follow-up or diagnostic attachment is present.",
+      "Related tracker #23231 covers inconsistent shortcut remapping but is not confirmed as the same trigger."
+    ],
+    "inferences": [
+      "A Keyboard Manager lifecycle or input-state failure is possible, but the report does not establish its trigger or relation to #23231."
+    ],
+    "analysis": "The current-version and recovery observations are needed before deciding whether this is a known intermittent remapping family or a distinct game interaction. Do not equate the similar issue bot's matches with a fix.",
+    "initial_investigation": [
+      "Read the Chinese issue body and its sole automated similar-issue comment; the report explicitly covers both single-key and shortcut mappings across apps.",
+      "Reviewed #17344 and #23231; #17344 was closed in favor of #23231, which remains open without a linked fix."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the issue persists on current stable, whether toggling Keyboard Manager or restarting PowerToys restores mappings, and whether the same mapping works outside the game",
+        "why_needed": "These observations distinguish a current engine failure from an application/game interaction and identify the state transition associated with recovery.",
+        "how_to_collect": "Reply with the current version, one exact mapping, whether it fails in a game and ordinary app, and whether toggling the module or restarting PowerToys restores it.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36918-confirm-current-mapping-failure",
+      "type": "request_info",
+      "label": "Confirm current mapping failure and recovery",
+      "primary": true,
+      "comment": {
+        "body": "The report says both single-key and shortcut mappings stopped working across apps on PowerToys 0.87.1. Could you confirm whether this still happens on current stable, share one exact mapping, and say whether it fails outside the game or returns after toggling Keyboard Manager or restarting PowerToys?"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the remapping-lifecycle investigation"
+    }
+  ]
 }

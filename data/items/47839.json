@@ -2,124 +2,118 @@
   "schemaVersion": 5,
   "number": 47839,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-29T12:12:20Z",
+  "repository": "microsoft/PowerToys",
   "title": "Keyboard manager: shortcuts globally disabled (i.e. without assigning a specific app) are not disabled everywhere",
   "url": "https://github.com/microsoft/PowerToys/issues/47839",
-  "labels": [
-    "Issue-Bug"
-  ],
+  "track": "fix",
+  "stage": "reproducible",
+  "owes": "maintainer",
+  "pending_author": false,
   "assignees": [],
-  "comments": 0,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T21:54:07.777Z",
+  "evaluated_at": "2026-11-05T21:54:07.777Z",
+  "source_updated_at": "2026-10-11T16:47:00Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "🧪",
+    "label": "Reproduce global shortcut suppression across editors",
+    "detail": "The reporter describes Win+Tab escaping a global disable mapping; a commenter reproduced Win+S opening Search on 0.100.2, while another could not reproduce with the classic editor."
   },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "reproducible",
+    "rationale": "The original report says Win+Tab is disabled only on the Windows desktop, not in other active applications. A commenter reports that on PowerToys 0.100.2/Windows 11 25H2, a global Win+S-to-Disable mapping still opens Search in Paint. Another commenter says they could not reproduce the issue using the classic editor, indicating editor/configuration differences may matter. The current thread contains concrete maintainer-reproducible steps but does not establish whether the defect is in the new editor, configuration persistence, or shell shortcut handling.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue reports PowerToys 0.99.1 and says a global Win+Tab disable works on the desktop but not in other active apps.",
+      "A commenter supplies a current-ish v0.100.2/Windows 11 25H2 repro: globally disable Win+S, launch Paint, press Win+S, and Windows Search still opens.",
+      "A later commenter cannot reproduce the #47839 behavior with the classic editor; the issue references the new editor/configuration behavior.",
+      "The issue remains open with two comments and no assignees.",
+      "Keyboard Manager has engine tests for exact-match shortcut disable behavior; the reported shell/application path and editor/configuration difference still require end-to-end reproduction."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-29T12:12:20Z"
+    "recommended_action": "Reproduce the Win+S-to-Disable case in Paint on current stable and compare the modern and classic editor configurations; then confirm the original Win+Tab report.",
+    "evaluated_at": "2026-11-05T21:54:07.777Z",
+    "source_updated_at": "2026-10-11T16:47:00Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
+    "rationale": "A current reproduction exists in a commenter's report, but disagreement between editor variants and the original Win+Tab scenario must be narrowed before selecting the responsible implementation layer."
   },
   "proposed_fixes": [
     {
-      "title": "Targeted fix for Keyboard manager: shortcuts globally disabled (i.e. without assigning a specific app) are not disabled everywhere",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "title": "Investigate global shortcut disable behavior in active applications",
+      "root_cause": "A globally disabled shell shortcut may still be handled outside Keyboard Manager's suppression path, or the new editor may not persist/apply the global mapping as expected; current discussion does not identify which layer is responsible.",
       "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
+        "Reproduce the v0.100.2 Win+S-to-Disable case in Paint on current supported v0.102.3001.",
+        "Repeat with the classic and current editor paths when available, verifying the saved mapping and global scope.",
+        "Compare with the original Win+Tab desktop-versus-application report and trace the confirmed shortcut through the disable action path.",
+        "Add focused end-to-end regression coverage for the confirmed shell/application scenario."
       ],
       "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
+        "Confirm globally disabled Win+S and Win+Tab shortcuts do not trigger in the reported application contexts.",
+        "Verify the same mapping behavior across the supported editor paths and preserve ordinary shortcut handling."
       ],
       "confidence": {
-        "score": 70,
+        "score": 65,
         "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+        "rationale": "A commenter supplied a concrete v0.100.2 reproduction, but editor-specific disagreement and the difference between Win+S and Win+Tab leave the current root cause uncertain."
       }
     }
   ],
   "issue_context": {
-    "summary": "Open PowerToys report: Keyboard manager: shortcuts globally disabled (i.e. without assigning a specific app) are not disabled everywhere",
+    "summary": "A global shortcut disabled in Keyboard Manager reportedly still activates in applications; Win+S opens Search in Paint on one editor path while a classic-editor user could not reproduce it.",
     "known_information": [
-      "Title: Keyboard manager: shortcuts globally disabled (i.e. without assigning a specific app) are not disabled everywhere",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report lists PowerToys 0.99.1 and says Win+Tab is disabled on the desktop but works in other active applications.",
+      "A commenter reports Win+S-to-Disable still opens Search in Paint on v0.100.2 and Windows 11 25H2.",
+      "A later commenter says they cannot reproduce #47839 with the classic editor; editor/configuration path may affect the result.",
+      "The issue remains open with two comments and no assignees."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "The behavior may depend on the editor/configuration path or on how Windows handles the shell shortcut; neither cause is established."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "Use the concrete Win+S/Paint reproduction and compare editor paths, then test the original Win+Tab case. Existing engine tests cover exact-match disable logic but do not settle the live shell/application scenario.",
     "initial_investigation": [
-      "Read metadata and labels for #47839.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the full issue report and both comments, including the v0.100.2 retest and classic-editor disagreement.",
+      "Read linked issue #35741 discussion: it documents a separate sequential-chord prefix conflict, and its participants distinguish that issue from #47839.",
+      "Inspected the Keyboard Manager shortcut-disable implementation and exact-match unit tests; those tests do not establish end-to-end suppression of shell shortcuts in all applications."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-47839",
-      "type": "approve_design",
-      "label": "Design fix",
+      "id": "reproduce-47839-global-disable",
+      "type": "reproduce",
+      "label": "Reproduce global shortcut suppression across editors",
       "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+      "confirm": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version": "Reported PowerToys 0.99.1 and 0.100.2; compare current supported v0.102.3001",
+        "prerequisites": [
+          "Use the reporter's Windows environment if available, or Windows 11 with Paint.",
+          "Record whether the current or classic Keyboard Manager editor is used and verify the mapping is saved globally."
+        ],
+        "steps": [
+          "Create a global shortcut mapping Win+S → Disable with app-specific scope unchecked.",
+          "Save the mapping, open Paint, and press Win+S.",
+          "Record whether Windows Search opens; repeat using the other editor path if available.",
+          "Repeat the original Win+Tab-to-Disable report on the desktop and in an active application."
+        ],
+        "expected": "The disabled shortcut should not activate in Paint or other active applications when the mapping is global.",
+        "version_requirement": "Compare the reported v0.100.2 behavior with current supported v0.102.3001.",
+        "expected_result": "Record whether suppression differs by editor path and whether Win+S/Win+Tab are intercepted in each application context."
+      }
     },
     {
-      "type": "reproduce",
-      "label": "Reproduce Keyboard manager: shortcuts globall",
-      "reproduce": {
-        "title": "Local reproduction for #47839",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
-        "prerequisites": [
-          "PowerToys running"
-        ],
-        "setup": [],
-        "steps": [
-          "Launch PowerToys and open the affected module for #47839.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
-        ],
-        "expected_result": "Module functions without error or unexpected termination."
-      }
+      "id": "approve-design-47839",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
     }
   ]
 }

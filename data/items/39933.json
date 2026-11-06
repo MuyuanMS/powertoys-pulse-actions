@@ -1,33 +1,93 @@
 {
+  "schemaVersion": 5,
   "number": 39933,
+  "title": "Keyboard Manager Numpad keys can't be assigned with shift",
+  "url": "https://github.com/microsoft/PowerToys/issues/39933",
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:59:56Z",
+  "generated_at": "2026-11-05T14:21:34.729Z",
+  "evaluated_at": "2026-11-05T14:21:34.729Z",
+  "source_updated_at": "2026-10-11T16:48:13Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Clarify the numpad shortcut and NumLock state",
+    "detail": "The report says Shift+Numpad . is normalized to Shift+Numpad Delete, but does not identify the target mapping or whether the chord fails on a current build. Related #37641 documents the same Windows Shift/NumLock key change but a different mapping."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report identifies Shift+Numpad . becoming Shift+Numpad Delete but gives no target shortcut or steps showing what fails after saving. Related open issue #37641 describes Shift changing Numpad Decimal to Delete with NumLock on, and a commenter reports using the Numpad Delete key as a workaround; that is useful context but does not prove this separate mapping is fixed or a duplicate. Current main preserves numpad-origin metadata and contains a Shift/numpad normalization path, so the exact current behavior and NumLock state should be confirmed before recommending a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.91.1 and says a Shift+Numpad . shortcut is converted to Shift+Numpad Delete.",
+      "The issue does not state the target mapping, NumLock state, or whether the saved mapping fails at runtime on a current build.",
+      "Open issue #37641 reports the related Shift+Numpad Decimal behavior and a user workaround, but it concerns a different mapping and has no maintainer duplicate resolution.",
+      "Current main includes numpad-origin encoding and a handler workaround for numpad keys affected by Shift.",
+      "The issue is open, has one bot similarity comment, and has no assignee."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:59:56Z"
-  }
+    "recommended_action": "Ask for the exact source and target row, NumLock state, and a current-build result when pressing the intended chord.",
+    "evaluated_at": "2026-11-05T14:21:34.729Z",
+    "source_updated_at": "2026-10-11T16:48:13Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The reported key-name change can follow Windows numpad behavior when Shift and NumLock interact, and current main already tracks numpad origin. Without the target mapping and a current runtime failure, no specific PowerToys code fix is supported."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Shift+numpad shortcut is displayed as Shift+Numpad Delete instead of Shift+Numpad Decimal, but the target and runtime failure are unspecified.",
+    "known_information": [
+      "The report lists PowerToys 0.91.1 and describes a source shortcut involving Shift and Numpad Decimal.",
+      "The reporter says Keyboard Manager changes the key to Numpad Delete and that the shortcut is unusable, but gives no target mapping or NumLock state.",
+      "Open #37641 describes Shift+Numpad Decimal becoming Numpad Delete with NumLock on and includes a user workaround; it does not establish a fix for this issue.",
+      "Current main tracks numpad origin and contains a Shift-related numpad handler path."
+    ],
+    "inferences": [
+      "The key-name change may reflect Windows sending the navigation-key form of a numpad key under Shift/NumLock, but the issue does not show whether Keyboard Manager still fails to trigger the saved mapping."
+    ],
+    "analysis": "The distinction between the displayed trigger and the runtime behavior is unresolved. A screenshot of the exact source/target row and a current-build test with NumLock state noted will separate a capture/display issue from a mapping-engine defect.",
+    "initial_investigation": [
+      "Read the complete issue body and its only comment; the comment is a bot similarity suggestion to #37641, not a maintainer duplicate decision.",
+      "Read #37641 and its user explanation that Shift with NumLock on turns Numpad Decimal into Delete.",
+      "Inspected current main Helpers.cpp and KeyboardEventHandlers.cpp: numpad origin is encoded, and a Shift/numpad handler workaround exists."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the exact source shortcut and target mapping row.",
+        "why_needed": "The target action and exact captured key are absent from the report.",
+        "how_to_collect": "Open the Keyboard Manager remap table and capture only the affected row."
+      },
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Whether NumLock is on and the active keyboard layout when the shortcut is captured and tested.",
+        "why_needed": "Shift and NumLock can change which virtual key Windows reports for a numpad key.",
+        "how_to_collect": "Repeat the test with the reported NumLock state noted and identify the active Windows keyboard layout."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the saved mapping still fails on PowerToys 0.100.2 or newer when the intended Shift+numpad chord is pressed.",
+        "why_needed": "The report lists 0.91.1 and does not establish a current runtime failure.",
+        "how_to_collect": "On a current build, press the configured chord and report whether it triggers the configured target or only displays a different key name."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Clarify the shifted numpad mapping",
+      "comment": {
+        "target": "issue",
+        "number": 39933,
+        "body": "Thanks for reporting the Shift+numpad behavior. A related report, #37641, notes that with NumLock on, Shift can make Numpad Decimal arrive as Numpad Delete; that does not establish whether your saved mapping still fails. Could you please:\n1. Share a screenshot of the exact source and target row in Keyboard Manager.\n2. Note whether NumLock is on and which Windows keyboard layout is active.\n3. Retest the saved mapping on PowerToys 0.100.2 or newer and say whether the target runs when you press the intended chord.\nThis will distinguish a displayed-key normalization from a current mapping failure."
+      }
+    }
+  ]
 }

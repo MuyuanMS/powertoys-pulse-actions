@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 51935,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51935",
+  "title": "Keyboard mapping",
+  "track": "triage",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T11:26:18.3480261Z",
+  "evaluated_at": "2026-11-05T11:26:18.3480261Z",
+  "source_updated_at": "2026-11-05T07:58:19Z",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reporter says the AltGr-to-Ctrl mapping works again after disabling and re-enabling Keyboard Manager, which is consistent with a runtime mapping-activation problem, but the report does not establish whether the saved mapping disappears or the active hook stops applying it. A focused startup/configuration investigation is justified, with low confidence until that distinction and a fresh diagnostic are available.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore AltGr-to-Ctrl remapping after restart",
+      "root_cause": "Keyboard Manager may fail to activate the saved AltGr-to-Ctrl mapping after startup or after the keyboard hook's runtime state changes; toggling the module likely reapplies its configuration, but the report does not yet distinguish an activation failure from a missing or changed saved mapping.",
+      "plan": [
+        "Reproduce with the reporter's exact AltGr-to-Ctrl mapping and determine whether it is still present and enabled in Keyboard Manager when the remap stops working.",
+        "Trace the startup configuration load and runtime hook activation for the identified mapping type; compare the post-boot state with the state after disabling and re-enabling Keyboard Manager.",
+        "If the saved mapping is present but inactive, fix the specific initialization/reload transition and add a regression test that verifies the mapping remains active across the same restart sequence."
+      ],
+      "verification": [
+        "On the reporter's Windows build and keyboard layout, verify the mapping remains visible and functional after reboot without toggling Keyboard Manager.",
+        "Run the focused Keyboard Manager configuration and remapping tests for the mapping type confirmed by the reporter."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The disable/enable workaround suggests a runtime activation issue, but the report omits the exact mapping mode, post-reboot editor state, Windows build, and diagnostics; no failing startup path is confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On a Dell laptop, an AltGr-to-Ctrl Keyboard Manager mapping reportedly needs to be disabled and re-enabled daily to work again.",
+    "known_information": [
+      "The report identifies PowerToys 0.102.3001 from the Microsoft Store and Windows 11 English.",
+      "The reported mapping is AltGr to Ctrl, and the reporter says toggling Keyboard Manager off and on restores behavior.",
+      "The issue has no comments, Windows build, exact mapping mode, or diagnostic archive."
+    ],
+    "inferences": [
+      "Because toggling the module restores the behavior, runtime activation or hook state is plausible; the report does not show whether the saved mapping remains present.",
+      "Historical #16173 describes a related remapping symptom that also recovered after toggling Keyboard Manager, but it concerns an older version and different mapping and was redirected to #17344; it does not prove this report has the same cause."
+    ],
+    "analysis": "The key decision is whether the mapping is lost from saved settings or remains visible but stops being applied. Current KeyboardMappingService loads native mapping settings when the editor initializes, while the editor maintains its own persisted settings; this confirms separate configuration/loading paths but does not identify a fault in either. The exact mapping mode, keyboard layout, post-reboot editor state, and a fresh report captured before the workaround are needed before proposing a narrower root cause.",
+    "initial_investigation": [
+      "Read the full report; it gives PowerToys 0.102.3001, Microsoft Store installation, Windows 11 English, AltGr-to-Ctrl mapping, and the daily disable/enable workaround.",
+      "Inspected KeyboardMappingService.cs at source revision 67ac3d8b1f; construction calls the native LoadMappingSettings path, while the editor also loads persisted editor settings.",
+      "Compared historical #16173 and its linked #17344: they report related intermittent remapping failures and toggle workarounds, but use older builds and different key/shortcut mappings and are not confirmed as covering this case."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the AltGr-to-Ctrl mapping remains visible and enabled after it stops working, and whether it is a single-key or shortcut mapping",
+        "why_needed": "This distinguishes a lost saved configuration from a runtime hook/activation failure and determines which code path to reproduce.",
+        "how_to_collect": "Before toggling Keyboard Manager, open its editor and report the exact source/target shown and whether the mapping is still present and enabled.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "The Windows version/build",
+        "why_needed": "The startup/hook conditions may vary by Windows build.",
+        "how_to_collect": "Share the Windows version/build shown in Settings > System > About.",
+        "evidence_type": "windows_version"
+      },
+      {
+        "information": "The active keyboard layout/input language",
+        "why_needed": "AltGr behavior depends on the active keyboard layout.",
+        "how_to_collect": "Share the active keyboard layout/input language shown in Windows Settings.",
+        "evidence_type": "keyboard_layout"
+      },
+      {
+        "information": "A fresh PowerToys bug report captured while the mapping is failing",
+        "why_needed": "A report captured before the disable/enable workaround may show whether the runtime mapping configuration loaded or failed.",
+        "how_to_collect": "If it fails again, add a comment containing /bugreport before toggling Keyboard Manager.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The daily failure and disable/enable workaround support a testable runtime-activation hypothesis, but it remains unconfirmed and is paired with a request for the specific state and diagnostics that would distinguish it from a lost mapping.",
+    "source_updated_at": "2026-11-05T07:58:19Z",
+    "evaluated_at": "2026-11-05T12:00:00Z",
+    "recommended_action": "Request the mapping's post-failure editor state, mapping mode, Windows build/layout, and a /bugreport captured before toggling; use them to reproduce the specific startup or runtime-activation path.",
+    "evidence": [
+      "The issue identifies AltGr-to-Ctrl mapping on PowerToys 0.102.3001 and reports that disabling and re-enabling Keyboard Manager restores it.",
+      "KeyboardMappingService loads native mapping settings during initialization, but the report does not show whether this mapping remains present after failure.",
+      "Historical issue #16173 has a similar toggle workaround but describes a different old mapping and is not sufficient to establish the same root cause."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve targeted mapping-activation investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request mapping state after reboot",
+      "comment": {
+        "body": "Thanks for reporting the AltGr-to-Ctrl mapping on PowerToys 0.102.3001 and that toggling Keyboard Manager restores it. To tell whether the saved mapping is lost or the runtime mapping stops applying it, could you share:\n\n- Before toggling Keyboard Manager, whether the mapping is still visible and enabled in its editor, and the exact source/target plus whether it is a single-key or shortcut mapping.\n- The Windows version/build and active keyboard layout.\n- If it fails again, a `/bugreport` captured before toggling Keyboard Manager.\n\nThat will let us reproduce the same mapping and activation state instead of guessing at the AltGr path."
+      }
+    }
+  ]
+}

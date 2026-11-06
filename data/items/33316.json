@@ -1,33 +1,130 @@
 {
+  "schemaVersion": 5,
   "number": 33316,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[information] solution of sticky keys issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/33316",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:59:33Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T20:12:00Z",
+  "evaluated_at": "2026-11-05T20:12:00Z",
+  "source_updated_at": "2026-10-11T16:47:29Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm the reported modifier-sticking case",
+    "detail": "The report says remapping Alt+Shift+Esc to Ctrl+Shift+Esc opens Task Manager but can leave Ctrl or Shift stuck; the broader tracker #31571 covers related modifier-state failures."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a concrete shortcut substitution and says the action succeeds while Ctrl or Shift remains logically pressed. Open tracker #31571 covers related sticky-modifier symptoms, but this exact successful-chord/stuck-key case is not shown to be the same mechanism. Current-build reproduction and the specific mapping state are needed before deciding whether it belongs under that tracker or needs a distinct fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.81.1 and says remapping Alt+Shift+Esc to Ctrl+Shift+Esc opens Task Manager but can leave Ctrl or Shift stuck.",
+      "The reporter says running PowerToys in administrator mode resolved the symptom for them.",
+      "The issue's similarity bot links open tracker #31571, a broad Keyboard Manager modifier-sticking thread.",
+      "The only comment is an automated similar-issues notice; no maintainer reproduction is documented."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:59:33Z"
-  }
+    "recommended_action": "Reproduce the reported modifier remap on current stable in normal and administrator modes, then compare the exact stuck-state result with the open #31571 tracker.",
+    "evaluated_at": "2026-11-05T20:12:00Z",
+    "source_updated_at": "2026-10-11T16:47:29Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the remapped chord leaves an unmatched Ctrl or Shift key state, Keyboard Manager should balance the injected modifier lifecycle. The report's administrator-mode workaround and related tracker are useful comparison points, but the current mechanism is not established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Balance modifier state for remapped multi-key shortcuts",
+      "root_cause": "The remap may emit Ctrl+Shift+Esc successfully but fail to balance one injected modifier's key-up state under the reported execution context; this needs reproduction.",
+      "plan": [
+        "Reproduce the Alt+Shift+Esc-to-Ctrl+Shift+Esc mapping on current stable and record which modifier, if any, remains active.",
+        "Compare normal and administrator execution and inspect whether the source or injected modifier release is lost.",
+        "Compare the concrete event sequence with current cases in #31571 before deciding whether the issue is covered by that broader tracker.",
+        "If Keyboard Manager leaves injected modifier state unmatched, correct the corresponding release path and add a multi-modifier regression test."
+      ],
+      "verification": [
+        "The remapped shortcut opens Task Manager and leaves Ctrl, Shift, and Alt released.",
+        "The behavior is consistent in supported normal and administrator execution modes.",
+        "Other multi-modifier shortcuts and unrelated mappings continue to work."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The report describes a specific successful action followed by a stuck modifier and a claimed elevation workaround, but no current reproduction or event trace confirms the failure path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A remapped Alt+Shift+Esc-to-Ctrl+Shift+Esc shortcut reportedly opens Task Manager but can leave Ctrl or Shift stuck.",
+    "known_information": [
+      "The report lists PowerToys 0.81.1 and describes a Mac-style keyboard remapping setup.",
+      "The expected remapped chord is Ctrl+Shift+Esc; the reported action opens Task Manager while Ctrl or Shift may remain active.",
+      "The reporter says administrator mode resolved the symptom for them.",
+      "Open issue #31571 is a broad tracker for related Keyboard Manager modifier-sticking reports, but does not establish this exact case is covered."
+    ],
+    "inferences": [
+      "The symptom may involve an unmatched injected modifier event or an elevation-dependent hook interaction; neither mechanism is confirmed."
+    ],
+    "analysis": "The claimed administrator-mode workaround is evidence to compare, not proof of root cause. Reproduce the exact shortcut in both execution modes and preserve this case as distinct unless its event sequence matches #31571.",
+    "initial_investigation": [
+      "Read the issue body and its automated similar-issues comment.",
+      "Reviewed open tracker #31571, including its recent Shift failures and distinct AltGr-specific fix; those do not establish coverage for this exact remapped chord.",
+      "No maintainer reproduction or exact event trace is present."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the exact Ctrl+Shift+Esc remap still leaves a modifier stuck on current stable, and whether normal versus administrator execution changes the result",
+        "why_needed": "The report is from PowerToys 0.81.1 and attributes improvement to elevation; current comparison distinguishes a remaining Keyboard Manager state defect from an outdated or configuration-specific symptom.",
+        "how_to_collect": "Repeat the stated mapping on current stable in normal and administrator modes and identify which modifier remains active, if any.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-33316-confirm-current-sticky-chord",
+      "type": "request_info",
+      "label": "Confirm the current modifier-sticking behavior",
+      "primary": true,
+      "comment": {
+        "body": "You reported that Alt+Shift+Esc remapped to Ctrl+Shift+Esc opens Task Manager but can leave Ctrl or Shift stuck, and that administrator mode resolved it for you. Could you confirm whether the same mapping still reproduces on current stable, and whether the result differs between normal and administrator execution?"
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the remapped modifier release",
+      "reproduce": {
+        "title": "Check modifier release after remapped Task Manager shortcut",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.81.1 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "Ability to test supported normal and administrator execution modes"
+        ],
+        "setup": [
+          "Configure Alt+Shift+Esc to send Ctrl+Shift+Esc."
+        ],
+        "steps": [
+          "Trigger the remapped shortcut in normal execution mode and verify Task Manager opens.",
+          "Use unrelated keyboard input to check whether Ctrl, Shift, or Alt remains active.",
+          "Repeat in administrator execution mode and compare the result.",
+          "If a modifier sticks, identify which one and whether releasing the source keys changes its state."
+        ],
+        "expected_result": "The remapped shortcut opens Task Manager and all source and destination modifiers return to released state."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the modifier release investigation"
+    }
+  ]
 }

@@ -2,46 +2,136 @@
   "schemaVersion": 5,
   "number": 34193,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Enabling keyboard manager overrides the system keyboard setting",
+  "url": "https://github.com/microsoft/PowerToys/issues/34193",
   "track": "fix",
-  "stage": "triage",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:35:08",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T22:02:34Z",
+  "evaluated_at": "2026-11-05T22:02:34Z",
+  "source_updated_at": "2026-10-11T16:46:58Z",
+  "status": {
+    "glyph": "?",
+    "label": "Retest Polish AltGr input on current stable",
+    "detail": "The report is from v0.83.0 and includes a Polish (Programmers) layout repro; the same symptom has related but non-covering reports, so current behavior and active remaps need clarification."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation.",
+    "status": "needs_information",
+    "rationale": "The reporter says enabling Keyboard Manager breaks Polish (Programmers) language characters produced with Alt/AltGr, with Mouse Without Borders disabled. A later commenter tried remapping a shortcut to Send Text, but the reporter says it produced incorrect characters at normal typing speed. The only other follow-up asks whether the issue persists on 0.100.2 and is specific to the Polish layout; it does not answer those questions. Similar reports are not confirmed duplicates: #14517 involved a Win-to-Ctrl mapping and is closed for lack of author follow-up, #27115 is filed under Advanced Paste with a different shortcut configuration, and #26279 concerned Mouse Without Borders hotkeys and was marked fixed. The original report is from v0.83.0, so a current-build retest and the active Keyboard Manager mapping state are needed.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The report lists PowerToys v0.83.0, the Polish (Programmers) layout, and loss of language-specific characters while Keyboard Manager is enabled; it explicitly says Mouse Without Borders is off.",
+      "The attempted Send Text workaround was unreliable at ordinary typing speed.",
+      "A later question asks about v0.100.2 and layout specificity but has no author response.",
+      "#14517, #27115, and #26279 have materially different remapping or product contexts and do not establish a covering fix.",
+      "No assignee or matching PR was found in the live issue and PR searches."
     ],
-    "recommended_action": "Verify the linked/related handling path and avoid opening a second parallel investigation unless new evidence proves this is distinct.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:35:08"
+    "recommended_action": "Ask whether Right Alt/AltGr characters still fail on v0.102.3001 and whether the failure occurs with Keyboard Manager enabled but no remappings, or only with particular remap entries.",
+    "evaluated_at": "2026-11-05T22:02:34Z",
+    "source_updated_at": "2026-10-11T16:46:58Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "status": "proposed",
+    "rationale": "The module-on/module-off behavior points to a possible Keyboard Manager input-hook interaction with AltGr, but the report does not include the active remappings or a current-build result. This is a low-confidence direction for investigation, not a confirmed root cause.",
+    "existing_fix_urls": []
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Preserve Polish AltGr character input while Keyboard Manager is enabled",
+      "root_cause": "Keyboard Manager may be intercepting or rewriting the Right-Alt/AltGr key sequence as a remappable modifier before the Polish layout can produce its language-specific character. The active remappings and current behavior are not yet known.",
+      "plan": [
+        "Reproduce on the Polish (Programmers) layout with Keyboard Manager disabled, then enabled with no remappings, and compare Right Alt/AltGr character input.",
+        "If the no-remap case works, enable the reporter's active mappings one at a time to identify the first mapping that changes the AltGr sequence.",
+        "Trace the matching and pass-through path for the affected AltGr events and make the narrowest change that preserves layout input without breaking configured shortcuts.",
+        "Add a regression test for the confirmed layout and mapping configuration."
+      ],
+      "verification": [
+        "On the current supported build, verify the affected Polish characters work with Keyboard Manager enabled and the confirmed configuration.",
+        "Verify configured remappings continue to work and ordinary fast typing does not produce duplicate or incorrect characters."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "The report ties the failure to Keyboard Manager and identifies a specific layout, but lacks current-build confirmation and the mappings needed to identify the intercepted event path."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Enabling keyboard manager overrides the system keyboard setting",
+    "summary": "On the Polish (Programmers) layout, enabling Keyboard Manager reportedly prevents Right Alt/AltGr from producing language-specific characters.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:35:08",
-      "."
+      "The reporter lists PowerToys v0.83.0 and the Polish (Programmers) layout.",
+      "The report says language characters such as ą and ó stop working when Keyboard Manager is enabled and return when it is disabled.",
+      "Mouse Without Borders is explicitly reported as disabled.",
+      "The suggested Send Text workaround produced incorrect characters at normal typing speed.",
+      "The issue has three follow-up comments, including an unanswered current-version/layout question."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "An input-hook interaction with Right Alt/AltGr is plausible, but the report does not establish whether the failure occurs without configured remappings.",
+      "The older Polish-character reports are related, but their distinct remaps and modules do not prove this issue is a duplicate."
     ],
-    "analysis": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation.",
+    "analysis": "The original report identifies a useful layout and module toggle, but it is from v0.83.0 and does not list the active Keyboard Manager remappings. The closest related issues differ in product or configuration: #27115 is filed under Advanced Paste, #26279 is a Mouse Without Borders shortcut interaction, and #14517 describes a Win-to-Ctrl mapping. Ask for a current retest and whether a clean no-remap Keyboard Manager profile is sufficient to trigger the failure; do not request another generic diagnostic archive.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the full issue body and comments, including the failed Send Text workaround and unanswered version/layout question.",
+      "Compared #14517, #27115, and #26279; none establishes a current fix for this exact Keyboard Manager and Polish (Programmers) configuration.",
+      "Searched for PRs referencing the issue; none were returned."
     ],
-    "information_gaps": null
+    "information_gaps": [
+      {
+        "information": "Whether Right Alt/AltGr characters still fail on v0.102.3001 with Polish (Programmers), and whether the failure occurs with Keyboard Manager enabled but no remappings or only with particular remaps",
+        "why_needed": "The only versioned reproduction is v0.83.0; separating the clean module-enabled case from configured remaps distinguishes a layout pass-through problem from a specific shortcut conflict.",
+        "how_to_collect": "On v0.102.3001, select Polish (Programmers), test Right Alt/AltGr+A with Keyboard Manager disabled and then enabled with no remappings, and report whether it produces ą in each case. If only the configured profile fails, identify which remap is enabled.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "issue-34193-current-altgr-retest",
+      "type": "request_info",
+      "label": "Retest Polish AltGr input on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for confirming the Polish (Programmers) layout, the missing language characters, and that Mouse Without Borders is off. The report is from v0.83.0, and the Send Text workaround was unreliable at normal typing speed. Could you test Right Alt/AltGr+A on v0.102.3001 with Keyboard Manager disabled, then enabled with no remappings, and say whether it produces ą in each case? If it fails only with your configured profile, please identify the active remap that changes the result."
+      }
+    },
+    {
+      "id": "issue-34193-maintainer-reproduction",
+      "type": "reproduce",
+      "label": "Reproduce Polish AltGr input failure",
+      "note": "The issue identifies the layout and module toggle; compare a clean Keyboard Manager profile before investigating configured mappings.",
+      "reproduce": {
+        "title": "Verify Polish AltGr character entry",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys v0.102.3001 or newer",
+        "prerequisites": [
+          "Polish (Programmers) keyboard layout selected",
+          "Mouse Without Borders disabled"
+        ],
+        "steps": [
+          "In a text editor, verify Right Alt/AltGr+A produces ą while Keyboard Manager is disabled.",
+          "Enable Keyboard Manager with no remappings and repeat the same input.",
+          "If the clean profile passes, enable the reported remappings individually and repeat the input after each change."
+        ],
+        "expected_result": "The Polish layout continues to produce its expected language-specific characters when Keyboard Manager is enabled, except where an explicitly configured remap intentionally replaces the same input."
+      }
+    },
+    {
+      "id": "issue-34193-approve-altgr-investigation",
+      "type": "approve_design",
+      "label": "Approve Polish AltGr input investigation"
+    }
+  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Retest Polish AltGr input on current stable",
+    "reason": "The report is detailed but old, and the active remappings needed to isolate the hook behavior are not recorded."
+  }
 }

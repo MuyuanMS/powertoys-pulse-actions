@@ -1,33 +1,127 @@
 {
+  "schemaVersion": 5,
   "number": 47573,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager: incorrect language",
+  "url": "https://github.com/microsoft/PowerToys/issues/47573",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-12T12:52:45Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:33:19Z",
+  "evaluated_at": "2026-11-05T20:33:19Z",
+  "source_updated_at": "2026-10-11T16:47:21Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce editor language mismatch",
+    "detail": "The report and screenshots show Keyboard Manager's new editor in Russian while PowerToys Settings is set to English on Windows 11 25H2."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue gives a direct reproduction setup: Windows is in Russian, PowerToys is set to English, and the new Keyboard Manager editor remains in Russian. The screenshots support the mismatch, and there are no comments, assignees, or linked fixes. A likely fix is to ensure the separate editor uses the PowerToys-selected language context, but its launch/resource flow has not been traced, so the proposal remains yellow-confidence and should be reproduced before implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.99.1 and Windows 11 25H2.",
+      "The reporter's numbered steps set Windows to Russian and the PowerToys app language to English before opening the new Keyboard Manager editor.",
+      "The attached screenshots show the editor in Russian while the PowerToys Settings interface is English.",
+      "The issue has no comments or assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:52:45Z"
-  }
+    "recommended_action": "Reproduce the language pairing and trace how the selected PowerToys language reaches the new editor; if confirmed, use that language context for the editor's resources.",
+    "evaluated_at": "2026-11-05T20:33:19Z",
+    "source_updated_at": "2026-10-11T16:47:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The language mismatch is directly reported and shown in the attached screenshots. The editor's language initialization path is not yet known, so the selected-language propagation is a hypothesis to verify."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use PowerToys' selected language in the new Keyboard Manager editor",
+      "root_cause": "The new editor may resolve localized resources from the Windows system language because its process or resource context does not receive PowerToys' selected display language.",
+      "plan": [
+        "Reproduce with Windows set to Russian and PowerToys display language set to English, following the issue's steps and screenshots.",
+        "Trace how the new Keyboard Manager editor is launched and how it chooses its resource language.",
+        "If the editor falls back to the system language, pass or select the PowerToys display-language context using the existing localization mechanism.",
+        "Add a regression check for English PowerToys on Russian Windows and for the inverse language pairing."
+      ],
+      "verification": [
+        "The editor follows the selected PowerToys display language when it differs from the Windows system language.",
+        "The editor and surrounding PowerToys Settings remain consistently localized in both language pairings."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The mismatch and environment are explicitly reported and shown, but the editor's launch and resource-selection path has not been traced. A separate Keyboard Manager switch-label localization issue (#47538) is related in theme, but does not prove a shared code path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The new Keyboard Manager editor is reported to use the Windows system language instead of the selected PowerToys display language.",
+    "known_information": [
+      "The report lists PowerToys 0.99.1 and Windows 11 25H2.",
+      "The reporter's setup is Russian for Windows and English for the PowerToys app.",
+      "The screenshots show the editor in Russian and the surrounding Settings interface in English.",
+      "The issue has no comments or assignees."
+    ],
+    "inferences": [
+      "The editor may initialize localization independently and fall back to the system language.",
+      "Issue #47538 reports a separate Keyboard Manager switch-label mismatch; the reports may share a language-context concern, but the affected controls differ."
+    ],
+    "analysis": "The report has enough detail for a focused reproduction and a plausible design direction. Verify how the editor obtains its language before implementing a change; keep the related switch-label issue separate unless source tracing confirms a shared localization mechanism.",
+    "initial_investigation": [
+      "Read the current issue body, labels, assignees, and discussion; there are no comments or assignees.",
+      "Inspected the supplied screenshots, which show English PowerToys Settings and a Russian Keyboard Manager editor.",
+      "Compared the report with issue #47538; it concerns a separate Keyboard Manager switch-label surface and does not establish duplicate coverage."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the same language mismatch occurs in the current stable PowerToys release",
+        "why_needed": "The report lists PowerToys 0.99.1; a current-stable result confirms whether the editor language bug is still present before a fix is implemented.",
+        "how_to_collect": "Repeat the reported Russian-Windows and English-PowerToys setup in current stable and confirm the language shown when the new editor opens.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the editor language mismatch",
+      "note": "The issue provides the language pairing and screenshots; verify the mismatch before tracing the editor's localization path.",
+      "reproduce": {
+        "title": "Check the new editor with different app and system languages",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.99.1 or current stable on Windows 11 25H2",
+        "prerequisites": [
+          "Set the Windows system language to Russian.",
+          "Set the PowerToys display language to English."
+        ],
+        "steps": [
+          "Open PowerToys Settings and select Input & Output - Keyboard Manager.",
+          "Enable the new editor and open it.",
+          "Compare the editor's language with the surrounding PowerToys Settings interface.",
+          "Repeat with PowerToys set to Russian and Windows set to English."
+        ],
+        "expected_result": "The new editor follows the PowerToys display language in both pairings, independently of the Windows system language."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the editor language fix"
+    },
+    {
+      "id": "issue-47573-confirm-current-language-mismatch",
+      "type": "request_info",
+      "label": "Confirm the mismatch on current stable",
+      "comment": {
+        "body": "Thanks for the clear language pairing and screenshots: Windows is set to Russian, PowerToys to English, and the new Keyboard Manager editor remains in Russian. Since the report lists PowerToys 0.99.1, could you confirm whether the same mismatch occurs with the current stable release?"
+      }
+    }
+  ]
 }

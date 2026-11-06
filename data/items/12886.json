@@ -3,78 +3,125 @@
   "number": 12886,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidated",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T21:16:42.3113375Z",
-  "evaluated_at": "2026-09-12T21:16:42.3113375Z",
-  "source_updated_at": "2026-08-05T03:18:07Z",
+  "generated_at": "2026-11-05T13:20:11Z",
+  "evaluated_at": "2026-11-05T13:20:11Z",
+  "source_updated_at": "2026-10-11T16:48:46Z",
+  "title": "Single key remap not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/12886",
+  "author": "Manlibear",
+  "labels": [
+    "Issue-Bug",
+    "Area-App Compat",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 20,
+  "status": {
+    "glyph": "⌨",
+    "label": "ShareMouse marker collision identified",
+    "detail": "The supplied trace shows ShareMouse using dwExtraInfo=5. Current main treats any event with bit 0 set as Keyboard Manager input and skips it, which also matches 5."
+  },
+  "next_action": "Approve a design to distinguish Keyboard Manager's own injected events from external input, then verify the reported 1-to-2 remap through ShareMouse on a current build.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report is still supported only by an old reproduction thread; there is no current-version bug report or source-path evidence showing whether the Sharemouse/MacBook setup still fails today.",
+    "status": "actionable_design",
+    "rationale": "The reporter's diagnostic trace and a maintainer's analysis identify a concrete input-filter collision: ShareMouse sets KBDLLHOOKSTRUCT::dwExtraInfo to 5, while current main classifies an event as Keyboard Manager-generated whenever bit 0 is set. Since 5 & 1 is nonzero, ShareMouse input is skipped by the single-key remapper. A current-version reproduction is still useful, but the source predicate and existing trace support a focused design.",
     "evidence": [
-      "The reporter confirmed even a simple 1→2 remap still emitted the original key.",
-      "The only maintainer follow-up asked for an unsigned private build.",
-      "No recent public comment or diagnostic archive establishes the current failure path."
+      "The original issue reports that a 1-to-2 remap still prints 1 when the input comes from a MacBook Pro through ShareMouse; a directly connected Windows keyboard remaps correctly.",
+      "The attached 2021 diagnostic trace repeatedly records incoming key events with dwExtraInfo=5, and a maintainer states that this causes Keyboard Manager to ignore them.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardEventHandlers.cpp:34-37 tests dwExtraInfo with KEYBOARDMANAGER_INJECTED_FLAG.",
+      "At the same revision, shared_constants.h:7-8 defines KEYBOARDMANAGER_INJECTED_FLAG as 0x1, so an external marker value of 5 satisfies the current filter.",
+      "A 2026 maintainer comment asks whether the issue persists on v0.100.2 or newer; that confirmation from the original reporter is unanswered."
     ],
-    "recommended_action": "Request current-version reproduction details and targeted diagnostics before selecting a code fix.",
-    "evaluated_at": "2026-09-12T20:15:36.184Z",
-    "source_updated_at": "2026-08-05T03:18:07Z"
+    "recommended_action": "Design a collision-resistant way to recognize Keyboard Manager's own injected events, preserve non-transitive remapping, and verify it against the existing ShareMouse 1-to-2 reproduction.",
+    "evaluated_at": "2026-11-05T13:20:11Z",
+    "source_updated_at": "2026-10-11T16:48:46Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The current public evidence does not yet identify a defensible PowerToys code fix."
+    "status": "proposed",
+    "rationale": "The reported external marker and the current low-bit predicate directly match, but the issue's last direct reproduction predates current PowerToys and the reporter has not confirmed v0.100.2 or newer."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Avoid treating ShareMouse input as Keyboard Manager injection",
+      "root_cause": "Keyboard Manager suppresses input when any bit in dwExtraInfo overlaps KEYBOARDMANAGER_INJECTED_FLAG (0x1). ShareMouse uses dwExtraInfo=5, so its physical key event is mistaken for Keyboard Manager's own injected event and never reaches the single-key remap path.",
+      "plan": [
+        "Trace all Keyboard Manager input-injection sites and the GeneratedByKBM predicate to define one consistent provenance contract.",
+        "Replace the collision-prone low-bit test with either an exact, collision-resistant Keyboard Manager marker or explicit tracking of the events Keyboard Manager injected; do not suppress arbitrary external dwExtraInfo values merely because their lowest bit is set.",
+        "Add regression coverage showing that an external event with dwExtraInfo=5 is remapped while Keyboard Manager's own generated events remain non-transitive."
+      ],
+      "verification": [
+        "With ShareMouse supplying the reported 1-to-2 key mapping, pressing 1 produces 2 on a current PowerToys build.",
+        "A directly attached Windows keyboard continues to produce 2 for the same mapping.",
+        "Keyboard Manager-generated events are still excluded from recursive remapping, including events carrying its new provenance marker."
+      ],
+      "confidence": {
+        "score": 79,
+        "level": "yellow",
+        "rationale": "The existing trace gives the external marker value and current source uses the exact conflicting low-bit test; a current-build reproduction and injection-path regression tests are still needed."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "A single-key remap still produced the original character on the reporter’s Sharemouse/MacBook setup, but the public evidence is too old to confirm the current failure path.",
+    "summary": "Single-key remaps are bypassed for keyboard input forwarded from a Mac through ShareMouse, while the same remap works with a keyboard connected directly to Windows.",
     "known_information": [
-      "The issue is open and has 20 comments.",
-      "The reporter confirmed that remapping 1 to 2 still left 1 on screen.",
-      "The maintainer follow-up asked for an unsigned private build rather than closing the issue."
+      "The issue originally used PowerToys 0.43.0 as administrator on Windows 10, with a MacBook Pro running macOS 11.5.2 connected through ShareMouse.",
+      "The reported simple reproduction is a 1-to-2 remap; input forwarded through ShareMouse still prints 1, while a directly attached Windows keyboard prints 2.",
+      "The supplied trace records ShareMouse keyboard events with KBDLLHOOKSTRUCT::dwExtraInfo=5, and a maintainer identified the low-bit marker collision.",
+      "A 2023 commenter confirmed a similar issue on v0.69.1; another commenter described it on v0.78.0.",
+      "A maintainer asked in July 2026 whether the original report persists on v0.100.2 or newer; the original reporter has not answered.",
+      "Current main defines the Keyboard Manager injected flag as 0x1 and tests it with a bitwise AND."
     ],
     "inferences": [
-      "The failure may involve an input interception layer or a device-specific remap interaction outside the common current repro path.",
-      "A fresh current-build repro is needed to tell whether the issue still exists."
+      "The current marker predicate still appears capable of suppressing ShareMouse events whose dwExtraInfo is 5.",
+      "A current-version reproduction would establish whether ShareMouse still emits the same marker and whether the same event-filter path remains active."
     ],
-    "analysis": "The thread is old and lacks current diagnostics, so the safest public-triage decision is to keep it in the information-gathering lane.",
+    "analysis": "The old diagnostic evidence and the current source predicate form a direct explanation for the reported behavior: the event metadata from ShareMouse collides with Keyboard Manager's low-bit marker, causing the remapper to skip input. The fix must continue to prevent Keyboard Manager's own synthetic events from being remapped recursively, so the marker/tracking approach should be selected with all injection call sites in view. Reproduce the simple 1-to-2 case on a current build before implementation.",
     "initial_investigation": [
-      "Read the issue body and comment thread.",
-      "Checked the public follow-up history and found no current-version reproduction."
+      "Read the live issue body and all 20 comments, including the original diagnostic trace, the wired-keyboard control result, later confirmations, and the unanswered current-version question.",
+      "Inspected upstream main at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: KeyboardEventHandlers.cpp:34-37 and src/common/interop/shared_constants.h:7-8.",
+      "Checked direct PR references; no covering PR or linked duplicate was found."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "A fresh current-build repro on the same remap pattern, ideally with and without Sharemouse in the path.",
-        "why_needed": "To separate a PowerToys-owned bug from an interaction with the remote-input layer or an already-fixed path.",
-        "how_to_collect": "Reproduce on a supported current build and attach /bugreport immediately after the failure."
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether ShareMouse still supplies the same dwExtraInfo marker and the 1-to-2 remap still fails on a current PowerToys build.",
+        "why_needed": "The available diagnostic trace is from 2021, while current main still contains a matching low-bit filter; a current run will verify the remaining behavior before implementation.",
+        "how_to_collect": "Repeat the same ShareMouse 1-to-2 mapping on a current stable build and compare it with a directly connected Windows keyboard."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-12886",
-      "type": "request_info",
-      "label": "Request current repro evidence",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 12886,
-        "body": "Please provide the current PowerToys and Windows versions, numbered reproduction steps, and a fresh /bugreport captured immediately after reproducing the issue."
-      },
-      "note": "Draft only; no upstream comment was posted."
+      "type": "approve_design",
+      "label": "Approve injected-event marker design",
+      "note": "Preserve non-transitive remapping while distinguishing Keyboard Manager-generated events from external input metadata."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce ShareMouse single-key remap",
+      "note": "The issue includes an old diagnostic trace and exact mapping; confirm the same behavior on a current build without requesting another archive.",
+      "reproduce": {
+        "title": "Test a single-key remap with ShareMouse input",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer; record the exact build",
+        "prerequisites": [
+          "Windows 10 or Windows 11 with Keyboard Manager enabled",
+          "A Mac keyboard forwarded to the Windows machine through ShareMouse",
+          "A directly attached Windows keyboard for the control test"
+        ],
+        "setup": [
+          "Configure the reported single-key remap 1 to 2."
+        ],
+        "steps": [
+          "Press 1 using the Mac keyboard forwarded through ShareMouse.",
+          "Repeat by pressing 1 on a keyboard connected directly to Windows.",
+          "Record the PowerToys version and compare the resulting characters."
+        ],
+        "expected_result": "Both input sources produce 2, and Keyboard Manager's own synthetic events are not recursively remapped.",
+        "setup_prompt": "On a Windows test machine with Keyboard Manager enabled, connect a Mac keyboard through ShareMouse, configure 1-to-2, and compare the forwarded key with a directly attached Windows keyboard."
+      }
     }
-  ],
-  "title": "Single key remap not working",
-  "url": "https://github.com/microsoft/PowerToys/issues/12886",
-  "author": "Manlibear",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Area-App Compat"
-  ],
-  "comments": 20,
-  "confidence": "Low"
+  ]
 }

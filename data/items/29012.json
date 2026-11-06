@@ -3,45 +3,109 @@
   "number": 29012,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": true,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 03:09:32",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-11-05T21:45:26.92Z",
+  "evaluated_at": "2026-11-05T21:45:26.92Z",
+  "source_updated_at": "2026-10-11T16:47:02Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "status": "needs_information",
+    "rationale": "The original report says a Caps Lock remap stops working while a virtual desktop is changing and was repeatedly toggled to recover. A later commenter says disabling Windows animation effects resolved the long delay, but did not clearly establish whether the remap itself still fails with animations enabled. The report is from PowerToys 0.74.1 and there is no current-build confirmation. Ask for the smallest discriminating current-version test before proposing a code change.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The report lists PowerToys 0.74.1 and a Caps Lock remap used as push-to-talk.",
+      "The reported failure occurs while switching virtual desktops; the original reporter says toggling Keyboard Manager off/on restores the key.",
+      "A later comment says disabling Windows animation effects resolved the long delay, but does not confirm whether the remapped key still stops working with animation effects enabled.",
+      "Open issue, two comments, no assignees; the later request for current version and numbered steps is minimized as low-quality.",
+      "Related open issue #37380 describes remapping misses under high CPU load with a different trigger (Visual Studio build and Caps Lock-to-Ctrl), not a confirmed duplicate or covering fix."
     ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 03:09:32"
+    "recommended_action": "Ask whether the remap still fails on v0.102.3001 with Windows animation effects enabled, and request a short sequence only if the behavior persists.",
+    "evaluated_at": "2026-11-05T21:45:26.92Z",
+    "source_updated_at": "2026-10-11T16:47:02Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "status": "proposed",
+    "rationale": "A current reproduction is needed to distinguish a Keyboard Manager interruption from the Windows desktop-switch delay or an animation-related timing effect."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Investigate remap interruption during virtual-desktop transitions",
+      "root_cause": "Keyboard Manager may temporarily stop applying the remap during a desktop transition, but the report does not establish that the remap failure persists independently of Windows animation timing.",
+      "plan": [
+        "Confirm the failure on a current supported build with animation effects enabled.",
+        "Compare behavior with animation effects disabled and record whether only the transition delay changes or the remap is actually lost.",
+        "If a current PowerToys-owned failure is reproduced, trace remap activation across desktop switching and add focused regression coverage."
+      ],
+      "verification": [
+        "Confirm the remap remains active before, during, and after virtual-desktop switching on the current build.",
+        "Verify the reported animation-effects workaround does not mask a persistent remapping failure."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The report uses PowerToys 0.74.1, and the later animation-effects workaround leaves the current failure status ambiguous."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Keyboard Manager disables while switching virtual desktops",
+    "summary": "A Caps Lock remap reportedly stops working during virtual-desktop transitions; disabling Windows animation effects was later reported to resolve the delay.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 03:09:32",
-      "."
+      "The report lists PowerToys 0.74.1 and uses Caps Lock as a push-to-talk remap.",
+      "The reporter says the remap stops working while a virtual desktop loads and toggling Keyboard Manager off/on restores it.",
+      "A later commenter reports disabling Windows animation effects resolved the long delay."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The delay and remap interruption may share a trigger, but the discussion does not establish whether the remap still fails when animation effects are enabled."
     ],
-    "analysis": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "analysis": "The animation-effects workaround is relevant evidence but does not confirm the current remap behavior. Confirm the current build and animation setting before starting a maintainer reproduction or proposing an implementation.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue body and comments, including the reported animation-effects workaround and the later minimized request for current-version details.",
+      "Compared related open issue #37380; it reports missed remaps under high CPU load with a different trigger and does not establish coverage for this virtual-desktop case."
     ],
-    "information_gaps": null
+    "information_gaps": [
+      {
+        "information": "Whether the Caps Lock remap still stops working on v0.102.3001 while Windows animation effects are enabled",
+        "why_needed": "The report is from 0.74.1 and the later comment addresses the desktop-switch delay without clearly confirming whether the remap interruption persists.",
+        "how_to_collect": "With animation effects enabled, switch virtual desktops using the reported setup and test the Caps Lock remap before, during, and after the transition; if it still fails, provide the Windows version and a short numbered sequence.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "request-info-29012-current-desktop-switch-test",
+      "type": "request_info",
+      "label": "Confirm desktop-switch remap behavior on current stable",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 29012,
+        "body": "Thanks for describing the Caps Lock remap interruption and noting that disabling Windows animation effects resolved the long delay. Could you confirm whether the remap still stops working on PowerToys v0.102.3001 with animation effects enabled? If it does, please share your Windows version and a short sequence showing the key mapping and desktop-switch shortcut."
+      }
+    },
+    {
+      "id": "approve-design-29012",
+      "type": "approve_design",
+      "label": "Approve targeted fix design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard Manager disables while switching virtual desktops",
+  "url": "https://github.com/microsoft/PowerToys/issues/29012",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "status": {
+    "glyph": "❔",
+    "label": "Confirm virtual-desktop remap failure on current stable",
+    "detail": "The original report is from 0.74.1; a later comment says disabling Windows animation effects resolved the long delay, but current behavior is unknown."
+  }
 }

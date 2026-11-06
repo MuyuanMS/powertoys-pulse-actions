@@ -1,33 +1,87 @@
 {
+  "schemaVersion": 5,
   "number": 39895,
+  "title": "Remap a shortcut - issue starting same name app twice (appears as hotkey is not working)",
+  "url": "https://github.com/microsoft/PowerToys/issues/39895",
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:00:31Z",
+  "generated_at": "2026-11-05T14:17:56.506Z",
+  "evaluated_at": "2026-11-05T14:17:56.506Z",
+  "source_updated_at": "2026-10-11T16:48:14Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm the Start Another setting",
+    "detail": "The 0.91.1 trace records alreadyRunningAction:0 and a failed window search. Current main exposes an If running: Start Another option, which should bypass the same-name process check for users who want a new instance."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report includes a detailed 0.91.1 trace showing python.exe was already running, alreadyRunningAction:0, and no matching window was found. Current main exposes an If running setting with Start Another; the engine checks the existing process by executable name only when another action is selected, while Start Another bypasses that check. The report does not say whether this option was tried, so verify it before proposing a code change. The remaining requests for a warning or path-specific matching are product behavior questions, not established failures of the existing Start Another path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.91.1 and binds python.exe to Alt+F1 while another python.exe is already running.",
+      "The trace records alreadyRunningAction:0 followed by repeated hwnd-not-found retries.",
+      "Current main exposes the If running options Show Window, Start Another, Do Nothing, Close, and Terminate; Start Another is the second option and the default is Show Window.",
+      "Current main performs the process-name check only when the selected action is not Start Another.",
+      "The issue is open, has no comments, and has no assignee."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:00:31Z"
-  }
+    "recommended_action": "Ask the reporter to retest on PowerToys 0.100.2 or newer with If running set to Start Another; request a fresh /bugreport only if that explicit path still fails.",
+    "evaluated_at": "2026-11-05T14:17:56.506Z",
+    "source_updated_at": "2026-10-11T16:48:14Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The reported primary goal of launching another instance is already represented by the current If running: Start Another option, while the supplied trace uses action index 0 (Show Window). Confirm whether the supported option fails before classifying this as a code defect; the additional warning and path-matching requests are not yet evidence of a broken code path."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Python hotkey does not launch when another python.exe is running; the supplied trace shows the default Show Window action could not find a window.",
+    "known_information": [
+      "The issue reports PowerToys 0.91.1 and maps Alt+F1 to a Python executable.",
+      "The reporter says VS Code may already be running a different python.exe and the trace records alreadyRunningAction:0 followed by hwnd-not-found retries.",
+      "Current main provides an If running: Start Another option; with that selection the engine skips the process-name check and proceeds to launch.",
+      "No comments or assignees are present."
+    ],
+    "inferences": [
+      "The reported no-op is consistent with the default Show Window behavior when an existing same-name process has no discoverable window, but the exact mapping option selected in the report is not shown."
+    ],
+    "analysis": "The existing Start Another behavior is the discriminating control for the main request. If the hotkey launches a new process with that option, the observed default behavior is configuration rather than a code failure; if it still fails, a current diagnostic capture and exact mapping details can identify a defect.",
+    "initial_investigation": [
+      "Read the complete issue body and trace; no follow-up comments, assignee, or later current-build test are present.",
+      "Inspected current main KeyboardEventHandlers.cpp: process-name lookup is bypassed for StartAnother and otherwise returns after handling an existing process.",
+      "Inspected current main ShortcutControl.cpp: the If running combo exposes Start Another and defaults to Show Window."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same hotkey launches a new process on PowerToys 0.100.2 or newer when If running is explicitly set to Start Another.",
+        "why_needed": "The supplied trace shows the default Show Window action, while the current UI already supports starting another instance.",
+        "how_to_collect": "Edit the run-program mapping, set If running to Start Another, then press the hotkey while a separate python.exe process is running and report whether a second instance starts."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh Keyboard Manager diagnostic archive only if the Start Another test still fails.",
+        "why_needed": "A current trace is needed to distinguish a launch-path defect from the expected existing-process behavior.",
+        "how_to_collect": "If the Start Another test fails on the current build, comment /bugreport immediately after reproducing and include the mapped executable path and arguments."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Test the Start Another launch option",
+      "comment": {
+        "target": "issue",
+        "number": 39895,
+        "body": "Thanks for including the trace. It shows `alreadyRunningAction:0` (the default Show Window behavior) and repeated `hwnd not found` retries. Current Keyboard Manager has an **If running** option named **Start Another**, which bypasses the existing-process check. Could you please:\n1. Retest on PowerToys 0.100.2 or newer with that option selected while another `python.exe` is running, and report whether a second instance starts.\n2. If it still fails, comment `/bugreport` immediately after reproducing and include the exact executable path and arguments from the mapping."
+      }
+    }
+  ]
 }

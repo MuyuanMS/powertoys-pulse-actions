@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 40976,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keys double binding",
+  "url": "https://github.com/microsoft/PowerToys/issues/40976",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:53:14Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:47Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm Windows-hotkey remap overlap",
+    "detail": "The report overlaps open Game Bar and system-hotkey remap reports, but its three-key remap sequence may be distinct."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says a Win/Alt/Ctrl remap cycle still triggers the Xbox Game Bar broadcasting panel through a Windows hotkey, even after disabling the apparent shortcut. Open issues #29969 and #26001 describe remapped Win/Alt keys still invoking Game Bar or other Windows hotkeys, so this report may be a variant of the same tracked behavior. Its three-remap cycle and Win+Alt+W trigger are not yet shown to be covered. The report is open and unassigned.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.92.1 from the Microsoft Store and gives a three-key left Alt/Win/Ctrl remap.",
+      "The reporter says pressing the remapped Win key still opens the deprecated Game Bar broadcasting panel despite disabling the Windows+Alt+W shortcut.",
+      "Open issue #29969 reports remapped Win/Alt keys still triggering Game Bar, including Win+G; open issue #26001 reports remapping being overridden by built-in Windows hotkeys.",
+      "The issue has one similar-issues bot comment, is open, and has no assignee."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:53:14Z"
-  }
+    "recommended_action": "Ask whether the issue persists on current stable and whether the simpler Win/Alt swap from #29969 reproduces the same behavior; consolidate if it does, otherwise investigate the three-remap interaction.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:47Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report says a Windows Game Bar hotkey fires through a remapped Win key, which aligns with the open #29969 and #26001 reports. A remap-order or raw-key precedence defect is plausible, but the three-key cycle and current-version result are not yet isolated."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent raw Windows hotkeys from bypassing active key remaps",
+      "root_cause": "The Windows shell may observe the original Win-key state before Keyboard Manager's remapped state takes effect, allowing a Game Bar chord to fire despite the configured mapping. Similar behavior is already tracked in #29969 and #26001; this report may add a three-remap edge case.",
+      "plan": [
+        "Confirm the issue on current stable and compare the reported three-remap cycle with the simpler Win/Alt swap from #29969.",
+        "If the simpler swap reproduces the same Game Bar behavior, consolidate the three-remap evidence into the existing open issue instead of creating competing implementation work.",
+        "If the failure is unique to the three-remap cycle, trace the ordering and modifier state of the three left-key mappings.",
+        "Add regression coverage ensuring the configured remap, not the raw Windows key, determines the triggered shell chord."
+      ],
+      "verification": [
+        "Verify the remapped key does not trigger the unintended Game Bar broadcasting shortcut on current stable.",
+        "Verify the intended remapped key behavior still works and unrelated Windows shortcuts remain available.",
+        "Compare the three-remap sequence with the simpler Win/Alt swap to establish whether one existing issue covers both."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "Two open reports describe the same class of raw Windows hotkey overlap, but the current issue's three-key cycle may introduce a distinct interaction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A three-key left Alt/Win/Ctrl remap reportedly still allows the Xbox Game Bar broadcasting hotkey to fire through the remapped Win key.",
+    "known_information": [
+      "The report lists PowerToys 0.92.1 from the Microsoft Store.",
+      "The reporter maps left Alt to Ctrl, left Win to Alt, and left Ctrl to Win.",
+      "The reporter says the deprecated Game Bar broadcasting panel opens despite disabling the Windows+Alt+W shortcut.",
+      "Open issues #29969 and #26001 describe related Game Bar or built-in Windows hotkey overlap with remapped keys."
+    ],
+    "inferences": [
+      "The shell may receive the original Win state before the remapped state, but the reported three-key sequence has not been compared with the simpler configuration in the related issues."
+    ],
+    "analysis": "The likely issue class is already tracked in two open reports, so this should not create a competing fix until the unique three-remap aspect is established. The exact current-version result and comparison with a simple Win/Alt swap determine whether this is duplicate evidence or a distinct remap-order defect.",
+    "initial_investigation": [
+      "Read the live issue body and its similar-issues comment, current labels, state, assignees, and discussion.",
+      "Read open issue #29969, which reports remapped Win/Alt keys triggering Game Bar, and #26001, which reports built-in Windows hotkeys overriding remaps.",
+      "The related issues are open and describe overlapping behavior, but no linked fix or exact three-remap comparison was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the reported behavior persists on current stable PowerToys",
+        "why_needed": "The issue is from version 0.92.1, and a later release may have changed system-hotkey handling.",
+        "how_to_collect": "Repeat the reported remap on current stable and state the exact PowerToys version and result.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether the same Game Bar behavior occurs with only the left Win/left Alt swap",
+        "why_needed": "This determines whether #29969 covers the current issue or whether the additional Ctrl remap changes the outcome.",
+        "how_to_collect": "Compare the three-remap cycle with a simple left Win/left Alt swap using the same Game Bar shortcut.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-40976-compare-gamebar-remaps",
+      "type": "request_info",
+      "label": "Compare Game Bar remap behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for listing the three left-key remaps and the Game Bar shortcut that still fires. Open issues #29969 and #26001 describe similar Windows hotkey overlap, but they do not establish whether your three-remap sequence is covered. Could you confirm:\n1. Whether the issue still occurs on current stable PowerToys and the exact version tested.\n2. Whether the same Game Bar behavior occurs with only a left Win/left Alt swap, or only with the full three-remap cycle.\n\nThat comparison will show whether this is additional evidence for an existing report or a distinct interaction."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Windows-hotkey remap fix direction"
+    }
+  ]
 }

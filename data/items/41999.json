@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 41999,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Remaping shift(right) to shift(left) will make shift(right) locked after using it.",
+  "url": "https://github.com/microsoft/PowerToys/issues/41999",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:05:12Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T20:44:17Z",
+  "evaluated_at": "2026-11-05T20:44:17Z",
+  "source_updated_at": "2026-10-11T16:47:18Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Investigate stuck Shift state after remapping",
+    "detail": "The report says mapping Right Shift to Left Shift leaves the original Right Shift state stuck until the mapping is removed and Right Shift is pressed again; an identical report #42057 is closed as a duplicate."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report gives a concrete modifier-to-modifier mapping and state transition: Right Shift to Left Shift causes Right Shift to remain pressed when used with another key, and removing the mapping then pressing Right Shift clears the state. A second report, #42057, describes the same mapping and stuck-key behavior and is closed with state reason DUPLICATE; no linked fix or pull request is recorded. This supports a focused fix investigation, although the original report lists PowerToys 0.94.2 and has no current-stable retest.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.94.2 on Windows 11 with a Traditional Chinese input environment.",
+      "The mapping is Right Shift to Left Shift; using Right Shift with another key leaves Right Shift stuck in a pressed state.",
+      "Removing the mapping and pressing Right Shift again clears the stuck state.",
+      "Issue #42057 describes the same mapping and stuck-key behavior and is closed as a duplicate; it has no linked pull request."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:05:12Z"
-  }
+    "recommended_action": "Confirm the same modifier-state failure on current stable, then trace key-down/key-up balancing when one Shift key is remapped to the other.",
+    "evaluated_at": "2026-11-05T20:44:17Z",
+    "source_updated_at": "2026-10-11T16:47:18Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The mapping and recovery sequence point to an unbalanced synthetic/original modifier state. A fix should be investigated in the key-event handling path, but the exact state transition has not been traced."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Balance Right Shift state for modifier-to-modifier remaps",
+      "root_cause": "The Right Shift key-up state may not be balanced when the remap emits Left Shift, leaving the original modifier logically pressed until another physical event clears it.",
+      "plan": [
+        "Reproduce Right Shift to Left Shift on current stable and record the Right Shift and Left Shift down/up sequence.",
+        "Trace the Keyboard Manager path that emits the replacement modifier and releases the original key.",
+        "If the original Right Shift release is missing or delayed, correct the remap path so both physical and synthesized modifier state are balanced on key-up and on mapping removal.",
+        "Add regression coverage for Right Shift to Left Shift while typing, releasing the modifier, and removing the mapping."
+      ],
+      "verification": [
+        "Right Shift to Left Shift behaves as Left Shift without leaving either Shift key logically pressed.",
+        "The behavior remains correct across repeated key presses and modifier release.",
+        "Removing the mapping does not require an extra physical key press to clear modifier state."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The stuck state and recovery behavior are explicit and a matching duplicate report supports the symptom, but the actual key-event sequence and current-version status have not been independently confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mapping Right Shift to Left Shift reportedly leaves the original Right Shift pressed after use until the mapping is removed and another Right Shift press clears it.",
+    "known_information": [
+      "The report lists PowerToys 0.94.2 on Windows 11 with a Traditional Chinese input environment.",
+      "The mapping is Right Shift to Left Shift.",
+      "The author says using Right Shift with another key leaves it stuck, and removing the mapping then pressing Right Shift clears it.",
+      "Issue #42057 reports the same mapping and stuck state and is closed as a duplicate, with no linked pull request."
+    ],
+    "inferences": [
+      "A missing or misordered key-up event may leave the original modifier state active, but the event sequence has not been traced."
+    ],
+    "analysis": "The concrete mapping and recovery behavior support a focused modifier-state investigation. Confirm current stable behavior and inspect event balancing before implementing a change; the duplicate report does not establish a fix.",
+    "initial_investigation": [
+      "Read the current issue body, labels, assignees, and discussion; there are no comments or assignees.",
+      "Searched for matching Right Shift-to-Left Shift reports and reviewed #42057, which is closed with state reason DUPLICATE and has no linked pull request."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the Right Shift-to-Left Shift remap still leaves Right Shift stuck on current stable",
+        "why_needed": "The report lists PowerToys 0.94.2, and a current result confirms the state bug is still present before tracing key-event handling.",
+        "how_to_collect": "Repeat the mapping and key sequence on current stable; report whether Right Shift remains logically pressed and whether removing the mapping plus pressing Right Shift clears it.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the modifier-state fix"
+    },
+    {
+      "id": "issue-41999-confirm-current-sticky-shift",
+      "type": "request_info",
+      "label": "Confirm the stuck Shift state on current stable",
+      "comment": {
+        "body": "Thanks for the exact Right Shift-to-Left Shift mapping and the steps that clear the stuck state. Since the report lists PowerToys 0.94.2, could you confirm whether the same mapping still leaves Right Shift pressed on current stable, and whether removing the mapping and pressing Right Shift still clears it?"
+      }
+    }
+  ]
 }

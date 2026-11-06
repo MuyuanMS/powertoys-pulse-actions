@@ -1,33 +1,89 @@
 {
+  "schemaVersion": 5,
   "number": 35356,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:34:16Z",
+  "generated_at": "2026-11-05T13:59:57.471Z",
+  "evaluated_at": "2026-11-05T13:59:57.471Z",
+  "source_updated_at": "2026-10-11T16:48:20Z",
+  "title": "Keyboard manager shortcut remapper issues",
+  "url": "https://github.com/microsoft/PowerToys/issues/35356",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Need a current-build retest",
+    "detail": "The first Ctrl+IJKL symptom was attributed to low Apex Pro TKL actuation, but two remaining Ctrl-stuck/text-leak symptoms are only reported on 0.85.1."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Ask the reporter to retest one remaining Ctrl-switching symptom on a current build before selecting a fix path.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report lists three symptoms on PowerToys 0.85.1. The author attributed the first rapid Ctrl+IJKL symptom to the Apex Pro TKL actuation setting and changed that setting, but also describes separate Ctrl+HM/IJKL switching and stuck-Ctrl/text-leak behaviors. Merged PR #46672 fixes one specific stale AltGr Ctrl state, but no AltGr trigger is reported here and the issue has no current-build retest. Ask for one remaining symptom on a current build before proposing a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.85.1 and uses an Apex Pro TKL keyboard.",
+      "The author says low actuation caused simultaneous key recognition for the first rapid Ctrl+IJKL symptom and reports changing the actuation setting.",
+      "The author separately reports Ctrl no longer being recognized when switching between Ctrl+HM and Ctrl+IJKL, causing letters to be typed, and another case where Ctrl remains unusable until Keyboard Manager is disabled and re-enabled.",
+      "There are no issue comments or assignees.",
+      "Merged PR #46672 fixes a narrow AltGr-triggered stale Ctrl flag; this issue does not report AltGr use and is not linked to that PR."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:34:16Z"
-  }
+    "recommended_action": "Request a current-build retest of one remaining Ctrl-switching or stuck-Ctrl sequence with the exact mappings and actuation setting; if it persists, collect a fresh /bugreport.",
+    "evaluated_at": "2026-11-05T13:59:57.471Z",
+    "source_updated_at": "2026-10-11T16:48:20Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The first reported symptom was attributed to a keyboard actuation setting, while the other symptoms are old-build observations without a current reproduction. The available AltGr fix is not established as the cause here; confirm one remaining failure before proposing a code change."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "On an Apex Pro TKL with PowerToys 0.85.1, rapid Ctrl-based remaps reportedly lose modifier state or emit letters; the first symptom was attributed to a low actuation setting.",
+    "known_information": [
+      "The report provides Ctrl+IJKL-to-arrow mappings and separate Ctrl+HM-to-Ctrl+arrow mappings.",
+      "The author says low actuation caused overlapping key recognition for one symptom and reports changing the setting.",
+      "The author still describes Ctrl becoming unrecognized when switching mappings and a case requiring Keyboard Manager to be restarted before Ctrl works.",
+      "No later comments, assignee, or current-build retest are present.",
+      "Merged PR #46672 covers a specific stale AltGr-triggered Ctrl flag, not a cause established by this report."
+    ],
+    "inferences": [
+      "The remaining symptoms may involve modifier state across remap transitions, but the report does not establish that mechanism or whether it persists on current builds."
+    ],
+    "analysis": "The report is detailed enough to identify the remaining behaviors, but the original version is 0.85.1 and one symptom had a hardware-setting explanation. Ask the author to reproduce one unresolved sequence on a current build and capture diagnostics only if it persists; do not assume the separate AltGr fix covers it.",
+    "initial_investigation": [
+      "Read the full issue body, including all three symptoms and the reported Apex Pro TKL actuation change.",
+      "Compared the symptoms with merged PR #46672; the latter addresses a distinct AltGr flag path and is not linked to #35356.",
+      "The issue has no comments, assignee, or direct linked fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether either remaining Ctrl-switching/stuck-Ctrl symptom persists on PowerToys 0.100.2 or newer with the same mappings and Apex Pro TKL actuation setting.",
+        "why_needed": "The report is from 0.85.1 and the first symptom changed when hardware actuation was adjusted, so a current failure needs to be separated from that setting.",
+        "how_to_collect": "Retest one remaining sequence on 0.100.2 or newer with the same mappings, note the actuation setting, and record whether Ctrl remains active or literal letters are emitted."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh Keyboard Manager diagnostic archive captured immediately after the remaining symptom occurs.",
+        "why_needed": "If the failure persists, current engine diagnostics can help distinguish remap-state handling from hardware key chatter.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the current-build failure."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm the remaining Ctrl remap failure",
+      "comment": {
+        "target": "issue",
+        "number": 35356,
+        "body": "Thanks for the detailed report and for identifying that low Apex Pro TKL actuation caused the first Ctrl+IJKL symptom. The separate Ctrl+HM / Ctrl+IJKL switching and stuck-Ctrl cases are reported on PowerToys 0.85.1 and have no current-build retest. Could you please:\n1. Retest one remaining sequence on PowerToys 0.100.2 or newer with the same mappings and actuation setting, and report whether Ctrl stops working or literal letters are emitted.\n2. Provide numbered steps for the sequence that still fails, including whether Right Alt/AltGr is pressed; the merged AltGr fix is narrow and is not established as a fix for this report.\n3. If it persists on the current build, comment `/bugreport` immediately after reproducing.\nThis will confirm whether the unresolved behavior remains in current Keyboard Manager builds and provide diagnostics only if it does."
+      }
+    }
+  ]
 }

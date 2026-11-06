@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51951,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "actionable_design",
+  "pending_author": false,
+  "owes": "us",
+  "generated_at": "2026-11-06T01:30:36Z",
+  "evaluated_at": "2026-11-06T01:30:36Z",
+  "source_updated_at": "2026-11-06T00:58:11Z",
+  "title": "[Bug report tool] \"Generate bug report\" zip leaks the Mouse Without Borders SecurityKey in clear text (runner log + MouseWithoutBorders.backup), and includes machine names / LAN IPs without an option to remove them",
+  "url": "https://github.com/microsoft/PowerToys/issues/51951",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives reproducible archive-generation steps and names the unredacted locations. Current main confirms both causes: raw settings-payload logging and a collector that redacts only configured file paths after recursively copying settings and logs.",
+    "evidence": [
+      "The reporter identifies the primary settings file as redacted but reports the pairing secret in a runner settings-broadcast log and a legacy backup settings file.",
+      "Current main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 logs the complete JSON payload in src/runner/settings_window.cpp::dispatch_received_json.",
+      "Current BugReportTool/Main.cpp recursively copies settings and LocalLow logs, then scrubs only paths in escapeInfo; the map includes only the primary MouseWithoutBorders\\\\settings.json path.",
+      "The package is intended for public issue attachment, so verification must use synthetic test data and inspect the completed ZIP.",
+      "Re-read the edited 2026-11-06 report: it supplies concrete runner-log and backup-file examples, while secret and identifying values are represented only by placeholders; no additional comments were present."
+    ],
+    "recommended_action": "Remove sensitive values from runner logging and make archive redaction cover all copied Mouse Without Borders settings backups and logs; add a synthetic archive regression test.",
+    "evaluated_at": "2026-11-06T01:30:36Z",
+    "source_updated_at": "2026-11-06T00:58:11Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current source and the reporter's concrete file paths establish an applicable secret-redaction fix; anonymization of other identifiers remains a separate product/privacy decision."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Mouse Without Borders secrets out of bug-report archives",
+      "root_cause": "The runner logs the complete settings IPC payload, while the bug-report tool recursively collects settings and logs but redacts the pairing key only at one exact settings-file path. The collector therefore includes sensitive values from runner logs and copied backup settings.",
+      "plan": [
+        "Stop logging raw settings IPC payloads; log only non-sensitive change metadata, or redact sensitive properties such as SecurityKey before serialization to the runner log.",
+        "Extend archive sanitization to cover every copied Mouse Without Borders settings JSON, including legacy backup folders, and scrub sensitive values from collected logs before they enter the ZIP.",
+        "Add a regression fixture with a synthetic pairing key in the primary settings file, a backup settings file, and a runner log; assert that no copy of the synthetic value survives in the final package.",
+        "Track anonymization of machine, network, user-name, and SID data as a separate privacy decision so it does not delay the secret-redaction fix."
+      ],
+      "verification": [
+        "Generate a test report from a fixture containing only a synthetic secret and verify that the final ZIP has no occurrence in any settings, backup, or log entry.",
+        "Confirm that the primary settings file remains redacted and ordinary diagnostic fields needed for triage are still present.",
+        "Run focused BugReportTool tests and inspect the extracted test archive; never validate with a real pairing key."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The issue names the exact unredacted files, and current upstream main confirms raw settings-payload logging, recursive collection, and path-specific redaction that omits backup files and logs."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Bug-report packages can include the Mouse Without Borders pairing secret in copied runner logs and legacy backup settings, even though the primary settings file is redacted.",
+    "known_information": [
+      "The reporter gives a repeatable package-generation scenario on PowerToys 0.103.3052.0 and identifies a runner settings-broadcast log and a legacy backup settings file as unredacted locations.",
+      "Current PowerToys main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 logs the full settings JSON in src/runner/settings_window.cpp::dispatch_received_json.",
+      "The bug-report tool recursively copies settings and LocalLow logs, then scrubs only explicitly listed relative paths; its redaction map covers the primary MouseWithoutBorders\\\\settings.json but not backup settings or runner logs.",
+      "The issue also reports machine names, LAN addresses, user-name paths, and an account SID in the package; no actual identifiers or secret values are retained here."
+    ],
+    "inferences": [
+      "Avoiding raw secret logging and redacting every collected copy provide complementary protection against future archives containing pairing secrets.",
+      "Anonymizing identifying metadata is a distinct product/privacy decision from preventing the pairing secret from entering the archive."
+    ],
+    "analysis": "The current source and the reporter's file-level reproduction support a concrete credential-redaction fix. Validate with synthetic data only; do not use the attached archive or a real pairing key.",
+    "initial_investigation": [
+      "Read the full issue report; its examples contain placeholders rather than actual key values.",
+      "Read current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: settings_window.cpp logs the full incoming JSON payload; BugReportTool/Main.cpp recursively copies settings and LocalLow logs and scrubs only paths in the explicit escapeInfo map.",
+      "Confirmed that the redaction map targets only the primary MouseWithoutBorders\\\\settings.json path, so copied backup files and runner logs are outside that rule.",
+      "Did not download or inspect the reporter's uploaded archive.",
+      "Re-read the edited report at its current 2026-11-06 revision; it adds no unredacted secret or identifier value to this artifact."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve pairing-secret redaction design",
+      "design": {
+        "title": "Keep Mouse Without Borders secrets out of bug-report archives"
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Sensitive data exposure",
+    "detail": "The bug-report archive can contain a Mouse Without Borders pairing secret in copied logs and backups."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Review secret-redaction design",
+    "reason": "Prevent sensitive values from entering diagnostic archives and cover every copied backup/log path."
+  }
+}

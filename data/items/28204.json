@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 28204,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "key remap is always running and not showing up on remap list",
+  "url": "https://github.com/microsoft/PowerToys/issues/28204",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:10:07Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-05T19:20:00Z",
+  "evaluated_at": "2026-11-05T19:20:00Z",
+  "source_updated_at": "2026-10-11T16:47:48Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm persistent remap state",
+    "detail": "The reported remap persisted after deletion and restart on 0.72.0, but the current configuration and later-version behavior are unknown."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says a remap remained active after deletion, restart, disabling Keyboard Manager, and closing PowerToys on version 0.72.0. The issue is open and unassigned with no comments or attachments. Related closed reports concern remaps that persisted after uninstall, but their discussions do not establish that this report is fixed or covered. Ask whether this still happens and whether the remap remains in current Keyboard Manager configuration.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.72.0 and says remapping continued after deleting the remaps, restarting, disabling Keyboard Manager, and closing the process.",
+      "The issue is open and unassigned with no comments or attachments.",
+      "Related closed issues #32167 and #32639 concern general remap persistence/uninstall scenarios but do not establish a fix for this exact report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:10:07Z"
-  }
+    "recommended_action": "Ask for the current-version result, the affected key pair, and whether another remapping tool or a Windows-level mapping is present.",
+    "evaluated_at": "2026-11-05T19:20:00Z",
+    "source_updated_at": "2026-10-11T16:47:48Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If PowerToys still applies a deleted remap after its module and process stop, the effective mapping may not be cleared or another remapping layer may be responsible. The report is too old to distinguish these causes."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clear deleted Keyboard Manager remaps from the active input path",
+      "root_cause": "The report suggests the effective mapping outlived its visible configuration, but does not establish whether Keyboard Manager retained stale state or another system-level remapper applied the key change.",
+      "plan": [
+        "Confirm current-version behavior with the exact key pair and check whether it remains in Keyboard Manager's configured list.",
+        "Determine whether the behavior remains when Keyboard Manager is disabled and PowerToys is fully closed, and whether another remapping tool is installed.",
+        "If PowerToys owns the mapping, fix cleanup or configuration synchronization at the point where the active mapping is removed.",
+        "Add regression coverage for deleting a mapping, disabling the module, restarting, and verifying the original key behavior."
+      ],
+      "verification": [
+        "Verify deleting the reported mapping removes it from the list and restores the original key behavior.",
+        "Verify disabling Keyboard Manager and closing PowerToys leaves no PowerToys remap active.",
+        "Verify unrelated mappings remain intact after deleting one mapping."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The reported persistence is clear for version 0.72.0, but current behavior and whether PowerToys or another remapper owns the active mapping are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A key remap reportedly remained active after the reporter deleted it, restarted, disabled Keyboard Manager, and closed PowerToys.",
+    "known_information": [
+      "The report lists PowerToys 0.72.0 installed from the Microsoft Store and says the application was not run as administrator.",
+      "The reported mapping remained after deleting the remaps, restarting, disabling Keyboard Manager, and closing the PowerToys process.",
+      "The issue is open and unassigned with no comments or attachments."
+    ],
+    "inferences": [
+      "The mapping may have remained in an active PowerToys state or may have been supplied by another remapping layer; the report does not distinguish them."
+    ],
+    "analysis": "Related closed reports about remaps persisting after uninstall provide context but do not prove this exact report was resolved. The key pair, current configuration, current-version result, and presence of another remapping tool are needed before attributing the behavior to PowerToys or suggesting recovery steps.",
+    "initial_investigation": [
+      "Read the live issue body, labels, state, assignees, and full discussion; there are no comments or attachments.",
+      "Checked linked issue history, including #32167 and #32639; these do not establish a covering fix for this exact scenario."
+    ],
+    "information_gaps": [
+      {
+        "information": "The affected source/target key pair and whether it is still visible in Keyboard Manager's configured list",
+        "why_needed": "This distinguishes an active configured remap from a key transformation that is no longer represented in the current settings.",
+        "how_to_collect": "State the key pair and whether it appears in the current Remap keys list after restarting.",
+        "evidence_type": "configuration_export"
+      },
+      {
+        "information": "Whether the behavior persists on current stable with Keyboard Manager disabled and PowerToys closed, and whether another remapping tool is installed",
+        "why_needed": "This helps distinguish stale PowerToys state from a Windows-level mapping or another remapper.",
+        "how_to_collect": "Retest on current stable, report the exact version, and note any other keyboard-remapping software.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-28204-confirm-persistent-remap",
+      "type": "request_info",
+      "label": "Confirm persistent remap state",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for describing that the mapping remained after deletion and restart, even with Keyboard Manager disabled and PowerToys closed. The report is from 0.72.0, so could you confirm:\n1. The source/target key pair, whether it still happens on current stable PowerToys, and whether that mapping appears in the current Remap keys list after restarting.\n2. Whether any other keyboard-remapping software is installed, and whether the behavior remains with Keyboard Manager disabled and PowerToys fully closed.\n\nThis will distinguish stale PowerToys state from another system-level remapping layer. No registry edits or diagnostic upload are needed."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the remap-cleanup fix direction"
+    }
+  ]
 }

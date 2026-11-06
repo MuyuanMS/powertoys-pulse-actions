@@ -1,33 +1,123 @@
 {
+  "schemaVersion": 5,
   "number": 40817,
+  "title": "Keyboard Manager Error Issue - Key start to error working, like miss remapping on all key, even with the that does not get remap",
+  "url": "https://github.com/microsoft/PowerToys/issues/40817",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:54:24Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:52:54.291Z",
+  "generated_at": "2026-11-05T14:52:54.291Z",
+  "evaluated_at": "2026-11-05T14:52:54.291Z",
+  "source_updated_at": "2026-10-11T16:47:57Z",
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Need a current failure example and diagnostics",
+    "detail": "The report describes intermittent keyboard-wide failures with Keyboard Manager enabled on 0.92.1; the specific failing key and fresh diagnostics are not available."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says Keyboard Manager being disabled avoids the symptom and attached a remapping image; a separate commenter reports a similar failure after several hours. The issue is from 0.92.1 and does not identify a key, expected-versus-actual output, exact recovery action, or current diagnostic archive. TourBox is a possible interaction, but there is not enough evidence to attribute the failure to it.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter lists PowerToys 0.92.1 on Windows 11 build 26100, running elevated per-user.",
+      "The reporter says the keyboard becomes abnormal while Keyboard Manager is enabled and normal when the module is disabled.",
+      "The report links an image of the remapping setup and identifies TourBox as custom software used during failures.",
+      "One commenter reports a similar intermittent failure after several hours and says restarting the PC is the most reliable workaround.",
+      "No current-build reproduction or /bugreport archive is attached."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:54:24Z"
-  }
+    "recommended_action": "Retest the reported mappings on v0.102.3001, identify one exact failed key transition, and submit a fresh /bugreport immediately after it recurs before restarting.",
+    "evaluated_at": "2026-11-05T14:52:54.291Z",
+    "source_updated_at": "2026-10-11T16:47:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A persistent remap-state or injected-input interaction could explain the broad symptom, but the exact key transition and current runtime evidence are missing."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore correct key output after intermittent remapping failure",
+      "root_cause": "Keyboard Manager runtime remap state may become inconsistent after repeated input, or an interaction with TourBox/custom input may alter the observed key sequence; neither mechanism is confirmed.",
+      "plan": [
+        "Reproduce on v0.102.3001 with the reported mappings and identify the first key whose output changes.",
+        "Correlate the occurrence time and module state with a fresh /bugreport and isolate TourBox only if the same failure recurs.",
+        "Fix the specific state or input path demonstrated by the evidence and add a regression test for the failing transition."
+      ],
+      "verification": [
+        "Run the exact failing sequence repeatedly with the reported mapping and verify the intended key output.",
+        "Verify toggling Keyboard Manager and restarting are no longer required to restore the reported behavior."
+      ],
+      "confidence": {
+        "score": 29,
+        "level": "red",
+        "rationale": "The report is intermittent and broad, and the second user may have a different setup; no current-build key-level reproduction or diagnostic evidence identifies a mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager reportedly causes intermittent keyboard-wide abnormal behavior with custom mappings enabled.",
+    "known_information": [
+      "The reporter tested PowerToys 0.92.1 on Windows 11 build 26100, elevated and per-user.",
+      "The reporter says disabling Keyboard Manager prevents the symptom.",
+      "A remapping screenshot is linked in the report, and TourBox is identified as custom software used during failures.",
+      "A separate commenter reports a similar intermittent failure after several hours and restarting the PC as a workaround."
+    ],
+    "inferences": [
+      "The symptom may involve remap/runtime state or interaction with custom input software, but the reports do not establish that the users share the same cause."
+    ],
+    "analysis": "The issue already provides the broad configuration and a linked mapping image, so requesting them again is unnecessary. The next useful evidence is one exact current-build key failure and a fresh diagnostic captured before restarting; isolating only TourBox may help distinguish a custom-input interaction.",
+    "initial_investigation": [
+      "Read the issue body and its only comment; the comment describes a similar intermittent symptom but provides no exact key or configuration.",
+      "Recorded the existing remapping image, elevated per-user install, and disclosed TourBox software rather than requesting those again.",
+      "Confirmed the report predates v0.102.3001 and has no current diagnostic archive."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "how_to_collect": "Retest using the same mapping on PowerToys v0.102.3001.",
+        "information": "Whether the symptom reproduces on v0.102.3001 with the existing mapping.",
+        "why_needed": "The only version tested in the issue is 0.92.1."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "how_to_collect": "When it recurs, note the first key pressed, intended result, actual result, and whether turning off Keyboard Manager restores that key before restarting.",
+        "information": "One exact key that fails, its intended and actual output, and whether disabling Keyboard Manager immediately restores it.",
+        "why_needed": "The current description says the whole keyboard becomes abnormal but does not identify the first failing transition needed to reproduce or trace the issue."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport before restarting PowerToys or the PC.",
+        "information": "A fresh diagnostic archive captured immediately after a current-build failure and before restarting.",
+        "why_needed": "The issue is intermittent and the current runtime state may be lost after a restart."
+      },
+      {
+        "evidence_type": "other_software",
+        "how_to_collect": "If the failure recurs, repeat the same key sequence once with only TourBox disabled, leaving the PowerToys mapping unchanged.",
+        "information": "Whether disabling only TourBox changes the same failing sequence.",
+        "why_needed": "TourBox is the only custom input tool identified in the report and may interact with the remapping path."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the proposed investigation/fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Request a current-build Keyboard Manager reproduction",
+      "comment": {
+        "target": "issue",
+        "number": 40817,
+        "body": "Thanks for the linked remapping image, the 0.92.1 and Windows build details, and noting that disabling Keyboard Manager avoids the symptom. A separate commenter also reports an intermittent failure after several hours, but neither report identifies the first key that produces an incorrect result.\n\n**Needed**\n1. Please retest the same mapping on v0.102.3001. If it recurs, report one exact key, its intended and actual output, and whether turning Keyboard Manager off immediately restores it.\n2. Before restarting PowerToys or the PC, comment /bugreport immediately after the failure.\n\n**Helpful, if available**\n- Repeat that exact sequence with only TourBox disabled.\n\nThis will distinguish a current Keyboard Manager remapping failure from an interaction with the custom input tool and preserve the runtime state needed to investigate."
+      }
+    }
+  ]
 }

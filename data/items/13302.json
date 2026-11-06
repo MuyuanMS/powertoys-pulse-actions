@@ -1,33 +1,140 @@
 {
+  "schemaVersion": 5,
   "number": 13302,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Hold Remapped Page Up key does not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/13302",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-13T19:58:56Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 6,
+  "generated_at": "2026-11-05T22:46:50Z",
+  "evaluated_at": "2026-11-05T22:46:50Z",
+  "source_updated_at": "2026-10-11T16:16:32Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Needs a current same-device repeat test",
+    "detail": "The reporter says Previous Track repeats as Page Down while Stop mapped to Page Up fires once; current source accepts both as media keys, but no current event trace explains the difference."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Compare held Stop and Previous Track remaps",
+    "reason": "A current same-device comparison will show whether the failure persists and whether Stop's source events differ from the working media-key control."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "issue-13302-compare-media-key-repeat",
+      "type": "reproduce",
+      "label": "Compare held media-key remaps",
+      "primary": true,
+      "note": "The report includes a specific ASUS laptop, two media-key remaps, and a working control; verify both on the current build before assigning a code path.",
+      "reproduce": {
+        "title": "Compare held Stop and Previous Track remaps",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer",
+        "prerequisites": [
+          "Use the reporter's ASUS ROG Strix Scar 15 G533 when available; the reporter identified its dedicated Play, Stop, Previous Track, and Next Track keys.",
+          "Use a text editor with enough content to observe repeated Page Up and Page Down movement."
+        ],
+        "setup": [
+          "Map Previous Track to Page Down and Stop to Page Up, matching the reported configuration."
+        ],
+        "steps": [
+          "Hold the physical Previous Track key and verify the mapped Page Down continues repeating.",
+          "Hold the physical Stop key and verify whether the mapped Page Up continues repeating or fires only once.",
+          "Repeat with another foreground editor and record the PowerToys version and whether both source keys generate held behavior outside their remaps."
+        ],
+        "expected_result": "Both mapped navigation keys repeat while their source keys are held, or the test identifies a distinct Stop-key event sequence that explains the one-shot behavior."
+      }
+    },
+    {
+      "id": "issue-13302-request-current-repeat-result",
+      "type": "request_info",
+      "label": "Confirm current media-key repeat behavior",
+      "comment": {
+        "body": "Thanks for confirming on v0.98.1 that Previous Track mapped to Page Down repeats while Stop mapped to Page Up does not. Could you retest those two mappings on v0.102.3001 on the same laptop and confirm whether that difference remains? If Stop still fires only once, please add `/bugreport` immediately after the reproduction."
+      }
+    },
+    {
+      "id": "issue-13302-approve-repeat-handling-design",
+      "type": "approve_design",
+      "label": "Approve media-key repeat investigation"
+    }
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The reporter provided a concrete same-device comparison: Previous Track mapped to Page Down repeats, while Stop mapped to Page Up stops after one page. The author confirmed the distinction again on v0.98.1 in April 2026. A current build and input-event comparison are still needed before choosing an implementation change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report gives the ASUS ROG Strix Scar 15 G533, PowerToys v0.45.0, and exact remaps for Previous Track, Stop, Next Track, and Play.",
+      "The reporter says Previous Track to Page Down repeats while held, but Stop to Page Up advances once and stops.",
+      "The reporter reiterated the same difference on v0.98.1 in April 2026 and noted that both keys are media keys.",
+      "Closed #34157 was explicitly closed as a duplicate of #13302 for a related remapped-key repeat symptom; it does not represent a separate fix.",
+      "Current upstream Helpers.cpp classifies both VK_MEDIA_PREV_TRACK and VK_MEDIA_STOP as media keys, but this classification does not establish that their physical repeat events are identical."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-13T19:58:56Z"
+    "recommended_action": "Retest the two remaps on the reporter's device with the current build and compare source key-down/repeat/key-up behavior before proposing a narrow repeat-handling change.",
+    "evaluated_at": "2026-11-05T22:46:50Z",
+    "source_updated_at": "2026-10-11T16:16:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the Stop key's event sequence is handled differently from the working Previous Track key, a source-specific repeat-state defect may exist. The available report does not yet show the current input events, so the candidate fix remains low-confidence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve repeat behavior for remapped media keys",
+      "root_cause": "The Stop source may produce a different key-down/repeat/key-up sequence than Previous Track, and Keyboard Manager may consequently inject only one Page Up event. The report does not establish which events reach the hook on the current build.",
+      "plan": [
+        "Reproduce both remaps on the same device and current PowerToys build, keeping Previous Track as the positive control.",
+        "Trace the low-level source events and injected target events for VK_MEDIA_STOP and VK_MEDIA_PREV_TRACK while each key is held.",
+        "If the handler drops repeats for Stop despite receiving them, correct the narrow repeat-state path without changing one-shot media actions.",
+        "Add a regression test covering repeated and one-shot media-key input sequences."
+      ],
+      "verification": [
+        "Holding Stop mapped to Page Up repeats navigation when the source provides repeat events.",
+        "Holding Previous Track mapped to Page Down continues to work.",
+        "A media key that emits only one source event does not acquire unintended repeat behavior."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The same-device control and repeated author confirmation make the symptom concrete, but no current input trace identifies whether Keyboard Manager receives repeated Stop events."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On an ASUS laptop, the Previous Track key remapped to Page Down repeats while held, but the Stop key remapped to Page Up reportedly fires only once.",
+    "known_information": [
+      "The original report identifies an ASUS ROG Strix Scar 15 G533 and PowerToys v0.45.0 running as administrator.",
+      "The reporter later confirmed the same Stop-versus-Previous-Track difference on v0.98.1.",
+      "A maintainer noted that media keys may send a single event; the reporter replied that the two tested media keys behave differently.",
+      "Closed #34157 is a duplicate of this report for a related held-remap repeat symptom.",
+      "Current upstream main at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368 lists both VK_MEDIA_STOP and VK_MEDIA_PREV_TRACK in the media-key classification."
+    ],
+    "inferences": [
+      "The Stop key may emit a different repeat sequence from Previous Track, or the remap handler may treat those source events differently; neither explanation is established without an event trace."
+    ],
+    "analysis": "The report contains a useful same-device positive control and an author-confirmed v0.98.1 result, so the historical claim should not be dismissed as a generic media-key limitation. Current source classifies both keys as media keys but does not establish their physical repeat sequence. Retest both on the current build before changing the handler.",
+    "initial_investigation": [
+      "Read the full issue body and all six comments, including the April 2026 author confirmation and the maintainer's single-event explanation.",
+      "Read closed #34157; it is explicitly a duplicate of #13302, not an independent fix.",
+      "Inspected current upstream Helpers.cpp at 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368; both media virtual keys are classified, but no per-key repeat proof is present in that helper.",
+      "Checked the issue timeline through 2026-10-11; its latest update was a product-label change after the April author comment."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Stop mapped to Page Up still fires only once on v0.102.3001 while Previous Track mapped to Page Down repeats on the same laptop",
+        "why_needed": "This distinguishes an unfixed current behavior from a historical device/driver event sequence and determines whether the hook receives repeat events to preserve.",
+        "how_to_collect": "Retest both mappings on the same device on v0.102.3001; if the Stop failure persists, add `/bugreport` immediately after reproducing.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   }
 }

@@ -1,60 +1,93 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 14556,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2024-10-31T15:23:32Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/14556",
+  "generated_at": "2026-11-05T14:06:00.027Z",
+  "evaluated_at": "2026-11-05T14:06:00.027Z",
+  "source_updated_at": "2026-10-11T16:48:18Z",
   "title": "win+v cannot work!",
-  "author": "ghost",
-  "authorAssociation": "NONE",
+  "url": "https://github.com/microsoft/PowerToys/issues/14556",
   "labels": [
     "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Priority-1"
+    "Priority-1",
+    "Product-Keyboard Manager"
   ],
   "comments": 17,
-  "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "!",
+    "label": "Current-build local reproduction warranted",
+    "detail": "The issue has a maintainer reproduction and detailed 2024 control evidence: clipboard history fails when Ctrl (Left) is remapped, while removing that mapping restores paste."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
-  },
+  "next_action": "Reproduce on a current build with the Ctrl (Left) mapping and control case, then decide how external synthetic shortcuts should interact with remapping.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "reproducible",
+    "rationale": "The issue has a maintainer-reproduced historical failure and specific follow-up reports. In 2024, a commenter isolated the failure to remapping Ctrl (Left), showed that removing that mapping restores clipboard history paste, and supplied a keyboard-event trace. Closed issue #35345 explicitly points back here as the duplicate. Current main marks Keyboard Manager’s own injected events with its private extra-info flag, but the issue does not establish how Windows Clipboard History’s generated Ctrl+V is marked or whether the behavior persists today. A maintainer can test the existing steps before a safe design is selected.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Priority-1",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "A maintainer said they reproduced the issue in 2021 and attributed it to Windows Clipboard History sending Ctrl+V through the active window while Keyboard Manager remaps the keys.",
+      "A 2024 report says remapping Ctrl (Left) causes the failure while Ctrl (Right) is OK; unbinding Ctrl (Left) restores Win+V paste.",
+      "The 2024 reporter provided a QMK event trace showing the clipboard-history selection sequence produces Esc/V key events instead of pasting.",
+      "Closed issue #35345 explicitly says it is a duplicate of #14556 and describes the same clipboard-history/left-modifier remapping conflict.",
+      "Current KeyboardEventHandlers.cpp uses Keyboard Manager-specific extra-info markers to identify its own injected input; the issue does not show whether Windows Clipboard History events carry a distinguishable marker."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2024-10-31T15:23:32Z"
+    "recommended_action": "Reproduce the Ctrl (Left) control case on a current build and verify whether Windows Clipboard History input is transformed by the remap before deciding a safe policy for externally generated shortcuts.",
+    "evaluated_at": "2026-11-05T14:06:00.027Z",
+    "source_updated_at": "2026-10-11T16:48:18Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The historical behavior is well supported, but no current-build retest confirms it still occurs and the issue does not establish a safe general rule for remapping externally generated input. Verify the control case before proposing a change that could affect other applications or accessibility tools."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Windows Clipboard History opens with Win+V but selecting an item reportedly sends literal V/Alt-menu behavior instead of pasting when Ctrl (Left) is remapped.",
+    "known_information": [
+      "The original report remaps CapsLock to Ctrl and Ctrl to CapsLock and says clipboard history selection yields V instead of pasted content.",
+      "A maintainer reproduced the issue in 2021 and noted that Clipboard History sends Ctrl+V to the active window, where Keyboard Manager remapping can intercept it.",
+      "A 2024 comment isolates the behavior to a Ctrl (Left) remap and says removing that mapping restores Win+V paste; Ctrl (Right) was reported to work.",
+      "The 2024 discussion includes a QMK trace of the clipboard-history selection event and a workaround using a shortcut remap.",
+      "Closed #35345 is explicitly marked as a duplicate of #14556.",
+      "Current source identifies Keyboard Manager-generated input using its own extra-info marker; no issue evidence establishes how Clipboard History input is tagged on current Windows."
+    ],
+    "inferences": [
+      "Windows Clipboard History may inject a shortcut that the normal remap path treats like user input, but the exact event flags and current-build behavior remain unverified.",
+      "Ignoring every injected event could affect software-generated shortcuts beyond Clipboard History, so a change needs a deliberate policy and current reproduction."
+    ],
+    "analysis": "The detailed historical reports justify a maintainer reproduction rather than another generic log request. Use the Ctrl (Left) mapping as the discriminating variable and verify the no-mapping control; do not treat #35345 as separate work or assume all injected input should bypass remapping.",
+    "initial_investigation": [
+      "Read all 17 comments, including the maintainer reproduction, 0.77 report, Ctrl (Left) control, QMK trace, and workaround.",
+      "Read closed #35345 and confirmed it explicitly redirects to #14556.",
+      "Inspected current KeyboardEventHandlers.cpp: Keyboard Manager-generated inputs are identified by its own extra-info flag; no current-build report confirms Windows Clipboard History behavior."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-14556",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 14556,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "type": "reproduce",
+      "label": "Reproduce Win+V with Ctrl remapped",
+      "note": "Historical reports provide a specific control case; verify it on a current build before designing event-filter changes.",
+      "reproduce": {
+        "title": "Verify Windows Clipboard History with Ctrl (Left) remapped",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
+        "prerequisites": [
+          "Windows Clipboard History enabled with at least one item",
+          "Keyboard Manager enabled",
+          "A text editor or other paste target"
+        ],
+        "setup": [
+          "Configure CapsLock to send Ctrl (Left) and Ctrl (Left) to send CapsLock, matching the reported setup."
+        ],
+        "steps": [
+          "Focus a paste target and press Win+V.",
+          "Select a clipboard item and observe whether its contents are pasted or literal V/Alt-menu behavior appears.",
+          "As a control, remove the Ctrl (Left) remap and repeat the same Win+V selection."
+        ],
+        "expected_result": "Selecting an item should paste its contents; the historical report says the Ctrl (Left) remap instead produces V/Alt-menu behavior, while removing the mapping restores paste."
+      }
     }
   ]
 }

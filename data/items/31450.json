@@ -1,33 +1,65 @@
 {
+  "schemaVersion": 5,
   "number": 31450,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_complete",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:04:37Z",
+  "generated_at": "2026-11-05T13:31:46Z",
+  "evaluated_at": "2026-11-05T13:31:46Z",
+  "source_updated_at": "2026-10-11T16:48:40Z",
+  "title": "windows11 系统中键盘映射有bug",
+  "url": "https://github.com/microsoft/PowerToys/issues/31450",
+  "author": "yimmr",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "⌨",
+    "label": "Expected Win+L remap behavior",
+    "detail": "The reported Ctrl/Windows key swap turns Ctrl+L into the protected Win+L shortcut. Current Keyboard Manager source intentionally rejects Win+L mappings."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "If Ctrl+L must remain an application shortcut, remove the Ctrl-to-Win direction of the swap; do not propose a product fix for the resulting Win+L behavior.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "not_actionable",
+    "rationale": "The reporter's configuration swaps Ctrl and Win, so pressing Ctrl+L after the swap produces Win+L. Current main explicitly classifies Win+L and chords containing Win+L as illegal shortcuts; this is a deliberate guard for the Windows lock-screen shortcut, not an unexplained fallback. The reporter's desired exception would require different mapping semantics than the configured global swap.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The Chinese report says the Windows and Ctrl key positions are swapped; Ctrl+L then becomes Win+L and locks the screen.",
+      "A later commenter asks to disable Win+L and says the registry DisabledHotkeys setting did not work.",
+      "At upstream main 0b1dd814878f0dfbb07787d9c3e52a2897b6f769, KeyboardManagerEditorLibrary/EditorHelpers.cpp:137-145 rejects Win+L and any chord involving it.",
+      "At the same revision, KeyboardManagerEditorTest/EditorHelpersTests.cpp:302-318 verifies Win+L and Win+L chords are rejected while Ctrl+L remains a valid shortcut."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:04:37Z"
-  }
+    "recommended_action": "Treat the lock-screen shortcut as the expected result of mapping Ctrl to Win. If the reporter wants Ctrl+L to stay unchanged, use a one-way mapping that leaves Ctrl unmapped rather than swapping Ctrl and Win.",
+    "evaluated_at": "2026-11-05T13:31:46Z",
+    "source_updated_at": "2026-10-11T16:48:40Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The configured global swap intentionally maps Ctrl+L to Win+L, and Keyboard Manager already rejects attempts to define Win+L mappings. The requested behavior is a mapping exception/configuration change, not a defect in the current shortcut handler."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter swaps the Windows and Ctrl keys and says Ctrl+L then becomes Win+L, which locks the screen.",
+    "known_information": [
+      "The issue reports PowerToys 0.78.0 from the Microsoft Store.",
+      "The reporter's mapping swaps the Windows and Ctrl key positions; Ctrl+L consequently invokes Win+L.",
+      "A later commenter asks to disable Win+L and says the registry DisabledHotkeys setting did not help.",
+      "Current main rejects Win+L and chords containing Win+L in EditorHelpers::IsShortcutIllegal; unit tests also verify Ctrl+L remains a valid shortcut."
+    ],
+    "inferences": [
+      "The reporter's expected behavior would require Ctrl+L to bypass the configured Ctrl-to-Win mapping, rather than applying the global swap consistently."
+    ],
+    "analysis": "The symptom follows directly from the requested key swap: Ctrl is configured to act as Win, so Ctrl+L becomes the Windows lock shortcut Win+L. Keyboard Manager intentionally prevents users from mapping that protected shortcut itself. If the desired behavior is to retain Ctrl+L for applications, a one-way Win-to-Ctrl mapping is the available configuration direction; no code change is supported by this report.",
+    "initial_investigation": [
+      "Read the live issue body and its Chinese follow-up; no current reproduction or issue-specific configuration change was supplied.",
+      "Inspected current upstream main at 0b1dd814878f0dfbb07787d9c3e52a2897b6f769: EditorHelpers.cpp:137-145 and EditorHelpersTests.cpp:302-318.",
+      "No linked pull request or duplicate covering this report was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

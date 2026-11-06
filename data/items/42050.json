@@ -1,33 +1,112 @@
 {
+  "schemaVersion": 5,
   "number": 42050,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard binding with copilot key fail stops working at some point randomly",
+  "url": "https://github.com/microsoft/PowerToys/issues/42050",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-20T21:54:19Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T20:57:00Z",
+  "evaluated_at": "2026-11-05T20:57:00Z",
+  "source_updated_at": "2026-10-11T16:47:16Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Investigate the intermittent stuck-Ctrl state",
+    "detail": "The author says the Copilot-key-to-Ctrl mapping eventually stops working and both physical Ctrl keys stop functioning until PowerToys is restarted; their screenshot shows several active shortcut remaps involving Ctrl and Shift."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The author reports a specific intermittent failure on PowerToys 0.94.2: after remappings involving the Copilot key and Ctrl, the remapping and both physical Ctrl keys can stop functioning until PowerToys is closed and reopened. The author distinguished this from the separate problem of merely mapping the Copilot shortcut and supplied a screenshot. That screenshot shows multiple active shortcut remaps involving Ctrl/Shift/Alt and a Win+Shift+F23-to-Ctrl (Right) mapping, so interactions among configured shortcuts remain a possible trigger. The report remains open. This supports investigating Keyboard Manager's key-state lifecycle, while the triggering event and whether the defect persists on current stable remain unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.94.2 on Windows 11, running as administrator with a per-user installation.",
+      "The author says the Copilot key is mapped to Ctrl and the behavior stops randomly after some time.",
+      "When it fails, ordinary Ctrl shortcuts using the physical left Ctrl key also fail; the author says closing PowerToys restores them, and restarting PowerToys restores the remap temporarily.",
+      "The author clarified that this is broader than a failure to remap the Copilot shortcut.",
+      "The attached Keyboard Manager screenshot shows multiple enabled shortcut remaps using Ctrl, Shift, Alt, and Win, including Win+Shift+F23 mapped to Ctrl (Right).",
+      "Issue #35808 concerns Copilot-key shortcut mapping behavior, but does not establish the same all-Ctrl failure described here.",
+      "The issue is currently open with four comments and no assignees."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-20T21:54:19Z"
-  }
+    "recommended_action": "Confirm the failure on current stable and compare the full mapping configuration with a test that leaves only the Copilot-to-Ctrl shortcut enabled; then trace any stale modifier state.",
+    "evaluated_at": "2026-11-05T20:57:00Z",
+    "source_updated_at": "2026-10-11T16:47:16Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The fact that physical Ctrl shortcuts fail while Keyboard Manager is enabled and recover when it exits points to an input-state or dispatch problem in the Keyboard Manager path. The screenshot also shows multiple interacting shortcut remaps, and the exact transition that disables or leaves Ctrl state stuck is unknown."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Ctrl input after interacting shortcut remaps fail",
+      "root_cause": "An interaction among the Copilot-key shortcut and other enabled shortcut remaps may leave a synthesized Ctrl state active or prevent subsequent Ctrl events from being dispatched after an intermittent input transition; the report does not include a trace identifying the trigger.",
+      "plan": [
+        "Reproduce the reported configuration on current stable and record when the Copilot remap and physical Ctrl keys stop working.",
+        "Compare behavior with the full screenshot configuration and with only the Win+Shift+F23-to-Ctrl (Right) shortcut enabled.",
+        "Compare the Copilot-key and physical Ctrl input paths before and after the failure, including whether key-down and key-up state remains balanced.",
+        "If Keyboard Manager retains or loses a remapped Ctrl state, correct the existing state cleanup or dispatch path so recovery does not require restarting PowerToys.",
+        "Add a regression test for continued Copilot-key remapping and ordinary Ctrl shortcuts after the triggering transition."
+      ],
+      "verification": [
+        "The Copilot-key-to-Ctrl mapping and both physical Ctrl keys continue to work after extended use and the reported failure trigger.",
+        "When the failure is induced, ordinary Ctrl shortcuts recover without closing or restarting PowerToys.",
+        "Other Copilot shortcut mappings and non-Ctrl remappings remain unchanged."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The all-Ctrl failure and PowerToys-restart workaround are directly reported, and the attached configuration shows multiple interacting remaps. The report uses 0.94.2 and does not identify which mapping or transition causes Keyboard Manager to stop handling Ctrl."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A multi-shortcut configuration involving the Copilot key and Ctrl reportedly stops working randomly, and both physical Ctrl keys then fail until PowerToys is restarted.",
+    "known_information": [
+      "The report lists PowerToys 0.94.2 on Windows 11, running elevated as a per-user installation.",
+      "The author says the Copilot key is mapped to Ctrl.",
+      "When the failure occurs, physical Ctrl shortcuts stop working too, and closing PowerToys restores them.",
+      "The author clarified that the problem is broader than the Copilot shortcut.",
+      "The attached screenshot shows multiple enabled shortcut remaps involving Ctrl, Shift, Alt, and Win, including Win+Shift+F23 mapped to Ctrl (Right).",
+      "Issue #35808 covers other Copilot-key remapping problems but does not establish the same all-Ctrl failure."
+    ],
+    "inferences": [
+      "Keyboard Manager may be retaining a synthetic Ctrl state or failing to dispatch Ctrl events after an interaction among shortcut remaps; no trace confirms which."
+    ],
+    "analysis": "The author has already clarified the difference from a basic Copilot-key remapping problem and supplied the mapping. Preserve that distinction rather than closing as a duplicate of #35808. The screenshot shows several enabled shortcuts, so current-version testing should compare the full setup with only the Copilot mapping before deciding whether the issue is an input-state defect or a configuration interaction.",
+    "initial_investigation": [
+      "Read the current issue body and all four comments, including the maintainer's question and the author's reply with the affected Ctrl behavior and mapping screenshot.",
+      "Inspected the attached screenshot: it shows multiple enabled key and shortcut mappings, including several Ctrl/Shift/Alt/Win combinations and Win+Shift+F23 mapped to Ctrl (Right).",
+      "Read issue #35808's Copilot remapping discussion; it documents shortcut and hardware-key mapping difficulties but does not establish the same failure where both physical Ctrl keys stop working."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the Copilot-key-to-Ctrl remap and both physical Ctrl keys still stop working on current stable, and whether the failure also occurs with only the Copilot shortcut enabled",
+        "why_needed": "The issue lists PowerToys 0.94.2 and the screenshot shows several interacting remaps; a current retest and minimal configuration isolate whether the state/dispatch investigation remains live.",
+        "how_to_collect": "On current stable, first test the full screenshot configuration, then leave only Win+Shift+F23 mapped to Ctrl (Right). If the failure occurs, test both physical Ctrl keys and confirm whether exiting PowerToys restores them.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the stuck-Ctrl state investigation"
+    },
+    {
+      "id": "issue-42050-confirm-current-stuck-ctrl",
+      "type": "request_info",
+      "label": "Confirm the stuck-Ctrl failure on current stable",
+      "comment": {
+        "body": "Thanks for clarifying that both physical Ctrl keys stop working too, and for sharing the mapping screenshot. It shows several active shortcut remaps involving Ctrl/Shift/Alt/Win. Since the report lists 0.94.2, could you confirm whether this still occurs on current stable with the full setup, and whether it also occurs with only Win+Shift+F23 mapped to Ctrl (Right)?"
+      }
+    }
+  ]
 }

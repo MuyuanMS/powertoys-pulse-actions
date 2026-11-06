@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 51932,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51932",
+  "title": "Keyboard Manager: remapping Right Alt + . to Play/Pause causes Ctrl to get stuck",
+  "track": "triage",
+  "stage": "triaged",
+  "owes": "us",
+  "pending_author": false,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
+  "generated_at": "2026-11-06T00:48:19Z",
+  "evaluated_at": "2026-11-06T00:48:19Z",
+  "source_updated_at": "2026-11-05T19:27:04Z",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported Right Alt shortcut enters Keyboard Manager's explicit AltGr modifier-state path, making leaked synthetic Ctrl state a plausible but unconfirmed cause. The exact keyboard layout, trigger sequence and post-reproduction diagnostics are missing, so the proposal remains low-confidence and requests discriminating evidence before a detailed design.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Guard AltGr modifier cleanup for media-key remaps",
+      "root_cause": "The AltGr state-tracking path may mishandle the key-up sequence when Right Alt plus a character is remapped to a media key, leaving the synthetic left Ctrl state active after the shortcut finishes.",
+      "plan": [
+        "Add an engine regression test for the reported Right Alt plus period to Play/Pause mapping, modeling the synthetic left-Ctrl event that Windows may send for AltGr and asserting that both Ctrl and the media key are released after the full sequence.",
+        "Trace the `isAltRightKeyInvoked` state through `KeyboardEventHandlers` and the modifier restoration helpers; change release ordering or state ownership only if the regression demonstrates a leak, while preserving physically held Ctrl and AltGr state.",
+        "Add adjacent coverage for the reported key-up ordering and for a non-AltGr Right Alt layout."
+      ],
+      "verification": [
+        "Run the focused Keyboard Manager engine shortcut-remapping tests, including the new media-key/AltGr regression.",
+        "On the reporter's keyboard layout, repeat the mapping and trigger sequence and confirm Ctrl is not held after the remapped action completes."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "Current source has dedicated AltGr state handling, but the report lacks the active keyboard layout, exact trigger/release sequence and a diagnostic capture; no failing path is yet confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Right Alt plus period shortcut mapped to Play/Pause can leave Ctrl apparently held in Keyboard Manager on v0.102.3001.",
+    "known_information": [
+      "The report specifies PowerToys v0.102.3001 and a Right Alt + period to Play/Pause remap.",
+      "The user reports that left Ctrl becomes stuck intermittently and that pressing Ctrl clears it temporarily.",
+      "The current live labels identify Keyboard Manager; the body is unchanged and there are no follow-up comments.",
+      "Current upstream KeyboardEventHandlers.cpp tracks the synthetic Ctrl component of AltGr and has distinct cleanup logic for shortcut-to-key remaps.",
+      "Existing OSLevelShortcutRemappingTests.cpp exercises AltGr followed by an LCtrl+Y to Backspace remap, but not the reported Right Alt + period to media-key sequence."
+    ],
+    "inferences": [
+      "If the active layout treats Right Alt as AltGr, Windows may send a synthetic left-Ctrl event; a key-up ordering issue in the remapped action path could account for the symptom.",
+      "The report does not yet establish that AltGr is active or that the AltGr cleanup path is the cause."
+    ],
+    "analysis": "The current code already contains explicit AltGr bookkeeping, so a generic modifier-release fix would be unsafe. The key distinction is whether the reporter's Right Alt is AltGr and which release sequence leaves Ctrl down. Request those details and a fresh bug report, then reproduce the exact media-key mapping before changing state cleanup.",
+    "initial_investigation": [
+      "Read the full issue report and searched current open and historical Keyboard Manager reports; issue 9778 is a broader older stuck-modifier report, not proof of the same mapping or cause.",
+      "Inspected current upstream `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp` at the Right-Alt/AltGr detection and shortcut-to-key cleanup paths.",
+      "Inspected `src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp`; existing AltGr tests do not cover the reported media-key mapping.",
+      "No exact reproduction, environment-specific confirmation or diagnostic evidence is available, so the proposed root cause remains a hypothesis."
+    ],
+    "information_gaps": [
+      {
+        "information": "The active Windows keyboard layout and whether Right Alt acts as AltGr",
+        "why_needed": "Windows may synthesize left Ctrl for AltGr, which determines whether the dedicated AltGr state path is involved.",
+        "how_to_collect": "Report the active keyboard layout/input language shown in Windows Settings and confirm whether Right Alt is AltGr.",
+        "evidence_type": "keyboard_layout"
+      },
+      {
+        "information": "The exact key press/release sequence, app and repeatability of the stuck-Ctrl behavior",
+        "why_needed": "The current report names the remapping but does not identify which trigger or key-up sequence leaves Ctrl active.",
+        "how_to_collect": "List the physical keys pressed and released in order, the foreground app, and whether the issue occurs on every attempt or intermittently.",
+        "evidence_type": "repro_steps"
+      },
+      {
+        "information": "A fresh PowerToys bug report captured immediately after Ctrl becomes stuck",
+        "why_needed": "The trace can show whether the remapped action and synthetic AltGr modifier were released before the state was manually cleared.",
+        "how_to_collect": "If it happens again, add `/bugreport` immediately after Ctrl sticks and before pressing Ctrl to reset it.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "A specific AltGr modifier-state cleanup path is plausible and can be tested with a narrow regression, but the root cause is not confirmed. The red-confidence proposal is paired with an exact request for the layout, sequence and diagnostic evidence needed to validate or reject it.",
+    "source_updated_at": "2026-11-05T19:27:04Z",
+    "evaluated_at": "2026-11-06T00:48:19Z",
+    "recommended_action": "Request the active keyboard layout, exact trigger/release sequence and a fresh /bugreport after reproduction; use those details to confirm or reject the AltGr cleanup hypothesis before implementation.",
+    "evidence": [
+      "The issue identifies v0.102.3001, Right Alt + period mapped to Play/Pause, and a temporarily stuck Ctrl state.",
+      "Current upstream `KeyboardEventHandlers.cpp` sets `isAltRightKeyInvoked` when Right Alt follows left Ctrl and has separate modifier restoration logic for remapped keys.",
+      "The existing AltGr regression tests do not cover the reported Right Alt plus period to media-key mapping.",
+      "Historical issue 9778 describes broad stuck-modifier symptoms but does not establish this specific trigger or a covering fix.",
+      "The latest live update added the Product-Keyboard Manager label; the issue body and zero-comment discussion are unchanged."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve targeted AltGr modifier-state investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request AltGr reproduction details",
+      "comment": {
+        "body": "Thanks for narrowing this to Right Alt + `.` mapped to Play/Pause on v0.102.3001, and for noting that pressing Ctrl temporarily clears the stuck state. Keyboard Manager has a special path for Right Alt acting as AltGr, so the missing layout and key-up sequence determine whether that path is involved. Could you share:\n\n- The Windows version/build and active keyboard layout, and whether Right Alt acts as AltGr.\n- The exact physical key press/release sequence and foreground app, plus whether Ctrl gets stuck on every attempt or intermittently.\n- If it happens again, a `/bugreport` captured immediately after Ctrl sticks and before pressing Ctrl to clear it.\n\nThis will let us reproduce the media-key mapping without guessing at the modifier state."
+      }
+    }
+  ]
+}

@@ -2,46 +2,105 @@
   "schemaVersion": 5,
   "number": 32954,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Keyboard manager: remapping numpad digits inserts wrong digits in browsers",
+  "url": "https://github.com/microsoft/PowerToys/issues/32954",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 02:38:12",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 4,
+  "generated_at": "2026-11-05T20:40:00Z",
+  "evaluated_at": "2026-11-05T20:40:00Z",
+  "source_updated_at": "2026-10-11T16:47:33Z",
+  "status": {
+    "glyph": "?",
+    "label": "Confirm Persian numeral remapping in current browsers",
+    "detail": "The reporter says numpad remaps to Persian numerals work in Notepad but produce other digits in browsers; the latest screenshot and affected-app details date from 2024."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
+    "status": "needs_information",
+    "rationale": "The report lists PowerToys 0.81.0 and remaps numpad digits to Persian numerals. The reporter says Notepad works, but Chrome/Firefox produce different Persian digits; a later comment says a browser requires Ctrl for the remapped output. The reporter supplied a screenshot of the mapping and asked for an update in November 2024, but no current-version report or maintainer response is present.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The original report lists PowerToys 0.81.0 and says the numpad mappings work in Notepad but produce other digits in browsers.",
+      "The reporter later supplied a screenshot and a specific example where numpad 5 can emit a sequence of different Persian digits.",
+      "A commenter reports a browser-only remap issue and says Ctrl is needed for the expected output; the original reporter has not confirmed whether this is the same setup.",
+      "The reporter asked for an update in November 2024; no later reply or linked fix was found."
     ],
-    "recommended_action": "Existing linked or owner-backed follow-up should move first.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 02:38:12"
+    "recommended_action": "Ask whether the exact Persian-numeral mapping still fails on current stable and which browser/version and NumLock state are involved; do not request the screenshot again.",
+    "evaluated_at": "2026-11-05T20:40:00Z",
+    "source_updated_at": "2026-10-11T16:47:33Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "status": "proposed",
+    "rationale": "If current builds still emit different digits only in browsers, Keyboard Manager may be sending a key identity or layout-dependent event that browser input handling translates differently from Notepad. Current reproduction conditions need confirmation."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Preserve Persian numpad digit mappings in browsers",
+      "root_cause": "The injected key event for a Persian numeral may be interpreted differently by browser input controls than by Notepad, potentially because of NumLock state, keyboard layout, or a browser-specific input path.",
+      "plan": [
+        "Confirm current PowerToys, browser, keyboard layout, and NumLock state using the existing mapping screenshot.",
+        "Compare a single numpad remap in Notepad and one affected browser with and without Ctrl held.",
+        "Trace the emitted key identity and layout translation for the first incorrect digit.",
+        "If Keyboard Manager emits the wrong event, correct the mapping path and add a browser/layout regression test."
+      ],
+      "verification": [
+        "Verify each numpad key produces its configured Persian numeral in Notepad and the affected browser.",
+        "Verify the mapping does not require an undocumented Ctrl modifier.",
+        "Verify NumLock and ordinary numpad digits continue to work."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "The app-dependent output and mapping screenshot are available, but current versions, NumLock state, and the reporter's confirmation of the Ctrl behavior are missing."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Keyboard manager: remapping numpad digits inserts wrong digits in browsers",
+    "summary": "Numpad-to-Persian-numeral remaps reportedly produce incorrect digits in browsers while working in Notepad.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 02:38:12",
-      "."
+      "The report lists PowerToys 0.81.0 and remaps numpad digits to Persian numerals.",
+      "The reporter says Notepad works but browsers can produce other digits.",
+      "A screenshot of the remapping is already attached.",
+      "A commenter reports a similar browser-only symptom and says Ctrl is needed, but the original reporter has not confirmed that behavior."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "Browser input handling, NumLock state, or layout translation may affect the injected key identity, but the exact factor is not established."
     ],
-    "analysis": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
+    "analysis": "The supplied screenshot and app comparison are useful; the remaining evidence should distinguish current-version behavior and layout/NumLock effects. Do not request duplicate screenshots or generic diagnostics before reproducing.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue body and four comments, including the reporter's screenshot and app-specific clarification.",
+      "No linked fix or exact covering issue was found."
     ],
-    "information_gaps": null
+    "information_gaps": [
+      {
+        "information": "Whether the Persian-numeral mapping still fails on current stable, and the affected browser/version and NumLock state",
+        "why_needed": "These details determine whether the old report persists and whether the error follows a browser input path or the keyboard's numpad state.",
+        "how_to_collect": "Reply with the current PowerToys and browser versions, active input layout, NumLock state, and whether the same number is wrong with Ctrl held.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "issue-32954-confirm-current-persian-browser-remap",
+      "type": "request_info",
+      "label": "Confirm current Persian numeral browser behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the existing mapping screenshot and the Notepad-versus-browser comparison. Could you confirm whether the remap still produces the wrong Persian digits on current stable, and share the browser/version, active input layout, NumLock state, and whether holding Ctrl changes the result?"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the browser numeral mapping investigation"
+    }
+  ]
 }

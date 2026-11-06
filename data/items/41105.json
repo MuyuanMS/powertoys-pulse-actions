@@ -1,33 +1,131 @@
 {
+  "schemaVersion": 5,
   "number": 41105,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "[KBM] Remapping Alt keys doesn't block the original press",
+  "url": "https://github.com/microsoft/PowerToys/issues/41105",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:52:32Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 2,
+  "generated_at": "2026-11-05T19:35:00Z",
+  "evaluated_at": "2026-11-05T19:35:00Z",
+  "source_updated_at": "2026-10-11T16:47:44Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Confirm the Alt remap on current release",
+    "detail": "Right Alt mapped to Win+W reportedly triggers the Game Bar instead of Widgets; the reporter says a similar closed issue does not match the documented reserved shortcuts."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter gives a concrete mapping on PowerToys 0.92.1: RAlt to Win+W opens the Game Bar overlay, consistent with Win+Alt+W rather than Win+W. They identify #19477 as similar but say the combination is not documented as OS-reserved. That closed issue records a related Alt-to-Win symptom and an OS shortcut limitation, but does not establish that this specific mapping is fixed or expected. Current behavior remains unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.92.1 on an ARM-based Windows 11 device.",
+      "The exact mapping is RAlt to Win+W; the Game Bar overlay appears instead of Widgets.",
+      "The reporter says #19477 appears similar but the combination is not listed as reserved.",
+      "The issue is open and unassigned; a PowerToys diagnostic ZIP is attached."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:52:32Z"
-  }
+    "recommended_action": "Ask whether the exact mapping still produces Win+Alt+W behavior on current stable; inspect the existing diagnostic attachment and reproduce before deciding whether this is an OS limitation or a remapping defect.",
+    "evaluated_at": "2026-11-05T19:35:00Z",
+    "source_updated_at": "2026-10-11T16:47:44Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If current builds still pass the original Alt state through when RAlt is remapped, the shortcut synthesis or suppression path may leave an unintended modifier active. The related closed report cautions that some Windows shortcuts are handled below Keyboard Manager's hooks."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent the original Alt modifier from leaking into remapped shortcuts",
+      "root_cause": "Keyboard Manager may synthesize Win+W without fully suppressing the original right-Alt state, causing Windows to observe Win+Alt+W. The reported version is old, and Windows-level shortcut handling is a countervailing possibility.",
+      "plan": [
+        "Confirm the exact mapping on current stable and inspect the existing diagnostic report.",
+        "Compare RAlt-to-Win+W with a neutral remapped trigger to determine whether the original Alt state is passed through.",
+        "Trace modifier suppression and synthesized shortcut events for the confirmed path.",
+        "If the extra Alt originates in Keyboard Manager, correct it and add a regression test for remapped Alt shortcuts."
+      ],
+      "verification": [
+        "Verify the reported trigger opens Widgets rather than the Game Bar.",
+        "Verify the original Alt modifier is not left active after the remapped shortcut.",
+        "Confirm ordinary Alt-key behavior remains unchanged when no remap is triggered."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The unexpected Win+Alt+W symptom and related issue support a modifier-leak hypothesis, but current behavior and the OS-level interception path are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remapping RAlt to Win+W reportedly opens the Game Bar overlay as if Win+Alt+W were pressed, instead of opening Widgets.",
+    "known_information": [
+      "The report lists PowerToys 0.92.1 on Windows 11 25H2 ARM and includes a diagnostic ZIP.",
+      "The configured mapping is RAlt to Win+W; the observed Game Bar behavior matches Win+Alt+W.",
+      "The reporter says #19477 is similar but argues this shortcut is not documented as reserved.",
+      "#19477 is closed and contains a maintainer explanation that some Windows shortcuts are intercepted at a lower OS level; it does not establish a fix for this exact mapping."
+    ],
+    "inferences": [
+      "The original Alt modifier may be reaching the OS with the synthesized Windows shortcut, but Windows-level interception or another mapping interaction could also explain the result."
+    ],
+    "analysis": "The existing diagnostic attachment should be reviewed before asking for logs. A current-build reproduction must distinguish a Keyboard Manager modifier leak from the OS shortcut behavior described in #19477.",
+    "initial_investigation": [
+      "Read the full report, comments, labels, state, device details, and existing diagnostic attachment.",
+      "Reviewed #19477: it documents a related Alt-to-Win/Game Bar interaction and a lower-level OS shortcut limitation, but not a fix for RAlt-to-Win+W.",
+      "No linked fix or exact covering issue was found."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether RAlt-to-Win+W still opens Game Bar instead of Widgets on current stable PowerToys",
+        "why_needed": "The report is from 0.92.1; a current-version result is needed before treating the modifier-leak hypothesis as an active defect.",
+        "how_to_collect": "On current stable, test the exact RAlt-to-Win+W mapping and report the PowerToys version and whether Widgets or Game Bar opens. The existing diagnostic ZIP is already attached; do not upload it again.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-41105-confirm-alt-shortcut-behavior",
+      "type": "request_info",
+      "label": "Confirm Alt remap behavior on current stable",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for specifying the RAlt-to-Win+W mapping and attaching a PowerToys report. Could you confirm whether it still opens Game Bar instead of Widgets on current stable PowerToys, and include the exact version? The existing diagnostic upload is already attached, so there is no need to upload it again."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve the Alt-modifier remapping investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the RAlt-to-Widgets remap",
+      "note": "Check the existing report first and compare the reported mapping against Windows-level shortcut behavior.",
+      "reproduce": {
+        "title": "Verify RAlt remapping to Widgets",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.102.3001 or newer/current stable",
+        "prerequisites": [
+          "Windows 11",
+          "Keyboard Manager enabled",
+          "Widgets and Xbox Game Bar available"
+        ],
+        "setup": [
+          "Map RAlt to Win+W in Keyboard Manager."
+        ],
+        "steps": [
+          "Press RAlt once to invoke the mapping.",
+          "Observe whether Widgets or the Game Bar overlay opens.",
+          "Check whether Alt remains active for the next keypress."
+        ],
+        "expected_result": "The mapping should invoke Win+W and open Widgets without an unintended Alt modifier."
+      }
+    }
+  ]
 }

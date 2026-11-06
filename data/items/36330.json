@@ -1,33 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 36330,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Specific key remapping not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/36330",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-01-07T08:24:37Z",
+  "assignees": [],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T15:15:59Z",
+  "evaluated_at": "2026-11-05T15:15:59Z",
+  "source_updated_at": "2026-10-11T16:47:51Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Separate trigger recognition from output",
+    "detail": "The issue identifies a Browser Favorites key and target chord, but the report does not show whether the trigger or output sequence fails."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report gives a specific Browser Favorites trigger and Left Ctrl+Left Alt+Home target, and says the target chord works when pressed physically. The attached diagnostics show settings reloads but do not identify a failed remap event. A one-key target test and current-version confirmation are needed to distinguish trigger recognition from target-chord injection; the nearby closed issues are broad remapping failures and do not establish this specific case as covered.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report lists PowerToys 0.86.0 and says the physical Browser Favorites button is remapped to Left Ctrl+Left Alt+Home.",
+      "The reporter says the remapped key does not work while pressing the target chord directly does.",
+      "The reporter supplied two diagnostic archives; the later Keyboard Manager engine log contains settings reload events but no failure tied to the trigger.",
+      "The linked broad reports #35644 and #35844 were closed in favor of #36193; they do not document this specific Browser Favorites mapping.",
+      "The issue is open and unassigned, with no unresolved question already posed to the reporter."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-01-07T08:24:37Z"
-  }
+    "recommended_action": "Confirm current-version reproduction and test the same physical trigger with a simple single-key target before deciding whether input recognition or output synthesis needs a fix.",
+    "evaluated_at": "2026-11-05T15:15:59Z",
+    "source_updated_at": "2026-10-11T16:47:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The specific media-key trigger fails with one configured chord while the chord itself works physically. The report does not distinguish an unrecognized device key event from a target-synthesis issue, so any code change must follow a one-key trigger test."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Browser Favorites remapping reliably match and emit its configured action",
+      "root_cause": "The physical Browser Favorites key may be reported by the keyboard differently from the trigger stored by the editor, or the configured modifier chord may not be emitted correctly when that trigger fires. The existing report does not distinguish these paths.",
+      "plan": [
+        "Reproduce the exact mapping on current stable PowerToys and verify whether a simple single-key target fires from the same physical Browser Favorites button.",
+        "Compare the event recognized for the trigger with the configured key and inspect whether the target chord is generated only when the trigger matches.",
+        "Correct trigger normalization or target-chord synthesis only on the path shown to fail.",
+        "Add a regression test for Browser Favorites to Left Ctrl+Left Alt+Home and a control test for the same trigger to a single key."
+      ],
+      "verification": [
+        "Verify the current-version Browser Favorites to single-key control in a plain text editor.",
+        "Verify Browser Favorites to Left Ctrl+Left Alt+Home produces the same result as pressing the target chord directly.",
+        "Confirm unrelated Keyboard Manager mappings remain functional after the test."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The report is specific about the trigger and target, but neither the physical key event nor a current diagnostic trace identifies which side of the remap fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A physical Browser Favorites button does not produce its configured Left Ctrl+Left Alt+Home remap, although that target chord works when pressed directly.",
+    "known_information": [
+      "The report lists PowerToys 0.86.0, installed through auto-update and running as administrator.",
+      "The configured trigger is the keyboard's Browser Favorites button and the target is Left Ctrl+Left Alt+Home.",
+      "The reporter says the target chord works when pressed physically, but the remapped trigger does not.",
+      "Two diagnostic archives are attached; the later engine log records settings reloads but no failure tied to this key event.",
+      "The issue is open, unassigned, and the reported behavior has not been confirmed on a current stable release."
+    ],
+    "inferences": [
+      "The device may emit a different input event from the Browser Favorites key the editor recorded.",
+      "If a single-key target works from the same trigger, the remaining defect is more likely in target-chord synthesis than input recognition."
+    ],
+    "analysis": "The supplied report is more specific than the linked generic remapping failures, but it does not isolate whether the trigger is recognized. Existing diagnostics are already present and do not capture a remap failure, so requesting another general bug report would not be useful. A current-version check and a simple target control are the smallest discriminating tests.",
+    "initial_investigation": [
+      "Read the full issue and all five comments, including the original report, maintainer response, and both diagnostic-upload comments.",
+      "Reviewed the later diagnostic archive privately; its Keyboard Manager logs show settings reloads without a remap-specific failure.",
+      "Checked the linked issues #35644 and #35844; both are broad remapping reports closed in favor of #36193, not a confirmed match for this Browser Favorites trigger.",
+      "Checked current issue assignees and labels; no maintainer assignment or outstanding author request is recorded."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the original mapping still fails on current stable PowerToys",
+        "why_needed": "The reported version is 0.86.0, so the current defect status is unknown.",
+        "how_to_collect": "Test the same mapping on v0.102.3001 or later stable and state the exact PowerToys version and result.",
+        "evidence_type": "powertoys_version"
+      },
+      {
+        "information": "Whether the same physical trigger fires a simple single-key mapping",
+        "why_needed": "This separates a trigger-recognition failure from target-chord synthesis.",
+        "how_to_collect": "Temporarily map the same Browser Favorites button to a harmless key such as A and test in Notepad; report whether it fires.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "The keyboard model, Windows layout, and trigger name shown by the editor",
+        "why_needed": "The physical key's device-specific event and displayed key identity can explain a trigger mismatch.",
+        "how_to_collect": "State the keyboard make/model, active Windows keyboard layout/language, and exact trigger name displayed in Keyboard Manager.",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36330-isolate-browser-favorites-trigger",
+      "type": "request_info",
+      "label": "Confirm Browser Favorites trigger path",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for identifying the physical Browser Favorites button, the exact target chord, and confirming that the chord works when pressed directly. The attached reports include later Keyboard Manager settings reloads but do not tell us whether the trigger or the output chord fails.\n\nPlease confirm:\n1. What PowerToys version is installed now, and does the original mapping still fail on v0.102.3001 or later stable?\n2. With the same Browser Favorites button, does a temporary mapping to a harmless single key such as `A` fire in Notepad?\n3. If the single-key mapping does not fire, what keyboard model and Windows keyboard layout/language are in use, and what exact trigger name does Keyboard Manager display? If it does fire, please say whether the original target chord still fails.\n\nThis will separate a device-trigger mismatch from a target-chord issue. No new report is needed for this check."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve Browser Favorites remapping investigation"
+    }
+  ]
 }

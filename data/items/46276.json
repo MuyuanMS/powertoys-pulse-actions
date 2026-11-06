@@ -1,33 +1,90 @@
 {
+  "schemaVersion": 5,
   "number": 46276,
+  "title": "Keyboard Manager - new editor doesn't show text from old editor",
+  "url": "https://github.com/microsoft/PowerToys/issues/46276",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-23T07:41:07Z",
+  "waiting_since": null,
+  "generated_at": "2026-11-05T15:04:41.021Z",
+  "evaluated_at": "2026-11-05T15:04:41.021Z",
+  "source_updated_at": "2026-10-11T16:47:52Z",
+  "comments": 4,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "+",
+    "label": "Actionable editor migration/display bug",
+    "detail": "The reporter confirms legacy send-text mappings still function but the new editor displays them as key/shortcut mappings without text; editing creates a duplicate Text row and toggling the legacy row disables output."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter’s follow-up narrows the defect: the old send-text mapping still works at runtime, but the new editor classifies it under Key and Shortcut and cannot display its text. Editing it creates a second Text row; disabling the original stops the mapping even though the new row looks enabled. The reporter confirms deleting and recreating mappings in the new editor avoids the issue. This is specific evidence of a legacy text-mapping migration/display bug and is sufficient for a focused design pass.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.98 and shows old/new editor screenshots.",
+      "The reporter confirms the transferred legacy Alt+N mapping still emits the intended text, but the new editor lists it under Key and Shortcut rather than Text.",
+      "Editing creates an additional Text row; disabling the transferred row disables the runtime mapping, and adding a duplicate directly is rejected.",
+      "Deleting the old mapping and creating it in the new editor works as expected."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-23T07:41:07Z"
-  }
+    "recommended_action": "Investigate the new editor migration/model classification for legacy send-text mappings and preserve their text payload and identity when editing.",
+    "evaluated_at": "2026-11-05T15:04:41.021Z",
+    "source_updated_at": "2026-10-11T16:47:52Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reporter directly confirms that legacy send-text mappings are misclassified by the new editor while still functioning at runtime; editing creates a detached duplicate."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve legacy send-text mapping type in the new editor",
+      "root_cause": "The new editor appears to deserialize legacy send-text mappings as key/shortcut entries instead of Text entries, so the text payload is hidden and edits create a second mapping rather than updating the existing one.",
+      "plan": [
+        "Trace how the new editor loads legacy send-text settings and determines the mapping category and display subtitle.",
+        "Recognize the legacy send-text discriminator and present the existing text payload in the Text category without changing the mapping identity.",
+        "Ensure edits update the original mapping rather than creating a duplicate, and retain the runtime mapping when toggling enabled state.",
+        "Add migration/editor tests for legacy send-text display, editing, duplicate detection, and enable/disable behavior."
+      ],
+      "verification": [
+        "Open a legacy send-text mapping in the new editor and verify its text and Text category are shown.",
+        "Edit the mapping and verify the existing row changes without adding a duplicate.",
+        "Toggle enabled state and verify runtime behavior follows the same row."
+      ],
+      "confidence": {
+        "score": 89,
+        "level": "green",
+        "rationale": "The reporter provides a clear old-versus-new editor comparison and confirms the legacy mapping works at runtime while new-editor classification and editing are wrong."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The new Keyboard Manager editor misclassifies legacy send-text mappings as key/shortcut entries, hides their text, and creates detached duplicates when edited.",
+    "known_information": [
+      "The reporter lists PowerToys 0.98 and includes old/new editor screenshots.",
+      "The transferred mapping still works at runtime but the new editor categorizes it as Key and Shortcut and hides the text.",
+      "Editing creates a separate Text row; disabling the original disables the runtime mapping.",
+      "Removing and recreating the mapping in the new editor works."
+    ],
+    "inferences": [
+      "Legacy and new editor mapping models likely differ in how they identify text mappings; the report does not identify the exact serialized field."
+    ],
+    "analysis": "The reporter supplied the decisive distinction between a working legacy runtime mapping and the new editor view/edit behavior. This is actionable without asking them to recreate the issue: preserve the legacy text mapping type and identity in the new editor, then cover editing and toggling.",
+    "initial_investigation": [
+      "Read the complete issue and all four comments, including the reporter follow-up that identifies the exact category mismatch.",
+      "Recorded that the legacy mapping still works, while editing creates a second Text row and toggling the original disables runtime output.",
+      "Confirmed the reporter already tested the workaround of deleting and recreating the mapping in the new editor."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the legacy text-mapping editor fix"
+    }
+  ]
 }

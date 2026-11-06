@@ -1,33 +1,91 @@
 {
+  "schemaVersion": 5,
   "number": 35965,
+  "title": "键盘管理器中的重映射快捷键无效",
+  "url": "https://github.com/microsoft/PowerToys/issues/35965",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2024-12-18T21:50:16Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-05T14:39:51.647Z",
+  "generated_at": "2026-11-05T14:39:51.647Z",
+  "evaluated_at": "2026-11-05T14:39:51.647Z",
+  "source_updated_at": "2026-10-11T16:47:59Z",
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "…",
+    "label": "Awaiting the target application's elevation details",
+    "detail": "The report says Alt+W → Ctrl+W fails on 0.86. A commenter reports that running PowerToys elevated helped with an elevated Visual Studio target, but this issue does not state either process's elevation."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The Chinese issue body says an Alt+W-to-Ctrl+W shortcut remap does not work on PowerToys 0.86. A commenter reports that the same class of failure in an administrator-run Visual Studio target worked after running PowerToys as administrator. Current Keyboard Manager code explicitly handles injection blocked by UIPI by passing the original key through, so target/process elevation is a key discriminator. Ask whether the target application and PowerToys run at the same integrity level and retest on the current stable build before proposing a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue lists PowerToys 0.86 from the Microsoft Store and says Alt+W should send Ctrl+W but does not.",
+      "A November 20, 2024 commenter says the same type of failure in administrator-run Visual Studio worked after running PowerToys as administrator.",
+      "The issue does not identify the failing target application, PowerToys elevation state, Windows build, or whether the behavior persists on a current build.",
+      "Current Keyboard Manager source handles input injection blocked by UIPI by allowing the original key through rather than swallowing it."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-18T21:50:16Z"
-  }
+    "recommended_action": "Ask for a v0.102.3001 retest and the elevation state of both PowerToys and the target application; request /bugreport if it still fails when they run at the same integrity level.",
+    "evaluated_at": "2026-11-05T14:39:51.647Z",
+    "source_updated_at": "2026-10-11T16:47:59Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "If the target application runs elevated while PowerToys does not, Windows UIPI can block synthetic input and the correct action is to align elevation rather than bypass that security boundary. The issue does not state the target or privilege levels, so confirm those conditions before treating this as a PowerToys code defect."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "An Alt+W-to-Ctrl+W shortcut remap reportedly has no effect on PowerToys 0.86; a commenter reports that matching PowerToys elevation to an elevated target application helped a similar case.",
+    "known_information": [
+      "The report lists PowerToys 0.86 from the Microsoft Store and configures Alt+W to send Ctrl+W.",
+      "A commenter says running PowerToys as administrator fixed a similar remap failure in administrator-run Visual Studio.",
+      "The issue does not identify its target application, whether that process is elevated, or whether PowerToys runs elevated.",
+      "Current Keyboard Manager source has a passthrough path when input injection is blocked by UIPI."
+    ],
+    "inferences": [
+      "The failure may occur only when PowerToys and the target process run at different integrity levels, but the commenter’s Visual Studio case is not confirmed as the reporter's environment."
+    ],
+    "analysis": "The elevation report and current UIPI handling give a concrete, testable explanation, but do not prove it applies to the author. Because UIPI is a Windows security boundary, do not propose bypassing it. Ask for the target application and privilege levels, and retest on v0.102.3001; a same-integrity failure would justify a fresh code investigation.",
+    "initial_investigation": [
+      "Read the Chinese issue body and both comments; the author's Alt+W-to-Ctrl+W setup is specific, while the administrator-elevation observation comes from a different commenter.",
+      "Inspected the current Keyboard Manager injection-failure path and confirmed UIPI-blocked input is passed through rather than silently swallowed.",
+      "Confirmed the issue has no current-build test, target application, or elevation details."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "install_scope",
+        "information": "Whether the target application is running as administrator, whether PowerToys is running as administrator under the same Windows user, and whether Alt+W-to-Ctrl+W still fails on v0.102.3001.",
+        "why_needed": "A privilege mismatch can cause Windows UIPI to block injected Ctrl+W; this must be ruled out before treating the behavior as a Keyboard Manager defect.",
+        "how_to_collect": "On v0.102.3001, test the same mapping in the affected application and state whether both PowerToys and the target process are elevated under the same Windows account."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive if the mapping still fails when PowerToys and the target run at the same integrity level.",
+        "why_needed": "A same-integrity failure would distinguish a remap defect from Windows UIPI blocking input.",
+        "how_to_collect": "Immediately after reproducing under matching elevation, add a comment containing /bugreport."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the elevation-boundary investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm PowerToys and target elevation",
+      "comment": {
+        "target": "issue",
+        "number": 35965,
+        "body": "Thanks for providing the Alt+W → Ctrl+W mapping. Another commenter reported that a similar remap in administrator-run Visual Studio worked after running PowerToys as administrator too. Could you please confirm on the latest stable v0.102.3001:\n1. Which target application fails, and whether it is running as administrator.\n2. Whether PowerToys is also running as administrator under the same Windows account, and whether the mapping still fails when both run at the same integrity level.\n3. If it still fails at matching elevation, comment `/bugreport` immediately after reproducing.\nThis will distinguish Windows UIPI blocking input injection from an ordinary shortcut-remapping failure."
+      }
+    }
+  ]
 }

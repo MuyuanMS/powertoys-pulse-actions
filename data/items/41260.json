@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 41260,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "actionable_design",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-29T08:50:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "author": "jiripolasek",
+  "generated_at": "2026-11-06T00:23:05Z",
+  "evaluated_at": "2026-11-06T00:23:05Z",
+  "source_updated_at": "2026-10-07T09:36:03Z",
+  "title": "CmdPal: Extensions created from the default template hang on OS-initiated shutdown",
+  "url": "https://github.com/microsoft/PowerToys/issues/41260",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette",
+    "CmdPal-Inbox Extensions",
+    "CmdPal-API Helpers",
+    "CmdPal-3p Extensions"
+  ],
+  "assignees": [
+    "MuyuanMS",
+    "Copilot"
+  ],
+  "comments": 1,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The latest report says telemetry and six dumps show the main thread blocked in extensionDisposedEvent.WaitOne while other threads are idle. The current template waits on that event in Program.cs, and TemplateCmdPalExtension.Dispose signals it; OS-initiated shutdown does not invoke that extension disposal path. A hidden top-level window on an STA thread can receive session shutdown messages and signal the wait, but its message-pump and thread-join behavior needs a focused lifecycle regression test.",
     "evidence": [
-      "The issue is assigned to MuyuanMS, Copilot, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The latest issue comment reports telemetry and six dumps showing the main thread blocked in extensionDisposedEvent.WaitOne while other threads are idle.",
+      "The extension template waits on extensionDisposedEvent in Program.cs, while TemplateCmdPalExtension.Dispose signals the event.",
+      "OS-initiated shutdown does not trigger the same extension Dispose path, leaving the wait without a shutdown signal.",
+      "The prior AppLifeMonitor proposal was not merged; the merged runner/module shutdown fixes do not cover the CmdPal extension template."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-29T08:50:32Z"
-  }
+    "recommended_action": "Add a template-level OS-session shutdown notification path that signals the extension lifetime event and joins its monitor thread, then test both normal unload and OS-initiated shutdown.",
+    "evaluated_at": "2026-11-06T00:23:05Z",
+    "source_updated_at": "2026-10-07T09:36:03Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The blocked wait and missing OS-shutdown signal are supported by the report and current template lifecycle. A dedicated shutdown-message path is a concrete design, with STA message-pump and orderly thread-join behavior requiring verification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Signal CmdPal extension shutdown on OS session end",
+      "root_cause": "The template’s main thread waits for extensionDisposedEvent, but that event is signaled only by TemplateCmdPalExtension.Dispose. OS-initiated shutdown does not invoke that disposal path, so the extension can remain blocked in the wait while the host is shutting down.",
+      "plan": [
+        "Add an STA-thread lifetime monitor with a hidden top-level window that receives Windows session shutdown/end-session messages while the extension host is running.",
+        "On confirmed session end, signal the same extension lifetime event so the blocked wait can exit; keep the existing normal Dispose signal idempotent.",
+        "Ensure the lifetime-monitor message loop is stopped and its thread is joined during normal disposal, and avoid introducing a second process-lifetime wait.",
+        "Add a template lifecycle regression test that covers normal host unload and an OS-session-end notification, including repeated shutdown/disposal signals."
+      ],
+      "verification": [
+        "Run a template extension through normal host unload and verify Dispose releases the wait and the lifetime-monitor thread exits.",
+        "Deliver a controlled session-end notification to the hidden window and verify the extension exits without remaining blocked in extensionDisposedEvent.WaitOne.",
+        "Exercise repeated or racing Dispose/session-end signals and verify shutdown remains idempotent and the monitor thread is joined."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "The wait and Dispose signal are confirmed in the template, and the issue reports the blocked main thread; a focused test must verify the shutdown notification and STA message-loop integration."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CmdPal extensions generated from the default template can remain blocked in a disposal-event wait during OS-initiated shutdown.",
+    "known_information": [
+      "The latest issue comment reports telemetry and six dumps showing the main thread waiting in extensionDisposedEvent.WaitOne while other threads are idle.",
+      "The template’s Program.cs waits on extensionDisposedEvent, and TemplateCmdPalExtension.Dispose signals it.",
+      "The OS-initiated shutdown scenario does not invoke the same extension disposal path reported for normal unload.",
+      "The earlier AppLifeMonitor proposal was not merged, and the merged runner/module shutdown changes do not cover this extension template."
+    ],
+    "inferences": [
+      "A top-level window receiving session-end notifications could release the blocked wait, but the STA message loop and host lifecycle integration need validation.",
+      "Normal manual unload may already release the event correctly, so the missing signal may be specific to OS session shutdown."
+    ],
+    "analysis": "The evidence narrows the defect to a template lifetime wait that is released by extension disposal but not by OS-initiated shutdown. Add an explicit session-end signal path and ensure its thread is shut down cleanly; compare normal unload with the failing OS path to validate the lifecycle boundary.",
+    "initial_investigation": [
+      "Reviewed the refreshed issue comment describing telemetry and six dumps with the main thread blocked in the disposal-event wait.",
+      "Inspected Program.cs and TemplateCmdPalExtension.Dispose in the current extension template; the wait and event signal are on the normal disposal path.",
+      "Checked the earlier unmerged AppLifeMonitor proposal and the merged runner/module shutdown changes; they do not implement shutdown handling in the CmdPal template."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether TemplateCmdPalExtension.Dispose is invoked during the OS-initiated shutdown hang, compared with manually unloading the same extension.",
+        "why_needed": "This comparison confirms whether the missing event signal is limited to the OS session-end path rather than a general disposal failure.",
+        "how_to_collect": "Compare one manual extension unload with the OS-initiated shutdown scenario and note whether Dispose is reached; include the PowerToys and template-extension versions.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve OS-session shutdown signaling design",
+      "design": {
+        "title": "Signal CmdPal extension shutdown on OS session end"
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm Dispose behavior during shutdown",
+      "comment": {
+        "body": "Thanks for sharing that the dumps show the main thread blocked in extensionDisposedEvent.WaitOne. The template signals that event from TemplateCmdPalExtension.Dispose, so the remaining question is whether OS-initiated shutdown skips that disposal callback. Could you compare the same extension during a manual unload and the OS-shutdown scenario, and confirm whether Dispose is reached in each? Please include the PowerToys and template-extension versions."
+      }
+    }
+  ]
 }

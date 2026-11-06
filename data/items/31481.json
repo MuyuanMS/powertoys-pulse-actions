@@ -1,97 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 31481,
   "kind": "issue",
   "track": "fix",
-  "stage": "reproduction_ready",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-13T13:10:24Z",
-  "evaluated_at": "2026-09-13T13:10:24Z",
-  "source_updated_at": "2024-02-19T21:15:10Z",
+  "generated_at": "2026-11-05T13:31:46Z",
+  "evaluated_at": "2026-11-05T13:31:46Z",
+  "source_updated_at": "2026-10-11T16:48:39Z",
+  "title": "Keyboard Manager remaps do not work if Casting to a monitor and allow input from this device checked",
+  "url": "https://github.com/microsoft/PowerToys/issues/31481",
+  "author": "rabbibotton",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 0,
   "status": {
-    "glyph": "🧪",
-    "label": "Ready for maintainer reproduction",
-    "detail": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change."
+    "glyph": "⌨",
+    "label": "Cast input path needs current reproduction",
+    "detail": "The report supplies a Cast/Allow-input setting and exact remap, but does not establish whether the local keyboard or cast-device input is bypassing Keyboard Manager."
   },
-  "next_action": {
-    "glyph": "➡️",
-    "label": "Run the documented scenario on a current build before selecting a fix design.",
-    "reason": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted."
+  "next_action": "Reproduce the reported Win+Ctrl+F24-to-Win+F11 mapping with Cast input enabled and isolate local keyboard input from cast-device input before selecting a code change.",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report identifies Windows casting with 'Allow input from this device' enabled, a specific Win+Ctrl+F24-to-Win+F11 remap, and the observed result that the remap works again after disabling the Cast input option. The issue is old and has no follow-up comments, so a current-build reproduction must first isolate whether local physical input is bypassing or being rerouted before a PowerToys change is designed.",
+    "evidence": [
+      "The issue reports PowerToys 0.78.0 installed from GitHub and running as administrator.",
+      "The reporter maps Win+Ctrl+F24 to Win+F11, casts to another screen, and enables 'Allow mouse, etc.'; the remap stops working until that option is deselected.",
+      "The reporter expects remapping to continue on both machines or at least on the original PC keyboard.",
+      "The issue has no comments; the latest upstream update changed metadata rather than adding a new reproduction."
+    ],
+    "recommended_action": "Reproduce with a current build while separately testing the original PC keyboard and the cast device's input, then trace which input reaches the local Keyboard Manager hook.",
+    "evaluated_at": "2026-11-05T13:31:46Z",
+    "source_updated_at": "2026-10-11T16:48:39Z"
   },
-  "actions": [
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Windows Cast input-routing change may be preventing the local Keyboard Manager remap path from observing the source chord, but the report does not yet isolate the device or event path. This hypothesis needs maintainer reproduction before code work."
+  },
+  "proposed_fixes": [
     {
-      "id": "reproduce-31481",
-      "type": "reproduce",
-      "label": "Reproduce Keyboard Manager remaps do not work if Casting to a monitor and allow…",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "Keyboard Manager",
-        "version_requirements": "0.78.0",
-        "prerequisites": [
-          "Use the reported configuration for Keyboard Manager.",
-          "Compare the reported GitHub installation with a clean current installation if practical."
-        ],
-        "steps": [
-          "Cast to another screen and check Allow mouse, etc.",
-          "I am remapping win ctl f24 to win f11 to allow keyboard disable of touchpad."
-        ],
-        "expected_result": "The keys continue to remap on both machines or at least the original pc keyboard"
+      "title": "Preserve local remapping when Cast input sharing is enabled",
+      "root_cause": "Hypothesis: enabling Cast's 'Allow input from this device' changes or redirects keyboard input so the original PC's Win+Ctrl+F24 chord no longer reaches the same Keyboard Manager hook path. The current issue does not establish whether this affects the local keyboard, only cast-device input, or both.",
+      "plan": [
+        "Reproduce on a current PowerToys build with the reported Win+Ctrl+F24-to-Win+F11 mapping and Cast input-sharing option enabled.",
+        "Test the original PC keyboard and the cast device's input separately, then repeat with the Cast option disabled as a control.",
+        "Trace the source chord at Keyboard Manager's input hook to determine whether Windows routes it away from the local process or the remap handler rejects it.",
+        "If a local physical event is incorrectly dropped by Keyboard Manager, make the smallest hook-path correction and add a regression test for Cast enabled/disabled; if Windows intentionally routes it elsewhere, document the supported behavior instead of adding a bypass."
+      ],
+      "verification": [
+        "The original PC keyboard's Win+Ctrl+F24 remaps to Win+F11 with Cast and input sharing enabled, if the local keyboard remains routed to the PC.",
+        "The cast-device input's behavior is documented separately from the original PC keyboard.",
+        "The same mapping continues to work with Cast disabled and does not change unrelated input routing."
+      ],
+      "confidence": {
+        "score": 37,
+        "level": "red",
+        "rationale": "The report is specific about the setting and remap, but there is no current-build reproduction or evidence identifying whether Windows or Keyboard Manager drops the event."
       }
     }
   ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change.",
-    "evidence": [
-      "The report covers PowerToys 0.78.0, installed via GitHub, affecting Keyboard Manager.",
-      "Reported reproduction: Cast to another screen and check Allow mouse, etc. I am remapping win ctl f24 to win f11 to allow keyboard disable of touchpad.",
-      "Reported result: The key remap does not work until the option is deselected for the screen cast.",
-      "Expected result: The keys continue to remap on both machines or at least the original pc keyboard",
-      "Current labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage."
-    ],
-    "recommended_action": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted.",
-    "evaluated_at": "2026-09-13T13:10:24Z",
-    "source_updated_at": "2024-02-19T21:15:10Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A separate code fix is not appropriate at this stage because the issue is waiting, handled, external or by-design, or still requires maintainer reproduction.",
-    "existing_fix_urls": []
-  },
   "issue_context": {
-    "summary": "The Keyboard Manager report describes the key remap does not work until the option is deselected for the screen cast.",
+    "summary": "A Win+Ctrl+F24-to-Win+F11 remap reportedly stops working when casting to another screen with input sharing enabled.",
     "known_information": [
-      "The report covers PowerToys 0.78.0, installed via GitHub, affecting Keyboard Manager.",
-      "Reported reproduction: Cast to another screen and check Allow mouse, etc. I am remapping win ctl f24 to win f11 to allow keyboard disable of touchpad.",
-      "Reported result: The key remap does not work until the option is deselected for the screen cast.",
-      "Expected result: The keys continue to remap on both machines or at least the original pc keyboard",
-      "Current labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage."
+      "The report lists PowerToys 0.78.0 installed from GitHub and running as administrator.",
+      "The exact remap is Win+Ctrl+F24 to Win+F11.",
+      "The remap reportedly works again after deselecting the Cast option labeled 'Allow mouse, etc.'",
+      "The reporter wants the remap to continue on both machines or at least on the original PC keyboard.",
+      "There are no issue comments that further distinguish local physical keyboard input from cast-device input."
     ],
     "inferences": [
-      "A PowerToys code defect may be present, but the exact failing branch remains unconfirmed until current-build reproduction."
+      "The Cast input-sharing option may change which system receives the input event or how it reaches Keyboard Manager.",
+      "A local Keyboard Manager defect is possible only if the original PC's physical keyboard event is still routed to the local Windows input path and is then dropped."
     ],
-    "analysis": "The live body, complete comment history, labels, assignees, and linked-work timeline were reviewed. The issue is specific enough for local verification, but no confirmed fix or sufficiently narrow root cause is present.",
+    "analysis": "The issue has a focused setting and a known-good control state, but it does not specify which physical device generates the failing key event or whether input is being routed to the cast target. A current reproduction should compare the original PC keyboard and cast-device input before a code fix is selected. Do not request generic logs when this controlled test can identify the missing distinction.",
     "initial_investigation": [
-      "Reviewed the complete live issue body, 0 public comment(s), current labels, assignees, and timeline through 2024-02-19T21:15:10Z.",
-      "No linked issue or pull request in the live timeline establishes a current fix or duplicate.",
-      "No current fix, active assignee, or confirmed duplicate was found; maintainer reproduction is the next discriminating step."
+      "Read the live issue body, labels, assignees, and comments; there are no comments, assignees, or direct linked pull requests.",
+      "Reviewed the prior reproduction artifact and refreshed its version requirement and input-source distinction; no source-level cause is established."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the failed remap comes from the original PC keyboard, the cast device, or both while Cast input sharing is enabled.",
+        "why_needed": "The input source determines whether the failure is within Keyboard Manager's local hook or a Windows Cast routing behavior.",
+        "how_to_collect": "Repeat the exact mapping with each input device separately while Cast input sharing is enabled, then compare with the option disabled."
+      }
+    ]
   },
-  "url": "https://github.com/microsoft/PowerToys/issues/31481",
-  "title": "Keyboard Manager remaps do not work if Casting to a monitor and allow input from this device checked",
-  "author": "rabbibotton",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "comments": 0,
-  "summary": "The Keyboard Manager report describes the key remap does not work until the option is deselected for the screen cast.",
-  "proposed_fixes": []
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Cast input-path design",
+      "note": "Select a code change only if reproduction confirms the original PC keyboard event is incorrectly dropped by Keyboard Manager."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce remapping during Cast input sharing",
+      "note": "The issue provides a specific mapping and a Cast setting toggle; compare local and cast-device input without requesting a diagnostic archive.",
+      "reproduce": {
+        "title": "Test Keyboard Manager while casting with input enabled",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.78.0 or newer; record the exact build",
+        "prerequisites": [
+          "Windows PC with Keyboard Manager enabled",
+          "A second screen/device available through Windows Cast",
+          "The Cast option 'Allow input from this device'"
+        ],
+        "setup": [
+          "Configure Win+Ctrl+F24 to Win+F11."
+        ],
+        "steps": [
+          "Cast to the second screen and enable 'Allow input from this device'.",
+          "Trigger Win+Ctrl+F24 from the original PC keyboard and record whether Win+F11 is sent.",
+          "If possible, repeat using input from the cast device, keeping the source distinct.",
+          "Disable 'Allow input from this device' and repeat the original-PC keyboard test."
+        ],
+        "expected_result": "The original PC keyboard's mapping continues to work when Cast input sharing is enabled, unless Windows intentionally routes that input to the cast target; the two input sources' behavior is clearly distinguished.",
+        "setup_prompt": "On a Windows PC, configure Win+Ctrl+F24 to Win+F11, cast to another screen, and compare the original PC keyboard with cast-device input while toggling 'Allow input from this device'."
+      }
+    }
+  ]
 }

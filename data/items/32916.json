@@ -2,124 +2,119 @@
   "schemaVersion": 5,
   "number": 32916,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-07-29T02:13:24Z",
+  "repository": "microsoft/PowerToys",
   "title": "Win-Key+<any-key> opens start menu when released in wrong order",
   "url": "https://github.com/microsoft/PowerToys/issues/32916",
-  "labels": [
-    "Issue-Bug"
-  ],
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
   "assignees": [],
-  "comments": 0,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 5,
+  "generated_at": "2026-11-05T20:25:00Z",
+  "evaluated_at": "2026-11-05T20:25:00Z",
+  "source_updated_at": "2026-10-11T16:47:34Z",
   "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
+    "glyph": "?",
+    "label": "Fix the unmatched Windows-key release after shortcut remapping",
+    "detail": "A user reproduced the Start menu opening when Win is released before the mapped key in a Win+O URI remap on PowerToys 0.100.2; another issue confirms the same release-order symptom."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "Win-modifier shortcut remaps still open Start when Win is released first after the action fires.",
+    "rationale": "The original report says a Win-key shortcut can run its action but still opens Start if Win is released first. A commenter reproduced this on PowerToys 0.100.2 by mapping Win+O to open a URI, then releasing Win before O. Issue #38359 reports the same behavior and explicitly says it is the same issue; that issue is closed. Closed issue #12666 discusses key-up remapping as an enhancement but has a different configuration and does not resolve this reproduced shortcut-release bug.",
     "evidence": [
-      "Win-modifier shortcut remaps still open Start when Win is released first after the action fires.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "The report says releasing Win before the mapped key opens the Start menu after a Win-key shortcut.",
+      "A July 29, 2026 commenter reproduced the problem on PowerToys 0.100.2 with Win+O opening a URI and Win released before O.",
+      "Closed issue #38359 reports the same start-menu-on-release-order behavior and a commenter says it is the same issue.",
+      "Closed issue #12666 documents a separate request to apply key remapping on key-up; no linked fix for the current behavior was found."
     ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-07-29T02:13:24Z"
+    "recommended_action": "Fix release handling so a consumed Win-key remap does not leave Windows with an unmatched Win-key release that invokes Start.",
+    "evaluated_at": "2026-11-05T20:25:00Z",
+    "source_updated_at": "2026-10-11T16:47:34Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
+    "rationale": "The current-version reproduction isolates a key-release-order bug: the mapped action executes, but releasing Win first still triggers the shell. The remap engine likely needs to track and suppress the original Win release after it has consumed the chord."
   },
   "proposed_fixes": [
     {
-      "title": "Targeted fix for Win-Key+<any-key> opens start menu when released in wrong order",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "title": "Suppress the shell action for a consumed Win-key shortcut",
+      "root_cause": "When Win+key is remapped to an action and Win is released before the other key, the engine appears to let the original Win release reach Windows after consuming the shortcut, so Start opens unexpectedly.",
       "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
+        "Trace shortcut recognition and key-up handling for Win+key actions, including Run Program and Open URI.",
+        "Track when the Win modifier belongs to a consumed remapped chord and suppress the corresponding shell-triggering release.",
+        "Ensure state is cleared on all key-up orders, cancellation, focus change, and remap disable.",
+        "Add regression tests for both release orders and for the original Win key used alone."
       ],
       "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
+        "Verify Win+O mapped to Open URI runs the action without opening Start when Win is released first.",
+        "Verify the same mapping works when O is released first.",
+        "Verify a standalone Win press still opens Start and no modifier state remains stuck.",
+        "Verify Run Program and other shortcut actions do not regress."
       ],
       "confidence": {
-        "score": 70,
+        "score": 80,
         "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+        "rationale": "A current-version reproduction confirms the release-order trigger and unwanted shell action, but the exact input-event state transition still needs code-level confirmation."
       }
     }
   ],
   "issue_context": {
-    "summary": "Open PowerToys report: Win-Key+<any-key> opens start menu when released in wrong order",
+    "summary": "Win-key shortcuts execute their mapped action but may also open Start when Win is released before the other chord key.",
     "known_information": [
-      "Title: Win-Key+<any-key> opens start menu when released in wrong order",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report describes the Start menu opening when Win is released first.",
+      "A user reproduced the issue on PowerToys 0.100.2 with Win+O mapped to Open URI.",
+      "Closed issue #38359 reports the same release-order behavior.",
+      "Issue #12666 is related to key-up remapping but is a separate enhancement request and does not establish a fix."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "The remap engine may be forwarding an unmatched Win-key release after consuming the chord; this needs confirmation in the input path."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The latest reproduction isolates key release order and shows the mapped action itself succeeds. Correctly suppressing the corresponding shell-triggering release is a focused fix candidate, with standalone Win behavior preserved.",
     "initial_investigation": [
-      "Read metadata and labels for #32916.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the original issue and all comments, including the current-version reproduction and the Run Program versus Open URI discussion.",
+      "Reviewed #38359 and #12666; #38359 has the same behavior, while #12666 is a separate closed key-up feature discussion."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "Whether the shortcut handler forwards the original Win key-up event after consuming the mapped chord",
+        "why_needed": "This confirms the proposed correction point and ensures the change does not suppress standalone Win behavior.",
+        "how_to_collect": "Reproduce Win+O mapped to Open URI on current stable with both key release orders and trace the physical and injected Win key-up events.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   },
   "actions": [
     {
-      "id": "design-32916",
-      "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+      "type": "reproduce",
+      "label": "Reproduce Win-key release-order Start menu",
+      "reproduce": {
+        "title": "Test Win+O release order",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer",
+        "prerequisites": [
+          "Keyboard Manager enabled"
+        ],
+        "setup": [
+          "Map Win+O to Open URI using http://example.com."
+        ],
+        "steps": [
+          "Minimize all windows.",
+          "Press Win, then O.",
+          "Release Win before O.",
+          "Repeat while releasing O before Win."
+        ],
+        "expected_result": "The URI opens and the Start menu does not appear for either release order; pressing Win alone still opens Start."
+      }
     },
     {
-      "type": "reproduce",
-      "label": "Reproduce Win-Key+<any-key> opens start menu ",
-      "reproduce": {
-        "title": "Local reproduction for #32916",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
-        "prerequisites": [
-          "PowerToys running"
-        ],
-        "setup": [],
-        "steps": [
-          "Launch PowerToys and open the affected module for #32916.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
-        ],
-        "expected_result": "Module functions without error or unexpected termination."
-      }
+      "type": "approve_design",
+      "label": "Approve the Win-key release handling fix"
     }
   ]
 }
