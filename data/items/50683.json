@@ -1,110 +1,20 @@
 {
-  "schemaVersion": 5,
   "number": 50683,
   "kind": "pr",
-  "title": "CropAndLock: Add maximized-window reparent regression coverage",
+  "title": "[CropAndLock] Keep client area when reparenting",
   "url": "https://github.com/microsoft/PowerToys/pull/50683",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-28T07:51:47Z",
-  "evaluated_at": "2026-09-28T07:51:47Z",
-  "source_updated_at": "2026-09-20T21:16:59Z",
-  "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
-  "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "crop-client-frame-refresh",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Refresh child frame metrics after changing the style",
-      "confidence": {
-        "score": 91,
-        "rationale": "The method measures the child client rectangle immediately after adding WS_CHILD but does not request a frame recalculation until after those measurements. The exact literal replacement builds."
-      },
-      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
-      "line": 146,
-      "side": "RIGHT",
-      "in_diff": true,
-      "selection_group": {
-        "id": "crop-reparent-geometry",
-        "title": "Correct CropAndLock reparent geometry",
-        "position": 1,
-        "total": 2,
-        "atomic": true
-      },
-      "body": "### (1/2) Refresh child frame metrics after changing the style\n\n**Severity:** `medium`\n\nThe next `GetWindowRect`/`GetClientRect` calls calculate the resized child frame immediately after `WS_CHILD` is added. Force Windows to recalculate the frame before measuring those dimensions; otherwise the non-client difference used to preserve the original client size is computed from stale top-level frame metrics. Apply both grouped geometry suggestions together.\n\n```suggestion\n    SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);\n    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, 0, 0, 0, 0,\n                                  SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE));\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "crop-client-offset-conversion",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Undo the client-origin offset before positioning the crop",
-      "confidence": {
-        "score": 90,
-        "rationale": "The function already adds diffX/diffY to cropRect before deriving adjustedCropRect, then reuses those adjusted coordinates as the final child offset. The exact two-line replacement removes that duplicate offset and builds."
-      },
-      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
-      "start_line": 176,
-      "line": 177,
-      "side": "RIGHT",
-      "in_diff": true,
-      "selection_group": {
-        "id": "crop-reparent-geometry",
-        "title": "Correct CropAndLock reparent geometry",
-        "position": 2,
-        "total": 2,
-        "atomic": true
-      },
-      "body": "### (2/2) Undo the client-origin offset before positioning the crop\n\n**Severity:** `medium`\n\nEarlier in `CropAndLock`, the maximized-window path adds `diffX`/`diffY` to `cropRect` when converting the selected client-area coordinates. These final offsets use that already-adjusted rectangle directly, applying the origin shift a second time and displacing the cropped content. Subtract the conversion once when deriving the final child position. Apply both grouped geometry suggestions together.\n\n```suggestion\n    auto x = -(cropRect.left - diffX + (clientOrigin.x - finalWindowRect.left));\n    auto y = -(cropRect.top - diffY + (clientOrigin.y - finalWindowRect.top));\n```",
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50683",
-      "type": "post_review",
-      "label": "Post two atomic CropAndLock geometry suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50683,
-        "event": "COMMENT",
-        "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d"
-      },
-      "note": "Draft only. Both inline suggestions address the same reparent-geometry defect and must be selected and applied together. No upstream write has occurred."
-    }
-  ],
-  "freshness": {},
-  "validation": {
-    "suggestion_patch": {
-      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "crop-client-frame-refresh",
-        "crop-client-offset-conversion"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
-      "result": "passed",
-      "checked_comment_ids": [
-        "crop-client-frame-refresh",
-        "crop-client-offset-conversion"
-      ],
-      "files": [
-        {
-          "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
-    }
+  "generated_at": "2026-11-06T13:40:51.8204933Z",
+  "evaluated_at": "2026-11-06T13:40:51.8204933Z",
+  "source_updated_at": "11/06/2026 07:36:01",
+  "head_sha": "a158a8deda8535f979a906932d670818bc1cfcab",
+  "proposed_comments": [],
+  "actions": [],
+  "freshness": {
+    "queued_at": "2026-11-06T13:40:51.8204933Z",
+    "checkpoint_at": "2026-11-06T13:40:51.8204933Z"
   }
 }

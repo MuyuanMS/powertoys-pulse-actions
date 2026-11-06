@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 5,
+  "number": 51954,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "fix(bugreport): redact Mouse Without Borders pairing keys",
+  "url": "https://github.com/microsoft/PowerToys/pull/51954",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-06T14:33:16.4933058Z",
+  "evaluated_at": "2026-11-06T14:33:16.4933058Z",
+  "source_updated_at": "2026-11-06T12:15:40Z",
+  "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "kind": "inline",
+      "path": "tools/BugReportTool/BugReportTool/Main.cpp",
+      "title": "Initialize WinRT before BugReportTool uses it",
+      "id": "bugreport-winrt-apartment",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 406,
+      "severity": "medium",
+      "confidence": {
+        "score": 93,
+        "rationale": "The pinned call graph reaches WinRT globalization before sanitization, and the new sanitizer uses WinRT JSON without an apartment initialized in wmain."
+      },
+      "body": "### Initialize WinRT before BugReportTool uses it\n\n**Severity:** `medium`\n\n**Affected code:** `ReportWindowsSettings` and the `diagnostic_privacy::sanitize_report` call in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** `wmain` calls `ReportWindowsSettings` before sanitization, and that function uses C++/WinRT globalization APIs. The pinned `wmain` path does not initialize a WinRT apartment, so those calls can fail before the report is packaged; the sanitizer's WinRT JSON parsing also depends on the same thread's apartment.\n\n**Why it matters:** A report that should be collected and sanitized can instead stop before a ZIP is produced.\n\n**Suggested change:** Initialize a WinRT apartment at the beginning of `wmain`, before `ReportWindowsSettings` or any other WinRT caller, and pair it with scope-bound `winrt::uninit_apartment()`. Keep the existing fail-closed behavior if initialization or sanitization fails.\n\n**Verification:** The exact-head source trace shows `ReportWindowsSettings` is called at `Main.cpp:374` before `sanitize_report` at line 406, and its body invokes WinRT globalization APIs. The exact-upstream candidate built, and all nine focused privacy tests passed; those tests do not exercise BugReportTool's `wmain` at runtime."
+    },
+    {
+      "kind": "inline",
+      "path": "src/runner/UnitTests/DiagnosticPrivacyTests.cpp",
+      "title": "Reap the extraction process when a test times out",
+      "id": "bugreport-test-timeout-child",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 231,
+      "severity": "low",
+      "confidence": {
+        "score": 91,
+        "rationale": "The timeout assertion is reached after launching a child process; the exact candidate terminates and waits on timeout and passed the focused tests."
+      },
+      "body": "### Reap the extraction process when a test times out\n\n**Severity:** `low`\n\n**Affected code:** `DiagnosticPrivacyTests.cpp`'s `ExtractArchive` helper around `WaitForSingleObject`.\n\n**Problem:** If the 30-second wait times out, the assertion fails immediately without terminating or waiting for the launched `tar.exe` process.\n\n**Why it matters:** That child process can continue after the test fails, leaving work and handles behind during test runs.\n\n**Suggested change:** Save the wait result, terminate the child on timeout, wait for termination when successful, and then assert the original wait result; keep the exit-code assertion on the normal completion path.\n\n**Verification:** The exact-upstream candidate compiled and all nine `DiagnosticPrivacyTests` passed, including archive extraction. The extractor choice itself is not a defect; this finding is limited to timeout cleanup.\n\n```suggestion\n            const auto waitResult = WaitForSingleObject(process.hProcess, 30000);\n            if (waitResult != WAIT_OBJECT_0)\n            {\n                const auto terminated = TerminateProcess(process.hProcess, ERROR_TIMEOUT);\n                if (terminated)\n                {\n                    WaitForSingleObject(process.hProcess, INFINITE);\n                }\n            }\n            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), waitResult);\n```"
+    },
+    {
+      "kind": "inline",
+      "path": "tools/BugReportTool/BugReportTool/DiagnosticPrivacy.h",
+      "title": "Skip writes when a JSON document needs no redaction",
+      "id": "bugreport-skip-unchanged-json-write",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 121,
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "The pinned function returns success without changing valid unchanged JSON, then unconditionally opens the file with truncation; the candidate regression test passes."
+      },
+      "body": "### Skip writes when a JSON document needs no redaction\n\n**Severity:** `medium`\n\n**Affected code:** `diagnostic_privacy::redact_security_keys` and the `.json` write in `sanitize_report` in `tools/BugReportTool/BugReportTool/DiagnosticPrivacy.h`.\n\n**Problem:** A valid JSON document with no sensitive key makes `redact_security_keys` return `true` without changing `contents`, but `sanitize_report` still opens the file with `std::ios::trunc` and rewrites it.\n\n**Why it matters:** An unchanged JSON file that is readable but not writable can make sanitization throw and prevent creation of the entire report archive; needless serialization can also alter formatting without privacy benefit.\n\n**Suggested change:** Have the redaction routine report whether the document changed separately from parse success, and skip opening the output stream when it did not. Add a regression test for valid unchanged JSON without write access.\n\n**Verification:** The exact-head source trace shows the unconditional output open after a successful parse. On the exact-upstream candidate, the no-write-access regression test and all nine `DiagnosticPrivacyTests` passed. This is a source-path conclusion; no baseline end-to-end report was produced."
+    },
+    {
+      "kind": "inline",
+      "path": "tools/BugReportTool/BugReportTool/Main.cpp",
+      "title": "Preserve the cause when sanitization aborts",
+      "id": "bugreport-sanitize-error-details",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 408,
+      "severity": "low",
+      "confidence": {
+        "score": 89,
+        "rationale": "The catch-all visibly discards typed exceptions from a sanitizer that configures streams to throw and invokes WinRT; candidate typed diagnostics compile."
+      },
+      "body": "### Preserve the cause when sanitization aborts\n\n**Severity:** `low`\n\n**Affected code:** The catch-all around `diagnostic_privacy::sanitize_report` in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** The catch-all discards the exception and prints the same message for every sanitization failure, including stream failures and WinRT errors.\n\n**Why it matters:** Users cannot distinguish a file-access problem from a JSON/WinRT failure when the report ZIP is not created, which makes the failure harder to diagnose.\n\n**Suggested change:** Catch `winrt::hresult_error` and `std::exception` before the catch-all, write the HRESULT/message or `what()` to stderr, retain a generic fallback for unknown exceptions, and keep the current cleanup and failure return.\n\n**Verification:** The pinned sanitizer configures streams to throw on I/O failure and uses WinRT JSON parsing; the exact-upstream candidate build passed. No end-to-end report failure was invoked."
+    }
+  ],
+  "actions": [
+    {
+      "id": "51954-post-privacy-review",
+      "type": "post_review",
+      "label": "Post grounded privacy and diagnostics review",
+      "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+      "review": {
+        "commit_id": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+        "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+        "event": "COMMENT",
+        "comment_ids": [
+          "bugreport-winrt-apartment",
+          "bugreport-test-timeout-child",
+          "bugreport-skip-unchanged-json-write",
+          "bugreport-sanitize-error-details"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "bugreport-test-timeout-child"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
+      "result": "passed",
+      "checked_comment_ids": [
+        "bugreport-test-timeout-child"
+      ],
+      "files": [
+        {
+          "path": "src/runner/UnitTests/DiagnosticPrivacyTests.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
