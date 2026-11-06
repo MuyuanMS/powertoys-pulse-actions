@@ -5,12 +5,13 @@
   "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
   "url": "https://github.com/microsoft/PowerToys/pull/50081",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-10-10T01:20:03.6881076Z",
-  "evaluated_at": "2026-10-10T00:39:21.0440883Z",
-  "source_updated_at": "2026-09-30T17:29:01Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-06T06:56:07Z",
+  "generated_at": "2026-11-06T09:27:15.2479745+00:00",
+  "evaluated_at": "2026-11-06T09:27:15.2479745+00:00",
+  "source_updated_at": "2026-11-06T06:57:32Z",
   "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
   "needs_revalidation": false,
   "proposed_comments": [
@@ -27,7 +28,7 @@
         "score": 94,
         "rationale": "The current append is reachable with the parent shown and the JPEG child disabled; the action enablement filter checks both flags."
       },
-      "disposition": "proposed",
+      "disposition": "posted",
       "id": "50081-jpeg-shortcut"
     },
     {
@@ -43,7 +44,7 @@
         "score": 95,
         "rationale": "The pinned enum and actual telemetry callers establish numeric renumbering; runtime enum assertions fail upstream and pass with the preserved assignments."
       },
-      "disposition": "proposed",
+      "disposition": "posted",
       "id": "50081-stable-format-values"
     },
     {
@@ -57,75 +58,11 @@
         "score": 96,
         "rationale": "Raw legacy JSON has no JPEG slot while the managed backing-field initializer supplies one; the positional-ID conflict consumer is explicit."
       },
-      "disposition": "proposed",
+      "disposition": "posted",
       "id": "50081-legacy-hotkey-slots"
     }
   ],
-  "actions": [
-    {
-      "primary": true,
-      "review": {
-        "pullRequest": 50081,
-        "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-        "event": "COMMENT",
-        "repository": "microsoft/PowerToys",
-        "comments": [
-          {
-            "in_diff": true,
-            "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
-            "line": 62,
-            "severity": "medium",
-            "title": "Do not advertise a disabled JPEG shortcut",
-            "body": "### Do not advertise a disabled JPEG shortcut\r\n\r\n**Severity:** `medium`\r\n\r\nTurning off the JPEG action leaves its configured shortcut stored in settings. `UserSettings.UpdateSettings` excludes that action unless both its parent and its own `IsShown` flag are true, but this append checks only the parent and still advertises the inactive shortcut in Shortcut Guide. Check the JPEG action's flag before generating its entry.\r\n\r\n```suggestion\r\n                    if (advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.IsShown)\r\n                    {\r\n                        content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.Shortcut, SettingsResourceLoader.GetString(\"AdvancedPaste/ModuleTitle\"), SettingsResourceLoader.GetString(\"PasteAsJpgFile/Header\")));\r\n                    }\r\n\r\n```",
-            "kind": "inline",
-            "side": "RIGHT",
-            "confidence": {
-              "score": 94,
-              "rationale": "The current append is reachable with the parent shown and the JPEG child disabled; the action enablement filter checks both flags."
-            },
-            "disposition": "proposed",
-            "id": "50081-jpeg-shortcut"
-          },
-          {
-            "in_diff": true,
-            "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
-            "line": 94,
-            "severity": "medium",
-            "title": "Preserve the existing paste-format telemetry values",
-            "body": "### Preserve the existing paste-format telemetry values\r\n\r\n**Severity:** `medium`\r\n\r\nInserting this implicit enum member changes HTML from 7 to 8, MP3 from 8 to 9, MP4 from 9 to 10, KernelQuery from 10 to 11, and CustomTextTransformation from 11 to 12. `PasteFormatExecutor.WriteTelemetry` sends this enum through the existing format-click and in-app-shortcut EventSource payloads, so the same numeric identifiers acquire different meanings across versions.\r\n\r\nAssign JPEG the unused value 12 and explicitly preserve HTML=7, MP3=8, MP4=9, KernelQuery=10, and CustomTextTransformation=11 in `PasteFormats.cs`. Setting only JPEG=12 is not sufficient: the following implicit HTML member would then become 13. Add an enum-value regression assertion and verify both existing action telemetry and the new JPEG action; no new telemetry event or generic telemetry-process follow-up is needed for this fix.",
-            "kind": "inline",
-            "side": "RIGHT",
-            "confidence": {
-              "score": 95,
-              "rationale": "The pinned enum and actual telemetry callers establish numeric renumbering; runtime enum assertions fail upstream and pass with the preserved assignments."
-            },
-            "disposition": "proposed",
-            "id": "50081-stable-format-values"
-          },
-          {
-            "in_diff": false,
-            "severity": "medium",
-            "title": "Keep legacy hotkey slots aligned with the settings model",
-            "body": "### Keep legacy hotkey slots aligned with the settings model\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `AdvancedPaste::process_additional_action` and `get_hotkeys`; `src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs`, `SubActions`; `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, `GetAllHotkeyAccessors`; `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`, `SetupModuleData` and `UpdateModuleHotkeySettings`.\r\n\r\n**Problem:** An existing settings file has TXT, PNG, and HTML children but no JPEG property. Deserializing that file creates the model's default JPEG child, so the managed traversal includes a JPEG slot before HTML. The native traversal visits only properties present in the raw JSON and therefore omits that slot. It also relies on the JSON object's iteration order rather than the managed order: the current four-child fixture enumerates TXT, JPEG, PNG, HTML, whereas the managed sequence is TXT, PNG, JPEG, HTML.\r\n\r\n**Why it matters:** `get_hotkeys` assigns positional IDs, and the conflict view indexes `GetAllHotkeyAccessors()` with those IDs. Until the configuration is rewritten, an HTML conflict consequently refers to the JPEG accessor, and following action indices are displaced. The application's normal settings migration does not add the missing child: `UpgradeSettingsConfiguration` returns false. This is an index-contract failure, not a claim about focus or keyboard timing.\r\n\r\n**Suggested change:** In the composite-action branch of `process_additional_action`, special-case the `paste-as-file` group. Traverse TXT, PNG, JPEG, then HTML explicitly; recurse normally for each existing child. If JPEG alone is absent, append an `AdditionalAction` with ID `paste-as-jpg-file` and a zero/default hotkey so the missing action is not activated but still reserves its managed slot. Keep the existing group-visibility check and default traversal for other groups. Keep the managed `SubActions` and header-key order unchanged.\r\n\r\n```cpp\r\nelse if (actionName == L\"paste-as-file\")\r\n{\r\n    const std::vector<winrt::hstring> order{\r\n        L\"paste-as-txt-file\", L\"paste-as-png-file\",\r\n        L\"paste-as-jpg-file\", L\"paste-as-html-file\"\r\n    };\r\n    for (const auto& name : order)\r\n    {\r\n        if (action.HasKey(name))\r\n        {\r\n            process_additional_action(name, action.GetNamedValue(name), actionIsShown);\r\n        }\r\n        else if (name == L\"paste-as-jpg-file\")\r\n        {\r\n            m_additional_actions.push_back({ name.c_str(), {} });\r\n        }\r\n    }\r\n}\r\n```\r\n\r\n**Verification:** Load legacy JSON without JPEG and compare the native IDs with the deserialized `GetAllHotkeyAccessors` sequence before saving settings. Repeat with current JSON containing JPEG, and verify the absent JPEG slot has a zero hotkey. Build the native module from `src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface` with `..\\..\\..\\..\\tools\\build\\build.cmd`, then check that editing an HTML conflict selects and updates the HTML accessor. The focused traversal test proves slot ordering; it does not replace an end-to-end conflict-window test.",
-            "out_of_diff_reason": "The required native placeholder and ordered traversal are in unchanged dllmain.cpp; the current diff adds only the managed JPEG child and does not modify this native function.",
-            "kind": "companion",
-            "confidence": {
-              "score": 96,
-              "rationale": "Raw legacy JSON has no JPEG slot while the managed backing-field initializer supplies one; the positional-ID conflict consumer is explicit."
-            },
-            "disposition": "proposed",
-            "id": "50081-legacy-hotkey-slots"
-          }
-        ]
-      },
-      "requiresApproval": true,
-      "confirm": true,
-      "label": "Post 3 grounded comments (1 literal suggestion)",
-      "note": "Explicit approval required. Revalidate upstream head/activity before publication; no approval or submission recorded.",
-      "id": "post-review-50081",
-      "type": "post_review"
-    }
-  ],
+  "actions": [],
   "freshness": {},
   "validation": {
     "suggestion_patch": {
