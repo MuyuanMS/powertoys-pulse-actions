@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 5,
+  "number": 51970,
+  "kind": "issue",
+  "track": "triage",
+  "title": "Window Hopper doesn't work on Cakewalk Sonar",
+  "url": "https://github.com/microsoft/PowerToys/issues/51970",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-07T03:34:03Z",
+  "evaluated_at": "2026-11-07T03:34:03Z",
+  "source_updated_at": "2026-11-07T03:15:08Z",
+  "stage": "triage",
+  "pending_author": false,
+  "owes": "us",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Window Hopper"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Window Hopper's next/previous commands reportedly do not cycle Cakewalk Sonar windows, while other apps work.",
+  "next_action": "Clarify whether the overlay appears, which Sonar windows should cycle, and which process is elevated before selecting a compatibility fix.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report identifies the affected application and build but not the exact configured shortcut, whether Window Hopper displays its overlay, how many Sonar windows should cycle, or which app is elevated. Those details separate an empty candidate set from a foreground-activation failure; the current evidence does not justify choosing between them.",
+    "evidence": [
+      "The report identifies Cakewalk Sonar 2026.10 Build 021, PowerToys auto-update, and Windows 11 build 26300.",
+      "The reporter says next/previous window commands do not work in Cakewalk Sonar but work in other applications.",
+      "The report says an application is running as administrator but does not identify whether that is PowerToys, Sonar, or both.",
+      "The issue has no comments, bug-report archive, or linked fix."
+    ],
+    "recommended_action": "Ask which configured shortcut was used, whether the Window Hopper overlay appears, which Sonar windows should cycle, and which process is elevated; then reproduce the observed path.",
+    "evaluated_at": "2026-11-07T03:34:03Z",
+    "source_updated_at": "2026-11-07T03:15:08Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Window Hopper code change may be needed if Sonar's intended windows are omitted from the eligible same-process window set, but the report does not yet establish that as the failing path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Include the intended Sonar windows in the cycle set",
+      "root_cause": "Window Hopper enumerates visible Alt-Tab-eligible representative windows and selects only those whose resolved process image matches the foreground app. If Sonar's intended secondary windows are owned, filtered as ineligible, or hosted by another process, fewer than two candidates may remain and the hotkey path returns without displaying the overlay. The report does not establish that this is what happens.",
+      "plan": [
+        "Confirm the configured next/previous hotkey, whether the overlay appears, and which Sonar top-level windows should participate.",
+        "On a matching Sonar setup, inspect the eligible window candidates and resolved process identities for the foreground Sonar window and each expected cycle target.",
+        "If the intended windows are omitted by the current eligibility or process grouping, adjust only the confirmed Sonar window relationship while preserving unrelated Alt-Tab eligibility behavior.",
+        "Add a focused regression for the confirmed window relationship and verify both forward and reverse cycling."
+      ],
+      "verification": [
+        "With the reporter's Sonar build and window layout, confirm the configured next/previous shortcuts show the overlay and focus the expected adjacent Sonar window.",
+        "Verify ordinary applications still cycle only their own eligible windows.",
+        "If the overlay already appears but activation fails, test the confirmed PowerToys/Sonar elevation combination separately before changing window enumeration."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The source has an early return when fewer than two eligible same-process windows are found, which could look like an ignored shortcut. The report does not say whether the overlay appeared or which Sonar windows are candidates, so this is only a hypothesis."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Window Hopper next/previous commands reportedly do not switch windows in Cakewalk Sonar 2026.10 Build 021, although the reporter says they work in other applications.",
+    "known_information": [
+      "The issue is labeled Issue-Bug and Product-Window Hopper and was last updated at 2026-11-07T03:15:08Z.",
+      "The reporter uses PowerToys auto-update on Windows 11 build 26300.",
+      "The report says an application is running as administrator but does not specify which one.",
+      "The current report contains no discussion comments, diagnostic archive, or covering PR."
+    ],
+    "inferences": [
+      "The failure may happen before the overlay appears if fewer than two Sonar windows survive Window Hopper's eligibility and same-process filtering.",
+      "If the overlay appears but does not switch focus, foreground activation or differing elevation may be involved instead."
+    ],
+    "analysis": "The current code obtains the foreground window, enumerates visible Alt-Tab-eligible representative windows, and selects candidates matching the foreground process image. The hotkey path returns without showing the overlay when fewer than two candidates remain. On commit, the module activates a selected HWND. The symptom does not state whether the overlay appears, so the candidate-set and foreground-activation paths cannot yet be distinguished. The most useful next step is a narrow behavior/elevation clarification, not a generic log request.",
+    "initial_investigation": [
+      "Read the complete report and confirmed there are no comments, attachments, or linked fixes to account for.",
+      "Searched open PowerToys issues and PRs for Cakewalk Sonar; no duplicate report or covering fix was found.",
+      "Inspected AltWindowCycle.cpp, AltWindowCycleLogic.h, and dllmain.cpp. GetAppWindows filters to Alt-Tab-eligible windows matching the foreground process image; Switcher::OnHotkey returns without showing the overlay when fewer than two windows remain; ForceForeground uses SetForegroundWindow to activate the selected window.",
+      "The existing unit tests cover generic eligibility and same-process selection but do not exercise Cakewalk Sonar or an elevation mismatch."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact configured next/previous shortcut, whether the Window Hopper overlay appears, which Sonar windows should cycle, and whether PowerToys, Sonar, or both are running elevated",
+        "why_needed": "These observations distinguish an empty eligible-window set from a foreground-activation failure or an elevation mismatch.",
+        "how_to_collect": "Repeat the shortcut while Sonar is foreground, note whether the overlay appears and which windows it lists, identify the expected next window, and state which application was launched as administrator."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review the Sonar window-enumeration hypothesis"
+    },
+    {
+      "type": "request_info",
+      "label": "Clarify Window Hopper behavior in Sonar",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for identifying Cakewalk Sonar 2026.10 and Windows 11. Could you share which next/previous shortcut you pressed, whether the Window Hopper overlay appears, and which Sonar windows you expect it to cycle? Also, when you say it is running as administrator, do you mean PowerToys, Sonar, or both? These details will show whether the command finds too few Sonar windows or whether selection/activation is failing."
+      }
+    }
+  ]
+}

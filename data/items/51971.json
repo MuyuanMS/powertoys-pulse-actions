@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 5,
+  "number": 51971,
+  "kind": "issue",
+  "track": "triage",
+  "title": "Mouse Without Borders: with \"Use Service\" enabled, SYSTEM instances start but never open TCP 15100/15101",
+  "url": "https://github.com/microsoft/PowerToys/issues/51971",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-07T03:38:05Z",
+  "evaluated_at": "2026-11-07T03:38:05Z",
+  "source_updated_at": "2026-11-07T03:14:32Z",
+  "stage": "triage",
+  "pending_author": false,
+  "owes": "us",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Mouse Without Borders service-mode SYSTEM instances remain alive but do not open their TCP listeners, disconnecting the paired PCs.",
+  "next_action": "Confirm the desktop-activity gate and socket-reopen path for the default SYSTEM instance before approving the targeted service-mode fix.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report provides a two-version reproduction, normal-mode comparison, same-session check, expected SYSTEM log location, and the precise point where service-instance logs stop. Current code opens sockets from a timer branch gated by GetCursorPos and active-console session checks; the record is consistent with that branch not reaching socket initialization, but does not capture the GetCursorPos result. A focused instrumented check can confirm the proposed fix before implementation.",
+    "evidence": [
+      "The reporter reproduced the failure on PowerToys 0.102.3101.0 and 0.102.2933.0 with Use Service enabled on a per-user installation.",
+      "Normal mode on the same PC opens TCP 15101 and 15100, while the default SYSTEM instance stops logging after its first GetScreenConfig and remains alive without either listener.",
+      "The reporter checked that the SYSTEM instance uses the active console session ID and has already inspected the SYSTEM-profile Mouse Without Borders log location.",
+      "Disabling Use Service and restarting restores listeners and both-direction pairing within seconds.",
+      "The report includes a second-PC reproduction, firewall checks, multiple display layouts, two Windows builds, and related issue #49094."
+    ],
+    "recommended_action": "Ask for the two targeted startup observations—whether IsMyDesktopActive succeeds and whether Common.ReopenSockets is reached in the default SYSTEM instance—then confirm the service-mode listener fix without requesting another generic archive.",
+    "evaluated_at": "2026-11-07T03:38:05Z",
+    "source_updated_at": "2026-11-07T03:14:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The service-instance startup path gates socket initialization on cursor-position/desktop activity and active-console session state. If GetCursorPos reports false for the default SYSTEM desktop despite the matching session, service listeners are skipped; separate network startup from desktop input handling only if that exact condition is confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Allow service-mode listeners to start when the default SYSTEM desktop is active",
+      "root_cause": "FrmScreen.HelperTimer_Tick calls Common.ReopenSockets only when WinAPI.IsMyDesktopActive() and the process session matches the active console. IsMyDesktopActive is a direct GetCursorPos success check. If GetCursorPos fails for the service-started default SYSTEM instance, the instance remains alive but never reaches SocketStuff initialization; the reported log ending before the second GetScreenConfig and before either TCP listener is consistent with this path.",
+      "plan": [
+        "Use an instrumented build to record the IsMyDesktopActive result, current and active-console session IDs, and whether Common.ReopenSockets is reached by the default SYSTEM instance after restart.",
+        "If the service instance has the active console session but GetCursorPos fails, separate listener startup eligibility from cursor/input availability for service-mode instances on the intended desktop.",
+        "Keep input hooks and secure-desktop interaction guarded by their existing desktop checks; do not broaden service behavior beyond the confirmed default-instance case.",
+        "Add a focused service-mode regression that verifies the intended instance opens both TCP listeners while an inactive desktop does not create duplicate listeners."
+      ],
+      "verification": [
+        "With Use Service enabled, verify the default SYSTEM instance reaches socket initialization and opens TCP 15100 and 15101 after restart.",
+        "Verify normal-mode startup and the winlogon instance retain their existing behavior.",
+        "Verify a non-active desktop cannot create duplicate listener sockets or perform input handling."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The source contains an explicit desktop-activity/session gate before Common.ReopenSockets, and the reported SYSTEM logs stop before the second screen-config call that occurs during socket initialization. The specific GetCursorPos result was not captured, so the proposed condition must be confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Mouse Without Borders Use Service enabled, service-started SYSTEM instances stay alive but do not bind TCP 15100/15101, causing an otherwise working pair to disconnect.",
+    "known_information": [
+      "The issue is labeled Issue-Bug and Product-Mouse Without Borders and was last updated at 2026-11-07T03:14:32Z.",
+      "The reporter tested PowerToys 0.102.3101.0 and 0.102.2933.0 on Windows 11 builds 26200 and 26300.",
+      "The per-user install launches the service binary from the user's local PowerToys directory.",
+      "The reporter says the default SYSTEM instance logs one GetScreenConfig completion but no subsequent socket startup, while normal mode logs a second screen-config pass and opens ports 15101 and 15100.",
+      "Disabling Use Service and restarting restores listeners and pairing; the reporter says the SYSTEM process session matches WTSGetActiveConsoleSessionId.",
+      "The report includes checks for firewall rules, security-key format, and one- versus three-monitor layouts, plus a reproduction on a second PC."
+    ],
+    "inferences": [
+      "GetCursorPos may return false for the default SYSTEM instance even though its session matches the active console, preventing the timer from reaching Common.ReopenSockets.",
+      "A second possibility is that the timer reaches the socket path but exits earlier; the current report does not include the two gate/reopen observations needed to distinguish these."
+    ],
+    "analysis": "The service starts the SYSTEM instances, but the service process itself is expected to exit after launch. The relevant socket startup occurs later in FrmScreen.HelperTimer_Tick, which enters Common.ReopenSockets only when WinAPI.IsMyDesktopActive succeeds and the process session equals the active console session. IsMyDesktopActive is implemented as GetCursorPos. The normal-versus-service log boundary and the matching session ID make the desktop-activity check a concrete hypothesis, not a confirmed cause. Related issue #49094 is not a duplicate: it reports service-start permission/configuration failures and socket errors, whereas this report says the service starts and the SYSTEM instances never reach listener startup.",
+    "initial_investigation": [
+      "Read the full issue report and confirmed there are no issue comments; the reporter supplied detailed normal-mode and SYSTEM-instance log excerpts but no diagnostic archive.",
+      "Read related issue #49094. It remains open but describes a service that fails to start and UseService resetting, unlike the current issue where service-launched SYSTEM instances remain alive.",
+      "Inspected Program.Main, InitAndCleanup.Init, FrmScreen.HelperTimer_Tick, WinAPI.IsMyDesktopActive, SocketStuff, and TcpServer. The service instance enters the WinForms event loop; the screen timer gates Common.ReopenSockets on IsMyDesktopActive and active-console session state; socket initialization performs the subsequent GetScreenConfig and creates the two listeners.",
+      "Searched current open issues and pull requests for the specific SYSTEM/listener symptom; no matching duplicate or covering fix was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "module_trace",
+        "information": "Whether IsMyDesktopActive returns true and Common.ReopenSockets is reached by the default SYSTEM instance after restart with Use Service enabled",
+        "why_needed": "This confirms whether the reported log boundary is caused by the desktop-activity gate or by a failure after the socket-reopen path begins.",
+        "how_to_collect": "Use a build that records those two results for the default SYSTEM instance after restart; the issue already contains the broader service and normal-mode log comparison."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the service-mode listener startup direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm the SYSTEM listener startup gate",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the detailed normal-mode and SYSTEM-instance comparison, including the matching console-session check. You mentioned you can run a diagnostic build; could it record whether `IsMyDesktopActive()` succeeds and whether `Common.ReopenSockets(false)` is reached by the default SYSTEM instance after restart with Use Service enabled? Those two results will distinguish the desktop-activity gate from a failure inside socket initialization; no broader trace is needed."
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce service-mode listener startup",
+      "note": "The issue has a cross-version repro and normal-mode control; confirm the default SYSTEM listener path before changing service behavior.",
+      "reproduce": {
+        "title": "Verify Mouse Without Borders service-mode TCP listeners",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.102.3101.0 or 0.102.2933.0",
+        "prerequisites": [
+          "Two Windows PCs paired and communicating in normal Mouse Without Borders mode.",
+          "A per-user PowerToys installation with Use Service available."
+        ],
+        "setup": [
+          "On one PC, start with Use Service disabled and confirm both directions of Mouse Without Borders input work."
+        ],
+        "steps": [
+          "Run PowerToys as administrator and enable Use Service on one paired PC.",
+          "Restart PowerToys and wait at least three minutes.",
+          "Check whether the default SYSTEM Mouse Without Borders instance opens TCP 15100 and 15101.",
+          "Disable Use Service, restart PowerToys, and compare the listener and pairing behavior."
+        ],
+        "expected_result": "The default service-started SYSTEM instance opens the intended TCP listeners and the PC remains paired, while input to the secure desktop works as designed."
+      }
+    }
+  ]
+}

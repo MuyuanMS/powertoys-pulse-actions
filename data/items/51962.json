@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 5,
+  "number": 51962,
+  "kind": "issue",
+  "track": "triage",
+  "title": "One line text extractor tool doesnt work",
+  "url": "https://github.com/microsoft/PowerToys/issues/51962",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-07T03:31:11Z",
+  "evaluated_at": "2026-11-07T03:31:11Z",
+  "source_updated_at": "2026-11-07T03:15:20Z",
+  "stage": "triage",
+  "pending_author": false,
+  "owes": "us",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Text Extractor sometimes stops showing the selection surface after enabling single-line output; dismissing the context menu restores selection.",
+  "next_action": "Compare the toolbar toggle with the S shortcut to confirm the native selection-window z-order hypothesis before approving a targeted fix.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reported context-menu workaround and current source point to a plausible native selection-window z-order issue after a toolbar interaction, rather than a failure in OCR text formatting. The source does not prove that the window actually falls behind during this report, so the proposal remains yellow and requests one focused behavior comparison before implementation.",
+    "evidence": [
+      "The reporter identifies PowerToys 0.102.3101 from the Microsoft Store and provides a video and a PowerToys diagnostic ZIP.",
+      "The reported sequence is to open Text Extractor, enable single-line output, and select text; the selection surface does not appear until the right-click context menu is opened and dismissed.",
+      "OverlayManager.CaptureAsync chooses OcrCaptureMode.SingleLine only after Canvas_PointerReleased or the native selection callback has already produced a region selection.",
+      "OverlayPage.NativeSelection.cs updates the native window for processing/error changes and popup visibility, but does not handle IsSingleLine changes.",
+      "NativeSelectionWindow.UpdateVisibility restores the topmost z-order, while its source comment notes that a WinUI toolbar click can raise the full-screen window over the native selection surface."
+    ],
+    "recommended_action": "Ask whether the S shortcut reproduces the failure independently of the toolbar click, and validate the z-order hypothesis with the supplied reproduction before implementation; no additional logs are needed.",
+    "evaluated_at": "2026-11-07T03:31:11Z",
+    "source_updated_at": "2026-11-07T03:15:20Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted native-window z-order refresh after a mode-toggle interaction is supported by the code's existing restore path and the context-menu workaround, but the failing interaction has not yet been reproduced independently.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore the native selection surface after a toolbar mode toggle",
+      "root_cause": "The single-line toggle changes only the view-model state. The separate topmost native selection window is restored after visibility transitions or parent activation, not when IsSingleLine changes. If clicking the toolbar raises the full-screen WinUI window without a corresponding activation transition, that window may cover the native selection surface; opening and dismissing the context menu forces a visibility transition that restores z-order.",
+      "plan": [
+        "Reproduce the reported sequence on PowerToys 0.102.3101 and compare enabling single-line mode through the toolbar with toggling it using the S shortcut.",
+        "If the toolbar interaction uniquely loses the selection surface, call the existing native selection-window z-order restoration path after the single-line mode change without activating the native window.",
+        "Add a focused UI regression test that clicks the SingleLineToggleButton and then drag-selects a region without opening the context menu; verify capture begins and the overlay remains usable."
+      ],
+      "verification": [
+        "Verify that selecting single-line mode through both the toolbar and the S shortcut leaves the selection surface visible and permits a drag capture.",
+        "Verify that the existing context-menu toggle and dismiss path still restores selection and that the selected OCR result is formatted as one line.",
+        "Run the focused PowerOCR UI test on the exact build containing the fix."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The reported context-menu workaround matches the existing visibility-to-z-order restore path, and the source documents that toolbar clicks can raise the full-screen window. The particular toolbar-versus-keyboard interaction has not been independently reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "In Text Extractor 0.102.3101, the selection surface reportedly disappears after enabling single-line output; opening and dismissing the right-click context menu restores selection.",
+    "known_information": [
+      "The issue is labeled Issue-Bug and Product-Text Extractor and was last updated at 2026-11-07T03:15:20Z.",
+      "The reporter supplied a video and a PowerToys diagnostic ZIP with the report.",
+      "The reported workaround is to right-click, dismiss the context menu, and then select text."
+    ],
+    "inferences": [
+      "The workaround may restore the native selection window's z-order rather than change OCR formatting behavior.",
+      "The failure may depend on clicking the toolbar toggle rather than changing single-line mode through the S shortcut."
+    ],
+    "analysis": "The capture mode is selected only after a selection is delivered, so single-line formatting should not directly disable region selection. The selection surface is a separate native topmost window. Its visibility transitions call the z-order restore helper, and the implementation explicitly accounts for toolbar clicks raising the WinUI overlay. However, the supplied report does not distinguish a toolbar click from the S shortcut or independently prove that the native window moved behind the full-screen window. Request that exact comparison before implementation; the existing video and diagnostic ZIP make another broad log request unnecessary.",
+    "initial_investigation": [
+      "Read the full issue report and confirmed it has no discussion comments; the current labels identify it as a Text Extractor bug.",
+      "Searched for related open Text Extractor selection issues and pull requests; no matching duplicate or covering fix was found.",
+      "Inspected OverlayManager.CaptureAsync, OverlayPage.xaml.cs, OverlayPage.NativeSelection.cs, and NativeSelectionWindow.cs. Single-line mode is selected during capture after pointer selection; the native surface is made topmost by RestoreZOrder during visibility updates and parent activation.",
+      "Reviewed the existing PowerOCR UI test for blank-capture toolbar shortcuts. It checks keyboard toggles after a failed capture but does not cover clicking the single-line toolbar toggle followed by a new region selection."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the selection failure occurs after clicking the single-line toolbar toggle but not after toggling with the S shortcut, and whether opening and dismissing the context menu without changing its options restores selection",
+        "why_needed": "This distinguishes an OCR mode-state problem from the suspected native selection-window z-order change after a toolbar interaction.",
+        "how_to_collect": "In the same overlay, compare toolbar-toggle and S-shortcut selection attempts; if the toolbar attempt fails, open and dismiss the right-click menu without changing any option and try selecting again."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve native selection z-order fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Compare toolbar and keyboard toggle behavior",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for including the video and clear reproduction steps. Could you compare enabling single-line mode with the toolbar toggle versus pressing `S`, then try selecting text after each? If selection fails only after the toolbar click, please also confirm whether opening and dismissing the right-click menu without changing any option restores selection. This will distinguish an OCR-mode issue from the suspected selection-window z-order change."
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the selection-surface failure",
+      "note": "The report includes a clear sequence, video, and diagnostic ZIP; reproduce before implementing the tentative z-order change.",
+      "reproduce": {
+        "title": "Reproduce Text Extractor selection after enabling single-line output",
+        "module": "Text Extractor",
+        "version_requirement": "PowerToys 0.102.3101 or newer",
+        "prerequisites": [
+          "Windows with PowerToys installed from the Microsoft Store"
+        ],
+        "setup": [
+          "Open a window containing visible text."
+        ],
+        "steps": [
+          "Open Text Extractor with Win+Shift+T.",
+          "Enable the single-line output toggle on the overlay toolbar.",
+          "Try to drag-select the visible text and note whether the selection surface appears.",
+          "Open and dismiss the right-click context menu without changing an option, then try the selection again.",
+          "Repeat by toggling single-line mode with the S shortcut instead of clicking the toolbar."
+        ],
+        "expected_result": "The selection surface appears and permits drag selection after either toggle method; the captured result is formatted on one line.",
+        "attachments": [
+          {
+            "label": "Reporter video",
+            "url": "https://github.com/user-attachments/assets/f4269b3d-9936-49ba-9437-b7c9f8459f86"
+          }
+        ]
+      }
+    }
+  ]
+}
