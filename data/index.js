@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-07T12:46:21.4246477+08:00",
+  "generated_at": "2026-11-07T12:56:06.5408065+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 224,
     "open_issues": 11151,
     "community": 10268,
-    "artifacts": 1852
+    "artifacts": 1853
   },
   "impact": {
     "as_of": "2026-11-07T12:32:04.8865044+08:00",
@@ -533,6 +533,7 @@ window.BOARD_INDEX = {
     16026,
     51058,
     16018,
+    51054,
     51053,
     51032,
     15990,
@@ -44711,11 +44712,14 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Validate existing drag-shortcut restoration"
+      },
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
