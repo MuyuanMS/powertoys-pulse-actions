@@ -4,23 +4,24 @@
   "kind": "issue",
   "title": "User scope install upgrade leaves old version info behind",
   "url": "https://github.com/microsoft/PowerToys/issues/51526",
-  "generated_at": "2026-10-27T19:12:17.392238+08:00",
-  "evaluated_at": "2026-10-27T19:12:17.392238+08:00",
-  "source_updated_at": "2026-10-23T18:23:19Z",
+  "generated_at": "2026-11-07T06:20:12.542852+08:00",
+  "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
+  "source_updated_at": "2026-11-06T21:15:21Z",
   "stage": "triage_revalidated",
   "judgment": {
     "status": "reproducible",
-    "rationale": "Distinguish stale bootstrapper/ARP inventory from real side-by-side installation and scope changes. The immediate-predecessor control argues against assuming every current uninstall attempt fails; reproduce the earlier chain and correlate related-product detection before proposing cleanup.",
+    "rationale": "A second user reports that old-version files trigger repeated security detections, strengthening the impact evidence. The surviving entries still need to be distinguished from actual side-by-side installations before proposing cleanup.",
     "evidence": [
       "The report describes silent per-user winget upgrades leaving 0.95, 0.97 and 0.101 entries.",
       "A manual 0.102 installer removed the immediate 0.101 predecessor but left older entries, confirmed in the installed-app list.",
       "The report does not establish that all displayed versions still have runnable installations.",
-      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: Current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
+      "A second user reports that their organization's security software repeatedly flags old-version files after upgrades; the detected file and whether it still exists are not identified.",
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
       "Read the upgrade command history and manual-install control. No registry deletion or installation was performed."
     ],
-    "recommended_action": "Reproduce installer upgrade inventory behavior",
-    "evaluated_at": "2026-10-27T19:12:17.392238+08:00",
-    "source_updated_at": "2026-10-23T18:23:19Z"
+    "recommended_action": "Reproduce installer upgrade inventory behavior and correlate the reported security detection with the surviving installation entry.",
+    "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
+    "source_updated_at": "2026-11-06T21:15:21Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -52,21 +53,38 @@
     "known_information": [
       "The report describes silent per-user winget upgrades leaving 0.95, 0.97 and 0.101 entries.",
       "A manual 0.102 installer removed the immediate 0.101 predecessor but left older entries, confirmed in the installed-app list.",
-      "The report does not establish that all displayed versions still have runnable installations."
+      "The report does not establish that all displayed versions still have runnable installations.",
+      "A second user reports that their organization's security software repeatedly flags old-version files after upgrades; the detected file and whether it still exists are not identified."
     ],
     "inferences": [],
-    "analysis": "Distinguish stale bootstrapper/ARP inventory from real side-by-side installation and scope changes. The immediate-predecessor control argues against assuming every current uninstall attempt fails; reproduce the earlier chain and correlate related-product detection before proposing cleanup.",
+    "analysis": "The additional report establishes a security-tool impact but not whether the detection refers to a live old executable or stale product metadata. Preserve the distinction between orphaned registrations and genuine side-by-side installations before recommending installer cleanup.",
     "initial_investigation": [
-      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: Current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
-      "Read the upgrade command history and manual-install control. No registry deletion or installation was performed."
+      "Upstream main 9e6593c34949: installer/PowerToysSetupVNext/Product.wxs: current authoring uses MajorUpgrade, UpgradeCodeGUID and PREVIOUSVERSIONSINSTALLED detection; that alone does not establish how old bootstrapper registrations are removed.",
+      "Read the upgrade command history and manual-install control. No registry deletion or installation was performed.",
+      "Re-read the November 6 comment reporting outdated-install detections. It does not name the detected file/version or say whether the file still exists; do not infer that the report is caused by an ARP entry alone."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "how_to_collect": "Share only the detection name, file version and yes/no presence of the file and Installed-app entry. Redact usernames and full local paths; do not attach organization-specific security reports.",
+        "why_needed": "This distinguishes an active outdated binary from stale uninstall metadata and identifies which upgrade generation or installation scope must be investigated.",
+        "information": "The security product's detection name and detected file version, whether that file still exists, and whether the corresponding old PowerToys entry remains in Installed apps"
+      }
+    ]
   },
   "actions": [
     {
+      "label": "Request stale-install detection details",
+      "type": "request_info",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the additional report that security software is flagging old PowerToys files after upgrades. To distinguish an outdated binary from stale uninstall metadata, could you share the security product's detection name and detected file version, whether that file still exists, and whether the corresponding old PowerToys entry remains in Installed apps? Please omit organization-specific reports and redact usernames or full local paths."
+      }
+    },
+    {
       "type": "reproduce",
       "label": "Reproduce installer upgrade inventory behavior",
-      "primary": true,
+      "primary": false,
       "reproduce": {
         "title": "Validate installer upgrade inventory report",
         "module": "installer upgrade inventory",
@@ -97,5 +115,5 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 1
+  "comments": 2
 }

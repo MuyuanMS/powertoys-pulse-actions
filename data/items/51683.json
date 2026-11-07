@@ -1,21 +1,22 @@
 {
-  "source_updated_at": "2026-10-30T13:50:30Z",
+  "source_updated_at": "2026-11-06T19:50:10Z",
   "proposed_fixes": [
     {
       "title": "Keep cleared Color Picker shortcut and conflict state consistent",
       "plan": [
-        "Trace the clear/save value from the shortcut control through ColorPickerViewModel.ActivationShortcut and the runner configuration.",
-        "Define whether clearing is supported; if it is, preserve the disabled/empty value and unregister the effective hotkey before refreshing conflicts.",
-        "Add a regression test covering clear, save, reopen and conflict-refresh state without treating Ignore Conflict as the fix."
+        "Trace the clear/save value through ColorPickerViewModel.ActivationShortcut, the Text Extractor settings path, and runner shortcut registration.",
+        "Confirm whether the empty control state means reset-to-default or disabled; preserve that contract consistently in the UI and persisted configuration.",
+        "Refresh or unregister conflict state only if the reproduced effective shortcut differs from the intended displayed/persisted value.",
+        "Add regression coverage for clear, save, reopen, default fallback and conflict refresh without treating Ignore Conflict as the fix."
       ],
       "verification": [
         "Assign Win+Shift+C, observe the reported conflict, clear and save it, reopen Settings and verify the effective hotkey/conflict agree."
       ],
-      "root_cause": "Clearing the shortcut may restore the default value or leave runner/conflict state stale rather than unregistering the effective hotkey; the exact branch is not yet established.",
+      "root_cause": "Clearing may restore the default shortcut rather than disable registration; the conflict could therefore reflect that default instead of stale cached conflict state. The UI value and intended clear semantics remain unverified.",
       "confidence": {
         "score": 59,
         "level": "yellow",
-        "rationale": "The view model maps null to DefaultActivationShortcut, but the control may send a different empty representation and runtime conflict refresh has not been traced."
+        "rationale": "The view model and Text Extractor log both show default fallback, but the intended clear/reset behavior and conflict identity are not confirmed."
       }
     }
   ],
@@ -29,23 +30,32 @@
   "url": "https://github.com/microsoft/PowerToys/issues/51683",
   "pending_author": false,
   "judgment": {
-    "recommended_action": "Run the clear/save/reopen reproduction and trace the effective shortcut, then refine the proposed fix.",
-    "evaluated_at": "2026-10-30T23:03:55.7448319+08:00",
+    "recommended_action": "Clarify whether clearing restores a default shortcut or disables registration, then trace the effective shortcut and conflict state.",
+    "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
     "status": "reproducible",
     "evidence": [
-      "The reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
-      "No diagnostic archive or screenshot was supplied; the sequence itself is sufficiently concrete for local reproduction."
+      "The original reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
+      "A second reporter says the same conflict symptom occurs for Text Extractor and supplied a diagnostic archive.",
+      "The Text Extractor module-interface log records default-shortcut fallback after the reported clear; the archive does not establish whether that default is what the UI conflict identifies."
     ],
-    "rationale": "Reproduce locally and inspect the effective hotkey/configuration before asking the reporter for general logs. A narrow consistency fix is plausible but must not silently change the intended clear/reset semantics.",
-    "source_updated_at": "2026-10-30T13:50:30Z"
+    "rationale": "The new Text Extractor report and its log show default-shortcut fallback, so the conflict may reflect a restored default rather than stale conflict state. Confirm the UI and registration semantics before choosing a fix.",
+    "source_updated_at": "2026-11-06T19:50:10Z"
   },
   "kind": "issue",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
-  "stage": "triaged",
+  "stage": "triage_revalidated",
   "actions": [
+    {
+      "label": "Confirm cleared shortcut behavior",
+      "type": "request_info",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the additional Text Extractor report. Its module log indicates that the default shortcut is selected after initialization, so the remaining question is whether clearing disables the shortcut or restores that default. For each affected utility, could you report what the shortcut field shows after clearing, saving, and reopening Settings, whether that displayed shortcut still activates the utility, and whether the conflict notice names that same default? Please also say whether the conflict occurs with PowerToys running elevated."
+      }
+    },
     {
       "type": "approve_design",
       "label": "Investigate cleared-shortcut consistency"
@@ -75,30 +85,35 @@
     }
   ],
   "owes": "us",
-  "evaluated_at": "2026-10-30T23:03:55.7448319+08:00",
-  "generated_at": "2026-10-30T23:03:55.7448319+08:00",
+  "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
+  "generated_at": "2026-11-07T06:20:12.542852+08:00",
   "schemaVersion": 5,
-  "assignees": [
-    null
-  ],
+  "assignees": [],
   "title": "Keyboard shortcut conflict notice won't go away when shortcut is deleted",
   "issue_context": {
-    "summary": "Clearing the Color Picker shortcut leaves a conflict notice; verify the effective registration before selecting a fix.",
-    "information_gaps": [],
+    "summary": "Clearing the Color Picker shortcut leaves a conflict notice; a related Text Extractor report and log show default-shortcut fallback that must be distinguished from stale registration.",
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "how_to_collect": "For each utility, clear the shortcut, save, reopen the page and record the displayed value and conflict text. Test the displayed shortcut once, and note whether PowerToys is running as administrator.",
+        "why_needed": "The Text Extractor log records default-shortcut fallback. These observations distinguish an intentional reset-to-default from a disabled shortcut that remains registered or a stale conflict notification.",
+        "information": "For Color Picker and Text Extractor, the shortcut displayed after clearing, saving and reopening Settings; whether it still activates the utility; whether the conflict notice names that shortcut; and whether PowerToys is elevated"
+      }
+    ],
     "initial_investigation": [
-      "Read the complete report. ColorPickerViewModel.ActivationShortcut substitutes DefaultActivationShortcut when assigned null.",
+      "Read the complete report and new Text Extractor response. ColorPickerViewModel.ActivationShortcut substitutes DefaultActivationShortcut when assigned null.",
       "GlobalHotkeyConflictManager caches runner-provided conflict groups and matches modifier/key values; ColorPicker set_config parses the hotkey then saves settings.",
-      "The input-control representation of a cleared shortcut and runner refresh sequence remain unverified; a stale-cache-only cause is not established.",
-      "Reassessed the complete current issue discussion and timeline, including the latest maintainer labels. Label changes alone do not satisfy unanswered evidence requests or prove a repair."
+      "The new Text Extractor module-interface log says it is going to use the default shortcut on three initialization events. It does not prove which shortcut the UI registered or whether that conflicts with the reported system shortcut.",
+      "The input-control representation of a cleared Color Picker shortcut and runner refresh sequence remain unverified; a stale-cache-only cause is not established."
     ],
     "known_information": [
-      "The reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
-      "No diagnostic archive or screenshot was supplied; the sequence itself is sufficiently concrete for local reproduction."
+      "The original reporter cleared Win+Shift+C, saved an apparently empty assignment, and still sees a conflict. Ignore Conflict hides the notice but does not establish registration state.",
+      "A second reporter observed a similar Text Extractor conflict on v0.102.3101 and supplied a diagnostic archive; the module-interface log records default-shortcut fallback."
     ],
     "inferences": [
-      "Default restoration and stale conflict state are competing hypotheses, not confirmed defects in a specific function."
+      "The default-shortcut fallback may explain the conflict, but the displayed value, intended clear semantics and actual registration remain unconfirmed."
     ],
-    "analysis": "Reproduce locally and inspect the effective hotkey/configuration before asking the reporter for general logs. A narrow consistency fix is plausible but must not silently change the intended clear/reset semantics."
+    "analysis": "The reports may share a clear-to-default behavior rather than a stale conflict cache. The existing code maps null to the default for Color Picker, and the Text Extractor log independently records default fallback. Confirm what the UI and registered shortcut do after clearing before changing persistence or conflict refresh."
   },
   "summary": "Clearing the Color Picker shortcut leaves a conflict notice; verify the effective registration before selecting a fix."
 }
