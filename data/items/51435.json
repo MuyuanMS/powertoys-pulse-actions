@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 5,
+  "number": 51435,
+  "kind": "pr",
+  "title": "[Image Resizer] Add output format option to convert images",
+  "url": "https://github.com/microsoft/PowerToys/pull/51435",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-07T15:43:31Z",
+  "evaluated_at": "2026-11-07T15:43:31Z",
+  "source_updated_at": "2026-11-07T09:27:27Z",
+  "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "kind": "inline",
+      "severity": "medium",
+      "line": 167,
+      "start_line": 156,
+      "path": "src/modules/imageresizer/ui/Models/ResizeOperation.cs",
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "rationale": "The pinned source skips the move on a name collision, then unconditionally recycles the original through the non-null backup cleanup path. The fix is localized to the added replacement block.",
+        "score": 97
+      },
+      "title": "Preserve the original when the replacement name is occupied",
+      "id": "51435-replace-collision",
+      "body": "**Affected code:** `src/modules/imageresizer/ui/Models/ResizeOperation.cs:156-167` in the output-format replacement branch.\n\n**Problem:** If the converted destination name already exists, the inner `if` skips moving the converted file, but `backup` is still set to `_file`. The cleanup below then sends the original to the Recycle Bin even though no converted replacement was installed at that path.\n\n**Why it matters:** Replace can remove the user's original while leaving the conversion under a different, generated name, defeating the requested replacement behavior.\n\n**Suggested change:** Set `backup` only after the move succeeds so a name collision leaves the source intact.\n\n**Verification:** Exercise PNG-to-JPEG with Replace enabled and a pre-existing `Test.jpg`; assert the existing destination and `Test.png` remain while the output uses a unique name.\n\n```suggestion\n            if (_settings.Replace && !string.Equals(_fileSystem.Path.GetExtension(path), _fileSystem.Path.GetExtension(_file), StringComparison.OrdinalIgnoreCase))\n            {\n                // Converted to another format: give the new file the original's name, then recycle the original.\n                var renamed = _fileSystem.Path.ChangeExtension(_file, _fileSystem.Path.GetExtension(path));\n                if (!_fileSystem.File.Exists(renamed))\n                {\n                    _fileSystem.File.Move(path, renamed);\n                    path = renamed;\n                    backup = _file;\n                }\n            }\n```"
+    },
+    {
+      "kind": "inline",
+      "severity": "medium",
+      "line": 157,
+      "start_line": 150,
+      "path": "src/modules/imageresizer/tests/Models/ResizeOperationTests.cs",
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "rationale": "The new conversion test checks only the JPEG codec; there is no assertion on the pixels produced by the new alpha-flattening path.",
+        "score": 91
+      },
+      "title": "Assert transparent pixels are flattened to white",
+      "id": "51435-transparent-jpeg-test",
+      "body": "**Affected code:** `src/modules/imageresizer/tests/Models/ResizeOperationTests.cs` — `ExecuteConvertsToSelectedOutputFormat`.\n\n**Problem:** The conversion test verifies that the output codec is JPEG, but it does not check the pixel values produced by the new transparency-flattening path.\n\n**Why it matters:** A future change could encode transparent pixels as black or otherwise alter the expected white background while the codec-only assertion still passes.\n\n**Suggested change:** Replace the current opaque input with a small generated fully transparent PNG, then decode the JPEG output and assert that pixels from the transparent area are near white (for example, each RGB channel is at least 240).\n\n**Verification:** Run the Image Resizer unit tests and confirm the new pixel-level JPEG assertion passes.\n\n```suggestion\n            var sourcePath = Path.Combine(_directory, \"Transparent.png\");\n            using (var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream())\n            {\n                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);\n                encoder.SetPixelData(\n                    BitmapPixelFormat.Bgra8,\n                    BitmapAlphaMode.Premultiplied,\n                    2,\n                    2,\n                    96,\n                    96,\n                    new byte[16]);\n                await encoder.FlushAsync();\n\n                using var reader = new Windows.Storage.Streams.DataReader(stream.GetInputStreamAt(0));\n                await reader.LoadAsync((uint)stream.Size);\n                var pngBytes = new byte[(int)stream.Size];\n                reader.ReadBytes(pngBytes);\n                File.WriteAllBytes(sourcePath, pngBytes);\n            }\n\n            var operation = new ResizeOperation(\n                sourcePath,\n                _directory,\n                Settings(s => s.OutputFormat = OutputFormat.Jpeg));\n            await operation.ExecuteAsync();\n\n            var outputPath = Path.Combine(_directory, \"Transparent (Test).jpg\");\n            await AssertEx.ImageAsync(\n                outputPath,\n                async decoder =>\n                {\n                    Assert.AreEqual(BitmapDecoder.JpegDecoderId, decoder.DecoderInformation.CodecId);\n                    var frame = await decoder.GetFrameAsync(0);\n                    var pixelData = await frame.GetPixelDataAsync(\n                        BitmapPixelFormat.Bgra8,\n                        BitmapAlphaMode.Ignore,\n                        new BitmapTransform(),\n                        ExifOrientationMode.IgnoreExifOrientation,\n                        ColorManagementMode.DoNotColorManage);\n                    var pixels = pixelData.DetachPixelData();\n\n                    for (int p = 0; p < pixels.Length; p += 4)\n                    {\n                        Assert.IsTrue(pixels[p] >= 240 && pixels[p + 1] >= 240 && pixels[p + 2] >= 240, \"Transparent pixels should be flattened onto white.\");\n                    }\n                });\n```"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "comment_ids": [
+          "51435-replace-collision",
+          "51435-transparent-jpeg-test"
+        ],
+        "event": "COMMENT",
+        "commit_id": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b",
+        "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b"
+      },
+      "label": "Post two actionable Image Resizer findings",
+      "type": "post_review",
+      "id": "51435-post-findings",
+      "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51435-replace-collision",
+        "51435-transparent-jpeg-test"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "d0affe7eea086d94e673fc0fd03ffc73ce4e399b",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51435-replace-collision",
+        "51435-transparent-jpeg-test"
+      ],
+      "files": [
+        {
+          "path": "src/modules/imageresizer/ui/Models/ResizeOperation.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/imageresizer/tests/Models/ResizeOperationTests.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
