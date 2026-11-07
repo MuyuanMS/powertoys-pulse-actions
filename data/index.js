@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-08T01:58:25.0250321+08:00",
+  "generated_at": "2026-11-08T02:56:38.191471+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 225,
-    "open_issues": 11157,
+    "open_issues": 11158,
     "community": 10272,
     "artifacts": 1854
   },
   "impact": {
-    "as_of": "2026-11-08T01:58:25.0250321+08:00",
+    "as_of": "2026-11-08T02:56:38.191471+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2340,15 +2340,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post the current-head timer-failure documentation finding"
+      },
       "labels": [
         "Product-Mouse Pointer Crosshairs",
         "Ready for review"
@@ -19648,13 +19651,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32626",
+      "id": "issue-51988",
       "kind": "issue",
-      "number": 32626,
-      "url": "https://github.com/microsoft/PowerToys/issues/32626",
-      "title": "Keyboard mapper each mapping configuration can add a note option",
-      "author": "GmavionR",
-      "state": "closed",
+      "number": 51988,
+      "url": "https://github.com/microsoft/PowerToys/issues/51988",
+      "title": "Command Palette: Use Backspace to return",
+      "author": "willyiam84",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -19670,13 +19673,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
-        "Product-Keyboard Manager"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-04-26T09:48:33Z",
-      "updated_at": "2026-10-11T15:51:16Z",
-      "comments": 2,
+      "created_at": "2026-11-07T18:02:19Z",
+      "updated_at": "2026-11-07T18:02:19Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -24709,7 +24711,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
@@ -24730,7 +24732,9 @@ window.BOARD_INDEX = {
         "Status-In progress",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-11-01T13:57:45Z",
       "updated_at": "2026-11-06T14:54:27Z",
       "comments": 0,
@@ -33647,8 +33651,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T15:44:04Z",
-      "updated_at": "2026-11-07T14:33:11Z",
-      "comments": 317,
+      "updated_at": "2026-11-07T18:07:15Z",
+      "comments": 318,
       "priority": null
     },
     {
@@ -303063,8 +303067,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2022-11-06T12:05:02Z",
-      "updated_at": "2024-10-10T17:57:37Z",
-      "comments": 1,
+      "updated_at": "2026-11-07T18:40:52Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -340821,8 +340825,8 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-10-24T22:11:42Z",
-      "updated_at": "2026-10-27T15:30:13Z",
-      "comments": 1,
+      "updated_at": "2026-11-07T18:09:43Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -359889,6 +359893,38 @@ window.BOARD_INDEX = {
       "created_at": "2019-09-11T17:03:37Z",
       "updated_at": "2026-08-16T08:45:13Z",
       "comments": 38,
+      "priority": null
+    },
+    {
+      "id": "issue-32626",
+      "kind": "issue",
+      "number": 32626,
+      "url": "https://github.com/microsoft/PowerToys/issues/32626",
+      "title": "Keyboard mapper each mapping configuration can add a note option",
+      "author": "GmavionR",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2024-04-26T09:48:33Z",
+      "updated_at": "2026-10-11T15:51:16Z",
+      "comments": 2,
       "priority": null
     },
     {
