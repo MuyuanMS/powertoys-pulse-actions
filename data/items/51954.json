@@ -9,9 +9,9 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-06T14:33:16.4933058Z",
-  "evaluated_at": "2026-11-06T14:33:16.4933058Z",
-  "source_updated_at": "2026-11-06T12:15:40Z",
+  "generated_at": "2026-11-07T05:11:51.7763806Z",
+  "evaluated_at": "2026-11-07T05:11:51.7763806Z",
+  "source_updated_at": "2026-11-07T00:34:48Z",
   "head_sha": "f8bd7e6dce1f73718b255f76f3113f657fc454c5",
   "needs_revalidation": false,
   "proposed_comments": [
@@ -74,6 +74,19 @@
         "rationale": "The catch-all visibly discards typed exceptions from a sanitizer that configures streams to throw and invokes WinRT; candidate typed diagnostics compile."
       },
       "body": "### Preserve the cause when sanitization aborts\n\n**Severity:** `low`\n\n**Affected code:** The catch-all around `diagnostic_privacy::sanitize_report` in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** The catch-all discards the exception and prints the same message for every sanitization failure, including stream failures and WinRT errors.\n\n**Why it matters:** Users cannot distinguish a file-access problem from a JSON/WinRT failure when the report ZIP is not created, which makes the failure harder to diagnose.\n\n**Suggested change:** Catch `winrt::hresult_error` and `std::exception` before the catch-all, write the HRESULT/message or `what()` to stderr, retain a generic fallback for unknown exceptions, and keep the current cleanup and failure return.\n\n**Verification:** The pinned sanitizer configures streams to throw on I/O failure and uses WinRT JSON parsing; the exact-upstream candidate build passed. No end-to-end report failure was invoked."
+    },
+    {
+      "kind": "companion",
+      "title": "Keep the broader privacy issue open",
+      "id": "keep-51951-open",
+      "in_diff": false,
+      "severity": "medium",
+      "confidence": {
+        "score": 93,
+        "rationale": "The linked issue lists remaining identifiers, and the PR description explicitly scopes their anonymization out while retaining a closing reference."
+      },
+      "out_of_diff_reason": "The requested scope correction concerns the PR description and linked issue, not a changed source line.",
+      "body": "### Keep the broader privacy issue open\n\n**Severity:** `medium`\n\n**Affected code:** The PR description's `Closes: #51951` line and the all-or-nothing log deletion in `diagnostic_privacy::sanitize_report`.\n\n**Problem:** This change prevents the reported pairing key from being included by deleting every file under `RunnerLogs` and Mouse Without Borders log directories, but issue #51951 also documents exposed usernames, SIDs, machine names, and LAN IPs. The PR description explicitly leaves that anonymization out of scope while retaining the issue-closing reference.\n\n**Why it matters:** Merging can close the broader issue even though the other reported identifying information remains in generated public bug reports.\n\n**Suggested change:**\n1. Remove the `Closes: #51951` reference from this PR's description.\n2. Track the remaining identifier-anonymization work in a separate open issue if it will not be handled here.\n3. Keep #51951 open until both the pairing-key leak and the remaining identifier exposures are resolved.\n\n**Verification:** Confirm the PR no longer closes #51951 (or that the remaining work is tracked separately) and that the issue remains open while the username, SID, machine-name, and LAN-IP concerns are outstanding."
     }
   ],
   "actions": [
@@ -90,7 +103,8 @@
           "bugreport-winrt-apartment",
           "bugreport-test-timeout-child",
           "bugreport-skip-unchanged-json-write",
-          "bugreport-sanitize-error-details"
+          "bugreport-sanitize-error-details",
+          "keep-51951-open"
         ]
       }
     }
