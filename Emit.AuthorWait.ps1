@@ -124,7 +124,10 @@ function Resolve-PrAuthorWaitStateFromLive {
   )
   $latestPulseAction = Get-MaxDateTime @($latestPulseReview, $latestPulseComment)
   $recordedWaitAt = if ($Artifact.author_wait_evidence) {
-    ConvertTo-DateTimeOrNull $Artifact.author_wait_evidence.created_at
+    Get-MaxDateTime @(
+      $Artifact.author_wait_evidence |
+        ForEach-Object { $_.created_at }
+    )
   } else {
     $null
   }

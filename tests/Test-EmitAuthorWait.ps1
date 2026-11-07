@@ -137,4 +137,20 @@ if (-not $stillWaiting.pending_author -or $stillWaiting.resolved_by_author_activ
   throw "Unanswered posted review action did not remain pending: $($stillWaiting | ConvertTo-Json -Compress)"
 }
 
+$recordedWaitArtifact = [pscustomobject]@{
+  head_sha = 'bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c'
+  source_updated_at = '2026-10-29T03:16:28Z'
+  author_wait_evidence = @(
+    [pscustomobject]@{ created_at = '2026-10-29T03:16:24Z' }
+    [pscustomobject]@{ created_at = '2026-10-29T03:16:24Z' }
+  )
+  proposed_comments = @()
+}
+$recordedWait = Resolve-PrAuthorWaitStateFromLive `
+  (New-AuthorWaitLiveFixture '2026-09-30T12:00:00Z') `
+  $recordedWaitArtifact $true '2026-10-29T03:16:24Z' 0
+if (-not $recordedWait.pending_author -or $recordedWait.resolved_by_author_activity) {
+  throw "Unanswered array-shaped author-wait evidence was cleared: $($recordedWait | ConvertTo-Json -Compress)"
+}
+
 Write-Host 'Emitter author-wait regression tests passed.'
