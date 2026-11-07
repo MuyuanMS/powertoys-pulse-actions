@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 51966,
+  "kind": "issue",
+  "track": "triage",
+  "title": "[Mouse Without Borders] settings.json sharing violation causes security keys to diverge between PCs → control channel (TCP 15100) fails, keyboard only works one way with \"ding\" error",
+  "url": "https://github.com/microsoft/PowerToys/issues/51966",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-07T04:30:00Z",
+  "evaluated_at": "2026-11-07T04:30:00Z",
+  "source_updated_at": "2026-11-07T02:40:08Z",
+  "stage": "triage",
+  "pending_author": false,
+  "owes": "us",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Mouse Without Borders settings writes reportedly fail during concurrent access, leaving the two paired PCs with divergent security keys and a one-way keyboard control channel.",
+  "next_action": "Coordinate the shared settings-persistence fix with issue #51682 and verify that the reported pairing failure is covered by the same correction.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The supplied report and diagnostic archive describe settings-file sharing failures alongside key divergence and control-channel handshake failures. Open issue #51682 documents the same incompatible settings-file sharing behavior with independent Process Monitor evidence. This report adds a distinct user-visible symptom but points to the same persistence defect, so the fix should be coordinated with #51682 rather than treated as a separate networking failure.",
+    "evidence": [
+      "The report identifies Mouse Without Borders 0.102.3101 and includes a PowerToys diagnostic ZIP.",
+      "The attached report describes settings-file sharing failures and loss of consistent security-key state across the paired PCs.",
+      "The attached diagnostic evidence contains settings I/O sharing failures and control-channel encryption-handshake/socket errors.",
+      "Open issue #51682 documents concurrent settings.json readers and writers using incompatible sharing modes and reports lost Mouse Without Borders settings."
+    ],
+    "recommended_action": "Use #51682 as the primary tracking issue for a cross-process-safe settings persistence fix, and verify that the fix prevents security-key divergence and restores reliable control-channel pairing.",
+    "evaluated_at": "2026-11-07T04:30:00Z",
+    "source_updated_at": "2026-11-07T02:40:08Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported persistence failure matches the shared settings-file contention documented in #51682. The correction should be implemented and tracked with that issue, not as a separate networking workaround.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Mouse Without Borders settings persistence safe under concurrent access",
+      "root_cause": "Settings UI, Quick Access, and Mouse Without Borders can access the same settings file concurrently with incompatible file-sharing behavior. A failed write can leave the in-memory and persisted pairing keys out of sync; the peer then rejects the control-channel handshake.",
+      "plan": [
+        "Coordinate implementation with issue #51682 and trace the settings read/write paths used by Settings UI, Quick Access, and Mouse Without Borders.",
+        "Use a cross-process-safe persistence strategy that permits compatible reads, serializes competing updates, and replaces the settings file atomically without dropping unrelated settings.",
+        "Add deterministic contention coverage for concurrent readers and writers, including preservation of the security key and valid settings JSON.",
+        "Verify that reconnecting two paired PCs under the reported conditions keeps both keys consistent and establishes bidirectional keyboard control."
+      ],
+      "verification": [
+        "Exercise concurrent Settings UI, Quick Access, and Mouse Without Borders settings access while triggering reconnects; verify that no settings write is lost or rejected.",
+        "Restart both paired PCs and verify that their security keys remain consistent and the TCP 15100 control channel stays established.",
+        "Run the focused settings persistence tests and Mouse Without Borders regression tests on the corrected build."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The supplied diagnostics describe settings sharing failures at the same time as key divergence, and #51682 independently establishes the incompatible sharing behavior. The exact user-visible handshake symptom is new, but the underlying persistence defect is directly supported."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The report links Mouse Without Borders settings-file sharing failures to divergent pairing keys and a control channel that repeatedly fails, leaving keyboard input working in only one direction.",
+    "known_information": [
+      "The issue is labeled Issue-Bug and Product-Mouse Without Borders and was updated at 2026-11-07T02:40:08Z.",
+      "The report identifies PowerToys 0.102.3101 and includes a diagnostic ZIP.",
+      "The attached report describes settings persistence failures and a one-way keyboard symptom between paired PCs.",
+      "Open issue #51682 covers settings.json sharing violations and lost Mouse Without Borders settings."
+    ],
+    "inferences": [
+      "The control-channel handshake failure is likely a downstream effect of pairing-key state diverging after a settings write fails.",
+      "The new report is best coordinated with #51682 because both describe the same settings persistence path."
+    ],
+    "analysis": "The diagnostic archive supports a settings I/O contention problem as well as a control-channel failure, while #51682 provides independent evidence for incompatible readers and writers on the same settings file. This makes a standalone networking fix premature. The useful action is to consolidate the persistence correction with #51682 and verify the specific key-consistency and keyboard symptoms from this report.",
+    "initial_investigation": [
+      "Read the live issue body and attached bug report; the issue has no discussion comments and no separate reproduction details beyond the attachment.",
+      "Reviewed the diagnostic archive for the reported settings I/O and control-channel failure signals.",
+      "Read open issue #51682 and confirmed it describes the same settings-file sharing failure with independent Process Monitor evidence; no separate covering fix was identified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve the shared settings-persistence fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Verify pairing-key persistence and keyboard control",
+      "note": "The supplied report and diagnostic ZIP identify the settings contention; confirm the paired-device outcome while implementing the coordinated #51682 fix.",
+      "reproduce": {
+        "title": "Verify Mouse Without Borders settings persistence during reconnect",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.102.3101 or newer",
+        "prerequisites": [
+          "Two Windows PCs paired with Mouse Without Borders.",
+          "The PowerToys Settings window or Quick Access available while Mouse Without Borders is running."
+        ],
+        "setup": [
+          "Confirm that mouse and keyboard transfer work in both directions before testing."
+        ],
+        "steps": [
+          "Keep Settings or Quick Access open while Mouse Without Borders is active.",
+          "Trigger a reconnect or allow the peer to reconnect.",
+          "Check whether either PC reports a settings write failure or whether the pairing keys diverge.",
+          "Restart both PCs and verify the control channel and keyboard transfer in both directions."
+        ],
+        "expected_result": "Settings persist without sharing failures, both PCs retain consistent pairing keys, and keyboard input works in both directions after reconnect and restart."
+      }
+    }
+  ]
+}

@@ -6,67 +6,122 @@
   "title": "MOUSE transfer",
   "url": "https://github.com/microsoft/PowerToys/issues/51968",
   "repository": "microsoft/PowerToys",
-  "generated_at": "2026-11-07T06:20:12.542852+08:00",
-  "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
-  "source_updated_at": "2026-11-06T20:46:42Z",
-  "stage": "triage_revalidated",
+  "generated_at": "2026-11-07T04:30:00Z",
+  "evaluated_at": "2026-11-07T04:30:00Z",
+  "source_updated_at": "2026-11-07T01:55:15Z",
+  "stage": "triage",
   "pending_author": false,
   "owes": "us",
   "labels": [
     "Issue-Bug",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
   ],
   "assignees": [],
   "comments": 0,
+  "summary": "Mouse Without Borders devices reportedly cycle between orange and yellow connection states instead of maintaining the green connected state needed for mouse transfer.",
+  "next_action": "Clarify the direction and scope of the transfer failure and whether service mode is enabled, then reproduce from the supplied diagnostic archive.",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The reporter says both PCs connect but the status cycles between orange and yellow without reaching green. The supplied diagnostic archive shows repeated canceled listener accepts but does not identify a failed peer connection or which connection stage is failing.",
+    "rationale": "The report includes a diagnostic ZIP and identifies PowerToys 0.102.3101, but it does not say whether mouse and keyboard transfer fail in both directions, whether both PCs show the same status, or whether service mode is enabled. The archive shows connection/status timeouts and busy-pipe signals but does not establish a settings sharing violation or a specific pairing failure. The available evidence is insufficient to select a code path.",
     "evidence": [
-      "The report identifies PowerToys 0.102.3101 and says Mouse Without Borders cycles between orange and yellow on two connected PCs.",
-      "The attached diagnostic archive includes Mouse Without Borders logs with repeated canceled blocking socket accept calls.",
-      "The available log excerpt does not show an explicit failed pairing or identify which PC/connection transition is responsible."
+      "The reporter identifies Mouse Without Borders, PowerToys 0.102.3101, and a GitHub installation.",
+      "The reporter says both devices appear connected but the status cycles between orange and yellow rather than green, and mouse transfer does not work.",
+      "The reporter supplied a PowerToys diagnostic ZIP.",
+      "The reviewed diagnostic excerpts show timeout, pipe-busy, and status-polling signals but no clear settings sharing-violation evidence or confirmed encryption-handshake failure."
     ],
-    "recommended_action": "Ask which peer and connection stage fails and what each PC displays; do not request another diagnostic archive.",
-    "evaluated_at": "2026-11-07T06:20:12.542852+08:00",
-    "source_updated_at": "2026-11-06T20:46:42Z"
+    "recommended_action": "Ask only for the direction of the mouse/keyboard failure, which device shows the status changes, and whether service mode is enabled; then reproduce using the supplied diagnostics rather than requesting another generic log bundle.",
+    "evaluated_at": "2026-11-07T04:30:00Z",
+    "source_updated_at": "2026-11-07T01:55:15Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The current evidence does not yet identify a PowerToys code path to fix. This is a triage checkpoint, not a conclusion that the report is external or expected."
+    "status": "proposed",
+    "rationale": "A code change may be needed if the pairing or reconnect state machine loses a valid connection, but the report and supplied diagnostics do not yet distinguish that from an environment or transport issue.",
+    "existing_fix_urls": []
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Stabilize Mouse Without Borders connection state after the failing path is identified",
+      "root_cause": "The orange/yellow state cycling may indicate that the reconnect or connection-health path repeatedly loses readiness, but the current evidence does not establish whether the failure is in discovery, transport, pairing, or status reporting.",
+      "plan": [
+        "Confirm which directions of mouse and keyboard transfer fail, which device reports the color changes, and whether service mode is enabled.",
+        "Correlate those observations with the already supplied diagnostic ZIP to identify the failing connection stage.",
+        "Change only the confirmed discovery, transport, pairing, or state-transition path; do not add a generic retry or settings-file workaround without evidence.",
+        "Add a focused regression that keeps the connected state stable and verifies bidirectional transfer for the confirmed scenario."
+      ],
+      "verification": [
+        "Reproduce with two PCs on the reporter's PowerToys 0.102.3101 setup and compare both normal-mode and the reported service-mode configuration.",
+        "Verify that the reported connection remains green and that mouse and keyboard transfer work in the affected directions.",
+        "Run focused Mouse Without Borders connection and reconnect tests."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The status cycling is a concrete symptom, but the report does not identify the failing transfer direction or configuration and the diagnostic excerpts do not isolate a cause. This is a hypothesis to guide focused reproduction, not a confirmed root cause."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Mouse Without Borders cycles between orange and yellow on two PCs without reaching green.",
+    "summary": "Mouse Without Borders reportedly cycles between orange and yellow status while mouse transfer does not work, despite the devices appearing connected.",
     "known_information": [
-      "The reporter is using PowerToys 0.102.3101 and supplied a PowerToys diagnostic archive.",
-      "The reporter says both PCs are connected but the status cycles between orange and yellow instead of reaching green.",
-      "The included Mouse Without Borders log records repeated canceled blocking socket accept calls; no explicit failed peer handshake or connection stage is identified in the relevant entries."
+      "The issue is labeled Issue-Bug and Product-Mouse Without Borders and was updated at 2026-11-07T01:55:15Z.",
+      "The reporter identifies PowerToys 0.102.3101 and a GitHub installation.",
+      "The reporter supplied a diagnostic ZIP and says the connection indicator cycles between orange and yellow instead of green.",
+      "The issue has no discussion comments."
     ],
     "inferences": [
-      "The listener cancellations may be part of normal listener lifecycle; the available evidence does not establish that they cause the reported status cycle."
+      "The color cycling may reflect a reconnect or readiness transition, but it does not by itself identify a transport or pairing defect.",
+      "The supplied diagnostics may help locate the failing stage once the affected direction and service-mode configuration are known."
     ],
-    "analysis": "The report lacks the per-PC status and the point at which the connection attempt stops. The supplied archive narrows the evidence to listener lifecycle events but does not establish a pairing, transport, or input-forwarding failure. Request the specific UI state and failing transition rather than another generic log bundle.",
+    "analysis": "The archive contains timeout and busy-pipe/status-polling signals, but not clear evidence that this is the same settings-sharing failure reported in #51966/#51682. Without knowing which directions fail, which peer changes status, or whether service mode is enabled, a source-level fix cannot be selected. Ask those behavior questions and use the existing archive for maintainer reproduction.",
     "initial_investigation": [
-      "Read the complete issue report and confirmed the attached archive is already present.",
-      "Inspected only the relevant Mouse Without Borders log entries from the archive. They show repeated canceled blocking socket accepts at roughly 34-second intervals, but do not identify a failed peer connection or explain the orange/yellow state.",
-      "No additional archive or broad system log request is needed until the failure stage is known."
+      "Read the complete live issue body; there are no comments, additional attachments, or linked fixes beyond the diagnostic ZIP.",
+      "Reviewed the supplied diagnostic excerpts for connection, pipe, and status signals; they do not prove a specific settings-file or pairing-key failure.",
+      "Compared the available evidence with the concurrent settings-file issue #51682; this report does not currently establish that same cause."
     ],
     "information_gaps": [
       {
         "evidence_type": "behavior_confirmation",
-        "how_to_collect": "Describe the status shown on each PC at the same time and the exact action taken before it cycles. A screenshot of the Mouse Without Borders page is useful; redact computer names and addresses.",
-        "why_needed": "The current report says the PCs are connected but does not distinguish a discovery/pairing problem from a transport or input-forwarding problem.",
-        "information": "What each PC shows during the color cycle, whether each peer appears in the device list, and whether the failure occurs during discovery, pairing, connection, or mouse movement"
+        "information": "Whether mouse and keyboard transfer fail in both directions, which device cycles between orange and yellow, and whether Use Service is enabled on either PC",
+        "why_needed": "These observations distinguish a per-peer status transition from a bidirectional transport/pairing failure and determine whether the service-mode path is involved.",
+        "how_to_collect": "With both PCs connected, test mouse and keyboard transfer in each direction, note which device changes status, and state whether Use Service is enabled on either PC."
       }
     ]
   },
   "actions": [
     {
-      "label": "Request Mouse Without Borders connection state",
+      "type": "approve_design",
+      "label": "Review the connection-state hypothesis"
+    },
+    {
       "type": "request_info",
+      "label": "Clarify Mouse Without Borders transfer direction",
       "primary": true,
       "comment": {
-        "body": "Thanks for providing the report. The Mouse Without Borders entries show listener socket cancellations but do not identify which peer or connection step is failing. Could you describe what each PC shows while the status cycles, whether both PCs appear in the device list, and what action starts the cycle? Please indicate whether the issue is during discovery, pairing, connecting, or moving the mouse. A screenshot of the Mouse Without Borders page can help; redact computer names and network addresses."
+        "body": "Thanks for describing the connection-status changes and confirming version 0.102.3101. Could you clarify whether mouse and keyboard transfer fail in both directions, which PC cycles between orange and yellow, and whether Use Service is enabled on either PC? These observations will show whether the failure is peer-specific or affects the connection in both directions."
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the connection-status cycling",
+      "note": "Use the diagnostic ZIP already attached; first identify the failing direction and service-mode configuration.",
+      "reproduce": {
+        "title": "Reproduce Mouse Without Borders status cycling",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.102.3101",
+        "prerequisites": [
+          "Two Windows PCs running Mouse Without Borders and paired with each other."
+        ],
+        "setup": [
+          "Record whether Use Service is enabled on either PC before testing."
+        ],
+        "steps": [
+          "Observe the connection indicator on both PCs after pairing.",
+          "Move the mouse across the configured boundary in each direction.",
+          "Test keyboard transfer in each direction.",
+          "Record which PC changes between orange and yellow and whether either direction ever becomes green."
+        ],
+        "expected_result": "The paired devices remain green and mouse and keyboard transfer work in both directions."
       }
     }
   ]
