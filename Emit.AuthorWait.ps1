@@ -123,14 +123,23 @@ function Resolve-PrAuthorWaitStateFromLive {
       ForEach-Object { $_.createdAt }
   )
   $latestPulseAction = Get-MaxDateTime @($latestPulseReview, $latestPulseComment)
-  $recordedWaitAt = if ($Artifact.author_wait_evidence) {
+  $activeWaitEvidence = @(
+    $Artifact.author_wait_evidence | Where-Object {
+      $_.author_reply_found -ne $true -and $_.resolved -ne $true
+    }
+  )
+  $recordedWaitAt = if ($activeWaitEvidence.Count -gt 0) {
     Get-MaxDateTime @(
-      $Artifact.author_wait_evidence |
-        ForEach-Object { $_.created_at }
+      $activeWaitEvidence | ForEach-Object { $_.created_at }
     )
   } else {
     $null
   }
+  $unansweredMaintainerRequest = @(
+    $activeWaitEvidence | Where-Object {
+      $_.kind -eq 'maintainer_request'
+    }
+  )
 
   if ($hasNeedsAuthorLabel) {
     $decision.pending_author = $true
@@ -144,6 +153,16 @@ function Resolve-PrAuthorWaitStateFromLive {
     $decision.pending_author = $true
     $decision.waiting_since = $latestPulseAction.ToString('o')
     $decision.reason = 'posted Pulse review action is after author activity'
+  } elseif ($unansweredMaintainerRequest.Count -gt 0) {
+    $decision.pending_author = $true
+    $decision.waiting_since = if ($recordedWaitAt) {
+      $recordedWaitAt.ToString('o')
+    } elseif ($DefaultWaitingSince) {
+      $DefaultWaitingSince
+    } else {
+      [string]$Live.updatedAt
+    }
+    $decision.reason = 'recorded maintainer request has no verified author reply'
   } elseif ($recordedWaitAt -and (-not $latestAuthorActivity -or $recordedWaitAt -gt $latestAuthorActivity)) {
     $decision.pending_author = $true
     $decision.waiting_since = $recordedWaitAt.ToString('o')

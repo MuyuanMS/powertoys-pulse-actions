@@ -153,4 +153,43 @@ if (-not $recordedWait.pending_author -or $recordedWait.resolved_by_author_activ
   throw "Unanswered array-shaped author-wait evidence was cleared: $($recordedWait | ConvertTo-Json -Compress)"
 }
 
+$maintainerRequestArtifact = [pscustomobject]@{
+  head_sha = 'bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c'
+  source_updated_at = '2026-11-06T04:12:46Z'
+  author_wait_evidence = @(
+    [pscustomobject]@{
+      kind = 'maintainer_request'
+      created_at = '2026-11-04T20:00:13Z'
+      author_reply_found = $false
+      resolved = $false
+    }
+  )
+  proposed_comments = @()
+}
+$automationComment = New-AuthorWaitLiveFixture '2026-11-07T04:12:32Z'
+$automationComment.comments[0].body = '/azp run'
+$unansweredMaintainerRequest = Resolve-PrAuthorWaitStateFromLive `
+  $automationComment $maintainerRequestArtifact $false $null 0
+if (-not $unansweredMaintainerRequest.pending_author -or
+    $unansweredMaintainerRequest.resolved_by_author_activity) {
+  throw "Automation-only author activity cleared an unanswered maintainer request: $($unansweredMaintainerRequest | ConvertTo-Json -Compress)"
+}
+
+$maintainerRequestArtifact.author_wait_evidence[0].author_reply_found = $true
+$answeredMaintainerRequest = Resolve-PrAuthorWaitStateFromLive `
+  $automationComment $maintainerRequestArtifact $false $null 0
+if ($answeredMaintainerRequest.pending_author -or
+    -not $answeredMaintainerRequest.resolved_by_author_activity) {
+  throw "A verified author reply did not clear the maintainer request: $($answeredMaintainerRequest | ConvertTo-Json -Compress)"
+}
+
+$maintainerRequestArtifact.author_wait_evidence[0].author_reply_found = $false
+$maintainerRequestArtifact.author_wait_evidence[0].resolved = $true
+$resolvedMaintainerRequest = Resolve-PrAuthorWaitStateFromLive `
+  $automationComment $maintainerRequestArtifact $false $null 0
+if ($resolvedMaintainerRequest.pending_author -or
+    -not $resolvedMaintainerRequest.resolved_by_author_activity) {
+  throw "An explicitly resolved maintainer request remained pending: $($resolvedMaintainerRequest | ConvertTo-Json -Compress)"
+}
+
 Write-Host 'Emitter author-wait regression tests passed.'

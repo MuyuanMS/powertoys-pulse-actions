@@ -991,6 +991,10 @@ foreach ($it in $src.items) {
   if ($authorWaitResolved) {
     $iowes = 'us'
     $stage = 'review_in_progress'
+  } elseif ($authorWaitDecision.pending_author -and
+      $authorWaitDecision.reason -eq 'recorded maintainer request has no verified author reply') {
+    $iowes = 'author'
+    $stage = 'awaiting_author'
   }
   $needsRevalidation = ($o -and $o.needs_revalidation) -or $issueNeedsRevalidation -or $authorWaitResolved
   $primary = $null
