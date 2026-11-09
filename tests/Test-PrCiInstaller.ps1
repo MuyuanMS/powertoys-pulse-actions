@@ -46,6 +46,23 @@ function Invoke-WebRequest {
 function Get-AuthenticodeSignature { param($FilePath) [pscustomobject]@{Status='NotSigned'} }
 function Assert($Condition,[string]$Message) { if (-not $Condition) { throw $Message } }
 try {
+    $repository = Split-Path $PSScriptRoot -Parent
+    foreach ($relative in @(
+        '.github\prompts\powertoys-pr-e2e-test.prompt.md',
+        'pulse-extension\prompts\powertoys-pr-e2e-test.prompt.md'
+    )) {
+        $prompt = Get-Content (Join-Path $repository $relative) -Raw
+        foreach ($required in @(
+            "agent: 'agent'", 'pull/<PRNumber>/head', 'New-WorktreeFromBranch.ps1',
+            'build-essentials.cmd -Platform x64 -Configuration Debug',
+            'build.ps1 -Platform x64 -Configuration Debug',
+            'build.Debug.x64.errors.log', 'x64\Debug'
+        )) {
+            Assert ($prompt.Contains($required)) "$relative lost local Debug setup requirement: $required"
+        }
+        Assert ($prompt -match '(?i)wait.+(?:explicitly requested|explicitly requests|user explicitly)') "$relative must not wait for CI by default."
+        Assert ($prompt -match '(?i)restore.+original') "$relative must restore the original environment."
+    }
     $result = & $script:tool -PrNumber 42 -Destination "$script:temp\success"
     Assert ($result.Sha256 -eq $script:hash -and $result.MergeSha -eq $script:merge) 'Provenance/hash receipt incorrect.'
     Assert (@($script:requests | Where-Object { $_ -match 'format=file' }).Count -eq 2) 'Expected exactly two single-file transfers.'
