@@ -1,33 +1,103 @@
 {
+  "summary": "Applying a Windows Northern Lights theme triggers a WPF binding/style exception; the report is not a WinUI Settings stack.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The supplied exception makes system-theme transition reproduction useful. It does not identify a null binding in PowerToys or prove that a specific view should be changed.",
+    "evidence": [
+      "0.99.1 report includes a NullReferenceException in BindingExpression.SetupDefaultValueConverter followed by ThemeManager.OnSystemThemeChanged and style/resource invalidation. No app-owned frame or dump identifies the binding.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/launcher/PowerLauncher/App.xaml.cs: PowerToys Run registers WPF dispatcher exception handling and aThemeManager; the supplied System.Windows stack should not be misrouted solely from the Settings label. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/launcher/PowerLauncher/App.xaml.cs"
+    ],
+    "recommended_action": "Isolate WPF crash during Windows theme transition",
+    "evaluated_at": "2026-11-09T02:17:44.169Z",
+    "source_updated_at": "2026-05-21T13:26:27Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The supplied exception makes system-theme transition reproduction useful. It does not identify a null binding in PowerToys or prove that a specific view should be changed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "system-theme binding crash investigation",
+      "root_cause": "Hypothesis: a WPF resource/style binding becomes invalid during system-theme replacement; the exact application binding remains unproven.",
+      "plan": [
+        "Reproduce theme transition with Run open/closed and capture the first app-owned binding/frame.",
+        "Determine whether the failing value converter is application or framework state.",
+        "Add a targeted guard/resource fix only for the confirmed binding and regression coverage."
+      ],
+      "verification": [
+        "Repeated theme switches no longer crash the identified PowerToys process.",
+        "Light/dark/high contrast resources and active query UI update correctly."
+      ],
+      "confidence": {
+        "score": 51,
+        "level": "yellow",
+        "rationale": "The supplied exception makes system-theme transition reproduction useful. It does not identify a null binding in PowerToys or prove that a specific view should be changed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Applying a Windows Northern Lights theme triggers a WPF binding/style exception; the report is not a WinUI Settings stack.",
+    "known_information": [
+      "0.99.1 report includes a NullReferenceException in BindingExpression.SetupDefaultValueConverter followed by ThemeManager.OnSystemThemeChanged and style/resource invalidation. No app-owned frame or dump identifies the binding."
+    ],
+    "inferences": [
+      "Hypothesis: a WPF resource/style binding becomes invalid during system-theme replacement; the exact application binding remains unproven."
+    ],
+    "analysis": "The supplied exception makes system-theme transition reproduction useful. It does not identify a null binding in PowerToys or prove that a specific view should be changed.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/launcher/PowerLauncher/App.xaml.cs: PowerToys Run registers WPF dispatcher exception handling and aThemeManager; the supplied System.Windows stack should not be misrouted solely from the Settings label. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/launcher/PowerLauncher/App.xaml.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-05-21T13:26:27Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "48032-reproduce",
+      "type": "reproduce",
+      "label": "Isolate WPF crash during Windows theme transition",
+      "primary": true,
+      "reproduce": {
+        "title": "Isolate WPF crash during Windows theme transition",
+        "module": "PowerToys Run / WPF theme",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "1. On an isolated Windows account apply Northern Lights with PowerToys Run enabled.",
+          "2. Repeat with Run open, closed, and PowerToys exited; record which process displays the error.",
+          "3. Use a debugger on the WPF exception to capture the first app-owned binding and current system theme."
+        ],
+        "expected_result": "Identify a reproducible application binding failure without assuming WinUI Settings is responsible.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "48032-design",
+      "type": "approve_design",
+      "label": "Review system-theme binding crash investigation",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
   "number": 48032,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/48032",
+  "title": "Applying Northern lights theme",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-09T02:17:44.169Z",
   "source_updated_at": "2026-05-21T13:26:27Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-21T13:26:27Z"
-  }
+  "generated_at": "2026-11-09T02:17:44.169Z",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
 }

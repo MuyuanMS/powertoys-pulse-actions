@@ -1,33 +1,99 @@
 {
+  "summary": "Disabling Always run as administrator does not establish a clean non-elevated restart.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "An already elevated shell or retained elevated process can preserve elevation independently of the saved preference. First separate startup policy from inherited elevation; do not ask the reporter to change service security settings.",
+    "evidence": [
+      "0.99.1 machine-wide install remains elevated after disabling the setting and reopening; MWB layout editing is affected. Pasted report identifies elevated runner state but not the launch token source.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/runner: runner elevation/startup paths distinguish the configured startup preference from the Windows token inherited on launch. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/runner"
+    ],
+    "recommended_action": "Confirm non-elevated restart path",
+    "evaluated_at": "2026-11-09T02:17:44.159Z",
+    "source_updated_at": "2026-05-22T01:25:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An already elevated shell or retained elevated process can preserve elevation independently of the saved preference. First separate startup policy from inherited elevation; do not ask the reporter to change service security settings."
+  },
+  "proposed_fixes": [
+    {
+      "title": "non-elevated restart investigation",
+      "root_cause": "Hypothesis: the reopening path retains an elevated runner or inherits an elevated parent token rather than applying the disabled startup preference.",
+      "plan": [
+        "Reproduce after fully exiting and starting from non-elevated Explorer.",
+        "Inspect startup/task scope and the saved run_elevated preference if elevation persists.",
+        "Correct only the confirmed startup/restart path and keep service-mode permissions separate."
+      ],
+      "verification": [
+        "Preference off plus a non-elevated launch results in a non-elevated runner.",
+        "Intentional administrator launch and MWB service permissions still behave correctly."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "An already elevated shell or retained elevated process can preserve elevation independently of the saved preference. First separate startup policy from inherited elevation; do not ask the reporter to change service security settings."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Disabling Always run as administrator does not establish a clean non-elevated restart.",
+    "known_information": [
+      "0.99.1 machine-wide install remains elevated after disabling the setting and reopening; MWB layout editing is affected. Pasted report identifies elevated runner state but not the launch token source."
+    ],
+    "inferences": [
+      "Hypothesis: the reopening path retains an elevated runner or inherits an elevated parent token rather than applying the disabled startup preference."
+    ],
+    "analysis": "An already elevated shell or retained elevated process can preserve elevation independently of the saved preference. First separate startup policy from inherited elevation; do not ask the reporter to change service security settings.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/runner: runner elevation/startup paths distinguish the configured startup preference from the Windows token inherited on launch. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/runner",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-05-22T01:25:50Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether a full exit and non-elevated Explorer launch still elevate",
+        "why_needed": "Separates token inheritance from preference persistence",
+        "how_to_collect": "Exit through the tray, launch from the ordinary Start menu/Explorer without Run as administrator, and report the Running as administrator indicator",
+        "evidence_type": "install_scope"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "48047-request",
+      "type": "request_info",
+      "label": "Confirm non-elevated restart path",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the elevation state and the steps showing that the setting was unchecked. Please fully exit PowerToys from the tray, then launch it from an ordinary non-administrator Start menu or Explorer window (not an elevated terminal), and confirm whether Settings still reports Running as administrator. This separates a retained/inherited elevated token from a startup-preference defect; no full registry or settings export is needed."
+      }
+    },
+    {
+      "id": "48047-design",
+      "type": "approve_design",
+      "label": "Review non-elevated restart investigation",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
   "number": 48047,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/48047",
+  "title": "canot close admin run mode",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-09T02:17:44.159Z",
   "source_updated_at": "2026-05-22T01:25:50Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-22T01:25:50Z"
-  }
+  "generated_at": "2026-11-09T02:17:44.159Z",
+  "labels": [
+    "Issue-Bug",
+    "Area-Setup/Install",
+    "Area-Localization",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
 }

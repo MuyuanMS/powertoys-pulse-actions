@@ -1,113 +1,107 @@
 {
-  "schemaVersion": 5,
-  "number": 51448,
-  "kind": "issue",
-  "title": "[Mouse Without Borders] Service mode: SYSTEM process leaks Token/Event/Thread handles at a constant rate (~10k handles/day)",
-  "url": "https://github.com/microsoft/PowerToys/issues/51448",
-  "generated_at": "2026-11-06T12:29:59.9832832+08:00",
-  "evaluated_at": "2026-11-06T12:29:59.9832832+08:00",
-  "source_updated_at": "2026-11-06T02:31:34Z",
-  "stage": "triage_revalidated",
+  "summary": "Token retention and blocked finalization now have separate source-backed investigation targets.",
+  "stage": "triaged",
   "judgment": {
     "status": "reproducible",
-    "rationale": "The new service-off measurements reproduce the same object-type pattern and desktop-switch release boundary, broadening the affected mode but not identifying the allocating call stack. Preserve the measured trigger/lifetime distinction and obtain an attributed handle trace before choosing a cleanup change.",
+    "rationale": "Token retention and blocked finalization now have separate source-backed investigation targets. Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "evidence": [
-      "The author's latest corrections supersede the earlier timer/helper-restart narrative: growth starts only after crossing to the peer and back, then persists while idle.",
-      "The reported cadence is roughly three Token, two Event and one Thread handles every 50 seconds in the SYSTEM process owning the TCP connection; live thread count stays flat.",
-      "A desktop switch releases the accumulated handles without changing the owning PID. The second SYSTEM/helper process remains stable.",
-      "Killing the helper does not reclaim the handles; growth continued for more than eleven hours without it. The author plans a current-version retest from the older 0.100.2 baseline.",
-      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
-      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
-      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass.",
-      "A November 6 follow-up reports the same Token/Event/Thread growth in the user-session MWB process with service mode OFF: about +24 Token, +8 Event and +5 Thread handles per minute, while Key and WaitCompletionPacket counts and live thread count stayed flat.",
-      "The same follow-up reports that a cancelled UAC prompt released accumulated handles in the same process, and distinguishes this Token/Event/Thread pattern from the separate Settings-triggered certificate-store leak tracked in #51952."
+      "Earlier helper-restart and periodic-trigger interpretations were explicitly corrected: desktop/socket teardown, not killing the helper, releases handles.",
+      "New reply reproduces with service mode off and clipboard off; Token growth correlates with settings saves, while reported dumps show finalization waiting in WinRT context release.",
+      "The exact COM apartment/object causing the wait remains an inference; changing every socket thread to MTA is not yet justified.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/settings-ui/Settings.UI.Library/Utilities/Helper.cs: LocalApplicationDataFolder obtains WindowsIdentity.GetCurrent without deterministic disposal; Receiver heartbeat writes MyKey and socket workers explicitly use STA. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/settings-ui/Settings.UI.Library/Utilities/Helper.cs"
     ],
-    "recommended_action": "Reproduce Mouse Without Borders service handles behavior",
-    "evaluated_at": "2026-11-06T12:29:59.9832832+08:00",
-    "source_updated_at": "2026-11-06T02:31:34Z"
+    "recommended_action": "Reproduce: Token retention and blocked finalization now have separate source-backed investigation targets",
+    "evaluated_at": "2026-11-09T02:20:01.36Z",
+    "source_updated_at": "2026-11-07T22:36:35Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Conditional lightweight proposal, not an implementation-grade design. The new differential evidence narrows the lifetime boundary but does not identify an allocating call stack."
+    "rationale": "Token retention and blocked finalization now have separate source-backed investigation targets. Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention. This is an initial investigation direction, not a runtime-confirmed diagnosis."
   },
   "proposed_fixes": [
     {
-      "title": "Identify and bound retained connection-lifetime handles after peer crossing",
-      "root_cause": "Hypothesis: peer-crossing activates a connection/session worker path that retains native handle sets until desktop-driven socket teardown. The exact allocator and owner remain unmeasured; the corrected evidence contradicts helper restart as the release mechanism.",
+      "title": "Token retention and blocked finalization now have separate source-backed investigation targets",
+      "root_cause": "Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention.",
       "plan": [
-        "Reproduce the no-crossing control and the cross-to-peer-and-back trigger in both service-on SYSTEM and service-off user-session modes; sample the TCP-owning PID, object types, Settings state and clipboard/file-transfer settings.",
-        "Attribute growing handles to their creation/retention stack; compare a desktop switch with a helper-only termination while preserving the original process.",
-        "Only after identifying the owner, enforce deterministic cleanup at that connection/session lifetime and test repeated crossings plus normal/exception/desktop-close paths."
+        "Dispose the owned WindowsIdentity deterministically and measure isolated token growth.",
+        "Audit unchanged MyKey save suppression against key migration/persistence semantics before modifying the setter.",
+        "Identify the precise context-bound WinRT object and receiving apartment; route only confirmed calls to an appropriate pumping/MTA context."
       ],
       "verification": [
-        "Current-build Token/Event/Thread handle counts remain bounded after repeated crossings and hours idle.",
-        "Desktop switching and reconnection preserve input sharing; helper termination is not assumed to be a repair.",
-        "The old helper-restart and 26-second claims are not used as regression expectations."
+        "Token handles remain bounded during repeated settings saves.",
+        "Finalization drains without desktop switching and clipboard/input work across service and user modes."
       ],
       "confidence": {
-        "score": 46,
-        "level": "red",
-        "rationale": "The new differential evidence narrows the lifetime boundary but does not identify an allocating call stack."
+        "score": 79,
+        "level": "yellow",
+        "rationale": "Token retention and blocked finalization now have separate source-backed investigation targets. Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention. This is an initial investigation direction, not a runtime-confirmed diagnosis."
       }
     }
   ],
   "issue_context": {
-    "summary": "Mouse Without Borders retains Token/Event/Thread handles after peer crossing in both service-on and service-off modes; desktop switching releases them, but the allocator is not identified.",
+    "summary": "Token retention and blocked finalization now have separate source-backed investigation targets.",
     "known_information": [
-      "The author's latest corrections supersede the earlier timer/helper-restart narrative: growth starts only after crossing to the peer and back, then persists while idle.",
-      "The reported cadence is roughly three Token, two Event and one Thread handles every 50 seconds in the SYSTEM process owning the TCP connection; live thread count stays flat.",
-      "A desktop switch releases the accumulated handles without changing the owning PID. The second SYSTEM/helper process remains stable.",
-      "Killing the helper does not reclaim the handles; growth continued for more than eleven hours without it. The author plans a current-version retest from the older 0.100.2 baseline.",
-      "A November 6 follow-up reports the same Token/Event/Thread growth in the user-session MWB process with service mode OFF: about +24 Token, +8 Event and +5 Thread handles per minute, with Key/WaitCompletionPacket counts and live thread count flat.",
-      "The same follow-up reports a cancelled UAC prompt released accumulated handles in the same PID and distinguishes this pattern from the separate Settings-triggered certificate-store leak in #51952."
+      "Earlier helper-restart and periodic-trigger interpretations were explicitly corrected: desktop/socket teardown, not killing the helper, releases handles.",
+      "New reply reproduces with service mode off and clipboard off; Token growth correlates with settings saves, while reported dumps show finalization waiting in WinRT context release.",
+      "The exact COM apartment/object causing the wait remains an inference; changing every socket thread to MTA is not yet justified."
     ],
     "inferences": [
-      "Socket teardown is a supported investigation boundary, not a proven leak root cause."
+      "Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention."
     ],
-    "analysis": "The new service-off measurements reproduce the same object-type pattern and desktop-switch release boundary, broadening the affected mode but not identifying the allocating call stack. Preserve the measured trigger/lifetime distinction and obtain an attributed handle trace before choosing a cleanup change.",
+    "analysis": "Token retention and blocked finalization now have separate source-backed investigation targets. Hypothesis: undisposed WindowsIdentity adds token handles per path lookup, while blocked WinRT finalization amplifies token, thread and other resource retention. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "initial_investigation": [
-      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Form/frmScreen.cs: HelperTimer_Tick tests desktop/session activity and calls sk.Close(false), clears Common.Sk and later permits socket recreation. This corroborates a real desktop-lifetime boundary, not the leaking allocation.",
-      "Upstream main 2d28a562bfb5f8a76c4a43bbd8c3939f827bb368: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs: SocketStuff owns client/server connection lifetimes and multiple socket worker paths. A close boundary can release retained objects even if allocation happened elsewhere.",
-      "Read the complete October 25 correction, including the same-PID and helper-absent controls; no handle trace or current-build reproduction was executed in this pass.",
-      "Read the complete November 6 service-off follow-up, including object-type counts, same-PID UAC release, and the explicit distinction from #51952; no handle-creation stack or current-build reproduction was executed in this triage."
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/settings-ui/Settings.UI.Library/Utilities/Helper.cs: LocalApplicationDataFolder obtains WindowsIdentity.GetCurrent without deterministic disposal; Receiver heartbeat writes MyKey and socket workers explicitly use STA. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/settings-ui/Settings.UI.Library/Utilities/Helper.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-07T22:36:35Z. No runtime reproduction or implementation is claimed."
     ],
     "information_gaps": []
   },
   "actions": [
     {
+      "id": "51448-reproduce",
       "type": "reproduce",
-      "label": "Reproduce Mouse Without Borders service handles behavior",
+      "label": "Reproduce: Token retention and blocked finalization now have separate source-backed investigation targets",
       "primary": true,
       "reproduce": {
-        "title": "Validate Mouse Without Borders service handles report",
-        "module": "Mouse Without Borders service handles",
-        "version_requirement": "Current stable release; compare the reported version only in an isolated test environment if needed.",
+        "title": "Reproduce: Token retention and blocked finalization now have separate source-backed investigation targets",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
         "prerequisites": [
-          "Use a disposable test account or controlled test machine; preserve existing user data."
+          "Use non-sensitive test assets and preserve the current module configuration."
         ],
         "setup": [],
         "steps": [
-          "Record PID, service/helper role, TCP ownership and object counts before crossing; establish an idle no-crossing control.",
-          "Cross to the peer and back once, then idle while recording roughly 50-second handle sets and live-thread counts.",
-          "Capture owning allocation/retention stacks in the growing process; compare helper-only exit with a desktop switch and record whether that same PID releases objects.",
-          "Repeat on current stable and compare the reported older version only in a controlled environment."
+          "1. On two test machines disable clipboard, fully exit Settings and correlate settings writes with Token/Event/Thread counts.",
+          "2. Capture a handle trace and finalizer wait on the affected process; distinguish owned identity tokens from WinRT context retention.",
+          "3. Test identity disposal independently, then validate any apartment fix with clipboard and secure-desktop controls."
         ],
-        "expected_result": "Either counts remain bounded or an attributed handle owner, trigger and lifetime release boundary are demonstrated."
+        "expected_result": "Token handles remain bounded during repeated settings saves. Finalization drains without desktop switching and clipboard/input work across service and user modes.",
+        "attachment_urls": []
       }
     },
     {
+      "id": "51448-design",
       "type": "approve_design",
-      "label": "Review conditional fix direction",
-      "primary": false,
+      "label": "Review Token retention and blocked finalization now have separate source-backed investigation targets",
       "confirm": true,
-      "note": "Approve investigation/design direction only after the listed uncertainty-reducing action. No detailed design or implementation has been executed."
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
     }
   ],
+  "schemaVersion": 5,
+  "number": 51448,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51448",
+  "title": "[Mouse Without Borders] Service mode: SYSTEM process leaks Token/Event/Thread handles at a constant rate (~10k handles/day)",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:20:01.36Z",
+  "source_updated_at": "2026-11-07T22:36:35Z",
+  "generated_at": "2026-11-09T02:20:01.36Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "comments": 5
+  "pending_author": false,
+  "owes": "us"
 }

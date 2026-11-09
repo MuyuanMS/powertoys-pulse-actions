@@ -5,8 +5,8 @@
   "title": "Image Resizer fails with COMException",
   "url": "https://github.com/microsoft/PowerToys/issues/51618",
   "generated_at": "2026-11-02T00:57:05.7525339+08:00",
-  "evaluated_at": "2026-11-02T00:57:05.7525339+08:00",
-  "source_updated_at": "2026-11-01T13:39:44Z",
+  "evaluated_at": "2026-11-09T02:17:44.138Z",
+  "source_updated_at": "2026-11-07T22:53:38Z",
   "stage": "triage_revalidated",
   "judgment": {
     "status": "reproducible",
@@ -18,11 +18,15 @@
       "Source inspected at main 9227a8497750: src/modules/imageresizer/ui/Models/ResizeOperation.cs: Resized JPEGs use a fresh encoder; pixel data and native/known metadata are copied before FlushAsync. Output is created before encoding, so an encoding failure can leave a partial file. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
       "Downloaded the ON1 image, inspected the error image, and inventoried the supplied report. There is no Image Resizer application-log stack in that archive's matching entries; the screenshot supplies the exception code, not the failed codec call.",
       "Read merged #51359's metadata-preservation scope and patches and the current shared encode path. No PR specifically referencing #51618 was found.",
-      "The new reporter reply says the same ON1 JPEGs open in IrfanView, Photos, PhotoScape X, Paint, SnagIt, XnView, PowerPoint and Word, and that Windows10 reproduces the recent Image Resizer failure. These are reporter-provided controls, not updater executions; they strengthen product-path regression evidence but do not identify the failing codec call."
+      "The new reporter reply says the same ON1 JPEGs open in IrfanView, Photos, PhotoScape X, Paint, SnagIt, XnView, PowerPoint and Word, and that Windows10 reproduces the recent Image Resizer failure. These are reporter-provided controls, not updater executions; they strengthen product-path regression evidence but do not identify the failing codec call.",
+      "Reporter confirms failure persists on 0.102.3101 and ON1 Photo RAW2027 as well as2026; the latest reply asks whether PowerToys or ON1 should correct it.",
+      "Maintainer identifies0x88982F8E as WINCODEC_ERR_PROPERTYUNEXPECTEDTYPE. This narrows codec property handling but does not identify the exact failing API.",
+      "Read closed follow-up51996 and its newer diagnostic ZIP. Image Resizer EventViewer entries record repeated c000027b process failures; the event records lack a managed codec-stage stack. The new report is not evidence that metadata alone is the root cause.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/imageresizer/ui/Models/ResizeOperation.cs: canonical source retains transcode/fresh encoder paths and best-effort property copying before FlushAsync; File.Replace occurs after encoding. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/imageresizer/ui/Models/ResizeOperation.cs"
     ],
     "recommended_action": "Localize the ON1 JPEG codec failure using the supplied image",
-    "evaluated_at": "2026-11-02T00:57:05.7525339+08:00",
-    "source_updated_at": "2026-11-01T13:39:44Z"
+    "evaluated_at": "2026-11-09T02:17:44.138Z",
+    "source_updated_at": "2026-11-07T22:53:38Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -54,19 +58,24 @@
       "The report supplies an embedded ON1 JPEG, the exact error-dialog screenshot, and a diagnostic ZIP, plus Windows 11 26H2 build 26300.9711 and a system-wide non-elevated install.",
       "The author confirmed failure on 0.102.2933 and 0.102.3001, success after downgrading to 0.100.2, and renewed failure after reinstalling 0.102.3001.",
       "The visually inspected error dialog identifies COMException HRESULT 0x88982F8E; failures leave an output under one kilobyte. Nikon/Canon camera JPEGs are already supplied as working controls.",
-      "The new reporter reply says the same ON1 JPEGs open in IrfanView, Photos, PhotoScape X, Paint, SnagIt, XnView, PowerPoint and Word, and that Windows10 reproduces the recent Image Resizer failure. These are reporter-provided controls, not updater executions; they strengthen product-path regression evidence but do not identify the failing codec call."
+      "The new reporter reply says the same ON1 JPEGs open in IrfanView, Photos, PhotoScape X, Paint, SnagIt, XnView, PowerPoint and Word, and that Windows10 reproduces the recent Image Resizer failure. These are reporter-provided controls, not updater executions; they strengthen product-path regression evidence but do not identify the failing codec call.",
+      "Reporter confirms failure persists on 0.102.3101 and ON1 Photo RAW2027 as well as2026; the latest reply asks whether PowerToys or ON1 should correct it.",
+      "Maintainer identifies0x88982F8E as WINCODEC_ERR_PROPERTYUNEXPECTEDTYPE. This narrows codec property handling but does not identify the exact failing API.",
+      "Read closed follow-up51996 and its newer diagnostic ZIP. Image Resizer EventViewer entries record repeated c000027b process failures; the event records lack a managed codec-stage stack. The new report is not evidence that metadata alone is the root cause.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/imageresizer/ui/Models/ResizeOperation.cs: canonical source retains transcode/fresh encoder paths and best-effort property copying before FlushAsync; File.Replace occurs after encoding. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/imageresizer/ui/Models/ResizeOperation.cs"
     ],
     "inferences": [
       "The unusually short output is consistent with an already-created stream failing before successful flush; this does not establish the failure's metadata root cause."
     ],
-    "analysis": "There is enough input and a version/control matrix for maintainer reproduction. Treat the embedded image as an available first test sample rather than ask for evidence already supplied; if GitHub transformed the upload, request the byte-original only after a concrete inability to reproduce. The metadata/encoder path is a hypothesis, and merged #51359 is relevant prior work, not demonstrated coverage of this newly reported ON1 failure.",
+    "analysis": "There is enough input and a version/control matrix for maintainer reproduction. Treat the embedded image as an available first test sample rather than ask for evidence already supplied; if GitHub transformed the upload, request the byte-original only after a concrete inability to reproduce. The metadata/encoder path is a hypothesis, and merged #51359 is relevant prior work, not demonstrated coverage of this newly reported ON1 failure.\nReporter confirms failure persists on0.102.3101 and ON1 Photo RAW2027 as well as2026; the latest reply asks whether PowerToys or ON1 should correct it. Maintainer identifies0x88982F8E as WINCODEC_ERR_PROPERTYUNEXPECTEDTYPE. This narrows codec property handling but does not identify the exact failing API. Read closed follow-up51996 and its newer diagnostic ZIP. Image Resizer EventViewer entries record repeated c000027b process failures; the event records lack a managed codec-stage stack. The new report is not evidence that metadata alone is the root cause. Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/imageresizer/ui/Models/ResizeOperation.cs: canonical source retains transcode/fresh encoder paths and best-effort property copying before FlushAsync; File.Replace occurs after encoding. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
     "initial_investigation": [
       "Source inspected at main 9227a8497750: src/modules/imageresizer/ui/Models/ResizeOperation.cs: Resized JPEGs use a fresh encoder; pixel data and native/known metadata are copied before FlushAsync. Output is created before encoding, so an encoding failure can leave a partial file. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
       "Downloaded the ON1 image, inspected the error image, and inventoried the supplied report. There is no Image Resizer application-log stack in that archive's matching entries; the screenshot supplies the exception code, not the failed codec call.",
       "Read merged #51359's metadata-preservation scope and patches and the current shared encode path. No PR specifically referencing #51618 was found.",
       "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
       "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed.",
-      "Re-read the full current report, new comment and timeline. Retained prior downloaded-sample/error/ZIP and pinned encoder-path evidence on their original revision; no new codec execution or root-cause proof."
+      "Re-read the full current report, new comment and timeline. Retained prior downloaded-sample/error/ZIP and pinned encoder-path evidence on their original revision; no new codec execution or root-cause proof.",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-07T22:53:38Z. No runtime reproduction or implementation is claimed."
     ],
     "information_gaps": [
       {
@@ -116,10 +125,12 @@
   ],
   "labels": [
     "Issue-Bug",
+    "Product-Image Resizer",
     "Needs-Triage"
   ],
-  "assignees": [
-    null
-  ],
-  "comments": 1
+  "assignees": [],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "pending_author": false,
+  "owes": "us"
 }

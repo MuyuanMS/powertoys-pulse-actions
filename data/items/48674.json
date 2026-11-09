@@ -1,101 +1,105 @@
 {
-  "number": 48674,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "reproduction_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-13T13:10:24Z",
-  "evaluated_at": "2026-09-13T13:10:24Z",
-  "source_updated_at": "2026-06-22T09:48:50Z",
-  "status": {
-    "glyph": "🧪",
-    "label": "Ready for maintainer reproduction",
-    "detail": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change."
+  "summary": "Dock GPU selection and adapter labeling disagree with the multi-GPU system.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Dock GPU selection and adapter labeling disagree with the multi-GPU system. Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "evidence": [
+      "Multiple reporters with Intel/AMD integrated and NVIDIA discrete GPUs confirm missing GPU 1 and temperature on 0.100.0/0.100.2.",
+      "Task Manager index ordering is not by itself a stable adapter identity contract; not all devices expose temperature.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/DataManager.cs: GPUStats sampling is separate from adapter enumeration and dock selection; inspect identity and available metric semantics. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/DataManager.cs"
+    ],
+    "recommended_action": "Reproduce: Dock GPU selection and adapter labeling disagree with the multi-GPU system",
+    "evaluated_at": "2026-11-09T02:20:01.34Z",
+    "source_updated_at": "2026-09-30T01:11:19Z"
   },
-  "next_action": {
-    "glyph": "➡️",
-    "label": "Run the documented scenario on a current build before selecting a fix design.",
-    "reason": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Dock GPU selection and adapter labeling disagree with the multi-GPU system. Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data. This is an initial investigation direction, not a runtime-confirmed diagnosis."
   },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "reproduce-48674",
-      "type": "reproduce",
-      "label": "Reproduce Command Palette: GPU cannot be switched to the next one or previous o…",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "Command Palette",
-        "version_requirements": "0.100.0",
-        "prerequisites": [
-          "Use the reported configuration for Command Palette.",
-          "Compare the reported PowerToys auto-update installation with a clean current installation if practical."
-        ],
-        "steps": [
-          "My system has two GPUs: the integrated GPU (iGPU) is identified as GPU 0 and the discrete GPU (dGPU) as GPU 1 in Windows Task Manager.",
-          "However, the dock: Only displays GPU 0 (failing to show temperature parameters or allow switching to other GPUs), Misidentifies GPU 0 as the dGPU—contradicting system monitoring tools where GPU 0 is the iGPU.",
-          "This inconsistency suggests the dock is incorrectly mapping GPU indices.",
-          "[attached image] [attached image]"
-        ],
-        "expected_result": "The dock should correctly identify and display each GPU (e.g., integrated GPU as GPU 0, discrete GPU as GPU 1), show temperature metrics for all GPUs, and allow switching between multiple GPU statuses."
+      "title": "Dock GPU selection and adapter labeling disagree with the multi-GPU system",
+      "root_cause": "Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data.",
+      "plan": [
+        "Enumerate adapter identities and verify selector traversal uses every supported adapter.",
+        "Keep adapter name/identity consistent with the selected samples, without assuming Task Manager numbering.",
+        "Display unavailable temperature explicitly instead of fabricating a value."
+      ],
+      "verification": [
+        "Both supported adapters are selectable with correct names and stable identity.",
+        "Missing temperature is represented as unsupported rather than a false reading."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "Dock GPU selection and adapter labeling disagree with the multi-GPU system. Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data. This is an initial investigation direction, not a runtime-confirmed diagnosis."
       }
     }
   ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change.",
-    "evidence": [
-      "The report covers PowerToys 0.100.0, installed via PowerToys auto-update, affecting Command Palette.",
-      "Reported reproduction: My system has two GPUs: the integrated GPU (iGPU) is identified as GPU 0 and the discrete GPU (dGPU) as GPU 1 in Windows Task Manager. However, the dock: Only displays GPU 0 (failing to show temperature parameters or allow switching to other GPUs), Misidentifies GPU 0 as the dGPU—contradicting system monitoring tools where GPU 0 is the iGPU. This inconsistency suggests the dock is incorrectly mapping GPU indices. [a…",
-      "Reported result: Fails to switch between GPU statuses (e.g., stuck on a single GPU), Does not display temperature metrics for any GPU, Reports incorrect GPU device indices (e.g., mislabels the discrete GPU as GPU 0 when system tools identify it as GPU 1).\"",
-      "Expected result: The dock should correctly identify and display each GPU (e.g., integrated GPU as GPU 0, discrete GPU as GPU 1), show temperature metrics for all GPUs, and allow switching between multiple GPU statuses.",
-      "Latest public comment by @totkeks on 2026-06-22T09:48:50Z: Wanted to just post this, because I couldn't find an issue related to it when filtering with label CmdPal - Dock. Got the same issue here with iGPU in CPU and dGPU. Can't switch to GPU 1. Also GPU 0 doesn't display temperature. [attached image] PowerToys version: v0.100.0 Windows version: 26300.8697",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Command Palette."
-    ],
-    "recommended_action": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted.",
-    "evaluated_at": "2026-09-13T13:10:24Z",
-    "source_updated_at": "2026-06-22T09:48:50Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A separate code fix is not appropriate at this stage because the issue is waiting, handled, external or by-design, or still requires maintainer reproduction.",
-    "existing_fix_urls": []
-  },
   "issue_context": {
-    "summary": "The Command Palette report describes fails to switch between GPU statuses (e.g., stuck on a single GPU), Does not display temperature metrics for any GPU, Reports incorrect GPU device indices (e.g., mislabels the discrete GPU as GPU 0 when system tools identify it as GPU 1).\".",
+    "summary": "Dock GPU selection and adapter labeling disagree with the multi-GPU system.",
     "known_information": [
-      "The report covers PowerToys 0.100.0, installed via PowerToys auto-update, affecting Command Palette.",
-      "Reported reproduction: My system has two GPUs: the integrated GPU (iGPU) is identified as GPU 0 and the discrete GPU (dGPU) as GPU 1 in Windows Task Manager. However, the dock: Only displays GPU 0 (failing to show temperature parameters or allow switching to other GPUs), Misidentifies GPU 0 as the dGPU—contradicting system monitoring tools where GPU 0 is the iGPU. This inconsistency suggests the dock is incorrectly mapping GPU indices. [a…",
-      "Reported result: Fails to switch between GPU statuses (e.g., stuck on a single GPU), Does not display temperature metrics for any GPU, Reports incorrect GPU device indices (e.g., mislabels the discrete GPU as GPU 0 when system tools identify it as GPU 1).\"",
-      "Expected result: The dock should correctly identify and display each GPU (e.g., integrated GPU as GPU 0, discrete GPU as GPU 1), show temperature metrics for all GPUs, and allow switching between multiple GPU statuses.",
-      "Latest public comment by @totkeks on 2026-06-22T09:48:50Z: Wanted to just post this, because I couldn't find an issue related to it when filtering with label CmdPal - Dock. Got the same issue here with iGPU in CPU and dGPU. Can't switch to GPU 1. Also GPU 0 doesn't display temperature. [attached image] PowerToys version: v0.100.0 Windows version: 26300.8697",
-      "Current labels: Issue-Bug, Needs-Triage, Product-Command Palette."
+      "Multiple reporters with Intel/AMD integrated and NVIDIA discrete GPUs confirm missing GPU 1 and temperature on 0.100.0/0.100.2.",
+      "Task Manager index ordering is not by itself a stable adapter identity contract; not all devices expose temperature."
     ],
     "inferences": [
-      "A PowerToys code defect may be present, but the exact failing branch remains unconfirmed until current-build reproduction."
+      "Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data."
     ],
-    "analysis": "The live body, complete comment history, labels, assignees, and linked-work timeline were reviewed. The issue is specific enough for local verification, but no confirmed fix or sufficiently narrow root cause is present.",
+    "analysis": "Dock GPU selection and adapter labeling disagree with the multi-GPU system. Hypothesis: the dock retains a single sampled adapter or mismatches selector identity with enumerated GPU data. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "initial_investigation": [
-      "Reviewed the complete live issue body, 1 public comment(s), current labels, assignees, and timeline through 2026-06-22T09:48:50Z.",
-      "No linked issue or pull request in the live timeline establishes a current fix or duplicate.",
-      "No current fix, active assignee, or confirmed duplicate was found; maintainer reproduction is the next discriminating step."
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/DataManager.cs: GPUStats sampling is separate from adapter enumeration and dock selection; inspect identity and available metric semantics. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/DataManager.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-09-30T01:11:19Z. No runtime reproduction or implementation is claimed."
     ],
     "information_gaps": []
   },
+  "actions": [
+    {
+      "id": "48674-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce: Dock GPU selection and adapter labeling disagree with the multi-GPU system",
+      "primary": true,
+      "reproduce": {
+        "title": "Reproduce: Dock GPU selection and adapter labeling disagree with the multi-GPU system",
+        "module": "Command Palette Performance Monitor",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Use a hybrid iGPU/dGPU machine and compare actual adapter names/identifiers with the dock.",
+          "2. Attempt next/previous GPU selection and record available sampling adapters.",
+          "3. Repeat with unsupported temperature and disconnected/disabled adapter controls."
+        ],
+        "expected_result": "Both supported adapters are selectable with correct names and stable identity. Missing temperature is represented as unsupported rather than a false reading.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "48674-design",
+      "type": "approve_design",
+      "label": "Review Dock GPU selection and adapter labeling disagree with the multi-GPU system",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 48674,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
   "url": "https://github.com/microsoft/PowerToys/issues/48674",
   "title": "Command Palette: GPU cannot be switched to the next one or previous one",
-  "author": "tyh97",
-  "authorAssociation": "NONE",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:20:01.34Z",
+  "source_updated_at": "2026-09-30T01:11:19Z",
+  "generated_at": "2026-11-09T02:20:01.34Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
   "assignees": [],
-  "comments": 1,
-  "summary": "The Command Palette report describes fails to switch between GPU statuses (e.g., stuck on a single GPU), Does not display temperature metrics for any GPU, Reports incorrect GPU device indices (e.g., mislabels the discrete GPU as GPU 0 when system tools identify it as GPU 1).\".",
-  "proposed_fixes": []
+  "pending_author": false,
+  "owes": "us"
 }

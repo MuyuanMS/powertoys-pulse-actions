@@ -1,33 +1,105 @@
 {
+  "summary": "Overwrite resize reports a delayed Explorer file-size update; disk completion and Explorer caching must be separated.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report provides a repeatable overwrite-only symptom. A stale Explorer property display is plausible, but no independent size/dimension read proves whether replacement is delayed; do not assume a two-minute encoder stall.",
+    "evidence": [
+      "0.95.0 report supplies a 20 MB example, Large preset, Overwrite comparison, NVMe storage and a diagnostic ZIP; separate output displays its smaller size immediately. No new comments.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/imageresizer/ui/Models/ResizeOperation.cs: encoding completes before File.Replace swaps the temporary output into the source path; no SHChangeNotify call was found in the module. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/imageresizer/ui/Models/ResizeOperation.cs"
+    ],
+    "recommended_action": "Compare overwrite disk size with Explorer display",
+    "evaluated_at": "2026-11-09T02:17:44.149Z",
+    "source_updated_at": "2026-05-24T00:13:33Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report provides a repeatable overwrite-only symptom. A stale Explorer property display is plausible, but no independent size/dimension read proves whether replacement is delayed; do not assume a two-minute encoder stall."
+  },
+  "proposed_fixes": [
+    {
+      "title": "overwrite completion and Explorer refresh investigation",
+      "root_cause": "Hypothesis: replacing the existing file does not promptly invalidate an Explorer metadata view, rather than delaying actual resize.",
+      "plan": [
+        "Compare immediate file bytes/dimensions and size from a new file handle against Explorer properties.",
+        "If replacement is complete but the view remains stale, use the existing shell notification pattern after successful replacement.",
+        "Preserve backup/source-error semantics and add an overwrite regression control."
+      ],
+      "verification": [
+        "Replacement dimensions and disk length are correct immediately after completion.",
+        "Explorer updates without a manual refresh and failed encoding leaves the source intact."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The report provides a repeatable overwrite-only symptom. A stale Explorer property display is plausible, but no independent size/dimension read proves whether replacement is delayed; do not assume a two-minute encoder stall."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Overwrite resize reports a delayed Explorer file-size update; disk completion and Explorer caching must be separated.",
+    "known_information": [
+      "0.95.0 report supplies a 20 MB example, Large preset, Overwrite comparison, NVMe storage and a diagnostic ZIP; separate output displays its smaller size immediately. No new comments."
+    ],
+    "inferences": [
+      "Hypothesis: replacing the existing file does not promptly invalidate an Explorer metadata view, rather than delaying actual resize."
+    ],
+    "analysis": "The report provides a repeatable overwrite-only symptom. A stale Explorer property display is plausible, but no independent size/dimension read proves whether replacement is delayed; do not assume a two-minute encoder stall.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/imageresizer/ui/Models/ResizeOperation.cs: encoding completes before File.Replace swaps the temporary output into the source path; no SHChangeNotify call was found in the module. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/imageresizer/ui/Models/ResizeOperation.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-05-24T00:13:33Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "48087-reproduce",
+      "type": "reproduce",
+      "label": "Compare overwrite disk size with Explorer display",
+      "primary": true,
+      "reproduce": {
+        "title": "Compare overwrite disk size with Explorer display",
+        "module": "Image Resizer",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [
+          "Create a non-sensitive large JPEG and retain an untouched copy."
+        ],
+        "steps": [
+          "1. Resize to Large with Overwrite enabled.",
+          "2. Immediately read file length from a new PowerShell Get-Item call and inspect image dimensions; compare Explorer before and after F5.",
+          "3. Repeat with Overwrite off on the same build and latest stable."
+        ],
+        "expected_result": "Disk replacement finishes before success is reported; determine whether only Explorer display is stale.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "48087-design",
+      "type": "approve_design",
+      "label": "Review overwrite completion and Explorer refresh investigation",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
   "number": 48087,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/48087",
+  "title": "Image Resizer does not immediately modify file size when \"Overwrite Files\" is checked",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-09T02:17:44.149Z",
   "source_updated_at": "2026-05-24T00:13:33Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-24T00:13:33Z"
-  }
+  "generated_at": "2026-11-09T02:17:44.149Z",
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
 }

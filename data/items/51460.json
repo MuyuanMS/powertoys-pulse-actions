@@ -1,117 +1,105 @@
 {
-  "schemaVersion": 5,
-  "number": 51460,
-  "kind": "issue",
-  "title": "Mouse Without Borders losing config",
-  "url": "https://github.com/microsoft/PowerToys/issues/51460",
-  "generated_at": "2026-10-27T23:56:40.700679+08:00",
-  "evaluated_at": "2026-10-27T23:56:40.700679+08:00",
-  "source_updated_at": "2026-10-23T12:25:38Z",
-  "stage": "triage_revalidated",
+  "summary": "Updates reset pairing state and the Easy Mouse preference.",
+  "stage": "triaged",
   "judgment": {
     "status": "reproducible",
-    "rationale": "The upgrade sequence is actionable for controlled migration testing, but do not conflate an expected mode/key migration, service start failure, legacy key-edit persistence, and whole-settings loss. Merged #51305 intentionally changes service-mode key storage; open #51377 and #51080 own narrower key-edit/general-save work. Coordinate with them after identifying the actual transition instead of generating another generic atomic-save fix.",
+    "rationale": "Updates reset pairing state and the Easy Mouse preference. Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "evidence": [
-      "The Store-installed author reports losing MWB security information on the last two upgrades, including 0.102.2933, and manually setting up again.",
-      "The supplied archive confirms elevated PowerToys and UseService=true; a nonempty saved key field is present at capture time. That post-reconfiguration snapshot does not show what was lost during upgrade.",
-      "The module log records an earlier service-control-manager open failure and a subsequent service-path warning; neither is proof that key data was overwritten.",
-      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Settings reload adopts persisted properties while runtime key updates distinguish encoded-mode mismatch; the codec depends on current identity. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
-      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Service-mode switching requests shutdown/restart and reloads the pairing key through a verified endpoint. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
-      "Read #51305's explicit service-mode migration/re-entry contract, #51377's legacy typed-key persistence patch, and #51080's file-save/read-hardening scope. None is demonstrated coverage of this exact upgrade loss.",
-      "Downloaded the supplied report, inspected service/key-presence metadata without exposing key material, and read the module startup warnings. No before/after upgrade snapshot or controlled upgrade execution exists in this pass."
+      "Original 0.102.2933 service-mode report supplies a ZIP.",
+      "Latest reply adds loss of key/host information and Easy Mouse reverting from Ctrl to Enabled; this is broader than the certificate-only pairing banner.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/MouseWithoutBorders/App/Class/Setting.cs: pairing-key persistence and configuration setters must be checked across service/user migration and update writes. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/MouseWithoutBorders/App/Class/Setting.cs"
     ],
-    "recommended_action": "Track pairing state across an unchanged-service-mode upgrade",
-    "evaluated_at": "2026-10-27T23:56:40.700679+08:00",
-    "source_updated_at": "2026-10-23T12:25:38Z"
+    "recommended_action": "Reproduce: Updates reset pairing state and the Easy Mouse preference",
+    "evaluated_at": "2026-11-09T02:20:01.363Z",
+    "source_updated_at": "2026-11-08T16:55:39Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Qualified lightweight investigation/fix direction, not a full design. The repeated-upgrade claim and service context are concrete, but the available archive is after reconfiguration and cannot show the lost transition or first destructive operation."
+    "rationale": "Updates reset pairing state and the Easy Mouse preference. Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing. This is an initial investigation direction, not a runtime-confirmed diagnosis."
   },
   "proposed_fixes": [
     {
-      "title": "Attribute MWB upgrade pairing loss before changing persistence",
-      "root_cause": "Hypothesis only: a mode/storage migration or failed reload/service startup invalidates pairing during upgrade; the supplied post-repair snapshot cannot establish a destructive write or decrypt failure.",
+      "title": "Updates reset pairing state and the Easy Mouse preference",
+      "root_cause": "Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing.",
       "plan": [
-        "Capture private pre/post metadata across the exact upgrade with unchanged service mode, distinguishing stored presence, decryptability and runtime service readiness.",
-        "Coordinate the confirmed branch with #51305 mode/key migration, #51377 legacy edits or #51080 read/save hardening instead of duplicating those changes.",
-        "Add regression coverage for first migration and later already-migrated upgrades; preserve unreadable originals and never replace a recoverable key/configuration with defaults."
+        "Compare sanitized before/after values and successful UI/engine synchronization across an upgrade.",
+        "Separate actual disk reset from UI inability to read the engine.",
+        "Correct only confirmed migration/write ownership, preserving DPAPI/service-mode key rules."
       ],
       "verification": [
-        "Two-PC pairing survives ordinary upgrades and restart in stable service mode.",
-        "Unsupported mode transitions give deliberate recovery guidance, and read/service failures preserve original persisted state and actionable diagnostics."
+        "Existing pairing and Ctrl Easy Mouse preferences survive updates.",
+        "Mode changes preserve or explicitly migrate supported keys without exposing secrets."
       ],
       "confidence": {
-        "score": 44,
-        "level": "red",
-        "rationale": "The repeated-upgrade claim and service context are concrete, but the available archive is after reconfiguration and cannot show the lost transition or first destructive operation."
+        "score": 60,
+        "level": "yellow",
+        "rationale": "Updates reset pairing state and the Easy Mouse preference. Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing. This is an initial investigation direction, not a runtime-confirmed diagnosis."
       }
     }
   ],
   "issue_context": {
-    "summary": "MWB loses working pairing across upgrades in elevated service mode; the existing report does not capture the pre-loss configuration.",
+    "summary": "Updates reset pairing state and the Easy Mouse preference.",
     "known_information": [
-      "The Store-installed author reports losing MWB security information on the last two upgrades, including 0.102.2933, and manually setting up again.",
-      "The supplied archive confirms elevated PowerToys and UseService=true; a nonempty saved key field is present at capture time. That post-reconfiguration snapshot does not show what was lost during upgrade.",
-      "The module log records an earlier service-control-manager open failure and a subsequent service-path warning; neither is proof that key data was overwritten."
+      "Original 0.102.2933 service-mode report supplies a ZIP.",
+      "Latest reply adds loss of key/host information and Easy Mouse reverting from Ctrl to Enabled; this is broader than the certificate-only pairing banner."
     ],
-    "inferences": [],
-    "analysis": "The upgrade sequence is actionable for controlled migration testing, but do not conflate an expected mode/key migration, service start failure, legacy key-edit persistence, and whole-settings loss. Merged #51305 intentionally changes service-mode key storage; open #51377 and #51080 own narrower key-edit/general-save work. Coordinate with them after identifying the actual transition instead of generating another generic atomic-save fix.",
+    "inferences": [
+      "Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing."
+    ],
+    "analysis": "Updates reset pairing state and the Easy Mouse preference. Hypothesis: upgrade/session migration or concurrent settings writes replace persisted values with defaults; a UI-only signature rejection could also make saved state appear missing. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "initial_investigation": [
-      "Source inspected at main 9227a8497750: src/modules/MouseWithoutBorders/App/Class/Setting.cs: Settings reload adopts persisted properties while runtime key updates distinguish encoded-mode mismatch; the codec depends on current identity. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
-      "Source inspected at main 9227a8497750: src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs: Service-mode switching requests shutdown/restart and reloads the pairing key through a verified endpoint. https://github.com/microsoft/PowerToys/blob/9227a8497750c257a0682b53c556d07f48ed8ff3/src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
-      "Read #51305's explicit service-mode migration/re-entry contract, #51377's legacy typed-key persistence patch, and #51080's file-save/read-hardening scope. None is demonstrated coverage of this exact upgrade loss.",
-      "Downloaded the supplied report, inspected service/key-presence metadata without exposing key material, and read the module startup warnings. No before/after upgrade snapshot or controlled upgrade execution exists in this pass.",
-      "Refreshed the complete issue body, all paginated comments and timeline events, labels, assignees, attachment links, and issue-number PR search for this evaluation; no upstream writes.",
-      "This is static, bounded issue triage only. No native build, product runtime reproduction, full design, implementation, or adversarial review was executed."
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/MouseWithoutBorders/App/Class/Setting.cs: pairing-key persistence and configuration setters must be checked across service/user migration and update writes. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-08T16:55:39Z. No runtime reproduction or implementation is claimed."
     ],
-    "information_gaps": [
-      {
-        "information": "Private before/after pairing-presence, storage-mode and service-identity metadata across one upgrade",
-        "why_needed": "Separate intentional migration and service readiness from actual persisted key/config loss without requesting or publishing secret keys.",
-        "how_to_collect": "Maintainer should run the specified two-physical-PC upgrade control, retaining private backups and reporting only non-secret presence/mode/identity comparisons.",
-        "evidence_type": "configuration_export"
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
+      "id": "51460-reproduce",
       "type": "reproduce",
-      "label": "Track pairing state across an unchanged-service-mode upgrade",
+      "label": "Reproduce: Updates reset pairing state and the Easy Mouse preference",
       "primary": true,
       "reproduce": {
-        "title": "Track pairing state across an unchanged-service-mode upgrade",
+        "title": "Reproduce: Updates reset pairing state and the Easy Mouse preference",
         "module": "Mouse Without Borders",
-        "version_requirement": "Reproduce the reported 0.102.2933 Store upgrade path on two physical test PCs; compare current stable/main migration behavior.",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
         "prerequisites": [
-          "Use an isolated test account or controlled test machine; preserve existing user data."
+          "Use non-sensitive test assets and preserve the current module configuration."
         ],
         "setup": [],
         "steps": [
-          "1. Pair two physical test PCs with matched versions, elevated Settings and service mode already on; preserve private configuration backups without exposing keys.",
-          "2. Upgrade one supported version transition without toggling service mode or editing a key; record file/key-presence/mode metadata and worker/service identity before and after.",
-          "3. Compare a documented first-time storage migration with a second upgrade using already-migrated state; distinguish a preserved key from a non-running service.",
-          "4. Restart/reconnect and separately exercise the existing legacy typed-key fix path only if that path is involved."
+          "1. Use synthetic pairing on test machines and select Ctrl Easy Mouse before a controlled update.",
+          "2. Record only presence/absence and preference values, not pairing-key contents, across user/service settings.",
+          "3. Compare disk persistence with the SettingsSync signature rejection control."
         ],
-        "expected_result": "Unchanged supported service-mode upgrades preserve usable pairing; one-time incompatible-mode transitions are explicit, and service startup errors do not silently erase configuration.",
+        "expected_result": "Existing pairing and Ctrl Easy Mouse preferences survive updates. Mode changes preserve or explicitly migrate supported keys without exposing secrets.",
         "attachment_urls": []
-      },
-      "id": "issue-51460-reproduce-1"
+      }
     },
     {
+      "id": "51460-design",
       "type": "approve_design",
-      "label": "Review conditional investigation direction",
-      "primary": false,
+      "label": "Review Updates reset pairing state and the Easy Mouse preference",
       "confirm": true,
-      "note": "Lightweight direction only. Resolve the specific evidence/reproduction gaps before implementation approval; no full design has executed.",
-      "id": "issue-51460-approve_design-2"
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
     }
   ],
+  "schemaVersion": 5,
+  "number": 51460,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51460",
+  "title": "Mouse Without Borders losing config",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:20:01.363Z",
+  "source_updated_at": "2026-11-08T16:55:39Z",
+  "generated_at": "2026-11-09T02:20:01.363Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "comments": 0
+  "pending_author": false,
+  "owes": "us"
 }

@@ -1,0 +1,108 @@
+{
+  "summary": "Dock topology changes can expose a stale BlurImageControl completion callback.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Dock topology changes can expose a stale BlurImageControl completion callback. Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "evidence": [
+      "Two-monitor dock report supplies a ZIP and describes toggles/icons becoming incorrect before a crash.",
+      "Read the supplied CmdPal error reports: ObjectDisposedException reaches BlurImageControl.SetLoadedSurfaceToBrush from the LoadedImageSurface completion callback.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/BlurImageControl.cs: LoadImageAsync subscribes a local LoadCompleted callback, swaps and disposes previousSurface; completion can assign the surface to _imageBrush and rethrows assignment failures. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/BlurImageControl.cs"
+    ],
+    "recommended_action": "Reproduce: Dock topology changes can expose a stale BlurImageControl completion callback",
+    "evaluated_at": "2026-11-09T02:20:01.328Z",
+    "source_updated_at": "2026-11-08T15:28:34Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Dock topology changes can expose a stale BlurImageControl completion callback. Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state. This is an initial investigation direction, not a runtime-confirmed diagnosis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Dock topology changes can expose a stale BlurImageControl completion callback",
+      "root_cause": "Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state.",
+      "plan": [
+        "Trace surface generation and control unload/disposal during topology-driven dock reconstruction.",
+        "Unsubscribe obsolete callbacks and reject completions that no longer belong to the active surface/control before brush assignment.",
+        "Preserve real load-error reporting and test replacement/unload callbacks; do not merely swallow ObjectDisposedException."
+      ],
+      "verification": [
+        "Repeated monitor connect/disconnect and image replacement do not crash or display stale imagery.",
+        "Current images still load and genuine image failures remain observable."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "Dock topology changes can expose a stale BlurImageControl completion callback. Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state. This is an initial investigation direction, not a runtime-confirmed diagnosis."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Dock topology changes can expose a stale BlurImageControl completion callback.",
+    "known_information": [
+      "Two-monitor dock report supplies a ZIP and describes toggles/icons becoming incorrect before a crash.",
+      "Read the supplied CmdPal error reports: ObjectDisposedException reaches BlurImageControl.SetLoadedSurfaceToBrush from the LoadedImageSurface completion callback."
+    ],
+    "inferences": [
+      "Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state."
+    ],
+    "analysis": "Dock topology changes can expose a stale BlurImageControl completion callback. Hypothesis: an obsolete image completion survives image replacement/control teardown and touches disposed composition state. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/BlurImageControl.cs: LoadImageAsync subscribes a local LoadCompleted callback, swaps and disposes previousSurface; completion can assign the surface to _imageBrush and rethrows assignment failures. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/BlurImageControl.cs",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-08T15:28:34Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "51986-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce: Dock topology changes can expose a stale BlurImageControl completion callback",
+      "primary": true,
+      "reproduce": {
+        "title": "Reproduce: Dock topology changes can expose a stale BlurImageControl completion callback",
+        "module": "Command Palette Dock",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Configure the supplied two-monitor dock scenario and toggle monitor topology repeatedly.",
+          "2. Load a slow image, replace it or unload the dock before completion; capture surface/control lifetime transitions.",
+          "3. Verify stale completion is ignored without obscuring current-load failures."
+        ],
+        "expected_result": "Repeated monitor connect/disconnect and image replacement do not crash or display stale imagery. Current images still load and genuine image failures remain observable.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "51986-design",
+      "type": "approve_design",
+      "label": "Review Dock topology changes can expose a stale BlurImageControl completion callback",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51986,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51986",
+  "title": "[Command Pallet dock] Icon mess up on dual monitor and then crash",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:20:01.328Z",
+  "source_updated_at": "2026-11-08T15:28:34Z",
+  "generated_at": "2026-11-09T02:20:01.328Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [
+    "jiripolasek"
+  ],
+  "pending_author": false,
+  "owes": "us"
+}

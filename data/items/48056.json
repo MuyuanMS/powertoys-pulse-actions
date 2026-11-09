@@ -1,33 +1,105 @@
 {
+  "summary": "Alt-drag over the desktop reports desktop/icon movement, with related report47926 already closed.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Do not propose duplicating filters already in current source. Verify whether the observed motion is a Grab And Move target window or normal Explorerdrag and whether it persists on latest stable.",
+    "evidence": [
+      "0.99.1 report supplies an empty desktop Alt-left drag sequence and diagnostic ZIP; linked47926 reports the same desktop surface issue and is closed/completed.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/GrabAndMove/GrabAndMove/main.cpp: IsSystemClass now excludes Progman and WorkerW along with taskbars; this is sourcecounterevidence to aglobal missingdesktopfilter claim. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "Closed47926 is not by itself evidence of the release containing the filter or whether native Explorer icon drag passes through."
+    ],
+    "recommended_action": "Distinguish shell drag from Grab And Move targeting",
+    "evaluated_at": "2026-11-09T02:17:44.236Z",
+    "source_updated_at": "2026-05-22T12:41:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Do not propose duplicating filters already in current source. Verify whether the observed motion is a Grab And Move target window or normal Explorerdrag and whether it persists on latest stable."
+  },
+  "proposed_fixes": [
+    {
+      "title": "desktop interaction filtering regression investigation",
+      "root_cause": "Hypothesis: the hit-tested/ancestor desktop target bypasses existing system-class filtering, or normal Explorericon dragging is being attributed to Grab And Move.",
+      "plan": [
+        "Compare current build Alt-drag with module on/off and inspect targeted HWND/ancestorclasses.",
+        "Trace IsSystemClass coverage at the actual interaction target before adding further shell surface exclusions.",
+        "Retain normal desktop selection/click behavior and application drag."
+      ],
+      "verification": [
+        "Desktop background itself is never moved byGrab And Move.",
+        "Native Explorer icon selection and ordinary app drag remain usable."
+      ],
+      "confidence": {
+        "score": 51,
+        "level": "yellow",
+        "rationale": "Do not propose duplicating filters already in current source. Verify whether the observed motion is a Grab And Move target window or normal Explorerdrag and whether it persists on latest stable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Alt-drag over the desktop reports desktop/icon movement, with related report47926 already closed.",
+    "known_information": [
+      "0.99.1 report supplies an empty desktop Alt-left drag sequence and diagnostic ZIP; linked47926 reports the same desktop surface issue and is closed/completed."
+    ],
+    "inferences": [
+      "Hypothesis: the hit-tested/ancestor desktop target bypasses existing system-class filtering, or normal Explorericon dragging is being attributed to Grab And Move."
+    ],
+    "analysis": "Do not propose duplicating filters already in current source. Verify whether the observed motion is a Grab And Move target window or normal Explorerdrag and whether it persists on latest stable.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/GrabAndMove/GrabAndMove/main.cpp: IsSystemClass now excludes Progman and WorkerW along with taskbars; this is sourcecounterevidence to aglobal missingdesktopfilter claim. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "Closed47926 is not by itself evidence of the release containing the filter or whether native Explorer icon drag passes through.",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-05-22T12:41:49Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "48056-reproduce",
+      "type": "reproduce",
+      "label": "Distinguish shell drag from Grab And Move targeting",
+      "primary": true,
+      "reproduce": {
+        "title": "Distinguish shell drag from Grab And Move targeting",
+        "module": "Grab And Move",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "1. On latest stable compare Alt-drag onempty desktop and desktop icons with Grab And Move on/off.",
+          "2. Record the actual target HWND and root class; compare with current Progman/WorkerW exclusions.",
+          "3. Repeat on an ordinary app window to verify valid drag still works."
+        ],
+        "expected_result": "Identify any filter bypass without treating native Explorer icon drag as a PowerToys defect.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "48056-design",
+      "type": "approve_design",
+      "label": "Review desktop interaction filtering regression investigation",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
   "number": 48056,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/48056",
+  "title": "Grab And Move moves desktop icons when Alt + drag is used on desktop area",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-09T02:17:44.236Z",
   "source_updated_at": "2026-05-22T12:41:49Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-22T12:41:49Z"
-  }
+  "generated_at": "2026-11-09T02:17:44.236Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
 }

@@ -1,115 +1,106 @@
 {
-  "actions": [
-    {
-      "id": "issue-51887-reproduce-isolation",
-      "primary": true,
-      "label": "Run the missing-key isolation control",
-      "reproduce": {
-        "prerequisites": [
-          "German de-DE keyboard layout and a plain-text editor; preserve existing PowerToys module settings before test-owned changes."
-        ],
-        "steps": [
-          "Record the active layout chord used to enter ] and establish successful input with PowerToys stopped.",
-          "Disable every module, exit PowerToys fully, reopen with all modules disabled, and try the same chord in the same editor.",
-          "If that control passes, enable input-affecting modules individually and compare; do not attribute ownership from a transient toggle alone.",
-          "Restore the original module settings after testing."
-        ],
-        "version_requirement": "0.102.3001; record exact build and layout",
-        "module": "General / input module isolation",
-        "expected_result": "Ordinary character input passes through with all modules disabled; any failing minimal module/settings combination is recorded before proposing a code fix."
-      },
-      "type": "reproduce"
-    },
-    {
-      "label": "Investigate isolated input owner",
-      "id": "issue-51887-approve_design-1",
-      "type": "approve_design",
-      "primary": false
-    }
-  ],
-  "generated_at": "2026-11-04T10:02:01.1696759+08:00",
-  "url": "https://github.com/microsoft/PowerToys/issues/51887",
-  "stage": "triage_revalidated",
-  "evaluated_at": "2026-11-04T10:02:01.1696759+08:00",
-  "fix_assessment": {
-    "rationale": "A product-linked input regression is applicable to investigation; the consuming module and mechanism must be established before a code fix.",
-    "status": "proposed"
-  },
-  "issue_context": {
-    "known_information": [
-      "Reporter gives0.102.3001 after an update, German de-DE environment, non-elevated per-user operation and the missing ] character.",
-      "Exiting or force-closing PowerToys restores input. No individual module, exact key chord or affected editor is identified.",
-      "The November 4 01:53 UTC comment posts the all-modules-disabled restart control previously suggested in this artifact: https://github.com/microsoft/PowerToys/issues/51887#issuecomment-6620394207 . No reporter answer is present.",
-      "This is an actual outstanding evidence request, not evidence that the control passed or failed. The complete current report and all discussion/timeline events were read; there is no linked covering implementation or identified responsible module."
-    ],
-    "summary": "The missing ] input report now has a posted all-modules-disabled restart request and awaits its result; no module owner is proven.",
-    "initial_investigation": [
-      "Read complete report and empty discussion/timeline cross-references; retained all supplied environment and sequence details.",
-      "Inspected current PowerAccent KeyboardListener.LowLevelKeyboardProc: OnKeyDown/OnKeyUp can consume input, otherwise CallNextHookEx is used. This only motivates isolation and is not proof of responsibility.",
-      "Re-read the full current report, newly posted request and every timeline event. Compared with the existing hypothesis and initial Quick Accent hook investigation; no new source evidence identifies a consuming module.",
-      "Removed the redundant proposed question because it has already been posted. Retained the conditional lightweight proposal and supplied an independent maintainer control, not a claim that the report is fixed."
-    ],
-    "inferences": [
-      "The two German-layout reports may be related, but distinct missing-character/dead-key symptoms and no common isolated owner are insufficient to declare duplicates."
-    ],
-    "analysis": "The specific all-modules-disabled restart control is now posted upstream and unanswered. Preserve the unproven input-owner hypothesis, do not repeat the same question, and do not infer module ownership or recovery from the posting event.",
-    "information_gaps": [
-      {
-        "how_to_collect": "Turn off every module in PowerToys Settings, exit PowerToys completely, reopen it with modules still disabled, and try the same key sequence in the same editor. Report only whether the original failure remains.",
-        "evidence_type": "behavior_confirmation",
-        "information": "Whether the same input still fails after a fresh PowerToys restart with every module disabled",
-        "why_needed": "This distinguishes a module-specific interception path from process-wide or non-module behavior before choosing code to investigate."
-      }
-    ]
-  },
-  "pending_author": true,
-  "schemaVersion": 5,
+  "summary": "German AltGr bracket input now has a module-specific ZoomIt reproduction.",
+  "stage": "triaged",
   "judgment": {
+    "status": "reproducible",
+    "rationale": "German AltGr bracket input now has a module-specific ZoomIt reproduction. Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
     "evidence": [
-      "Reporter gives0.102.3001 after an update, German de-DE environment, non-elevated per-user operation and the missing ] character.",
-      "Exiting or force-closing PowerToys restores input. No individual module, exact key chord or affected editor is identified.",
-      "The November 4 01:53 UTC comment posts the all-modules-disabled restart control previously suggested in this artifact: https://github.com/microsoft/PowerToys/issues/51887#issuecomment-6620394207 . No reporter answer is present.",
-      "This is an actual outstanding evidence request, not evidence that the control passed or failed. The complete current report and all discussion/timeline events were read; there is no linked covering implementation or identified responsible module."
+      "Reporter answered the previous all-modules isolation request by identifying ZoomIt.",
+      "Latest reply says the bracket sequence uses German AltGr plus the named key; exact physical/VK identity should be captured rather than assuming the typed glyph determines it.",
+      "Exiting PowerToys restores input; do not repeat the already answered broad isolation question.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/ZoomIt: keyboard hooks/hotkey modifier handling must distinguish AltGr-generated Ctrl+Alt from intentional shortcuts. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/ZoomIt"
     ],
-    "status": "waiting_on_author",
-    "rationale": "The specific all-modules-disabled restart control is now posted upstream and unanswered. Preserve the unproven input-owner hypothesis, do not repeat the same question, and do not infer module ownership or recovery from the posting event.",
-    "source_updated_at": "2026-11-04T01:53:21Z",
-    "recommended_action": "Await the already posted isolation result; maintainers can perform the same controlled comparison without sending a duplicate question.",
-    "evaluated_at": "2026-11-04T10:02:01.1696759+08:00"
+    "recommended_action": "Reproduce: German AltGr bracket input now has a module-specific ZoomIt reproduction",
+    "evaluated_at": "2026-11-09T02:20:01.384Z",
+    "source_updated_at": "2026-11-08T09:16:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "German AltGr bracket input now has a module-specific ZoomIt reproduction. Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord. This is an initial investigation direction, not a runtime-confirmed diagnosis."
   },
   "proposed_fixes": [
     {
-      "confidence": {
-        "level": "red",
-        "score": 35,
-        "rationale": "Reporter establishes a PowerToys process contrast, but no stable module isolation or hook trace establishes root cause."
-      },
-      "verification": [
-        "Same editor, layout and key sequence across PowerToys stopped, running/all-modules-off, and minimal owner-on controls.",
-        "Verify both ordinary character entry and modifier/dead-key pass-through without disabling unrelated product behavior."
-      ],
-      "root_cause": "Unverified hypothesis: an enabled module consumes part of the keyboard/dead-key sequence. The existing on/off contrast does not identify a specific module or prove a shared cause with other German-layout reports.",
-      "title": "Isolate the PowerToys input interception owner",
+      "title": "German AltGr bracket input now has a module-specific ZoomIt reproduction",
+      "root_cause": "Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord.",
       "plan": [
-        "Compare the same sequence in the same editor with all PowerToys modules disabled after a fresh restart.",
-        "If that control passes, enable one input-affecting module at a time and allow the failure interval to elapse; identify the minimal enabled module/settings combination.",
-        "Trace only the confirmed owner input pass-through path and add a regression for the exact layout/sequence."
-      ]
+        "Reproduce the reporter sequence with ZoomIt as the only enabled module.",
+        "Capture layout/VK/modifier sequence and configured ZoomIt shortcuts.",
+        "Prevent unintended text-input consumption while preserving deliberate Ctrl+Alt hotkeys."
+      ],
+      "verification": [
+        "The reported bracket chord types normally with ZoomIt enabled.",
+        "Intentional ZoomIt shortcuts and other keyboard layouts remain functional."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "German AltGr bracket input now has a module-specific ZoomIt reproduction. Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord. This is an initial investigation direction, not a runtime-confirmed diagnosis."
+      }
     }
   ],
+  "issue_context": {
+    "summary": "German AltGr bracket input now has a module-specific ZoomIt reproduction.",
+    "known_information": [
+      "Reporter answered the previous all-modules isolation request by identifying ZoomIt.",
+      "Latest reply says the bracket sequence uses German AltGr plus the named key; exact physical/VK identity should be captured rather than assuming the typed glyph determines it.",
+      "Exiting PowerToys restores input; do not repeat the already answered broad isolation question."
+    ],
+    "inferences": [
+      "Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord."
+    ],
+    "analysis": "German AltGr bracket input now has a module-specific ZoomIt reproduction. Hypothesis: a ZoomIt shortcut treats AltGr as Ctrl+Alt and consumes a German-layout text-input chord. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/ZoomIt: keyboard hooks/hotkey modifier handling must distinguish AltGr-generated Ctrl+Alt from intentional shortcuts. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/ZoomIt",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-08T09:16:56Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "51887-reproduce",
+      "type": "reproduce",
+      "label": "Reproduce: German AltGr bracket input now has a module-specific ZoomIt reproduction",
+      "primary": true,
+      "reproduce": {
+        "title": "Reproduce: German AltGr bracket input now has a module-specific ZoomIt reproduction",
+        "module": "ZoomIt",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [],
+        "steps": [
+          "1. Use a German layout and enable only ZoomIt, then type the reporter-described bracket sequence in Notepad.",
+          "2. Compare actual typed character/VK sequence with ZoomIt off and with changed hotkeys.",
+          "3. Inspect AltGr synthetic modifier handling before adjusting shortcut matching."
+        ],
+        "expected_result": "The reported bracket chord types normally with ZoomIt enabled. Intentional ZoomIt shortcuts and other keyboard layouts remain functional.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "51887-design",
+      "type": "approve_design",
+      "label": "Review German AltGr bracket input now has a module-specific ZoomIt reproduction",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 51887,
   "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/51887",
+  "title": "After launching PowerToys, the  ]  key no longer works",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:20:01.384Z",
+  "source_updated_at": "2026-11-08T09:16:56Z",
+  "generated_at": "2026-11-09T02:20:01.384Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
-  "assignees": [
-    null
-  ],
-  "comments": 1,
-  "owes": "author",
-  "source_updated_at": "2026-11-04T01:53:21Z",
-  "title": "After launching PowerToys, the  ]  key no longer works",
-  "number": 51887,
-  "track": "triage",
-  "waiting_since": "2026-11-04T01:53:21Z"
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
 }

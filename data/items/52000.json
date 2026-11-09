@@ -1,0 +1,109 @@
+{
+  "summary": "Moving a new Flutter window to the active monitor can hide a reparented FLUTTERVIEW child.",
+  "stage": "triaged",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Source and strong controls support a visibility-preservation investigation. Do not change all placements or infer exact race timing from source alone.",
+    "evidence": [
+      "Report supplies default flutter-create reproduction, two-monitor on/off controls, observed WS_CHILD without WS_VISIBLE and immediate rendering after ShowWindow(child,SW_SHOWNA).",
+      "Reporter distinguishes observed messages from inferred FancyZones/SetParent timing; no trace inside FancyZones proves ordering.",
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp: SizeWindowToRect sets showCmd=SW_HIDE for !IsWindowVisible and adds WPF_ASYNCWINDOWPLACEMENT. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp",
+      "Related51545 describes re-showing a hidden window in the same positioning boundary; not established coverage of this reparented child race."
+    ],
+    "recommended_action": "Trace Flutter reparenting during active-monitor move",
+    "evaluated_at": "2026-11-09T02:17:44.192Z",
+    "source_updated_at": "2026-11-08T17:34:38Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Source and strong controls support a visibility-preservation investigation. Do not change all placements or infer exact race timing from source alone."
+  },
+  "proposed_fixes": [
+    {
+      "title": "visibility-preserving active-monitor positioning",
+      "root_cause": "Hypothesis: a classified root window becomes a child before asynchronous placement and inherited invisibility is converted into explicit SW_HIDE.",
+      "plan": [
+        "Trace root/child/styles immediately before active-monitor placement using the default Flutter app.",
+        "Revalidate eligible root HWNDs at the actual move boundary and preserve show/hide state when positioning.",
+        "Add hidden-root, reparented child and ordinary visible window tests; preserve activation/minimized/maximized behavior."
+      ],
+      "verification": [
+        "Flutter render child retains visibility and renders with cursor on the secondary monitor.",
+        "Application-owned hidden windows are not re-shown; ordinary active-monitor moves still work."
+      ],
+      "confidence": {
+        "score": 79,
+        "level": "yellow",
+        "rationale": "Source and strong controls support a visibility-preservation investigation. Do not change all placements or infer exact race timing from source alone."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Moving a new Flutter window to the active monitor can hide a reparented FLUTTERVIEW child.",
+    "known_information": [
+      "Report supplies default flutter-create reproduction, two-monitor on/off controls, observed WS_CHILD without WS_VISIBLE and immediate rendering after ShowWindow(child,SW_SHOWNA).",
+      "Reporter distinguishes observed messages from inferred FancyZones/SetParent timing; no trace inside FancyZones proves ordering."
+    ],
+    "inferences": [
+      "Hypothesis: a classified root window becomes a child before asynchronous placement and inherited invisibility is converted into explicit SW_HIDE."
+    ],
+    "analysis": "Source and strong controls support a visibility-preservation investigation. Do not change all placements or infer exact race timing from source alone.",
+    "initial_investigation": [
+      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp: SizeWindowToRect sets showCmd=SW_HIDE for !IsWindowVisible and adds WPF_ASYNCWINDOWPLACEMENT. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp",
+      "Related51545 describes re-showing a hidden window in the same positioning boundary; not established coverage of this reparented child race.",
+      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-08T17:34:38Z. No runtime reproduction or implementation is claimed."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "52000-reproduce",
+      "type": "reproduce",
+      "label": "Trace Flutter reparenting during active-monitor move",
+      "primary": true,
+      "reproduce": {
+        "title": "Trace Flutter reparenting during active-monitor move",
+        "module": "FancyZones",
+        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "prerequisites": [
+          "Use non-sensitive test assets and preserve the current module configuration."
+        ],
+        "setup": [
+          "Create a default Flutter Windows app with flutter create --platforms=windows fzdemo; build its Windows release binary."
+        ],
+        "steps": [
+          "1. Enable move newly created windows to current active monitor on a two-monitor test setup.",
+          "2. Launch the default app with cursor on secondary then primary monitor and compare with option off.",
+          "3. Trace FLUTTERVIEW root/child/visibility immediately before placement and correlate WM_SHOWWINDOW(FALSE)."
+        ],
+        "expected_result": "Positioning does not mutate app-owned render window visibility, and the actual race boundary is identified.",
+        "attachment_urls": []
+      }
+    },
+    {
+      "id": "52000-design",
+      "type": "approve_design",
+      "label": "Review visibility-preserving active-monitor positioning",
+      "confirm": true,
+      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+    }
+  ],
+  "schemaVersion": 5,
+  "number": 52000,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/52000",
+  "title": "FancyZones: \"Move newly created windows to the current active monitor\" hides the render window of Flutter apps (black window)",
+  "track": "fix",
+  "evaluated_at": "2026-11-09T02:17:44.192Z",
+  "source_updated_at": "2026-11-08T17:34:38Z",
+  "generated_at": "2026-11-09T02:17:44.192Z",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "pending_author": false,
+  "owes": "us"
+}
