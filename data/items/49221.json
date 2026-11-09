@@ -8,10 +8,10 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T03:13:54Z",
-  "evaluated_at": "2026-09-16T03:13:54Z",
-  "source_updated_at": "2026-08-16T23:08:39Z",
-  "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
+  "generated_at": "2026-11-09T21:54:19Z",
+  "evaluated_at": "2026-11-09T21:54:19Z",
+  "source_updated_at": "2026-11-09T19:21:21Z",
+  "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
   "confidence": "High",
   "needs_revalidation": false,
   "proposed_comments": [
@@ -22,24 +22,10 @@
       "title": "Dispose a partially initialized ThemeListener",
       "in_diff": false,
       "out_of_diff_reason": "The cleanup must restructure the constructor's multi-step watcher initialization rather than replace one safe current-diff range.",
-      "body": "### Dispose a partially initialized ThemeListener\n\n**Severity:** `medium`\n\n**Affected code:** `src/common/ManagedCommon/ThemeListener.cs`, the `ThemeListener` constructor.\n\n**Problem:** The constructor starts the app-theme watcher before it creates and starts the system-theme watcher. If the second query, watcher construction, or `Start()` call throws, the first watcher remains subscribed and running because construction never completes and the caller cannot dispose it.\n\n**Why it matters:** Repeated Settings or module initialization attempts can leak WMI watchers and event subscriptions, leaving callbacks active after failed construction.\n\n**Suggested change:**\n1. Create both watchers in local variables inside a guarded initialization block.\n2. Start and subscribe both locals before assigning them to the readonly fields.\n3. On failure, dispose every watcher already created and rethrow the original exception.\n4. Preserve the existing successful initialization and idempotent `Dispose()` behavior.\n\n```csharp\nManagementEventWatcher appWatcher = null;\nManagementEventWatcher systemWatcher = null;\ntry\n{\n    // Construct, subscribe, and start both watchers.\n    appThemeWatcher = appWatcher;\n    systemThemeWatcher = systemWatcher;\n}\ncatch\n{\n    systemWatcher?.Dispose();\n    appWatcher?.Dispose();\n    throw;\n}\n```\n\n**Verification:** Build the Settings UI and common managed projects, inject a failure after the first watcher starts, and verify that watcher is disposed and no callback remains registered.",
+      "body": "### Dispose a partially initialized ThemeListener\n\n**Severity:** `medium`\n\n**Affected code:** `src/common/ManagedCommon/ThemeListener.cs`, the `ThemeListener` constructor.\n\n**Problem:** The constructor starts the app-theme watcher before it creates and starts the system-theme watcher. If the second query, watcher construction, or `Start()` call throws, the first watcher remains subscribed and running because construction never completes and the caller cannot dispose it.\n\n**Why it matters:** Repeated Settings or module initialization attempts can leak WMI watchers and event subscriptions, leaving callbacks active after failed construction.\n\n**Suggested change:**\n1. Create both watchers in local variables inside a guarded initialization block.\n2. Start and subscribe both locals before assigning them to the readonly fields.\n3. On failure, dispose every watcher already created without masking the original exception, then rethrow it.\n4. Preserve the existing successful initialization and disposal behavior.\n\n```csharp\nManagementEventWatcher appWatcher = null;\nManagementEventWatcher systemWatcher = null;\ntry\n{\n    // Construct, subscribe, and start both watchers.\n    appThemeWatcher = appWatcher;\n    systemThemeWatcher = systemWatcher;\n}\ncatch\n{\n    systemWatcher?.Dispose();\n    appWatcher?.Dispose();\n    throw;\n}\n```\n\n**Verification:** Build the Settings UI and common managed projects, inject a failure after the first watcher starts, and verify that watcher is disposed and no callback remains registered.",
       "confidence": {
         "score": 96,
         "rationale": "The constructor starts the first watcher before creating the second and has no partial-construction cleanup path."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "defer-module-toggle-until-consumers-land",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Do not expose a module-wide toggle without module consumers",
-      "in_diff": false,
-      "out_of_diff_reason": "A complete fix requires coordinated settings contracts and runtime consumers across four modules, not one current RIGHT-side range.",
-      "body": "### Do not expose a module-wide toggle without module consumers\n\n**Severity:** `high`\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/ThemeAdaptiveTrayIconFanOut.cs`, `src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs`, `src/settings-ui/Settings.UI/Strings/en-us/Resources.resw`, and the Awake, ZoomIt, PowerDisplay, and Mouse Without Borders settings/runtime implementations.\n\n**Problem:** The PR advertises a master setting for four module tray icons and writes new properties into their settings files, but the corresponding module consumers are absent. Existing module contracts do not read those values, and a later typed settings save can discard unknown properties.\n\n**Why it matters:** Users can enable a visible setting and receive no module behavior while the UI reports success. Per-module preferences can also be lost during later saves.\n\n**Suggested change:**\n1. Either include the settings contracts, readers, icon call sites, and refresh behavior for all four modules in this atomic change; or remove the module fan-out and describe the setting as PowerToys-tray-only until those consumers land.\n2. If module-wide behavior remains, add focused tests for each module's JSON shape, missing or malformed settings, persistence, and refresh ordering.\n3. Verify that the General setting updates every advertised running module without losing existing per-module preferences.\n\n**Verification:** Confirm each advertised module reads the new property at runtime, run the affected Settings and module builds, toggle Windows light/dark mode with the modules running, restart Settings, and test missing and malformed settings files.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The PR writes module properties while repository inspection shows that the corresponding runtime consumers are absent from the change set."
       },
       "disposition": "proposed"
     }
@@ -48,7 +34,7 @@
     {
       "id": "request-changes-49221",
       "type": "request_changes",
-      "label": "Request two theme-listener and module-toggle corrections",
+      "label": "Request partial ThemeListener initialization cleanup",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -56,20 +42,20 @@
         "repository": "microsoft/PowerToys",
         "pullRequest": 49221,
         "event": "REQUEST_CHANGES",
-        "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
-        "body": "Thanks for the contribution. The CLA is complete and the PR is scoped coherently. The remaining requests cover partial ThemeListener initialization cleanup and the module-wide toggle's missing consumers."
+        "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
+        "body": "Thanks for the contribution. The CLA is complete and the PR is scoped coherently. One remaining request covers cleanup if ThemeListener initialization fails partway through."
       },
-      "note": "Draft only. Two implementation-ready general comments require explicit maintainer approval."
+      "note": "Draft only. One implementation-ready general comment requires explicit maintainer approval."
     }
   ],
   "freshness": {},
   "validation": {
     "upstream_head": {
-      "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
-      "result": "partial_environment_blocker"
+      "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
+      "result": "passed"
     },
     "suggestion_patch": {
-      "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
+      "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
       "result": "not_applicable",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": []

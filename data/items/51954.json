@@ -9,9 +9,9 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-09T21:14:53.5602208+08:00",
-  "evaluated_at": "2026-11-09T21:14:53.5602208+08:00",
-  "source_updated_at": "2026-11-09T10:17:08Z",
+  "generated_at": "2026-11-10T06:19:02.2846854+08:00",
+  "evaluated_at": "2026-11-10T06:19:02.2846854+08:00",
+  "source_updated_at": "2026-11-09T20:58:28Z",
   "head_sha": "35b1ad2d3e5053920edffe1b7de36f73362a3fdf",
   "needs_revalidation": false,
   "proposed_comments": [
@@ -59,6 +59,21 @@
         "rationale": "The exact-head sanitizer uses throwing file streams and WinRT parsing, while the new outer catch discards all error details."
       },
       "body": "### Preserve the cause when report sanitization fails\n\n**Severity:** `low`\n\n**Affected code:** The catch-all around `diagnostic_privacy::sanitize_report` in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** Any exception from WinRT parsing or file access is discarded, and the tool prints the same generic message before deleting the report directory.\n\n**Why it matters:** When no ZIP is created, users and maintainers cannot distinguish a file-access failure from a WinRT or parsing failure, making the failure harder to diagnose.\n\n**Suggested change:** Preserve a sanitized error category or HRESULT for known WinRT/filesystem failures, retain a generic fallback for unknown exceptions, and keep the existing cleanup and failure return. Avoid logging report contents or sensitive paths.\n\n**Verification:** The exact-head sanitizer configures its input/output streams to throw and invokes WinRT JSON parsing; the `Main.cpp` catch-all erases the exception type and reports only the same generic message. No runtime failure was triggered for this assessment."
+    },
+    {
+      "kind": "inline",
+      "path": "tools/BugReportTool/BugReportTool/DiagnosticPrivacy.h",
+      "title": "Preserve complete log lines before a truncated tail",
+      "id": "preserve-complete-log-lines-before-truncated-tail",
+      "in_diff": true,
+      "side": "RIGHT",
+      "line": 90,
+      "severity": "medium",
+      "confidence": {
+        "score": 82,
+        "rationale": "The no-final-newline and whole-file deletion path is deterministic, but the reporter's tested package had complete lines; a mid-write snapshot remains unconfirmed."
+      },
+      "body": "### Preserve complete log lines before a truncated tail\n\n**Severity:** `medium`\n\n**Affected code:** `diagnostic_privacy::redact_log_security_keys` in `tools/BugReportTool/BugReportTool/DiagnosticPrivacy.h` and its `sanitize_report` caller.\n\n**Problem:** If collection captures a log while it is being written, `redact_log_security_keys` returns `false` whenever a non-empty snapshot lacks a final newline. `sanitize_report` then removes the entire file, including earlier complete lines that could have been safely scanned and redacted.\n\n**Why it matters:** A partial final write can discard useful diagnostics from the rest of the log even when only the trailing fragment is incomplete.\n\n**Suggested change:** Preserve the fail-closed behavior for a standalone unterminated record, but when complete LF-terminated records precede an incomplete final suffix, discard only that suffix and continue sanitizing the complete prefix. Add a test for a complete record followed by an unterminated record; verify that the prefix is preserved and redacted while the existing standalone unterminated-record test still expects omission.\n\n**Verification:** At exact head `35b1ad2`, the redactor rejects every non-empty log snapshot without a final newline, the sanitizer removes files when redaction returns `false`, and tests cover only a standalone truncated record. The reporter's tested logs ended on complete lines, so this is a mid-write collection edge case rather than a reproduced report-package failure."
     }
   ],
   "actions": [
@@ -74,7 +89,8 @@
         "comment_ids": [
           "bugreport-winrt-apartment",
           "bugreport-test-timeout-child",
-          "bugreport-sanitize-error-details"
+          "bugreport-sanitize-error-details",
+          "preserve-complete-log-lines-before-truncated-tail"
         ]
       }
     }
