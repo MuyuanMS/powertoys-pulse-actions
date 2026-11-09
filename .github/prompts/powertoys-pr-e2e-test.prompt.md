@@ -29,7 +29,8 @@ Required workflow:
 2. Fetch the actual upstream PR head even if origin points to a personal fork:
    git fetch https://github.com/microsoft/PowerToys.git pull/<PRNumber>/head
    git rev-parse FETCH_HEAD
-   Compare FETCH_HEAD with the live PR head from gh pr view. If it changed, repin and derive checks for the new revision. Choose a unique local branch name such as pr-test/<PRNumber>-<ShortHeadSha>. If it does not already exist:
+   gh pr view <PRNumber> --repo microsoft/PowerToys --json headRefOid --jq .headRefOid
+   Compare FETCH_HEAD with that live PR head. If it changed, repin and derive checks for the new revision. Choose a unique local branch name such as pr-test/<PRNumber>-<ShortHeadSha>. If it does not already exist:
    git branch pr-test/<PRNumber>-<ShortHeadSha> FETCH_HEAD
    .\tools\build\New-WorktreeFromBranch.ps1 -Branch pr-test/<PRNumber>-<ShortHeadSha> -NoFetch
    Read the helper's reported worktree path, verify git -C <WorktreePath> rev-parse HEAD equals the pinned SHA, and reuse only an already isolated exact-head worktree. If the helper cannot run, use git worktree add -b <UniqueBranch> <UnusedWorktreePath> <PinnedHeadSha>; never change the main checkout.
