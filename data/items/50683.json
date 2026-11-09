@@ -1,20 +1,61 @@
 {
+  "schemaVersion": 5,
   "number": 50683,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[CropAndLock] Keep client area when reparenting",
   "url": "https://github.com/microsoft/PowerToys/pull/50683",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-06T13:40:51.8204933Z",
-  "evaluated_at": "2026-11-06T13:40:51.8204933Z",
-  "source_updated_at": "11/06/2026 07:36:01",
+  "generated_at": "2026-11-09T07:55:52.435312Z",
+  "evaluated_at": "2026-11-09T07:55:52.435312Z",
+  "source_updated_at": "2026-11-09T02:54:32Z",
   "head_sha": "a158a8deda8535f979a906932d670818bc1cfcab",
-  "proposed_comments": [],
-  "actions": [],
+  "confidence": "high",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "kind": "companion",
+      "id": "50683-restore-top-level-frame",
+      "title": "Restore the top-level frame before applying saved geometry",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact-head restoration order matches the reported repeatable client-size regression, and the reporter reports successful geometry preservation after reordering the restoration steps."
+      },
+      "in_diff": false,
+      "out_of_diff_reason": "The defect is in the unchanged RestoreOriginalState method, outside the PR diff, so this finding must be posted as a separate general review comment.",
+      "body": "### Restore the top-level frame before applying the saved geometry\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp` — `ReparentCropAndLockWindow::RestoreOriginalState()`.\n\n**Problem:** This method applies `originalRect` while the target still has child-window state, reparents it only afterward, calls `SetWindowPlacement()` before restoring the original styles, then changes those styles without recalculating the frame. In the reported maximized Edge reproduction, the client area changed from 2560 x 1392 to 2560 x 1440 after the crop closed, extending into the taskbar region.\n\n**Why it matters:** Closing a crop should return a maximized app to its prior client dimensions and origin. Applying saved screen coordinates and placement before restoring the top-level frame can leave the browser resized after disconnection.\n\n**Suggested change:**\r\n- Restore the target to its top-level parent and saved styles first.\r\n- Apply the saved screen-space rectangle with `SWP_FRAMECHANGED` to recalculate the top-level frame.\r\n- Restore `WINDOWPLACEMENT` after the parent, styles, and rectangle are correct.\n\n**Verification:** Add or run a regression that snapshots `GetClientRect()` and the client origin from `ClientToScreen()` before reparenting, then compares both after closing a crop in maximized and normal states over repeated cycles. Assert client geometry, not only outer bounds.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "50683-post-restoration-review",
+      "type": "post_review",
+      "label": "Post the general restoration review comment",
+      "note": "The finding is outside the changed hunk and will be posted as a separate general PR comment.",
+      "head_sha": "a158a8deda8535f979a906932d670818bc1cfcab",
+      "review": {
+        "commit_id": "a158a8deda8535f979a906932d670818bc1cfcab",
+        "head_sha": "a158a8deda8535f979a906932d670818bc1cfcab",
+        "event": "COMMENT",
+        "comment_ids": [
+          "50683-restore-top-level-frame"
+        ]
+      }
+    }
+  ],
   "freshness": {
-    "queued_at": "2026-11-06T13:40:51.8204933Z",
-    "checkpoint_at": "2026-11-06T13:40:51.8204933Z"
+    "queued_at": "2026-11-09T07:55:52.435312Z",
+    "checkpoint_at": "2026-11-09T07:55:52.435312Z"
+  },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a158a8deda8535f979a906932d670818bc1cfcab",
+      "result": "passed"
+    }
   }
 }
