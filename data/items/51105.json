@@ -4,13 +4,15 @@
   "title": "[Build] Improve performance of deps.json DLL version verification script and fix bugs",
   "url": "https://github.com/microsoft/PowerToys/pull/51105",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-10-09T19:18:15.4080782Z",
-  "evaluated_at": "2026-10-09T19:18:14.3823989Z",
-  "source_updated_at": "2026-10-08T18:16:11Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-11-10T06:48:00Z",
+  "generated_at": "2026-11-10T08:16:00.958Z",
+  "evaluated_at": "2026-11-10T08:16:00.958Z",
+  "source_updated_at": "2026-11-10T06:48:05Z",
   "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd",
+  "needs_revalidation": false,
   "proposed_comments": [
     {
       "id": "51105-ignored-access",
@@ -23,10 +25,12 @@
         "rationale": "The exact upstream source suppresses inaccessible traversal errors, and an isolated ACL fixture reproduced false success upstream and fail-closed behavior with the literal replacement."
       },
       "body": "### Fail instead of silently skipping inaccessible directories\n\n**Severity:** `medium`\n\n`IgnoreInaccessible = true` makes the recursive scan omit directories it cannot read. If an omitted subtree contains a conflicting DLL version, the audit can report success based only on the readable portion; disable this suppression so the existing stop-on-error behavior fails an incomplete scan.\n\n```suggestion\n        var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = false };\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 199,
-      "side": "RIGHT"
+      "side": "RIGHT",
+      "posted_at": "2026-11-10T06:48:00Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919238"
     },
     {
       "id": "51105-excluded-manifests-1",
@@ -39,7 +43,7 @@
         "rationale": "The exact-upstream excluded-only fixture fails with the false missing-manifest error; this literal replacement preserves the discovered count before filtering."
       },
       "body": "### Count discovered manifests before applying exclusions (1/2)\n\n**Severity:** `medium`\n\nThe zero-manifest guard needs the number of files discovered, not only the files selected for auditing. When a target contains manifests that are intentionally excluded, counting after filtering incorrectly reports that no deps.json files were found. Preserve the discovery count before removing excluded files.\n\n```suggestion\n        var files = new List<string>(Directory.EnumerateFiles(root, \"*.deps.json\", options));\n        var scannedFilesCount = files.Count;\n        files.RemoveAll(f => IsExcluded(f, Path.GetFileName(f)));\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 204,
       "side": "RIGHT",
@@ -50,7 +54,9 @@
         "position": 1,
         "total": 2,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919259"
     },
     {
       "id": "51105-excluded-manifests-2",
@@ -63,7 +69,7 @@
         "rationale": "The literal second member is required with member 1; the complete atomic patch changes the exact-upstream excluded-only fixture from exit 1 to exit 0."
       },
       "body": "### Return the discovery count for empty-input validation (2/2)\n\n**Severity:** `medium`\n\nAfter exclusions are applied, `files.Count` is the audit subset size rather than the number of discovered manifests. Returning that filtered count makes an intentionally excluded-only target look empty and causes a false failure; return the saved discovery count instead.\n\n```suggestion\n        return new AuditResult { ScannedFilesCount = scannedFilesCount, Versions = all };\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 239,
       "side": "RIGHT",
@@ -73,7 +79,9 @@
         "position": 2,
         "total": 2,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919265"
     },
     {
       "id": "51105-malformed-manifest-1",
@@ -86,7 +94,7 @@
         "rationale": "The exact-upstream malformed-root fixture exits 0; the literal grouped candidate exits nonzero with the structural error."
       },
       "body": "### Reject malformed top-level deps.json structures (1/4)\n\n**Severity:** `medium`\n\nA syntactically valid manifest with a missing or non-object `targets` property currently returns an empty result. Since the file still counts as discovered, the wrapper then reports a successful audit; throw a structural error rather than treating malformed input as an empty manifest.\n\n```suggestion\n                throw new InvalidDataException($\"Invalid deps.json structure in {path}: expected an object with an object-valued 'targets' property.\");\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 142,
       "side": "RIGHT",
@@ -96,7 +104,9 @@
         "position": 1,
         "total": 4,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919269"
     },
     {
       "id": "51105-malformed-manifest-2",
@@ -109,7 +119,7 @@
         "rationale": "A malformed non-object target fixture exits 0 on exact upstream and fails with the structural error on the literal candidate."
       },
       "body": "### Reject non-object target values (2/4)\n\n**Severity:** `medium`\n\nA target-framework entry with a non-object value is silently skipped, so part of a malformed manifest is omitted from the audit. Reject that shape rather than allowing remaining entries to produce a successful result.\n\n```suggestion\n                    throw new InvalidDataException($\"Invalid deps.json structure in {path}: target '{target.Name}' must be an object.\");\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 150,
       "side": "RIGHT",
@@ -119,7 +129,9 @@
         "position": 2,
         "total": 4,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919278"
     },
     {
       "id": "51105-malformed-manifest-3",
@@ -132,7 +144,7 @@
         "rationale": "Exact-source control flow distinguishes absent runtime from malformed types; focused package/runtime fixtures fail on the literal candidate."
       },
       "body": "### Distinguish absent runtime data from malformed package values (3/4)\n\n**Severity:** `medium`\n\nA package with no `runtime` property is valid and may be skipped, but a non-object package or a present non-object `runtime` value is malformed. The combined condition treats all of these cases as absent data and can hide DLL references; skip only the absent property and reject invalid present values.\n\n```suggestion\n                    if (package.Value.ValueKind != JsonValueKind.Object)\n                    {\n                        throw new InvalidDataException($\"Invalid deps.json structure in {path}: package '{package.Name}' must be an object.\");\n                    }\n\n                    if (!package.Value.TryGetProperty(\"runtime\", out var runtime))\n                    {\n                        continue;\n                    }\n\n                    if (runtime.ValueKind != JsonValueKind.Object)\n                    {\n                        throw new InvalidDataException($\"Invalid deps.json structure in {path}: package '{package.Name}' has a non-object runtime value.\");\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 159,
       "side": "RIGHT",
@@ -143,7 +155,9 @@
         "position": 3,
         "total": 4,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919285"
     },
     {
       "id": "51105-malformed-manifest-4",
@@ -156,7 +170,7 @@
         "rationale": "Exact-upstream fixtures for malformed DLL entries and non-string fileVersion are accepted; the literal candidate rejects them."
       },
       "body": "### Reject malformed DLL entries and non-string versions (4/4)\n\n**Severity:** `medium`\n\nA DLL runtime entry with a non-object value is skipped, and a present non-string `fileVersion` is converted to an empty string. Either malformed shape can therefore pass when no valid conflict is found; continue only when `fileVersion` is absent and reject invalid entry/value types.\n\n```suggestion\n                        if (entry.Value.ValueKind != JsonValueKind.Object)\n                        {\n                            throw new InvalidDataException($\"Invalid deps.json structure in {path}: DLL runtime entry '{entry.Name}' must be an object.\");\n                        }\n\n                        if (!entry.Value.TryGetProperty(\"fileVersion\", out var fv))\n                        {\n                            continue;\n                        }\n\n                        if (fv.ValueKind != JsonValueKind.String)\n                        {\n                            throw new InvalidDataException($\"Invalid deps.json structure in {path}: DLL runtime entry '{entry.Name}' has a non-string fileVersion.\");\n                        }\n\n                        string version = fv.GetString();\n```",
-      "disposition": "proposed",
+      "disposition": "posted",
       "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
       "line": 175,
       "side": "RIGHT",
@@ -167,21 +181,12 @@
         "position": 4,
         "total": 4,
         "atomic": true
-      }
+      },
+      "posted_at": "2026-11-10T06:48:01Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/51105#discussion_r4521919296"
     }
   ],
-  "actions": [
-    {
-      "note": "Five historical cloud rounds reached the limit; latest returned Lite with a full-agentic timeout. Seven substantive literal suggestions are validated on the exact upstream revision. No clean cloud review or approval readiness is claimed.",
-      "type": "post_review",
-      "id": "post-review-51105",
-      "label": "Post 7 inline suggestions",
-      "review": {
-        "event": "COMMENT",
-        "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd"
-      }
-    }
-  ],
+  "actions": [],
   "validation": {
     "suggestion_patch": {
       "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd",
