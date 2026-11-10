@@ -1,119 +1,20 @@
 {
-  "schemaVersion": 5,
   "number": 51987,
   "kind": "pr",
-  "repository": "microsoft/PowerToys",
   "title": "[SvgThumbnailProvider] Fix image resize condition",
   "url": "https://github.com/microsoft/PowerToys/pull/51987",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-07T17:54:00Z",
-  "evaluated_at": "2026-11-07T17:54:00Z",
-  "source_updated_at": "2026-11-07T15:33:26Z",
+  "generated_at": "2026-11-10T19:24:23.5261504Z",
+  "evaluated_at": "2026-11-07T17:54:00.0000000Z",
+  "source_updated_at": "2026-11-10T19:20:57Z",
   "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "kind": "inline",
-      "path": "src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs",
-      "title": "Keep the resize predicate helper out of the public API",
-      "id": "51987-helper-public-api",
-      "in_diff": true,
-      "side": "RIGHT",
-      "line": 256,
-      "severity": "medium",
-      "confidence": {
-        "score": 86,
-        "rationale": "The helper is introduced as public and its call sites are the production capture path and the unit tests; test-only access can be granted without expanding the public API."
-      },
-      "body": "### Keep the resize predicate helper out of the public API\n\n**Severity:** `medium`\n\n`IsResizeRequired` is only needed by `GetThumbnailImpl` and the unit tests, but this PR adds it as a `public` method. That unnecessarily exposes an implementation detail as a supported API surface.\n\nMake it `internal` and grant `Preview.SvgThumbnailProvider.UnitTests` access with `InternalsVisibleTo` in the project file. This keeps the helper testable without making it part of the production public API."
-    },
-    {
-      "kind": "inline",
-      "path": "src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs",
-      "title": "Make the resize condition easier to verify",
-      "id": "51987-resize-predicate-readable",
-      "in_diff": true,
-      "side": "RIGHT",
-      "start_line": 258,
-      "line": 259,
-      "severity": "low",
-      "confidence": {
-        "score": 84,
-        "rationale": "The pinned implementation uses a compound mixed-dimension expression; the validated rewrite expresses the longest-side and pixel-format checks directly."
-      },
-      "body": "### Make the resize condition easier to verify\n\n**Severity:** `low`\n\nThe combined dimension predicate is hard to audit and makes it easy to miss the intended rule that the longest side must equal `cx` before an ARGB image can skip resize. Compute the longest side once, then compare it and the pixel format explicitly.\n\n```suggestion\n            int longestSide = Math.Max(image.Width, image.Height);\n            return longestSide != cx || image.PixelFormat != PixelFormat.Format32bppArgb;\n```"
-    },
-    {
-      "kind": "inline",
-      "path": "src/modules/previewpane/UnitTests-SvgThumbnailProvider/SvgThumbnailProviderTests.cs",
-      "title": "Cover premultiplied alpha in the resize predicate tests",
-      "id": "51987-pargb-test-coverage",
-      "in_diff": true,
-      "side": "RIGHT",
-      "start_line": 254,
-      "line": 254,
-      "severity": "low",
-      "confidence": {
-        "score": 78,
-        "rationale": "The predicate normalizes every non-ARGB pixel format, but the new data rows do not include the distinct premultiplied-alpha format."
-      },
-      "body": "### Cover premultiplied alpha in the resize predicate tests\n\n**Severity:** `low`\n\n`IsResizeRequired` accepts only `Format32bppArgb`, and the test matrix covers `Format24bppRgb` and `Format32bppRgb` but not `Format32bppPArgb`. Add a PArgb row with an expected value of `true` so the non-ARGB normalization rule remains covered.\n\n```suggestion\n        [DataRow(256, 256, PixelFormat.Format32bppRgb, true)]\n        [DataRow(256, 256, PixelFormat.Format32bppPArgb, true)]\n```"
-    }
-  ],
-  "actions": [
-    {
-      "id": "51987-post-svg-thumbnail-review",
-      "type": "post_review",
-      "label": "Post the three grounded SvgThumbnailProvider findings",
-      "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-      "review": {
-        "commit_id": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-        "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-        "event": "COMMENT",
-        "comment_ids": [
-          "51987-helper-public-api",
-          "51987-resize-predicate-readable",
-          "51987-pargb-test-coverage"
-        ]
-      }
-    }
-  ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-      "result": "passed"
-    },
-    "suggestion_patch": {
-      "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "51987-resize-predicate-readable",
-        "51987-pargb-test-coverage"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "4fa45de495898d9acb5d52a8b337ba012def81f7",
-      "result": "passed",
-      "checked_comment_ids": [
-        "51987-resize-predicate-readable",
-        "51987-pargb-test-coverage"
-      ],
-      "files": [
-        {
-          "path": "src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
-          "path": "src/modules/previewpane/UnitTests-SvgThumbnailProvider/SvgThumbnailProviderTests.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
-    }
+  "proposed_comments": [],
+  "actions": [],
+  "freshness": {
+    "queued_at": "2026-11-10T19:24:23.5261504Z",
+    "checkpoint_at": "2026-11-10T19:24:23.5261504Z"
   }
 }
