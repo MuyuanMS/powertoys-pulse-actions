@@ -1,82 +1,20 @@
 {
-  "schemaVersion": 5,
   "number": 52038,
   "kind": "pr",
-  "repository": "microsoft/PowerToys",
   "title": "[Installer] Preserve MSI file ownership with Smart Cabbing",
   "url": "https://github.com/microsoft/PowerToys/pull/52038",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-10T10:49:35Z",
-  "evaluated_at": "2026-11-10T10:49:35Z",
-  "source_updated_at": "2026-11-10T09:52:37Z",
-  "head_sha": "5c424c3cdb5ba1e949030d0440bf0dd778c491f1",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "kind": "inline",
-      "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
-      "title": "Preserve the existing install when a locked payload aborts upgrade",
-      "id": "installer-upgrade-failure-recovery",
-      "in_diff": true,
-      "side": "RIGHT",
-      "line": 138,
-      "severity": "high",
-      "confidence": {
-        "score": 88,
-        "rationale": "The pinned package leaves MajorUpgrade unscheduled, the new MSI File rows make locked payload installation fail, and the author reports a sustained-lock 1310/1603 path. The post-failure product state was not runtime-tested."
-      },
-      "body": "### Preserve the existing install when a locked payload aborts upgrade\n\n**Severity:** `high`\n\n**Affected code:** The new MSI `File` records in `generateAllFileComponents.ps1:134-139` and the `<MajorUpgrade>` in `Product.wxs:24`.\n\n**Problem:** The new `WinUI3Apps` payload is installed through MSI `File` rows, but `Product.wxs` leaves `<MajorUpgrade>` on WiX's default early `RemoveExistingProducts` schedule. A sustained lock can then fail the new `InstallFiles` work after the old product has already been removed; rollback of the new install cannot restore that prior product.\n\n**Why it matters:** An upgrade failure can leave PowerToys unavailable, or require a package-level retry, instead of preserving the previous version.\n\n**Suggested change:** Keep the existing product installed until the replacement payload transaction succeeds, such as by selecting a rollback-safe upgrade schedule, or add a tested lock preflight/recovery path before removing it.\n**Verification:** The PR reports that releasing an ordinary file lock allowed the upgrade to finish with MSI result `3010`, but its sustained-lock case reached `1310/1603` and only records an outer-package retry; cancellation/rollback recovery is explicitly unestablished. Add a failure-path check that verifies the old product remains registered and launchable after a locked-file failure for both per-user and per-machine upgrades."
-    },
-    {
-      "kind": "inline",
-      "path": "installer/PowerToysSetupVNext/InstallerMedia.ps1",
-      "title": "Make media generation safe to retry after an interrupted build",
-      "id": "installer-media-marker-retry",
-      "in_diff": true,
-      "side": "RIGHT",
-      "line": 123,
-      "severity": "medium",
-      "confidence": {
-        "score": 96,
-        "rationale": "The exact generator consumes its only marker, the build files place restoration in the parent WiX post-build event, and a two-call check on a temporary Product.wxs reproduces the second-call exception."
-      },
-      "body": "### Make media generation safe to retry after an interrupted build\n\n**Severity:** `medium`\n\n**Affected code:** `Set-InstallerMedia` in `InstallerMedia.ps1:113-123`, the custom-actions project's pre-build generator, and the WiX project's post-build restore.\n\n**Problem:** The generator replaces the only `<!--InstallerMedia-->` marker with media rows, consuming its retry anchor. If `PowerToysSetupCustomActionsVNext.vcxproj` fails after its pre-build event, the parent WiX project does not reach its post-build restore. The next pre-build then backs up the markerless `Product.wxs`, and the next `Set-InstallerMedia` call throws `Missing <!--InstallerMedia-->`.\n\n**Why it matters:** A transient compiler or package failure can leave the installer source mutated so that a retry fails before the installer can be rebuilt.\n\n**Suggested change:** Make the generated media block idempotent with a bounded generated section or separate output file, and ensure the original template remains recoverable when the referenced native project fails. Add an interrupted-build/retry regression.\n**Verification:** Two calls to the exact `Set-InstallerMedia` implementation against a temporary `Product.wxs` removed the marker on the first call and threw `Missing <!--InstallerMedia-->` on the second. The PR-reported installer-media Pester suite passed 9/9 but does not exercise a failed native-project build followed by a retry."
-    },
-    {
-      "kind": "inline",
-      "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
-      "title": "Back up PowerDisplay.wxs before harvesting it",
-      "id": "powerdisplay-harvest-repeat",
-      "in_diff": true,
-      "side": "RIGHT",
-      "line": 300,
-      "severity": "medium",
-      "confidence": {
-        "score": 97,
-        "rationale": "The new PowerDisplay harvest mutates its WXS file, the native pre-build list omits its backup while the WiX restore expects one, and the pinned prefix-only replacement duplicates a one-file list on the second pass."
-      },
-      "body": "### Back up PowerDisplay.wxs before harvesting it\n\n**Severity:** `medium`\n\n**Affected code:** The new `PowerDisplay` `Generate-FileList` call in `generateAllFileComponents.ps1:300`, the native project's pre-build backup list, and the WiX project's post-build restore at line 55.\n\n**Problem:** This harvest mutates `PowerDisplay.wxs`, but the custom-actions project's pre-build backup list omits that file even though the WiX project's post-build event tries to restore `PowerDisplay.wxs.bk`. The generated define therefore remains after the first build; `Generate-FileList` replaces only the define prefix and leaves the previous value, so a second one-file harvest produces `PowerDisplay.icoPowerDisplay.ico`.\n\n**Why it matters:** A subsequent installer build can resolve a malformed asset path and fail, making local builds order-dependent.\n\n**Suggested change:** Add `PowerDisplay.wxs` to the custom-actions project's pre-build backup list, or stop mutating the source file in place, and cover two consecutive harvests.\n**Verification:** Running the exact define-replacement expression twice against the pinned `PowerDisplay.wxs` template produced `PowerDisplay.icoPowerDisplay.ico`; the PR-reported 9-test suite does not exercise repeated full generation."
-    }
-  ],
-  "actions": [
-    {
-      "id": "52038-post-installer-review",
-      "type": "post_review",
-      "label": "Post grounded installer review",
-      "head_sha": "5c424c3cdb5ba1e949030d0440bf0dd778c491f1",
-      "review": {
-        "commit_id": "5c424c3cdb5ba1e949030d0440bf0dd778c491f1",
-        "head_sha": "5c424c3cdb5ba1e949030d0440bf0dd778c491f1",
-        "event": "COMMENT",
-        "comment_ids": [
-          "installer-upgrade-failure-recovery",
-          "installer-media-marker-retry",
-          "powerdisplay-harvest-repeat"
-        ]
-      }
-    }
-  ]
+  "generated_at": "2026-11-10T16:31:18.0186544Z",
+  "evaluated_at": "2026-11-10T16:31:18.0186544Z",
+  "source_updated_at": "2026-11-10T16:28:16Z",
+  "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
+  "proposed_comments": [],
+  "actions": [],
+  "freshness": {
+    "queued_at": "2026-11-10T16:31:18.0186544Z",
+    "checkpoint_at": "2026-11-10T16:31:18.0186544Z"
+  }
 }
