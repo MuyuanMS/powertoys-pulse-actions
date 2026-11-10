@@ -1,110 +1,20 @@
 {
-  "schemaVersion": 5,
   "number": 52038,
   "kind": "pr",
-  "repository": "microsoft/PowerToys",
   "title": "[Installer] Preserve MSI file ownership with Smart Cabbing",
   "url": "https://github.com/microsoft/PowerToys/pull/52038",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-10T16:47:14.4024186Z",
-  "evaluated_at": "2026-11-10T16:47:14.4060672Z",
-  "source_updated_at": "2026-11-10T16:40:28Z",
-  "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "installer-local-publish-guard",
-      "kind": "inline",
-      "path": "installer/PowerToysSetupCustomActionsVNext/PowerToysSetupCustomActionsVNext.vcxproj",
-      "line": 51,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Publish preview handlers for the local installer script",
-      "severity": "medium",
-      "confidence": {
-        "score": 96,
-        "rationale": "The local build script supplies CIBuild=true without publishing preview handlers. Executing the changed event with those flags reaches harvesting without publishing."
-      },
-      "body": "### Publish preview handlers for the local installer script\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** The new `CIBuild` guard in the native pre-build event and `tools/build/build-installer.ps1`'s local installer workflow.\r\n\r\n**Problem:** The local script passes `/p:CIBuild=true /p:IsPipeline=true`, but does not publish the four preview handlers before building the installer. This new guard consequently skips `publish.cmd` for that local path too. The script's MSBuild `IsPipeline` property is not the environment variable tested by the former WiX event.\r\n\r\n**Why it matters:** Harvesting can consume ordinary build outputs instead of the published preview-handler payload; the installer documentation explicitly requires publishing for correct WebView2 DLL inclusion.\r\n\r\n**Suggested change:** Distinguish genuinely prepublished pipeline inputs from the local script's build flags. Ensure the local workflow publishes the preview handlers before harvesting, while preserving the no-republish path for real CI inputs. Cover the actual local-script flags in the event-ordering regression rather than assuming every `CIBuild=true` invocation has published already.\r\n\r\n**Verification:** A command fixture executing the exact event with `CIBuild=true` and no `IsPipeline` environment variable reached harvesting without calling publish. The local script has no separate preview-handler publish step. This proves the skipped step; a complete MSI payload build was not run."
-    },
-    {
-      "id": "installer-arm64-publish-rid",
-      "kind": "inline",
-      "path": "installer/PowerToysSetupCustomActionsVNext/PowerToysSetupCustomActionsVNext.vcxproj",
-      "line": 55,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Normalize the platform passed to the publish profiles",
-      "severity": "medium",
-      "confidence": {
-        "score": 98,
-        "rationale": "The solution uses ARM64, the publish profile overrides the common lowercase RID with win-$(Platform), and the self-contained SDK check rejects win-ARM64 but accepts win-arm64."
-      },
-      "body": "### Normalize the platform passed to the publish profiles\r\n\r\n**Severity:** `medium`\r\n\r\nThe installer solution uses `ARM64`, but `publish.cmd` forwards this argument into profiles that set `RuntimeIdentifier` to `win-$(Platform)`. Those profiles overwrite the earlier lowercase value from `Common.SelfContained.props`, so a local ARM64 publish can fail with `NETSDK1083` for `win-ARM64`. Preserve the previous WiX event's lowercase publish argument:\r\n\r\n```suggestion\r\n      call \"$(ProjectDir)..\\PowerToysSetupVNext\\publish.cmd\" $(Platform.ToLowerInvariant())\r\n```\r\n\r\nThe literal replacement parses as XML and evaluates to `arm64` under MSBuild. An isolated self-contained SDK framework-reference check rejects `win-ARM64` and passes with `win-arm64`; this is not a full ARM64 installer build."
-    },
-    {
-      "id": "installer-media-failure-restore",
-      "kind": "inline",
-      "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
-      "line": 457,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Restore the harvested templates if the media pass fails",
-      "severity": "medium",
-      "confidence": {
-        "score": 97,
-        "rationale": "The new final media pass throws on missing source files after templates are mutated. Reproducing that failure and retrying the exact harvester corrupts the file-list define."
-      },
-      "body": "### Restore the harvested templates if the media pass fails\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** The final `Set-InstallerMedia` call, the native pre-build template backups, and the WiX post-build restoration.\r\n\r\n**Problem:** The new media pass hashes sources after harvesting has mutated the WXS templates. If a source disappears or cannot be read, that pass throws before the parent WiX build reaches restoration. Retrying then overwrites the original backups with generated authoring; `Generate-FileList` replaces only the define prefix and appends the previous list to the new one.\r\n\r\n**Why it matters:** A transient media-generation failure can make subsequent installer builds fail on nonexistent filenames even after the original source problem is repaired.\r\n\r\n**Suggested change:** Restore all mutated WXS/header templates when harvesting or media generation fails, before a retry can overwrite their original backups. Keep the failure visible to MSBuild. Also make file-list replacement retry-safe, and add a failure-then-retry regression that exercises this cleanup boundary, not just two successful harvest/restore cycles.\r\n\r\n**Verification:** After the exact harvester generated one `PowerDisplay.ico` entry, removing its source made `Set-InstallerMedia` throw. Repeating the pre-build backup and harvest after restoring the source produced `PowerDisplay.icoPowerDisplay.ico` in the define. The new bounded media markers and PowerDisplay backup fix successful cycles, but neither restores templates on this failure path."
-    }
-  ],
-  "actions": [
-    {
-      "id": "52038-post-current-installer-review",
-      "type": "post_review",
-      "label": "Post grounded installer review",
-      "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-      "review": {
-        "comment_ids": [
-          "installer-local-publish-guard",
-          "installer-arm64-publish-rid",
-          "installer-media-failure-restore"
-        ],
-        "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-        "commit_id": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-        "event": "COMMENT"
-      }
-    }
-  ],
-  "validation": {
-    "suggestion_patch": {
-      "applied_comment_ids": [
-        "installer-arm64-publish-rid"
-      ],
-      "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-      "result": "passed",
-      "minimal_ranges_reviewed": true
-    },
-    "line_ending_safety": {
-      "checked_comment_ids": [
-        "installer-arm64-publish-rid"
-      ],
-      "files": [
-        {
-          "path": "installer/PowerToysSetupCustomActionsVNext/PowerToysSetupCustomActionsVNext.vcxproj",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 188,
-          "cr_only_count": 0
-        }
-      ],
-      "head_sha": "acdf8d9b89ad33ee19f7cef79af986946b34b180",
-      "result": "passed"
-    }
+  "generated_at": "2026-11-10T16:59:38.9377926Z",
+  "evaluated_at": "2026-11-10T16:59:38.9377926Z",
+  "source_updated_at": "2026-11-10T16:59:31Z",
+  "head_sha": "a3ee8d1d4e898ba2d0571d9bb50dfbc319edd51c",
+  "proposed_comments": [],
+  "actions": [],
+  "freshness": {
+    "queued_at": "2026-11-10T16:59:38.9377926Z",
+    "checkpoint_at": "2026-11-10T16:59:38.9377926Z"
   }
 }
