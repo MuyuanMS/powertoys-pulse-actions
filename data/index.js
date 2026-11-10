@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-10T19:13:24.9428557+08:00",
+  "generated_at": "2026-11-10T11:31:55.1326959Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -7257,7 +7257,7 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-10-08T00:38:56Z",
-      "updated_at": "2026-11-10T06:48:05Z",
+      "updated_at": "2026-11-10T11:29:06Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
