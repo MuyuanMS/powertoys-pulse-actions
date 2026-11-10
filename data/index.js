@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-10T16:59:38.6289309Z",
+  "generated_at": "2026-11-10T17:21:22.1402603Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -2020,22 +2020,25 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post grounded installer review"
+      },
       "labels": [
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-11-10T07:05:38Z",
-      "updated_at": "2026-11-10T16:59:31Z",
-      "comments": 5,
+      "updated_at": "2026-11-10T17:17:46Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,

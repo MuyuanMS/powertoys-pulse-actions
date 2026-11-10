@@ -1,20 +1,66 @@
 {
+  "schemaVersion": 5,
   "number": 52038,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[Installer] Preserve MSI file ownership with Smart Cabbing",
   "url": "https://github.com/microsoft/PowerToys/pull/52038",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-10T16:59:38.9377926Z",
-  "evaluated_at": "2026-11-10T16:59:38.9377926Z",
-  "source_updated_at": "2026-11-10T16:59:31Z",
+  "generated_at": "2026-11-10T17:21:19.0981855Z",
+  "evaluated_at": "2026-11-10T17:21:19.0981855Z",
+  "source_updated_at": "2026-11-10T17:17:46Z",
   "head_sha": "a3ee8d1d4e898ba2d0571d9bb50dfbc319edd51c",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-11-10T16:59:38.9377926Z",
-    "checkpoint_at": "2026-11-10T16:59:38.9377926Z"
-  }
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "installer-publish-failure-propagation",
+      "kind": "inline",
+      "path": "installer/PowerToysSetupCustomActionsVNext/PowerToysSetupCustomActionsVNext.vcxproj",
+      "line": 55,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Propagate failures from every preview-handler publish",
+      "severity": "medium",
+      "confidence": {
+        "score": 97,
+        "rationale": "Exact publish.cmd executed with a deterministic MSBuild executable returns success after any of its first three publishes fails; adding per-command checks fails immediately at each injected failure."
+      },
+      "body": "### Propagate failures from every preview-handler publish\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** This new pre-harvest error guard and `installer/PowerToysSetupVNext/publish.cmd`.\r\n\r\n**Problem:** The caller checks the exit code of the whole batch file, but `publish.cmd` runs four MSBuild publishes without checking the intermediate exit codes. A failure in Monaco, Markdown, or SVG PreviewHandler is masked if the final SvgThumbnailProvider publish succeeds.\r\n\r\n**Why it matters:** The new ordering promises published inputs before hashing. This path can instead continue into harvesting after a failed publish and, when outputs from a previous build remain, package those stale inputs.\r\n\r\n**Suggested change:** Add `IF ERRORLEVEL 1 EXIT /B 1` immediately after each of the four MSBuild invocations in `publish.cmd`, not only after this outer `call`. Preserve the all-success path. Add a regression that fails each publish in turn and proves that no later publish or harvest runs after the first failure.\r\n\r\n**Verification:** Executing the exact batch with a deterministic MSBuild stub returned zero and ran all four publishes when any of the first three failed. The candidate per-command checks returned nonzero immediately for all four injected failures, while the all-success case still ran all four. This validates command failure propagation, not a complete preview-handler or MSI build."
+    },
+    {
+      "id": "installer-downstream-failure-template-restore",
+      "kind": "inline",
+      "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
+      "line": 96,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Preserve pristine authoring across a failed parent WiX build",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact harvesting and media functions succeed once, then fail with Missing harvested File after modeling skipped post-build restoration and adding a payload file. The native backup overwrites its pristine copy on retry."
+      },
+      "body": "### Preserve pristine authoring across a failed parent WiX build\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** The complete file-list replacement here, `Generate-FileComponents`, the native pre-build backups, and the WiX post-build restoration.\r\n\r\n**Problem:** The new trap restores WXS files when harvesting itself throws, but not when harvesting succeeds and the parent WiX build later fails before `PostBuildEvent`. At that point the component placeholders are already consumed. The next pre-build overwrites the pristine `.bk` files with generated authoring. If the payload file set changes before retrying, the define updates but the old component cannot be regenerated, and the media pass fails with `Missing harvested File`.\r\n\r\n**Why it matters:** Repairing a downstream installer-build failure and rebuilding after a payload change can leave the source tree unable to harvest the new files, even though the hash-failure regression passes.\r\n\r\n**Suggested change:** Make the authoring lifecycle safe across downstream build failures: preserve pristine templates before any retry can overwrite their backups, and restore them before regenerating components. Alternatively, generate into isolated intermediate authoring and leave source templates untouched. Keep failures visible. Add a regression that harvests successfully, skips the post-build restore to model a failed WiX build, adds a payload file, then retries and verifies exactly one component reference and all current file rows.\r\n\r\n**Verification:** Exact-head functions harvested one fixture file successfully. Modeling the skipped restore and next backup, then adding `b.dll`, reproduced `Missing harvested File 'PowerDisplayAssetsFiles_File_b.dll'`; the pristine backup had been overwritten. The existing trap only restores the bytes seen at that invocation's start, so it cannot recover the earlier pristine template. The downstream WiX failure boundary was modeled; no complete failed MSI build was run."
+    }
+  ],
+  "actions": [
+    {
+      "id": "52038-post-publish-retry-review",
+      "head_sha": "a3ee8d1d4e898ba2d0571d9bb50dfbc319edd51c",
+      "label": "Post grounded installer review",
+      "type": "post_review",
+      "review": {
+        "head_sha": "a3ee8d1d4e898ba2d0571d9bb50dfbc319edd51c",
+        "event": "COMMENT",
+        "comment_ids": [
+          "installer-publish-failure-propagation",
+          "installer-downstream-failure-template-restore"
+        ],
+        "commit_id": "a3ee8d1d4e898ba2d0571d9bb50dfbc319edd51c"
+      }
+    }
+  ]
 }
