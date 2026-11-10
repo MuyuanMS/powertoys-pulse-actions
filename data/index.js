@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-10T18:08:45.1216863Z",
+  "generated_at": "2026-11-10T18:19:27.0501345Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -2020,24 +2020,21 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post installer test exit-code suggestion"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-11-10T07:05:38Z",
-      "updated_at": "2026-11-10T17:57:55Z",
+      "updated_at": "2026-11-10T18:15:19Z",
       "comments": 8,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
