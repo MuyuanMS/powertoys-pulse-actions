@@ -9,10 +9,10 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-11T03:07:42.9882206Z",
-  "evaluated_at": "2026-11-11T03:07:42.9882206Z",
-  "source_updated_at": "2026-11-11T03:03:09Z",
-  "head_sha": "ff3d2c6134332cb112d2351e8cee8dd94ed15277",
+  "generated_at": "2026-11-11T07:16:17.9812601Z",
+  "evaluated_at": "2026-11-11T07:16:17.9812601Z",
+  "source_updated_at": "2026-11-11T07:11:03Z",
+  "head_sha": "03783891c13ff686aecec2d0317fc9b06cf5b511",
   "needs_revalidation": false,
   "proposed_comments": [
     {
@@ -28,7 +28,7 @@
         "score": 92,
         "rationale": "Exact-head source shows no apartment initialization in wmain, the production sanitizer invokes WinRT JSON, and the test fixture initializes an apartment explicitly."
       },
-      "body": "### Initialize WinRT before BugReportTool uses it\n\n**Severity:** `medium`\n\n**Affected code:** `wmain`, `ReportWindowsSettings`, and the `diagnostic_privacy::sanitize_report` call in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** `wmain` does not initialize a WinRT apartment, yet `ReportWindowsSettings` calls WinRT globalization APIs and the new sanitizer invokes WinRT JSON parsing. The former catches and hides failures; the sanitizer's outer catch deletes the report directory and returns failure.\n\n**Why it matters:** A missing apartment can turn the new privacy pass into a hard failure that prevents the bug-report ZIP from being produced.\n\n**Suggested change:** Initialize a WinRT apartment at the beginning of `wmain`, before any WinRT caller, and pair it with scope-bound `winrt::uninit_apartment()`.\n\n**Verification:** At `ff3d2c6`, the exact source shows `ReportWindowsSettings` before `sanitize_report`, no `init_apartment` in `wmain`, and `JsonValue::TryParse` in the sanitizer. The privacy-test fixture explicitly initializes WinRT before exercising that code; no production-entry-point test covers the missing initialization."
+      "body": "### Initialize WinRT before BugReportTool uses it\n\n**Severity:** `medium`\n\n**Affected code:** `wmain`, `ReportWindowsSettings`, and the `diagnostic_privacy::sanitize_report` call in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** `wmain` does not initialize a WinRT apartment, yet `ReportWindowsSettings` calls WinRT globalization APIs and the new sanitizer invokes WinRT JSON parsing. The former catches and hides failures; the sanitizer's outer catch deletes the report directory and returns failure.\n\n**Why it matters:** A missing apartment can turn the new privacy pass into a hard failure that prevents the bug-report ZIP from being produced.\n\n**Suggested change:** Initialize a WinRT apartment at the beginning of `wmain`, before any WinRT caller, and pair it with scope-bound `winrt::uninit_apartment()`.\n\n**Verification:** At `0378389`, the exact source shows `ReportWindowsSettings` before `sanitize_report`, no `init_apartment` in `wmain`, and `JsonValue::TryParse` in the sanitizer. The privacy-test fixture explicitly initializes WinRT before exercising that code; no production-entry-point test covers the missing initialization."
     },
     {
       "kind": "inline",
@@ -37,13 +37,13 @@
       "id": "bugreport-test-timeout-child",
       "in_diff": true,
       "side": "RIGHT",
-      "line": 731,
+      "line": 803,
       "severity": "low",
       "confidence": {
         "score": 91,
         "rationale": "The exact-head helper launches tar.exe and asserts the 30-second wait result without a timeout cleanup path."
       },
-      "body": "### Terminate and reap the extractor on timeout\n\n**Severity:** `low`\n\n**Affected code:** `DiagnosticPrivacyTests.cpp`'s `ExtractArchive` helper at the 30-second `WaitForSingleObject` call.\n\n**Problem:** If the wait returns `WAIT_TIMEOUT`, the immediately following assertion fails without terminating or waiting for the launched `tar.exe` process.\n\n**Why it matters:** A timed-out extractor can continue running after its test fails and keep using the temporary archive or directory while later tests proceed.\n\n**Suggested change:** Save the wait result; on `WAIT_TIMEOUT`, terminate the child and wait until it is signaled before asserting. Read its exit code only after `WAIT_OBJECT_0`.\n\n**Verification:** At exact head `ff3d2c6`, `ExtractArchive` launches `tar.exe` and asserts the 30-second wait result at line 731; the timeout path has no termination or reaping. The normal extraction test does not exercise a hung child."
+      "body": "### Terminate and reap the extractor on timeout\n\n**Severity:** `low`\n\n**Affected code:** `DiagnosticPrivacyTests.cpp`'s `ExtractArchive` helper at the 30-second `WaitForSingleObject` call.\n\n**Problem:** If the wait returns `WAIT_TIMEOUT`, the immediately following assertion fails without terminating or waiting for the launched `tar.exe` process.\n\n**Why it matters:** A timed-out extractor can continue running after its test fails and keep using the temporary archive or directory while later tests proceed.\n\n**Suggested change:** Save the wait result; on `WAIT_TIMEOUT`, terminate the child and wait until it is signaled before asserting. Read its exit code only after `WAIT_OBJECT_0`.\n\n**Verification:** At exact head `0378389`, `ExtractArchive` launches `tar.exe` and asserts the 30-second wait result at line 803; the timeout path has no termination or reaping. The normal extraction test does not exercise a hung child."
     },
     {
       "kind": "inline",
@@ -58,7 +58,7 @@
         "score": 88,
         "rationale": "The exact-head sanitizer uses throwing file streams and WinRT parsing, while the new outer catch discards all error details."
       },
-      "body": "### Preserve the cause when report sanitization fails\n\n**Severity:** `low`\n\n**Affected code:** The catch-all around `diagnostic_privacy::sanitize_report` in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** Any exception from WinRT parsing or file access is discarded, and the tool prints the same generic message before deleting the report directory.\n\n**Why it matters:** When no ZIP is created, users and maintainers cannot distinguish a file-access failure from a WinRT or parsing failure, making the failure harder to diagnose.\n\n**Suggested change:** Preserve a sanitized error category or HRESULT for known WinRT/filesystem failures, retain a generic fallback for unknown exceptions, and keep the existing cleanup and failure return. Avoid logging report contents or sensitive paths.\n\n**Verification:** At exact head `ff3d2c6`, the sanitizer configures its input/output streams to throw and invokes WinRT JSON parsing; the `Main.cpp` catch-all erases the exception type and reports only the same generic message. No runtime failure was triggered for this assessment."
+      "body": "### Preserve the cause when report sanitization fails\n\n**Severity:** `low`\n\n**Affected code:** The catch-all around `diagnostic_privacy::sanitize_report` in `tools/BugReportTool/BugReportTool/Main.cpp`.\n\n**Problem:** Any exception from WinRT parsing or file access is discarded, and the tool prints the same generic message before deleting the report directory.\n\n**Why it matters:** When no ZIP is created, users and maintainers cannot distinguish a file-access failure from a WinRT or parsing failure, making the failure harder to diagnose.\n\n**Suggested change:** Preserve a sanitized error category or HRESULT for known WinRT/filesystem failures, retain a generic fallback for unknown exceptions, and keep the existing cleanup and failure return. Avoid logging report contents or sensitive paths.\n\n**Verification:** At exact head `0378389`, the sanitizer configures its input/output streams to throw and invokes WinRT JSON parsing; the `Main.cpp` catch-all erases the exception type and reports only the same generic message. No runtime failure was triggered for this assessment."
     }
   ],
   "actions": [
@@ -66,10 +66,10 @@
       "id": "51954-post-privacy-review",
       "type": "post_review",
       "label": "Post grounded privacy and diagnostics review",
-      "head_sha": "ff3d2c6134332cb112d2351e8cee8dd94ed15277",
+      "head_sha": "03783891c13ff686aecec2d0317fc9b06cf5b511",
       "review": {
-        "commit_id": "ff3d2c6134332cb112d2351e8cee8dd94ed15277",
-        "head_sha": "ff3d2c6134332cb112d2351e8cee8dd94ed15277",
+        "commit_id": "03783891c13ff686aecec2d0317fc9b06cf5b511",
+        "head_sha": "03783891c13ff686aecec2d0317fc9b06cf5b511",
         "event": "COMMENT",
         "comment_ids": [
           "bugreport-winrt-apartment",
@@ -81,8 +81,9 @@
   ],
   "validation": {
     "upstream_head": {
-      "head_sha": "ff3d2c6134332cb112d2351e8cee8dd94ed15277",
-      "result": "passed"
+      "head_sha": "03783891c13ff686aecec2d0317fc9b06cf5b511",
+      "result": "passed",
+      "detail": "Exact-source grounding checks only; no new runtime/build validation."
     }
   }
 }
