@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-11T19:52:41.3428846Z",
+  "generated_at": "2026-11-11T20:04:56.7648396Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 229,
+    "open_prs": 230,
     "open_issues": 11172,
     "community": 10285,
-    "artifacts": 1873
+    "artifacts": 1874
   },
   "impact": {
     "as_of": "2026-11-10T19:13:24.9428557+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52057,
     52071,
     52038,
     51987,
@@ -1973,6 +1974,40 @@ window.BOARD_INDEX = {
     49788
   ],
   "items": [
+    {
+      "id": "pr-52057",
+      "kind": "pr",
+      "number": 52057,
+      "url": "https://github.com/microsoft/PowerToys/pull/52057",
+      "title": "[Runner] Lazy-load disabled module DLLs",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "labels": [
+        "Product-General",
+        "Ready for review"
+      ],
+      "created_at": "2026-11-11T05:44:58Z",
+      "updated_at": "2026-11-11T20:00:25Z",
+      "assignees": [
+        null
+      ],
+      "comments": 3,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null,
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "priority": null,
+      "pending_author": false,
+      "waiting_since": null,
+      "proposed_open": 0,
+      "primary_action": null
+    },
     {
       "id": "pr-52071",
       "kind": "pr",
