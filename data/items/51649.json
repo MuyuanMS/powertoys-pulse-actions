@@ -9,10 +9,10 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-04T14:02:10.9818296+08:00",
-  "evaluated_at": "2026-11-04T14:02:10.9818548+08:00",
-  "source_updated_at": "2026-11-03T23:48:53Z",
-  "head_sha": "9a15fb7e81aa76165596265653253165f2660e11",
+  "generated_at": "2026-11-11T18:49:03.1203099Z",
+  "evaluated_at": "2026-11-11T18:49:03.1203099Z",
+  "source_updated_at": "2026-11-11T18:47:53Z",
+  "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
   "needs_revalidation": false,
   "proposed_comments": [
     {
@@ -27,29 +27,29 @@
         "score": 76,
         "rationale": "The message omission is directly visible in the exact upstream exception path and the same method records and reports startupStage on timeout; severity remains low because the inner exception still preserves the root cause."
       },
-      "body": "**Severity: Low — missing startup-phase context makes receiver initialization failures slower to diagnose.**\r\n\r\nThe worker records `startupStage` before each setup operation and includes it on timeout, but this exception wrapper omits it. The original cause is retained as an inner exception, so this is a diagnostic improvement, not lost root-cause information or a new functional failure.\r\n\r\n**If left unchanged:** maintainers must infer which initialization phase failed from the nested exception instead of seeing the recorded phase immediately.\r\n\r\n```suggestion\r\n                throw new InvalidOperationException(\"Receiver initialization failed during \" + startupStage + \".\", error);\r\n```\r\n\r\nThe literal current-source replacement compiled using the actual nine-source Windows PowerShell worker compiler. The prior 59 focused endpoint-diagnostics contracts passed; the current UIA invocation change is separate from this unchanged C# initialization path. No interactive VM or failing-initialization runtime experiment was performed.",
+      "body": "**Severity: Low - missing startup-phase context makes receiver initialization failures slower to diagnose.**\n\nThe worker records `startupStage` before each setup operation and includes it on timeout, but this exception wrapper omits it. Keep the existing inner exception and include the recorded phase in the wrapper message.\n\n**If left unchanged:** maintainers must infer which initialization phase failed from the nested exception instead of seeing the recorded phase immediately.\n\n```suggestion\n                throw new InvalidOperationException(\"Receiver initialization failed during \" + startupStage + \".\", error.InnerException);\n```\n\n**Verification:** compile the nine worker sources with the Windows PowerShell 5.1 `Add-Type` command used by `EndpointWorker.ps1`; exercise an initialization failure and confirm that the message includes its phase and preserves the original inner exception.",
       "in_diff": true
     }
   ],
   "actions": [
     {
       "id": "51649-post-current-assessment",
-      "head_sha": "9a15fb7e81aa76165596265653253165f2660e11",
+      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
       "type": "post_review",
       "label": "Post supported inline suggestion",
       "review": {
         "event": "COMMENT",
-        "head_sha": "9a15fb7e81aa76165596265653253165f2660e11",
+        "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
         "comment_ids": [
           "startup-stage-diagnostic"
         ],
-        "commit_id": "9a15fb7e81aa76165596265653253165f2660e11"
+        "commit_id": "d94ac0d5bb588e17b02f0411fd1947839cf93528"
       }
     }
   ],
   "validation": {
     "suggestion_patch": {
-      "head_sha": "9a15fb7e81aa76165596265653253165f2660e11",
+      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
@@ -57,7 +57,7 @@
       ]
     },
     "line_ending_safety": {
-      "head_sha": "9a15fb7e81aa76165596265653253165f2660e11",
+      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
       "result": "passed",
       "checked_comment_ids": [
         "startup-stage-diagnostic"
