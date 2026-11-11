@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-11T18:03:54.1289871Z",
+  "generated_at": "2026-11-11T18:27:39.8214836Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 228,
+    "open_prs": 229,
     "open_issues": 11172,
     "community": 10285,
-    "artifacts": 1872
+    "artifacts": 1873
   },
   "impact": {
     "as_of": "2026-11-10T19:13:24.9428557+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52071,
     52038,
     51987,
     51982,
@@ -1972,6 +1973,40 @@ window.BOARD_INDEX = {
     49788
   ],
   "items": [
+    {
+      "id": "pr-52071",
+      "kind": "pr",
+      "number": 52071,
+      "url": "https://github.com/microsoft/PowerToys/pull/52071",
+      "title": "Fix thumbnail provider UI-test log expectations",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "labels": [
+        "Product-File Explorer",
+        "Ready for review"
+      ],
+      "created_at": "2026-11-11T16:48:00Z",
+      "updated_at": "2026-11-11T18:10:54Z",
+      "assignees": [
+        null
+      ],
+      "comments": 1,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null,
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "priority": null,
+      "pending_author": false,
+      "waiting_since": null,
+      "proposed_open": 0,
+      "primary_action": null
+    },
     {
       "id": "pr-52040",
       "kind": "pr",
