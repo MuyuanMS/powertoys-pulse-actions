@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 47566,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "Light Switch reverts to scheduled mode following Power Toys update, even if previous state was set manually.",
+  "url": "https://github.com/microsoft/PowerToys/issues/47566",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:18:06Z",
+  "evaluated_at": "2026-11-13T16:18:06Z",
   "source_updated_at": "2026-05-12T12:53:02Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue supplies a specific update sequence and source shows in-memory override state reset on initial settings load, but an update's exact lifecycle and desired persistence need verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter manually toggles to dark during scheduled light time and says a PowerToys update then restores scheduled light instead of preserving the manual choice.",
+      "A diagnostic ZIP and a detailed scheduling sequence were supplied.",
+      "LightSwitchStateManager stores isManualOverride in its state and clears it when loading the first settings snapshot: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/LightSwitch/LightSwitchService/LightSwitchStateManager.cpp."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce override across service restart",
+    "evaluated_at": "2026-11-13T16:18:06Z",
     "source_updated_at": "2026-05-12T12:53:02Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue supplies a specific update sequence and source shows in-memory override state reset on initial settings load, but an update's exact lifecycle and desired persistence need verification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Light Switch manual override through updates",
+      "root_cause": "A restarted service may lose its in-memory override and apply the schedule; an updater-specific restart and desired expiration behavior still require confirmation.",
+      "plan": [
+        "Reproduce a manual dark override during a scheduled light interval, then compare service restart and an actual update.",
+        "If restart loses the override, design persistence that preserves the user's choice only until its intended next schedule boundary and accounts for settings changes.",
+        "Add tests for restart during an override, crossed boundaries, changed schedule and both system and application themes."
+      ],
+      "verification": [
+        "An update during the interval preserves the manual theme until the next applicable boundary; normal scheduling resumes afterwards."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The issue supplies a specific update sequence and source shows in-memory override state reset on initial settings load, but an update's exact lifecycle and desired persistence need verification."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Preserve Light Switch manual override through updates",
+    "known_information": [
+      "The reporter manually toggles to dark during scheduled light time and says a PowerToys update then restores scheduled light instead of preserving the manual choice.",
+      "A diagnostic ZIP and a detailed scheduling sequence were supplied."
+    ],
+    "inferences": [
+      "A restarted service may lose its in-memory override and apply the schedule; an updater-specific restart and desired expiration behavior still require confirmation."
+    ],
+    "analysis": "The issue supplies a specific update sequence and source shows in-memory override state reset on initial settings load, but an update's exact lifecycle and desired persistence need verification.",
+    "initial_investigation": [
+      "LightSwitchStateManager stores isManualOverride in its state and clears it when loading the first settings snapshot: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/LightSwitch/LightSwitchService/LightSwitchStateManager.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce override across service restart",
+      "reproduce": {
+        "title": "Test manual override across an update",
+        "module": "Light Switch",
+        "version_requirement": "0.99.1 and current main",
+        "prerequisites": [
+          "A fixed-hours schedule with the current time in the light interval"
+        ],
+        "setup": [
+          "Enable scheduled switching and manually toggle to dark from Quick Access."
+        ],
+        "steps": [
+          "Restart the Light Switch service via a normal PowerToys restart and observe the theme.",
+          "In an isolated test installation, repeat with an actual PowerToys update before the next schedule boundary.",
+          "Observe the next scheduled boundary."
+        ],
+        "expected_result": "The manual dark override survives the update until the next schedule boundary, then normal scheduling resumes.",
+        "setup_prompt": "Prepare an isolated test installation and fixed-hours schedule for an update comparison."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Preserve Light Switch manual override through updates"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-LightSwitch"
+  ],
+  "assignees": [],
+  "author": "seitzme",
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false
 }

@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 47832,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "Grab and Move does not ignore Command Palette",
+  "url": "https://github.com/microsoft/PowerToys/issues/47832",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:15:56Z",
+  "evaluated_at": "2026-11-13T16:15:56Z",
   "source_updated_at": "2026-05-17T08:23:42Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The report is concrete and the source has explicit exclusion checks, but the actual target identity and whether current behavior persists need confirmation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 Alt-drag moves the Command Palette popup and dock; the dock does not reset like the popup.",
+      "The reporter requests that the Command Palette UI be excluded by default.",
+      "ResolveActionTarget calls IsExcluded; pinned source excludes several shell surfaces and user-configured apps but does not visibly special-case Command Palette: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce Command Palette target eligibility",
+    "evaluated_at": "2026-11-13T16:15:56Z",
     "source_updated_at": "2026-05-17T08:23:42Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report is concrete and the source has explicit exclusion checks, but the actual target identity and whether current behavior persists need confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Exclude Command Palette surfaces from Grab and Move",
+      "root_cause": "A narrowly scoped Command Palette window exclusion may prevent unintended moves; verify the actual process and window identity before choosing the rule.",
+      "plan": [
+        "Reproduce moving both popup and dock using the activation modifier.",
+        "Identify the actual target HWND and process for both surfaces, and add an appropriately scoped default exclusion without excluding unrelated windows.",
+        "Cover popup, dock and an ordinary window in target eligibility tests."
+      ],
+      "verification": [
+        "The popup and dock remain fixed under Grab and Move; ordinary resizable windows still move."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The report is concrete and the source has explicit exclusion checks, but the actual target identity and whether current behavior persists need confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Exclude Command Palette surfaces from Grab and Move",
+    "known_information": [
+      "On 0.99.1 Alt-drag moves the Command Palette popup and dock; the dock does not reset like the popup.",
+      "The reporter requests that the Command Palette UI be excluded by default."
+    ],
+    "inferences": [
+      "A narrowly scoped Command Palette window exclusion may prevent unintended moves; verify the actual process and window identity before choosing the rule."
+    ],
+    "analysis": "The report is concrete and the source has explicit exclusion checks, but the actual target identity and whether current behavior persists need confirmation.",
+    "initial_investigation": [
+      "ResolveActionTarget calls IsExcluded; pinned source excludes several shell surfaces and user-configured apps but does not visibly special-case Command Palette: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette target eligibility",
+      "reproduce": {
+        "title": "Try moving the Command Palette surfaces",
+        "module": "Grab and Move / Command Palette",
+        "version_requirement": "0.99.1 and current main",
+        "prerequisites": [
+          "Windows with Command Palette and Grab and Move enabled"
+        ],
+        "setup": [
+          "Use Alt as the Grab and Move modifier and enable the Command Palette dock."
+        ],
+        "steps": [
+          "Open the popup and Alt-drag it.",
+          "Alt-drag the dock and reopen the popup."
+        ],
+        "expected_result": "Neither Command Palette surface moves; ordinary windows remain movable."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Exclude Command Palette surfaces from Grab and Move"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "author": "CaptainException",
+  "comments": 1,
+  "owes": "maintainer",
+  "pending_author": false
 }

@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 29960,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "Chrome new window fails with Always on top",
+  "url": "https://github.com/microsoft/PowerToys/issues/29960",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:18:06Z",
+  "evaluated_at": "2026-11-13T16:18:06Z",
   "source_updated_at": "2024-11-08T20:00:46Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reported sequence is clear, but current source requests topmost status and the desired exception could conflict with the core feature.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.75.1 a new Chrome window appears behind a Chrome window pinned with Always on Top, and the reporter expects access to the new window.",
+      "The original pinned window is intentionally topmost; the requested access behavior must be reconciled with that contract.",
+      "Always on Top sets HWND_TOPMOST on the selected window and removes it with HWND_NOTOPMOST: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Verify Chrome window z-order",
+    "evaluated_at": "2026-11-13T16:18:06Z",
     "source_updated_at": "2024-11-08T20:00:46Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported sequence is clear, but current source requests topmost status and the desired exception could conflict with the core feature."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clarify access to new Chrome windows while pinned",
+      "root_cause": "A normal new window appearing behind a topmost window may be expected Windows z-order behavior, not an implementation defect; a different policy would need explicit product agreement.",
+      "plan": [
+        "Reproduce with a pinned Chrome window and compare an unrelated unpinned window.",
+        "Determine whether the new Chrome window is normally reachable by repositioning or task switching and document the expected topmost semantics.",
+        "Only if maintainers want different child-window behavior, design an explicit opt-in policy that preserves the pinned window's topmost contract and avoids promoting unrelated windows."
+      ],
+      "verification": [
+        "Pinned windows retain their documented topmost behavior, and any approved access mechanism for new Chrome windows works without unexpected topmost promotion."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "The reported sequence is clear, but current source requests topmost status and the desired exception could conflict with the core feature."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Clarify access to new Chrome windows while pinned",
+    "known_information": [
+      "On 0.75.1 a new Chrome window appears behind a Chrome window pinned with Always on Top, and the reporter expects access to the new window.",
+      "The original pinned window is intentionally topmost; the requested access behavior must be reconciled with that contract."
+    ],
+    "inferences": [
+      "A normal new window appearing behind a topmost window may be expected Windows z-order behavior, not an implementation defect; a different policy would need explicit product agreement."
+    ],
+    "analysis": "The reported sequence is clear, but current source requests topmost status and the desired exception could conflict with the core feature.",
+    "initial_investigation": [
+      "Always on Top sets HWND_TOPMOST on the selected window and removes it with HWND_NOTOPMOST: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify Chrome window z-order",
+      "reproduce": {
+        "title": "Open Chrome from a pinned Chrome window",
+        "module": "Always on Top",
+        "version_requirement": "0.75.1 and current main",
+        "prerequisites": [
+          "Google Chrome"
+        ],
+        "setup": [
+          "Open a Chrome window and pin it with Always on Top."
+        ],
+        "steps": [
+          "Open a new Chrome window from the pinned window.",
+          "Compare its z-order and task-switching behavior with an unrelated unpinned window."
+        ],
+        "expected_result": "Document whether the new window is simply below the intentionally topmost window and whether it can be accessed without disabling the feature."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Clarify access to new Chrome windows while pinned"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-3",
+    "Status-Reproducible"
+  ],
+  "assignees": [],
+  "author": "alhill",
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false
 }

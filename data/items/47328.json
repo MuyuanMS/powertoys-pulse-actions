@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 47328,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "Grab And Move overrides Alt + Scroll function on other apps.",
+  "url": "https://github.com/microsoft/PowerToys/issues/47328",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:15:56Z",
+  "evaluated_at": "2026-11-13T16:15:56Z",
   "source_updated_at": "2026-05-23T18:34:58Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue supplies a controlled on/off comparison, and modifier capture is a plausible path, but current behavior and hook order remain unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter's AutoHotkey Alt+wheel mapping no longer changes volume when Grab and Move is enabled; another commenter reports DaVinci zoom interference.",
+      "The reporter notes wheel scrolling itself was restored, but the Alt modifier is not received as expected by the mapping.",
+      "In pinned source, HandleKeyboardEvent may absorb the activation modifier while HandleMouseEvent handles buttons and movement; inspect modifier replay and hook ordering: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the AHK modifier conflict",
+    "evaluated_at": "2026-11-13T16:15:56Z",
     "source_updated_at": "2026-05-23T18:34:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue supplies a controlled on/off comparison, and modifier capture is a plausible path, but current behavior and hook order remain unverified."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Alt+wheel shortcuts alongside Grab and Move",
+      "root_cause": "Modifier capture or replay timing may leave the wheel consumer without the expected Alt state; this is not confirmed on current code.",
+      "plan": [
+        "Reproduce the exact AHK v2 Alt+wheel mapping with Grab and Move enabled and disabled on current main.",
+        "Trace modifier down, wheel and up through the hook chain and distinguish an unconsumed wheel from the modifier state seen by AHK.",
+        "If confirmed, preserve non-drag modifier combinations without regressing drag and menu suppression; add an input-sequence regression."
+      ],
+      "verification": [
+        "Alt+wheel changes volume with the module enabled and disabled; Alt drag and menu suppression remain correct."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The issue supplies a controlled on/off comparison, and modifier capture is a plausible path, but current behavior and hook order remain unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Preserve Alt+wheel shortcuts alongside Grab and Move",
+    "known_information": [
+      "On 0.99.1 the reporter's AutoHotkey Alt+wheel mapping no longer changes volume when Grab and Move is enabled; another commenter reports DaVinci zoom interference.",
+      "The reporter notes wheel scrolling itself was restored, but the Alt modifier is not received as expected by the mapping."
+    ],
+    "inferences": [
+      "Modifier capture or replay timing may leave the wheel consumer without the expected Alt state; this is not confirmed on current code."
+    ],
+    "analysis": "The issue supplies a controlled on/off comparison, and modifier capture is a plausible path, but current behavior and hook order remain unverified.",
+    "initial_investigation": [
+      "In pinned source, HandleKeyboardEvent may absorb the activation modifier while HandleMouseEvent handles buttons and movement; inspect modifier replay and hook ordering: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the AHK modifier conflict",
+      "reproduce": {
+        "title": "Compare Alt+wheel with Grab and Move",
+        "module": "Grab and Move",
+        "version_requirement": "0.99.1 and current main",
+        "prerequisites": [
+          "Windows 11 and AutoHotkey v2"
+        ],
+        "setup": [
+          "Enable Grab and Move with Alt activation and configure an AHK Alt+wheel volume mapping."
+        ],
+        "steps": [
+          "Scroll while holding Alt with Grab and Move enabled.",
+          "Disable Grab and Move and repeat."
+        ],
+        "expected_result": "The same Alt+wheel mapping changes volume in both runs.",
+        "setup_prompt": "Create a minimal AutoHotkey v2 script mapping Alt+wheel to volume changes."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Preserve Alt+wheel shortcuts alongside Grab and Move"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "author": "Ice2192",
+  "comments": 1,
+  "owes": "maintainer",
+  "pending_author": false
 }

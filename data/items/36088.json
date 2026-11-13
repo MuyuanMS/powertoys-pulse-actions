@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 36088,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "Workspaces",
+  "url": "https://github.com/microsoft/PowerToys/issues/36088",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:18:06Z",
+  "evaluated_at": "2026-11-13T16:18:06Z",
   "source_updated_at": "2024-11-25T11:48:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The app names and intended arrangement are known, but the saved z-order contract and final arrival sequence need verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "A 0.86 Workspaces report says Spotify starts more slowly than Chrome and disrupts the desired background/foreground ordering with IntelliJ and Chrome.",
+      "The report describes a desired layout but does not establish the order of every launched window or current behavior.",
+      "The current launcher iterates waiting apps and limits waits for instances of the same application; a bounded wait does not by itself establish preserved z-order: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/Workspaces/WorkspacesLauncher/Launcher.cpp."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce workspace foreground ordering",
+    "evaluated_at": "2026-11-13T16:18:06Z",
     "source_updated_at": "2024-11-25T11:48:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The app names and intended arrangement are known, but the saved z-order contract and final arrival sequence need verification."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate workspace launch z-order",
+      "root_cause": "Asynchronous launch and window arrival may change foreground order after placement, but a general launch delay is not proven to solve it.",
+      "plan": [
+        "Reproduce the three-application workspace with differing startup times and record actual window arrival and z-order after all windows settle.",
+        "Check whether saved workspace data captures the requested foreground order and where the arranger applies it.",
+        "If the data and product contract support it, restore z-order after identified windows are placed without arbitrarily blocking launch or stealing focus indefinitely."
+      ],
+      "verification": [
+        "After all three windows settle, their saved layout and intended foreground order are restored without indefinitely delaying slower applications."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The app names and intended arrangement are known, but the saved z-order contract and final arrival sequence need verification."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Investigate workspace launch z-order",
+    "known_information": [
+      "A 0.86 Workspaces report says Spotify starts more slowly than Chrome and disrupts the desired background/foreground ordering with IntelliJ and Chrome.",
+      "The report describes a desired layout but does not establish the order of every launched window or current behavior."
+    ],
+    "inferences": [
+      "Asynchronous launch and window arrival may change foreground order after placement, but a general launch delay is not proven to solve it."
+    ],
+    "analysis": "The app names and intended arrangement are known, but the saved z-order contract and final arrival sequence need verification.",
+    "initial_investigation": [
+      "The current launcher iterates waiting apps and limits waits for instances of the same application; a bounded wait does not by itself establish preserved z-order: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/Workspaces/WorkspacesLauncher/Launcher.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce workspace foreground ordering",
+      "reproduce": {
+        "title": "Launch the reported three-app workspace",
+        "module": "Workspaces",
+        "version_requirement": "0.86 and current main",
+        "prerequisites": [
+          "Spotify, IntelliJ IDEA and Chrome installed"
+        ],
+        "setup": [
+          "Save a workspace with Spotify behind IntelliJ and Chrome, the latter two arranged side by side."
+        ],
+        "steps": [
+          "Close the three applications.",
+          "Launch the workspace and wait until all windows finish opening.",
+          "Compare final positions and foreground order with the saved arrangement."
+        ],
+        "expected_result": "The intended arrangement remains after the slower application finishes launching.",
+        "setup_prompt": "Prepare a disposable workspace with Spotify behind side-by-side IntelliJ IDEA and Chrome windows."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Investigate workspace launch z-order"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
+  "author": "YldrmAlper",
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false
 }

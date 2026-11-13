@@ -1,33 +1,103 @@
 {
+  "schemaVersion": 5,
   "number": 26405,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "While using MWB, UAC popup on Win 10 \"client\" system causes various problems",
+  "url": "https://github.com/microsoft/PowerToys/issues/26405",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:15:56Z",
+  "evaluated_at": "2026-11-13T16:15:56Z",
   "source_updated_at": "2026-05-13T06:23:30Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The thread includes a service-mode workaround and a later contrary observation; they must be tested separately rather than marking the original problem resolved.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.70 a Windows 10 client could not interact with UAC from the controlling Windows 11 machine.",
+      "A maintainer recommended service mode; the original reporter said another issue prevented it, while a later user reports service-mode UAC reconnects and returns the pointer.",
+      "Mouse Without Borders checks desktop switch events in https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/WinAPI.cs, while service mode has a distinct lifecycle."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the UAC desktop transition",
+    "evaluated_at": "2026-11-13T16:15:56Z",
     "source_updated_at": "2026-05-13T06:23:30Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The thread includes a service-mode workaround and a later contrary observation; they must be tested separately rather than marking the original problem resolved."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate service-mode UAC reconnects",
+      "root_cause": "The later service-mode reconnect may be a desktop-switch transition problem, distinct from the original inability to use service mode.",
+      "plan": [
+        "Reproduce UAC on the controlled machine with service mode enabled and disabled using two test machines.",
+        "Observe desktop-switch and connection events without weakening UAC or altering secure-desktop security guarantees.",
+        "Fix any confirmed unintended reconnect or pointer restoration behavior, preserving the required privilege boundary."
+      ],
+      "verification": [
+        "With supported service mode, a UAC transition does not unnecessarily strand the pointer or require a manual reconnect; non-service security restrictions remain intact."
+      ],
+      "confidence": {
+        "score": 37,
+        "level": "red",
+        "rationale": "The thread includes a service-mode workaround and a later contrary observation; they must be tested separately rather than marking the original problem resolved."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Investigate service-mode UAC reconnects",
+    "known_information": [
+      "On 0.70 a Windows 10 client could not interact with UAC from the controlling Windows 11 machine.",
+      "A maintainer recommended service mode; the original reporter said another issue prevented it, while a later user reports service-mode UAC reconnects and returns the pointer."
+    ],
+    "inferences": [
+      "The later service-mode reconnect may be a desktop-switch transition problem, distinct from the original inability to use service mode."
+    ],
+    "analysis": "The thread includes a service-mode workaround and a later contrary observation; they must be tested separately rather than marking the original problem resolved.",
+    "initial_investigation": [
+      "Mouse Without Borders checks desktop switch events in https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/WinAPI.cs, while service mode has a distinct lifecycle."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the UAC desktop transition",
+      "reproduce": {
+        "title": "Compare UAC transitions with service mode",
+        "module": "Mouse Without Borders",
+        "version_requirement": "0.70 and current main",
+        "prerequisites": [
+          "Two Windows machines connected by Mouse Without Borders",
+          "An account able to approve a UAC prompt"
+        ],
+        "setup": [
+          "Configure the controlled client with service mode on, then repeat with it off."
+        ],
+        "steps": [
+          "Move control to the client.",
+          "Trigger a normal UAC prompt and observe pointer and connection state.",
+          "Dismiss the prompt and check control recovery."
+        ],
+        "expected_result": "Supported service mode handles the secure-desktop transition without an unnecessary disconnect or stranded pointer.",
+        "setup_prompt": "Prepare two test machines and an innocuous action that prompts for UAC; do not disable UAC."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Investigate service-mode UAC reconnects"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "author": "stevemagruder",
+  "comments": 5,
+  "owes": "maintainer",
+  "pending_author": false
 }

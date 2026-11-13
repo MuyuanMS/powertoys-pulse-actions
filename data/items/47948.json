@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 47948,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "PowerToys ran into an issie",
+  "url": "https://github.com/microsoft/PowerToys/issues/47948",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:15:56Z",
+  "evaluated_at": "2026-11-13T16:15:56Z",
   "source_updated_at": "2026-05-17T17:53:13Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The attached fatal stack narrows the failure, but the spontaneous trigger is not specified and the current retry path may not cover WPF's own callback.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The attached 0.95 Run log contains a fatal UI-thread COMException 0x80263001 in WPF theme-change handling when desktop composition was disabled.",
+      "The report says the error popup appeared unexpectedly and does not give a reproduction sequence.",
+      "Read the supplied text attachment: https://github.com/user-attachments/files/27904836/2026-05-17.txt.",
+      "Current Run registers a dispatcher exception handler and its own ThemeManager has retry handling for composition-disabled failures: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs. The attached stack enters WPF's system theme handler, so that retry is not proven to cover it."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask about the composition transition",
+    "evaluated_at": "2026-11-13T16:15:56Z",
     "source_updated_at": "2026-05-17T17:53:13Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The attached fatal stack narrows the failure, but the spontaneous trigger is not specified and the current retry path may not cover WPF's own callback."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Run's composition-disabled theme crash",
+      "root_cause": "A composition transition during a WPF system theme update may trigger the crash; the exact transition and current-version behavior are unknown.",
+      "plan": [
+        "Obtain the event immediately preceding the popup and current version.",
+        "Reproduce that transition while Run is active and identify whether WPF's system theme callback still raises the same exception.",
+        "If current code remains affected, investigate a safe theme-update recovery at the actual failing boundary and test normal and disabled composition transitions."
+      ],
+      "verification": [
+        "The verified transition no longer terminates Run and ordinary theme changes remain functional."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The attached fatal stack narrows the failure, but the spontaneous trigger is not specified and the current retry path may not cover WPF's own callback."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Investigate Run's composition-disabled theme crash",
+    "known_information": [
+      "The attached 0.95 Run log contains a fatal UI-thread COMException 0x80263001 in WPF theme-change handling when desktop composition was disabled.",
+      "The report says the error popup appeared unexpectedly and does not give a reproduction sequence."
+    ],
+    "inferences": [
+      "A composition transition during a WPF system theme update may trigger the crash; the exact transition and current-version behavior are unknown."
+    ],
+    "analysis": "The attached fatal stack narrows the failure, but the spontaneous trigger is not specified and the current retry path may not cover WPF's own callback.",
+    "initial_investigation": [
+      "Read the supplied text attachment: https://github.com/user-attachments/files/27904836/2026-05-17.txt.",
+      "Current Run registers a dispatcher exception handler and its own ThemeManager has retry handling for composition-disabled failures: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs. The attached stack enters WPF's system theme handler, so that retry is not proven to cover it."
+    ],
+    "information_gaps": [
+      {
+        "information": "Current version and immediate activity or system transition before the popup.",
+        "why_needed": "The fatal stack identifies disabled composition but not what caused the transition or whether the issue persists.",
+        "how_to_collect": "Thanks for attaching the PowerToys Run log. Its fatal entry shows a WPF theme-change exception while desktop composition was disabled, rather than identifying a particular plugin as the crash cause. If it still happens, what were you doing immediately before the popup (for example locking/unlocking, connecting or disconnecting Remote Desktop, or changing the Windows theme), and what PowerToys version are you using now?",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Ask about the composition transition",
+      "comment": {
+        "target": "issue",
+        "number": 47948,
+        "body": "Thanks for attaching the PowerToys Run log. Its fatal entry shows a WPF theme-change exception while desktop composition was disabled, rather than identifying a particular plugin as the crash cause. If it still happens, what were you doing immediately before the popup (for example locking/unlocking, connecting or disconnecting Remote Desktop, or changing the Windows theme), and what PowerToys version are you using now?"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Investigate Run's composition-disabled theme crash"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "author": "krtk-vrm",
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false
 }

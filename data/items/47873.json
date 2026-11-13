@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 47873,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "title": "[Mouse Without Borders] Hide mouse option fails to fully hide cursor on screen leave",
+  "url": "https://github.com/microsoft/PowerToys/issues/47873",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T16:15:56Z",
+  "evaluated_at": "2026-11-13T16:15:56Z",
   "source_updated_at": "2026-05-14T03:33:05Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The public sequence is clear and the implementation deliberately moves the cursor near the reported location, but the artifact's rendering source is not established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "With Hide mouse at screen edge enabled, moving to a second device makes the local cursor visibly jump to top center and leaves an artifact.",
+      "The report includes screenshots and a concrete two-device sequence.",
+      "HideMouseCursor sets the local cursor position near the top center and updates a fake cursor in https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/Common.cs."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the edge-hide artifact",
+    "evaluated_at": "2026-11-13T16:15:56Z",
     "source_updated_at": "2026-05-14T03:33:05Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The public sequence is clear and the implementation deliberately moves the cursor near the reported location, but the artifact's rendering source is not established."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Remove the cursor artifact when leaving a machine",
+      "root_cause": "The deliberate cursor repositioning or fake-cursor update may contribute to the visible artifact; the actual rendering path is not yet confirmed.",
+      "plan": [
+        "Reproduce the screen transition and capture the order of native cursor movement and fake-cursor rendering.",
+        "Identify whether the artifact is a stale fake cursor, native cursor rendering, or display-driver behavior.",
+        "Adjust only the confirmed hide/cleanup path and add regression coverage for repeated machine switches and return."
+      ],
+      "verification": [
+        "Leaving the local screen hides the cursor without a lingering artifact, and returning restores correct cursor position and visibility."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The public sequence is clear and the implementation deliberately moves the cursor near the reported location, but the artifact's rendering source is not established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Remove the cursor artifact when leaving a machine",
+    "known_information": [
+      "With Hide mouse at screen edge enabled, moving to a second device makes the local cursor visibly jump to top center and leaves an artifact.",
+      "The report includes screenshots and a concrete two-device sequence."
+    ],
+    "inferences": [
+      "The deliberate cursor repositioning or fake-cursor update may contribute to the visible artifact; the actual rendering path is not yet confirmed."
+    ],
+    "analysis": "The public sequence is clear and the implementation deliberately moves the cursor near the reported location, but the artifact's rendering source is not established.",
+    "initial_investigation": [
+      "HideMouseCursor sets the local cursor position near the top center and updates a fake cursor in https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/Common.cs."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce the edge-hide artifact",
+      "reproduce": {
+        "title": "Switch machines with hide-at-edge enabled",
+        "module": "Mouse Without Borders",
+        "version_requirement": "0.99.1 and current main",
+        "prerequisites": [
+          "Two connected Windows machines"
+        ],
+        "setup": [
+          "Enable Hide mouse at screen edge."
+        ],
+        "steps": [
+          "Move the cursor from the local machine to the remote machine.",
+          "Inspect the local top-center region and then return."
+        ],
+        "expected_result": "The local cursor disappears cleanly without a persistent artifact and returns normally.",
+        "setup_prompt": "Prepare two connected Mouse Without Borders peers with hide-at-edge enabled."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Remove the cursor artifact when leaving a machine"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "author": "0Ky",
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false
 }
