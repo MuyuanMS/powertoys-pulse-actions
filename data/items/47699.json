@@ -1,33 +1,113 @@
 {
   "number": 47699,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Grab and Move - Move stops working waking from hiberation",
+  "url": "https://github.com/microsoft/PowerToys/issues/47699",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:53:16Z",
+  "generated_at": "2026-11-13T20:53:16Z",
   "source_updated_at": "2026-05-10T14:23:06Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Resume hook lifecycle needs reproduction",
+    "detail": "Grab and Move stops after hibernation until toggled off and on."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce after hibernate before toggling the feature.",
+    "reason": "The toggle workaround implicates reinitialization; reproduce and inspect hook handles/state before adding power-notification logic."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The toggle workaround implicates reinitialization; reproduce and inspect hook handles/state before adding power-notification logic.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #47699: https://github.com/microsoft/PowerToys/issues/47699",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "No explicit resume-specific reinitialization was found in the inspected source."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "The toggle workaround implicates reinitialization; reproduce and inspect hook handles/state before adding power-notification logic.",
+    "evaluated_at": "2026-11-13T20:53:16Z",
     "source_updated_at": "2026-05-10T14:23:06Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Resume failure plus toggle recovery supports a lifecycle hypothesis; exact hook/state failure remains unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Revalidate Grab and Move hooks after resume",
+      "root_cause": "A low-level hook or gesture state may become invalid across hibernate while toggling rebuilds it.",
+      "plan": [
+        "Reproduce after hibernate and inspect hook callbacks/state before and after toggling.",
+        "If invalid after resume, reinitialize affected state idempotently on resume.",
+        "Add focused resume lifecycle coverage."
+      ],
+      "verification": [
+        "Verify movement works after resume without toggling.",
+        "Verify repeated resumes do not leak hooks or duplicate callbacks."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "Toggle recovery and no explicit resume path support the hypothesis, not proof."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab and Move stops after hibernation until toggled off and on.",
+    "known_information": [
+      "Issue says move stops after hibernate/resume and toggling restores it.",
+      "Inspected hook path has no explicit resume-specific reinitialization."
+    ],
+    "inferences": [
+      "A hook or gesture state may be stale after resume, but no specific failed component is established."
+    ],
+    "analysis": "The toggle workaround implicates reinitialization; reproduce and inspect hook handles/state before adding power-notification logic.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "No explicit resume-specific reinitialization was found in the inspected source."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "note": "The existing report is sufficient for a focused maintainer reproduction; do not request duplicate diagnostics.",
+      "reproduce": {
+        "title": "Verify Grab and Move after hibernate",
+        "module": "Grab and Move",
+        "version_requirement": "PowerToys 0.99.1 and current",
+        "prerequisites": [
+          "Grab and Move enabled",
+          "Resizable application window"
+        ],
+        "setup": [
+          "Confirm moving works before hibernate."
+        ],
+        "steps": [
+          "Hibernate and resume.",
+          "Try the gesture before toggling.",
+          "Toggle off/on and compare."
+        ],
+        "expected_result": "Moving should work after resume without toggling."
+      }
+    }
+  ]
 }

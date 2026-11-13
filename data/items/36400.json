@@ -1,33 +1,106 @@
 {
   "number": 36400,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "[PowerToys Run] Background on top of window when AccentColorInactive is set",
+  "url": "https://github.com/microsoft/PowerToys/issues/36400",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Area-User Interface",
+    "Status-Reproducible"
+  ],
+  "assignees": [],
+  "comments": 2,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:53:16Z",
+  "generated_at": "2026-11-13T20:53:16Z",
   "source_updated_at": "2024-12-18T10:26:34Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Maintainer-reproduced theme issue",
+    "detail": "PowerToys Run background reportedly becomes transparent with Windows 10 AccentColorInactive; a maintainer confirmed reproduction."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm persistence on current Windows 10 build.",
+    "reason": "Maintainer confirmed reproduction, so do not ask for old diagnostics. Confirm only current version/behavior. Existing Windows 10 brush assignment is a relevant code location, not proof of cause."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Maintainer confirmed reproduction, so do not ask for old diagnostics. Confirm only current version/behavior. Existing Windows 10 brush assignment is a relevant code location, not proof of cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #36400: https://github.com/microsoft/PowerToys/issues/36400",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs",
+      "Linked #32973 and #36391 are related reports, not a verified fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Maintainer confirmed reproduction, so do not ask for old diagnostics. Confirm only current version/behavior. Existing Windows 10 brush assignment is a relevant code location, not proof of cause.",
+    "evaluated_at": "2026-11-13T20:53:16Z",
     "source_updated_at": "2024-12-18T10:26:34Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Maintainer reproduced the issue and current ThemeManager assigns a Windows 10 window brush; an opaque-surface gap is plausible but unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep PowerToys Run surface opaque with inactive accent colors",
+      "root_cause": "A system-derived window brush or transparent child may allow AccentColorInactive to show through even while focused.",
+      "plan": [
+        "Reproduce exact registry value and inspect main/child surface backgrounds.",
+        "Identify the transparent/system-derived surface exposing DWM accent.",
+        "Apply an explicit opaque theme background only there and add active/inactive accent coverage."
+      ],
+      "verification": [
+        "Verify opacity focused and unfocused with AccentColorInactive set.",
+        "Verify light/dark theme and Windows 11 material unchanged."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "Maintainer confirmed repro and current system brush is relevant, but exact surface is not identified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run background reportedly becomes transparent with Windows 10 AccentColorInactive; a maintainer confirmed reproduction.",
+    "known_information": [
+      "Issue specifies Windows 10, PowerToys 0.87.0 and HKCU DWM AccentColorInactive.",
+      "Maintainer confirmed repro and said it should be investigated.",
+      "Current ThemeManager assigns SystemColors.WindowBrush on Windows 10; linked #32973/#36391 are related but not fixes."
+    ],
+    "inferences": [
+      "A system brush or transparent child surface may expose DWM accent; current surface behavior is unverified."
+    ],
+    "analysis": "Maintainer confirmed reproduction, so do not ask for old diagnostics. Confirm only current version/behavior. Existing Windows 10 brush assignment is a relevant code location, not proof of cause.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs",
+      "Linked #32973 and #36391 are related reports, not a verified fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether transparency persists on current PowerToys on Windows 10 with the same AccentColorInactive value.",
+        "why_needed": "Issue is from 0.87.0; current confirmation decides whether existing theme path remains affected.",
+        "how_to_collect": "Please confirm current PowerToys version and whether the same registry setting still shows through the Run window."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm AccentColorInactive behavior on current build",
+      "comment": {
+        "body": "Thanks for the exact AccentColorInactive repro and image. A maintainer confirmed it, so no old diagnostics are needed. Current PowerToys Run sets a Windows 10 main-window background, though this does not prove every surface is opaque. Could you confirm your current PowerToys version and whether the same setting still shows through the Run window on Windows 10?"
+      }
+    }
+  ]
 }

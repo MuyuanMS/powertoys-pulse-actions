@@ -1,33 +1,104 @@
 {
   "number": 47828,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Mouse Without Borders interferes with Rich Text in clipboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/47828",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:51:52Z",
+  "generated_at": "2026-11-13T20:51:52Z",
   "source_updated_at": "2026-05-12T12:26:30Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Rich-text transfer stage needs confirmation",
+    "detail": "Mouse Without Borders reportedly interferes with rich-text clipboard content after synchronization."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Identify the source/target app pair and where formatting is lost.",
+    "reason": "Confirm the app pair and review the format-preservation proposal."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Do not assume rich text is unsupported: code has explicit RTF/HTML receipt paths. Determine whether content is already corrupted locally or only after remote synchronization.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #47828 report and complete discussion: https://github.com/microsoft/PowerToys/issues/47828",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/Clipboard.cs",
+      "The issue already supplies a bug-report ZIP."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm the app pair and review the format-preservation proposal.",
+    "evaluated_at": "2026-11-13T20:51:52Z",
     "source_updated_at": "2026-05-12T12:26:30Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The receive path reconstructs RTF/HTML from transferred text data, making format preservation a concrete candidate; the corruption stage and app formats remain unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve rich-text formats through Mouse Without Borders transfer",
+      "root_cause": "The clipboard transfer may alter rich-text payloads or boundaries between serialization and reconstruction, despite explicit RTF/HTML receipt paths.",
+      "plan": [
+        "Reproduce with the reported app pair and find where formatting is first lost.",
+        "Trace format tags and payload through serialization, transfer, and SetClipboardData reconstruction.",
+        "Correct the demonstrated preservation defect and add focused RTF/HTML regression coverage."
+      ],
+      "verification": [
+        "Verify RTF/HTML remains intact after remote paste in the reported app pair.",
+        "Verify Unicode text and image transfer remain unchanged."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "Explicit RTF/HTML reconstruction is present, but app pair and corruption stage are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders reportedly interferes with rich-text clipboard content after synchronization.",
+    "known_information": [
+      "The issue includes a bug-report ZIP; do not request it again.",
+      "Current Mouse Without Borders clipboard code recognizes RTF and HTML on receipt and sets corresponding clipboard formats."
+    ],
+    "inferences": [
+      "Corruption may occur during serialization, transfer, or reconstruction; source/target apps and direction are not established."
+    ],
+    "analysis": "Do not assume rich text is unsupported: code has explicit RTF/HTML receipt paths. Determine whether content is already corrupted locally or only after remote synchronization.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Core/Clipboard.cs",
+      "The issue already supplies a bug-report ZIP."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "information": "The source and receiving applications, copy direction, and whether content pastes correctly locally before remote synchronization.",
+        "why_needed": "This distinguishes app clipboard encoding from Mouse Without Borders transfer or reconstruction; code has explicit RTF/HTML paths.",
+        "how_to_collect": "Please name the apps you copy from and paste into, indicate which PC you copy on, and check whether it pastes correctly locally before trying the synchronized PC."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Identify the rich-text app pair",
+      "comment": {
+        "body": "Thanks for the detailed report and the files already attached; there is no need to upload them again. Mouse Without Borders has explicit RTF and HTML clipboard paths, so the current evidence does not show whether formatting is lost before transfer or during remote reconstruction. Could you name the source and receiving applications, indicate which PC you copy on, and confirm whether the content pastes correctly locally on the source PC before trying the synchronized PC?"
+      }
+    }
+  ]
 }

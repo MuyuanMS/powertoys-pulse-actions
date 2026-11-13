@@ -1,0 +1,103 @@
+{
+  "number": 52123,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "mouse jump stopped working",
+  "url": "https://github.com/microsoft/PowerToys/issues/52123",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false,
+  "evaluated_at": "2026-11-13T20:51:52Z",
+  "generated_at": "2026-11-13T20:51:52Z",
+  "source_updated_at": "2026-11-13T17:02:14Z",
+  "status": {
+    "glyph": "🛠️",
+    "label": "Possible Mouse Jump startup race",
+    "detail": "Mouse Jump stops activating reliably; a bug-report ZIP is already supplied."
+  },
+  "next_action": {
+    "glyph": "🧭",
+    "label": "Confirm whether only the first hotkey after startup fails.",
+    "reason": "Review the bounded activation-queue proposal after confirming first-hotkey behavior."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "A concrete launch-then-enumerate path can be tested. Determine whether failure is limited to the first activation, then queue or wait for the UI window rather than dropping activation.",
+    "evidence": [
+      "Issue #52123 report and complete discussion: https://github.com/microsoft/PowerToys/issues/52123",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseUtils/MouseJump/dllmain.cpp",
+      "The report already supplies a bug-report ZIP."
+    ],
+    "recommended_action": "Review the bounded activation-queue proposal after confirming first-hotkey behavior.",
+    "evaluated_at": "2026-11-13T20:51:52Z",
+    "source_updated_at": "2026-11-13T17:02:14Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The separate-process path can enumerate windows immediately after launching the Mouse Jump UI and drop activation when no window is ready; this directly supports a focused race hypothesis.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Queue Mouse Jump activation until its UI window is ready",
+      "root_cause": "A cold-start activation may be lost because the hotkey handler launches the UI process and immediately searches for its window.",
+      "plan": [
+        "Reproduce the first hotkey after a cold start and trace process/window readiness.",
+        "If confirmed, queue activation or wait for the UI window with a bounded timeout rather than returning when no window is found.",
+        "Add coverage for activation before window creation and timeout/cancellation."
+      ],
+      "verification": [
+        "Verify the first hotkey opens Mouse Jump after a cold start.",
+        "Verify repeated hotkeys and failed UI launch do not hang or launch duplicate windows."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The source exposes a launch-then-enumerate sequence, but first-versus-later activation remains unconfirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Jump stops activating reliably; a bug-report ZIP is already supplied.",
+    "known_information": [
+      "The issue includes a bug-report ZIP; do not request it again.",
+      "Mouse Jump prelaunches a separate UI process; the hotkey path can launch it and immediately enumerate windows, dropping activation if no window is ready."
+    ],
+    "inferences": [
+      "A cold-start window-readiness race is plausible; the report does not establish whether later hotkeys fail too."
+    ],
+    "analysis": "A concrete launch-then-enumerate path can be tested. Determine whether failure is limited to the first activation, then queue or wait for the UI window rather than dropping activation.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseUtils/MouseJump/dllmain.cpp",
+      "The report already supplies a bug-report ZIP."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether failure occurs only on the first hotkey after Windows/PowerToys startup or also after the Mouse Jump window is open.",
+        "why_needed": "A first-activation-only failure matches the separate-process readiness path; later failures point elsewhere.",
+        "how_to_collect": "Try one hotkey immediately after starting PowerToys and another after Mouse Jump opens; report which attempts fail."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm first-activation behavior",
+      "comment": {
+        "body": "Thanks for attaching the existing files; no additional files are needed. Mouse Jump starts its UI in a separate process, and the hotkey path can attempt activation immediately after launch. Could you confirm whether failure is limited to the first hotkey after PowerToys starts, or whether later hotkeys also fail after the Mouse Jump window is open? That distinction will confirm or rule out a startup-readiness race."
+      }
+    }
+  ]
+}

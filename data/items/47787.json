@@ -1,33 +1,104 @@
 {
   "number": 47787,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "“Grab And Move” with the Windows key does not work in combination with “Command Palette” with the Windows key",
+  "url": "https://github.com/microsoft/PowerToys/issues/47787",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:51:52Z",
+  "generated_at": "2026-11-13T20:51:52Z",
   "source_updated_at": "2026-05-12T12:51:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Command Palette chord interaction needs confirmation",
+    "detail": "The report says Grab and Move’s Windows-key modifier interferes with Command Palette’s Windows-key shortcut."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm the exact current Grab and Move/Command Palette chord.",
+    "reason": "Confirm current behavior, then review the scoped modifier-chord proposal."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "There is a concrete modifier-session path to verify, but no linked fix or current repro. Confirm current behavior before changing shortcut or hook semantics.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #47787 report and complete discussion: https://github.com/microsoft/PowerToys/issues/47787",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "Current keyboard hook has a modifier capture/replay path; no covering fix was established."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm current behavior, then review the scoped modifier-chord proposal.",
+    "evaluated_at": "2026-11-13T20:51:52Z",
     "source_updated_at": "2026-05-12T12:51:38Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The keyboard hook has a modifier-capture/replay path that plausibly conflicts with a second Windows-key chord, although the exact registered-hotkey interaction is unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve registered Windows-key chords during Grab and Move handling",
+      "root_cause": "The captured Windows modifier may be replayed too late or in a form the Command Palette hotkey path does not recognize.",
+      "plan": [
+        "Reproduce the exact Command Palette chord with Grab and Move enabled and trace the modifier-session/replay sequence.",
+        "If intercepted, ensure a registered non-Grab-and-Move shortcut receives its original Windows modifier sequence while preserving modifier-only dragging.",
+        "Add a regression test for the exact chord and existing gesture."
+      ],
+      "verification": [
+        "Verify Command Palette activates with Grab and Move enabled.",
+        "Verify ordinary Grab and Move Windows-key dragging remains unchanged."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The current hook has the relevant capture/replay path, but no current reproduction confirms the interaction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The report says Grab and Move’s Windows-key modifier interferes with Command Palette’s Windows-key shortcut.",
+    "known_information": [
+      "The issue reports a conflict between Grab and Move using the Windows key and a Command Palette shortcut also using Windows.",
+      "Current Grab and Move captures the Windows modifier and can replay it when another nonmodifier arrives."
+    ],
+    "inferences": [
+      "Modifier replay and Command Palette hook ordering may interact, but the specific registered chord is not confirmed to fail in current source."
+    ],
+    "analysis": "There is a concrete modifier-session path to verify, but no linked fix or current repro. Confirm current behavior before changing shortcut or hook semantics.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "Current keyboard hook has a modifier capture/replay path; no covering fix was established."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the exact Command Palette chord still conflicts on a current build and the configured Grab and Move modifier.",
+        "why_needed": "The report is from 0.99.1; current confirmation distinguishes a historical issue from a remaining hook-ordering defect.",
+        "how_to_collect": "Please share current PowerToys version and Grab and Move modifier, and confirm whether the exact Command Palette shortcut fails with Grab and Move enabled."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm the current Windows-key chord conflict",
+      "comment": {
+        "body": "Thanks for describing the Windows-key conflict. Current Grab and Move can capture and replay the Windows modifier when another key is pressed, so the exact Command Palette chord matters; the report is from 0.99.1. Could you share the current PowerToys version, the Grab and Move modifier setting, and whether the exact Command Palette shortcut still fails with Grab and Move enabled? No new logs are needed for this check."
+      }
+    }
+  ]
 }

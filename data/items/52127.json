@@ -1,0 +1,103 @@
+{
+  "number": 52127,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "PowerDisplay doesn't find my monitor (KVM switch)",
+  "url": "https://github.com/microsoft/PowerToys/issues/52127",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "owes": "maintainer",
+  "pending_author": false,
+  "evaluated_at": "2026-11-13T20:51:52Z",
+  "generated_at": "2026-11-13T20:51:52Z",
+  "source_updated_at": "2026-11-13T19:55:15Z",
+  "status": {
+    "glyph": "🛠️",
+    "label": "KVM/DDC path needs confirmation",
+    "detail": "PowerDisplay does not find the reporter’s monitor through a KVM switch."
+  },
+  "next_action": {
+    "glyph": "🧭",
+    "label": "Confirm the monitor control path through the KVM.",
+    "reason": "Review the discovery-status proposal after confirming the KVM path."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Distinguish a Windows-enumerated monitor from one whose DDC/CI handle is unavailable; do not promise control if the KVM blocks that channel.",
+    "evidence": [
+      "Issue #52127 report and complete discussion: https://github.com/microsoft/PowerToys/issues/52127",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/MonitorDiscoveryHelper.cs",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs"
+    ],
+    "recommended_action": "Review the discovery-status proposal after confirming the KVM path.",
+    "evaluated_at": "2026-11-13T20:51:52Z",
+    "source_updated_at": "2026-11-13T19:55:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current discovery uses DDC/CI physical handles and skips monitors without a stable DevicePath; the KVM-specific report makes the distinction between OS enumeration and control-channel availability useful, but the KVM behavior is unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Explain when a Windows-visible monitor has no usable DDC/CI path",
+      "root_cause": "The KVM may leave the display visible to Windows while preventing PowerDisplay from obtaining a usable physical-monitor handle; this is a hypothesis.",
+      "plan": [
+        "Reproduce with the display directly connected and through the KVM.",
+        "Trace Windows enumeration separately from physical-handle and DevicePath availability.",
+        "If currently conflated, show a specific unavailable-control reason without claiming that the monitor can be controlled."
+      ],
+      "verification": [
+        "Verify direct-connect and KVM cases report distinct discovery/control states.",
+        "Verify DDC/CI-capable displays retain their controls."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The DDC path and KVM relationship are source-grounded, but the KVM’s behavior is unconfirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerDisplay does not find the reporter’s monitor through a KVM switch.",
+    "known_information": [
+      "The report explicitly identifies a KVM switch and says the monitor is not found by PowerDisplay.",
+      "Current DDC discovery needs a usable physical-monitor handle and stable Windows DevicePath; a KVM may pass display output but block DDC/CI."
+    ],
+    "inferences": [
+      "KVM DDC/CI forwarding is a plausible cause, but direct-connect behavior and Windows enumeration are not established."
+    ],
+    "analysis": "Distinguish a Windows-enumerated monitor from one whose DDC/CI handle is unavailable; do not promise control if the KVM blocks that channel.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/MonitorDiscoveryHelper.cs",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs"
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Windows lists the monitor model, the KVM make/model, and whether PowerDisplay finds it when connected directly without the KVM.",
+        "why_needed": "This separates Windows enumeration from KVM DDC/CI forwarding and shows whether a PowerToys fix can help.",
+        "how_to_collect": "Please check the monitor name in Windows Settings > System > Display, share the KVM model, and, if convenient, report whether PowerDisplay lists the monitor connected directly."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Check monitor discovery through the KVM",
+      "comment": {
+        "body": "Thanks for identifying the KVM. PowerDisplay’s external-monitor path needs a usable DDC/CI handle; a KVM can pass the picture while not forwarding that control channel. Could you share the KVM make/model and confirm whether Windows lists the monitor by model name? If practical, does PowerDisplay list it when connected directly without the KVM? This distinguishes a discovery defect from a control protocol the KVM does not expose; no additional files are needed."
+      }
+    }
+  ]
+}

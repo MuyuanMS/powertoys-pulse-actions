@@ -1,33 +1,102 @@
 {
   "number": 47799,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "[Grab and Move] Alt key assigned to mouse side button does not trigger the feature",
+  "url": "https://github.com/microsoft/PowerToys/issues/47799",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:51:52Z",
+  "generated_at": "2026-11-13T20:51:52Z",
   "source_updated_at": "2026-05-12T12:50:37Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Remapper interaction needs evidence",
+    "detail": "The report says an Alt mapping from a mouse side button does not activate Grab and Move."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Identify the mouse-button remapper and its mapped Alt behavior.",
+    "reason": "Request remapper identity and review a narrowly scoped injected-modifier change."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The injected-input guard is a concrete integration boundary. Any change must avoid accepting Grab and Move replay input or causing synthetic-input loops; first identify the remapper and mapped-key behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #47799 report and complete discussion: https://github.com/microsoft/PowerToys/issues/47799",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request remapper identity and review a narrowly scoped injected-modifier change.",
+    "evaluated_at": "2026-11-13T20:51:52Z",
     "source_updated_at": "2026-05-12T12:50:37Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The source explicitly bypasses injected keyboard events, which may explain why a remapped Alt is ignored; the safe scope depends on the remapper event semantics.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle configured remapped modifiers without reprocessing synthetic input",
+      "root_cause": "The configured Alt may arrive as injected keyboard input and be discarded by the hook’s blanket injected-event bypass.",
+      "plan": [
+        "Reproduce with the remapper and trace whether mapped Alt carries LLKHF_INJECTED.",
+        "If confirmed, distinguish the configured remapped modifier from Grab and Move replay input rather than removing the guard globally.",
+        "Add coverage that the configured modifier works without recursion or unrelated injected-key handling."
+      ],
+      "verification": [
+        "Verify the mapped side button starts the Alt-based gesture.",
+        "Verify replay input and unrelated injected keys remain ignored."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The hook guard is visible and remapped input is reported, but the remapper and event flags are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The report says an Alt mapping from a mouse side button does not activate Grab and Move.",
+    "known_information": [
+      "The issue identifies a side-button-to-Alt remapping scenario.",
+      "Current Grab and Move bypasses injected keyboard events; the mouse hook also ignores injected mouse events."
+    ],
+    "inferences": [
+      "The remapper may emit injected Alt input that the keyboard hook deliberately bypasses; its identity and event behavior are unknown."
+    ],
+    "analysis": "The injected-input guard is a concrete integration boundary. Any change must avoid accepting Grab and Move replay input or causing synthetic-input loops; first identify the remapper and mapped-key behavior.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/GrabAndMove/GrabAndMove/main.cpp"
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "other_software",
+        "information": "The remapping utility and whether its side-button-to-Alt output works in ordinary applications but is ignored only by Grab and Move.",
+        "why_needed": "The hook bypasses injected events; the remapper output determines whether this is an expected boundary or a fixable configured modifier.",
+        "how_to_collect": "Please name the mouse/remapping software and confirm whether the mapped Alt works in another application while Grab and Move is enabled."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Identify the mouse-button remapper",
+      "comment": {
+        "body": "Thanks for the specific side-button-to-Alt scenario. Grab and Move currently passes injected keyboard events through without handling them, so the remapper output is the key distinction; broad changes could cause synthetic-input feedback. Could you name the mouse/remapping software and confirm whether the mapped Alt works in another application while Grab and Move is enabled? This will show whether the remapper emits an injected key that this feature skips."
+      }
+    }
+  ]
 }
