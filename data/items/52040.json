@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 5,
+  "number": 52040,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "fix: deliver Grab And Move Alt chords without sticking Alt",
+  "url": "https://github.com/microsoft/PowerToys/pull/52040",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-13T09:10:57.1557521Z",
+  "evaluated_at": "2026-11-13T09:10:57.1557521Z",
+  "source_updated_at": "2026-11-10T08:13:02Z",
+  "head_sha": "e66179e7796260ee287462dc39c8083bc6d38ee4",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "confidence": {
+        "score": 78,
+        "rationale": "Conditional partial insertion exposes an exact-source state inconsistency under the documented count contract; occurrence and target input effects remain unobserved."
+      },
+      "severity": "medium",
+      "body": "**Affected code:** `src/modules/GrabAndMove/GrabAndMove/main.cpp`, in `ReplayModifierChord` and `HandleKeyboardEvent`.\n\n**Problem:** If `SendInput` inserts only the modifier-down and returns 1, the session is left as if no replay occurred, even though the chord key is correctly chained.\n\n**Why it matters:** A repeat or the normal Alt-release path can send another modifier-down, while the lost-keyup recovery does not recognize the already-inserted down.\n\n**Suggested change:**\n1. In `ReplayModifierChord`, retain the insertion count and track the inserted modifier-down separately from complete two-event chord insertion.\n2. In `HandleKeyboardEvent`, swallow the physical chord key only for complete insertion, and consult the partial-insertion state before replaying another modifier-down on repeats or normal release.\n3. Include that tracked modifier-down in the existing lost-keyup balancing path, including the balancing-up failure case.\n\n**Verification:** Exercise returns of 0, 1, and 2, including repeats, normal release, a missed release, and a failed balancing up.",
+      "kind": "companion",
+      "id": "partial-chord-insertion",
+      "title": "Track partial modifier insertion separately from chord success",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction coordinates insertion-result bookkeeping and release paths; an independently applicable inline patch is not established."
+    }
+  ],
+  "actions": [
+    {
+      "label": "Post general PR comment",
+      "id": "52040-post-current-findings",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "partial-chord-insertion"
+        ],
+        "head_sha": "e66179e7796260ee287462dc39c8083bc6d38ee4",
+        "commit_id": "e66179e7796260ee287462dc39c8083bc6d38ee4"
+      },
+      "head_sha": "e66179e7796260ee287462dc39c8083bc6d38ee4",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "controlled_seam": {
+      "result": "passed",
+      "scope": "Extracted source with stubbed insertion counts 0, 1 and 2, repeats, normal/lost release and failed balancing up; not real OS input delivery or physical ordering.",
+      "head_sha": "e66179e7796260ee287462dc39c8083bc6d38ee4"
+    },
+    "native_component": {
+      "result": "passed",
+      "scope": "Exact upstream GrabAndMove native component; not managed UI tests or installation.",
+      "head_sha": "e66179e7796260ee287462dc39c8083bc6d38ee4"
+    }
+  }
+}
