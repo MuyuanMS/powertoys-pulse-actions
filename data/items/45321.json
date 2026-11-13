@@ -1,33 +1,73 @@
 {
+  "schemaVersion": 5,
   "number": 45321,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Find My Mouse opacity slider missing in v0.97.1, causing full black screen instead of dimming even the spotlight will be solid white",
+  "url": "https://github.com/microsoft/PowerToys/issues/45321",
+  "generated_at": "2026-11-13T20:50:06Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-13T20:50:06Z",
   "source_updated_at": "2026-05-02T18:49:18Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue mixes a missing dedicated opacity slider with an apparent mismatch between the color picker’s displayed alpha and the overlay’s actual opacity. Pinned native settings parsing now stores opacity in color alpha and migrates legacy overlay_opacity, so the exact save/runtime/reopen sequence is needed to separate intentional UI redesign from a remaining state mismatch.",
     "evidence": [
-      "The issue is assigned to vanzue, indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original report uses 0.97.1 and says the separate opacity slider was replaced by color pickers.",
+      "Later comment says both pickers show 100% opacity while the overlay seems to retain a previous setting.",
+      "Pinned Find My Mouse parser migrates legacy overlay_opacity into alpha when colors use the old RGB format."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for one current save/activate/reopen test focused on displayed alpha versus runtime overlay.",
+    "evaluated_at": "2026-11-13T20:50:06Z",
     "source_updated_at": "2026-05-02T18:49:18Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The source parser already contains a legacy alpha migration path; a new fix cannot be grounded until the reported UI/runtime mismatch is reproduced on current settings.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Find My Mouse opacity controls moved into color alpha, with a possible discrepancy between the displayed value and runtime overlay.",
+    "known_information": [
+      "The issue concerns Find My Mouse background and spotlight colors.",
+      "A later comment says the pickers show 100% alpha although the overlay seems to use an earlier opacity.",
+      "Current parser converts legacy opacity into alpha for RGB colors."
+    ],
+    "inferences": [
+      "The report may describe an intentional move from a slider to color alpha, but the picker/runtime disagreement would remain a concrete bug if reproducible."
+    ],
+    "analysis": "Retest alpha through save, activation, and reopen before proposing a UI migration change.",
+    "initial_investigation": [
+      "Read issue and all seven comments; latest comment describes picker/runtime discrepancy.",
+      "Read FindMyMouse/dllmain.cpp: legacy overlay_opacity is converted to alpha for RGB colors; explicit ARGB values are treated as new schema."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether changing alpha in the Find My Mouse color picker changes the actual overlay, and whether the same alpha appears after saving and reopening Settings.",
+        "why_needed": "The issue reports the old opacity slider was replaced by color alpha; a later comment says the picker shows 100% while the overlay uses a previous value. Pinned native parsing migrates legacy overlay_opacity into RGB color alpha, so the remaining issue may be save/reload state.",
+        "how_to_collect": "On current release set a visibly non-100% background alpha, save, activate Find My Mouse, then reopen Settings. Report what the picker shows and whether the overlay matches it."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm issue details",
+      "comment": {
+        "target": "issue",
+        "number": 45321,
+        "body": "Thanks for clarifying that the picker shows 100% while the overlay appears to retain an earlier opacity. Could you try setting a clearly different alpha in the background color on the current release, activate Find My Mouse, and then reopen Settings? Please tell us whether the overlay and reopened picker both reflect that saved value. This will distinguish an intentional removal of the standalone slider from a remaining save/reload mismatch."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Find My Mouse"
+  ],
+  "assignees": [
+    "vanzue"
+  ],
+  "comments": 7
 }

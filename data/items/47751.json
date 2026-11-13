@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 47751,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Power Display flyout doesn't respect playback status of some monitors",
+  "url": "https://github.com/microsoft/PowerToys/issues/47751",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-10T14:22:06Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Power Display reportedly shows a volume control for a monitor whose playback endpoint was disabled in Windows Sound settings.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-10T14:22:06Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "The endpoint-state transition is clear, but Windows endpoint enumeration versus flyout cache is unknown. Reproduce disable/reopen before selecting which layer to fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reporter disables monitor playback device in Windows Sound settings and still sees a Power Display volume control.",
+      "Reported 0.99.1; no discussion.",
+      "Current Power Display has monitor view-model and end-to-end test areas."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-10T14:22:06Z"
-  }
+    "recommended_action": "Reproduce disable/re-enable and trace control state."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Applicable if disabled endpoint remains exposed; reproduce before choosing enumeration versus refresh fix.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Hide Power Display control for disabled playback endpoints",
+      "root_cause": "Hypothesis: Power Display uses stale or incomplete playback-endpoint state when deciding control visibility.",
+      "plan": [
+        "Reproduce enabled then disabled endpoint transition.",
+        "Trace view-model state/refresh; fix confirmed condition and add endpoint-state regression."
+      ],
+      "verification": [
+        "Disabled endpoint has no active control after flyout reopen; re-enabling restores it."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "Direct state mismatch and relevant view model, but enumeration versus refresh unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Power Display reportedly shows a volume control for a monitor whose playback endpoint was disabled in Windows Sound settings.",
+    "known_information": [
+      "Reporter disables monitor playback device in Windows Sound settings and still sees a Power Display volume control.",
+      "Reported 0.99.1; no discussion.",
+      "Current Power Display has monitor view-model and end-to-end test areas."
+    ],
+    "inferences": [
+      "Stale or differently interpreted endpoint state may leave the control visible."
+    ],
+    "analysis": "The endpoint-state transition is clear, but Windows endpoint enumeration versus flyout cache is unknown. Reproduce disable/reopen before selecting which layer to fix.",
+    "initial_investigation": [
+      "src/modules/PowerDisplay/PowerDisplay/ViewModels/MonitorViewModel.cs and PowerDisplayEndToEndTests.cs are relevant; no linked fix established."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve disabled endpoint visibility investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce disabled endpoint volume control",
+      "reproduce": {
+        "title": "Hide Power Display control for disabled playback endpoints",
+        "module": "Power Display",
+        "version_requirement": "Reported 0.99.1; compare current stable",
+        "prerequisites": [
+          "Monitor playback endpoint and Power Display enabled"
+        ],
+        "setup": [
+          "Confirm endpoint is initially enabled."
+        ],
+        "steps": [
+          "1. Open flyout and note volume control.",
+          "2. Disable endpoint in Windows Sound settings.",
+          "3. Reopen flyout; then re-enable and check again."
+        ],
+        "expected_result": "Disabled endpoint has no active control; enabled endpoint returns."
+      }
+    }
+  ]
 }

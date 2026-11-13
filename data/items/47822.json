@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 47822,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "PowerToys Command Panel & Calculator: \"e\" is incorrectly cached as \"e - 1\" or \"e - 2\" or other value after certain operations",
+  "url": "https://github.com/microsoft/PowerToys/issues/47822",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-12T12:49:37Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Command Palette calculator reportedly returns a stale or altered value for constant e after certain sequences, sometimes displaying e−1/e−2 or another value.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T12:49:37Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "The report describes a stateful symptom but does not provide the exact expressions or interaction sequence that changes e from Math.E. Existing PowerToys Run Calculator code defines e as Math.E, but that is not evidence about the separate Command Palette calculator path. Reproduce in the affected surface before reusing or changing the other implementation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue identifies PowerToys 0.97.0 and the Command Palette calculator surface.",
+      "The reported output for `e` can become approximately 0.71828 or another altered value after unspecified operations.",
+      "No comments specify the triggering expressions or current-build status."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:49:37Z"
-  }
+    "recommended_action": "Reproduce the stateful value change in the Command Palette calculator; do not infer from Run calculator code."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The altered constant is an applicable correctness failure if reproduced; maintainer reproduction should identify the exact Command Palette state path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Euler constant evaluation stable in Command Palette calculator",
+      "root_cause": "Hypothesis: the affected calculator path mutates a shared expression scope or caches a transformed `e` result between operations; the separate PowerToys Run calculator does not prove this cause.",
+      "plan": [
+        "Reproduce the exact sequence in Command Palette calculator on a current build and capture the minimal expression sequence.",
+        "Trace constant resolution and result/cache state in the Command Palette calculator implementation, without assuming the PowerToys Run implementation is shared.",
+        "Correct the demonstrated mutation/cache defect and add a sequence-based regression test."
+      ],
+      "verification": [
+        "The same expression sequence always yields Math.E for `e`, and subsequent operations do not alter the constant."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The symptom suggests a state/cache issue, but the expression sequence and relevant Command Palette implementation path are not established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette calculator reportedly returns a stale or altered value for constant e after certain sequences, sometimes displaying e−1/e−2 or another value.",
+    "known_information": [
+      "The issue identifies PowerToys 0.97.0 and the Command Palette calculator surface.",
+      "The reported output for `e` can become approximately 0.71828 or another altered value after unspecified operations.",
+      "No comments specify the triggering expressions or current-build status."
+    ],
+    "inferences": [
+      "A mutable calculator scope or expression/result cache could explain the altered constant, but that is only a hypothesis until the Command Palette path is reproduced."
+    ],
+    "analysis": "The report describes a stateful symptom but does not provide the exact expressions or interaction sequence that changes e from Math.E. Existing PowerToys Run Calculator code defines e as Math.E, but that is not evidence about the separate Command Palette calculator path. Reproduce in the affected surface before reusing or changing the other implementation.",
+    "initial_investigation": [
+      "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs defines e as Math.E in the separate Run calculator; do not treat that as implementation evidence for Command Palette.",
+      "src/modules/cmdpal: inspect the Command Palette calculator extension and its result/cache path after the reported sequence is known.",
+      "No linked fix or release evidence establishes this as resolved."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigation of Command Palette calculator constant"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce altered e constant in Command Palette calculator",
+      "reproduce": {
+        "title": "Keep Euler constant evaluation stable in Command Palette calculator",
+        "module": "Command Palette calculator",
+        "version_requirement": "Reported PowerToys 0.97.0; compare with current stable build",
+        "prerequisites": [
+          "Command Palette calculator available",
+          "A clean session with no sensitive data"
+        ],
+        "setup": [
+          "Open the Command Palette calculator in a fresh session and record the displayed result for `e`."
+        ],
+        "steps": [
+          "1. Repeat the arithmetic operations that precede the incorrect `e` value; if the original sequence is unknown, record a bounded sequence using subtraction and result reuse.",
+          "2. Query `e` after each operation and compare with the fresh-session value.",
+          "3. Repeat after closing and reopening the calculator surface."
+        ],
+        "expected_result": "The constant e remains approximately 2.71828 regardless of prior expressions; if the report cannot be reproduced, record that before proposing a change."
+      }
+    }
+  ]
 }

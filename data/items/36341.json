@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 36341,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "powertoys run: input smoothing not really being helpful and focusing on wrong files",
+  "url": "https://github.com/microsoft/PowerToys/issues/36341",
+  "generated_at": "2026-11-13T20:49:52Z",
+  "evaluated_at": "2026-11-13T20:49:52Z",
   "source_updated_at": "2024-12-15T13:25:33Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "With EverythingPowerToys results arriving after immediate Run results, the focused result can move offscreen and Enter activates the wrong item for queries `redo` and `redo o`.",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2024-12-15T13:25:33Z",
+    "evaluated_at": "2026-11-13T20:49:52Z",
+    "rationale": "The issue contains two detailed scenarios, screenshots, the exact external plugin/version, and a concrete accidental-activation consequence. This is not a request for fuzzy scoring or input smoothing: the relevant defect is that the selected result remains focused but becomes visually offscreen after delayed provider results arrive. Current Run source has result selection and ScrollIntoView paths; maintainers should reproduce and trace update ordering instead of asking the reporter for generic logs.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On Run 0.86.0 with EverythingPowerToys 0.86.0, query `redo` puts redo-online.sh near the top but it is not focused; immediate results arrive first, then Everything results, leaving another result focused offscreen.",
+      "Query `redo o` shows the same timing/visibility mismatch; the reporter says Enter accidentally factory-reset the wrong program.",
+      "The reporter tried multiple input-smoothing settings; the described delay persists even at 500 ms for immediate plugins."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-15T13:25:33Z"
-  }
+    "recommended_action": "Reproduce the reported delayed-result ordering and trace selection/scroll updates; avoid activating potentially destructive results."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue supplies a concrete, repeated reproducer and visible selection mismatch; investigate update/scroll synchronization before changing ranking or smoothing.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep focused PowerToys Run results visible after delayed plugin results arrive",
+      "root_cause": "Hypothesis: delayed plugin result insertion changes result ordering/indices while retaining selection, leaving the focused row outside the visible viewport and allowing Enter to activate an unseen item.",
+      "plan": [
+        "Reproduce both `redo` and `redo o` scenarios using the reported EverythingPowerToys setup.",
+        "Trace result arrivals, selected index, and viewport scrolling for immediate versus background plugin results.",
+        "Synchronize selection/scroll with the final visible ordering and add a regression test with delayed provider results."
+      ],
+      "verification": [
+        "After delayed results arrive, the focused row remains visibly selected; Enter activates that visible item for both queries."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The issue includes detailed screenshots and timing evidence; exact selection/scroll race remains to be confirmed in current source."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With EverythingPowerToys results arriving after immediate Run results, the focused result can move offscreen and Enter activates the wrong item for queries `redo` and `redo o`.",
+    "known_information": [
+      "On Run 0.86.0 with EverythingPowerToys 0.86.0, query `redo` puts redo-online.sh near the top but it is not focused; immediate results arrive first, then Everything results, leaving another result focused offscreen.",
+      "Query `redo o` shows the same timing/visibility mismatch; the reporter says Enter accidentally factory-reset the wrong program.",
+      "The reporter tried multiple input-smoothing settings; the described delay persists even at 500 ms for immediate plugins."
+    ],
+    "inferences": [
+      "Asynchronous provider result insertion may reorder or shift the list while retaining the old selected index and failing to keep the focused result visible; source tracing is needed to confirm."
+    ],
+    "analysis": "The issue contains two detailed scenarios, screenshots, the exact external plugin/version, and a concrete accidental-activation consequence. This is not a request for fuzzy scoring or input smoothing: the relevant defect is that the selected result remains focused but becomes visually offscreen after delayed provider results arrive. Current Run source has result selection and ScrollIntoView paths; maintainers should reproduce and trace update ordering instead of asking the reporter for generic logs.",
+    "initial_investigation": [
+      "src/modules/launcher/PowerLauncher/ViewModel/ResultsViewModel.cs: selected index is retained/changed as result lists update.",
+      "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs: SuggestionsList_SelectionChanged scrolls added selected items into view; check whether delayed provider updates trigger this path.",
+      "src/modules/launcher/Wox.Infrastructure/FuzzyMatcher.cs is ranking logic, but the screenshots point first to async ordering/visibility rather than a fuzzy-score defect; no linked fix is present."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigation of delayed-result selection visibility"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce offscreen focused result after Everything results",
+      "reproduce": {
+        "title": "Keep focused PowerToys Run results visible after delayed plugin results arrive",
+        "module": "PowerToys Run with EverythingPowerToys plugin",
+        "version_requirement": "Reported Run and EverythingPowerToys 0.86.0; compare current stable",
+        "prerequisites": [
+          "EverythingPowerToys installed and returning test files/programs",
+          "PowerToys Run immediate and background plugins enabled"
+        ],
+        "setup": [
+          "Create harmless test entries matching `redo` and `redo o`; avoid using Enter on any destructive result."
+        ],
+        "steps": [
+          "1. Search `redo` and observe immediate results before EverythingPowerToys results arrive.",
+          "2. After delayed results appear, identify which row is focused and whether it is visible.",
+          "3. Repeat with `redo o`; do not activate any result until the mismatch is recorded."
+        ],
+        "expected_result": "The focused result remains visible after delayed provider results arrive, and Enter corresponds to the visible selected row."
+      }
+    }
+  ]
 }

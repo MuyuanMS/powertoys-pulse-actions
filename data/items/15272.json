@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 15272,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "[PT Run] [WindowWalker] Result view not updating when two windows have same properties",
+  "url": "https://github.com/microsoft/PowerToys/issues/15272",
+  "generated_at": "2026-11-13T20:49:52Z",
+  "evaluated_at": "2026-11-13T20:49:52Z",
   "source_updated_at": "2024-12-11T21:48:33Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "WindowWalker selects the second Explorer result but reportedly does not scroll it into view when multiple windows have similar properties.",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Area-User Interface",
+    "Priority-1"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2024-12-11T21:48:33Z",
+    "evaluated_at": "2026-11-13T20:49:52Z",
+    "rationale": "The issue is a viewport/selection mismatch, not stale window details: the selected second Explorer result is outside the visible list. Reporter confirmed the behavior on 0.73 and 0.86. Current Run code scrolls to the added selection in SuggestionsList_SelectionChanged, so reproduction should determine whether WindowWalker result updates bypass or race that event before proposing a change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original steps use two cmd windows and two Explorer windows with result count set to three; selecting the second Explorer result does not scroll it into view.",
+      "Reporter confirmed persistence on 0.73.0 and 0.86.0 after maintainer inquiries.",
+      "Current source has an explicit ScrollIntoView on selection change; this does not prove the reported sequence is fixed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-12-11T21:48:33Z"
-  }
+    "recommended_action": "Reproduce the exact multi-window viewport/selection mismatch and trace ScrollIntoView events."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Viewport mismatch is applicable if the old multi-window sequence still reproduces; current explicit scroll handler makes a targeted repro necessary before changing it.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep selected WindowWalker result visible",
+      "root_cause": "Hypothesis: asynchronous WindowWalker result/selection updates can leave the selected index outside the visible list without a corresponding scroll after result changes.",
+      "plan": [
+        "Repeat the supplied multi-window sequence on current stable with three results.",
+        "Trace selection-change and list-scroll events as the second Explorer result becomes selected.",
+        "If a missing/raced scroll is confirmed, synchronize viewport to selected result and add a same-process multi-window regression test."
+      ],
+      "verification": [
+        "The selected second Explorer result is visible after arrow navigation, including when multiple windows share process properties."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The issue has concrete steps and current source has a scroll handler, but it is unknown whether result-update timing bypasses that handler."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "WindowWalker selects the second Explorer result but reportedly does not scroll it into view when multiple windows have similar properties.",
+    "known_information": [
+      "Original steps use two cmd windows and two Explorer windows with result count set to three; selecting the second Explorer result does not scroll it into view.",
+      "Reporter confirmed persistence on 0.73.0 and 0.86.0 after maintainer inquiries.",
+      "Current source has an explicit ScrollIntoView on selection change; this does not prove the reported sequence is fixed."
+    ],
+    "inferences": [
+      "WindowWalker may update the selected index during async result changes without a corresponding visible-list scroll, but the event path must be reproduced."
+    ],
+    "analysis": "The issue is a viewport/selection mismatch, not stale window details: the selected second Explorer result is outside the visible list. Reporter confirmed the behavior on 0.73 and 0.86. Current Run code scrolls to the added selection in SuggestionsList_SelectionChanged, so reproduction should determine whether WindowWalker result updates bypass or race that event before proposing a change.",
+    "initial_investigation": [
+      "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs: SuggestionsList_SelectionChanged calls ScrollIntoView for the newly selected item.",
+      "src/modules/launcher/PowerLauncher/ViewModel/ResultsViewModel.cs: selection changes through SelectedIndex/SelectNextResult.",
+      "Timeline links #30574 (UI feedback for service plugin), not a covering fix; no release evidence establishes resolution."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigation of WindowWalker scroll synchronization"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce WindowWalker selected result outside viewport",
+      "reproduce": {
+        "title": "Keep selected WindowWalker result visible",
+        "module": "PowerToys Run WindowWalker",
+        "version_requirement": "Reported on 0.73 and 0.86; compare current stable",
+        "prerequisites": [
+          "WindowWalker enabled; two cmd and two Explorer windows"
+        ],
+        "setup": [
+          "Set maximum result count to three as in the issue."
+        ],
+        "steps": [
+          "1. Open cmd windows titled da and dab and two Explorer windows.",
+          "2. Search the windows in PowerToys Run and arrow to the second Explorer result.",
+          "3. Check whether the selected result is visible without manual scrolling."
+        ],
+        "expected_result": "The selected second Explorer result remains visible in the list as selection changes."
+      }
+    }
+  ]
 }

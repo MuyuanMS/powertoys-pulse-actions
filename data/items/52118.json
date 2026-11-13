@@ -1,109 +1,71 @@
 {
+  "schemaVersion": 5,
   "number": 52118,
   "kind": "issue",
-  "track": "triage",
-  "stage": "triage",
-  "schemaVersion": 5,
   "title": "Command Pallete Dock Autohide minor bugs",
   "url": "https://github.com/microsoft/PowerToys/issues/52118",
+  "generated_at": "2026-11-13T20:50:35Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-13T20:50:35Z",
+  "source_updated_at": "2026-11-13T18:21:26Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The current-release report (0.102.3101.0) bundles auto-hide, animation, exclusion, and icon symptoms. The most concrete claimed defect is a brief reveal on desktop click. Current DockWindow reveals through a one-pixel edge poll while focus loss schedules collapse, so pointer position and taskbar auto-hide state identify which transition is wrong.",
+    "evidence": [
+      "Report says Auto-hide is enabled and dock is Top with default size.",
+      "It reports brief appearance on desktop clicks and menu/Command Palette transitions, plus animation/icon and bookmark-icon issues.",
+      "Pinned DockWindow uses one-pixel edge polling to reveal and separate focus-loss/collapse handling; it detects taskbar auto-hide conflicts."
+    ],
+    "recommended_action": "Request a focused top-edge-versus-away reproduction and taskbar auto-hide state; do not combine separate icon/exclusion requests into one speculative fix.",
+    "evaluated_at": "2026-11-13T20:50:35Z",
+    "source_updated_at": "2026-11-13T18:21:26Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report bundles independent behaviors, and does not establish whether the flash is the intentional edge-reveal threshold or another transition. No single fix is grounded for the whole report.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Command Palette Dock auto-hide reportedly flashes into view during desktop and menu interactions, with additional animation and icon concerns.",
+    "known_information": [
+      "Report is version 0.102.3101.0, top dock/default size, with Auto-hide enabled.",
+      "Current source has separate edge polling, focus-loss collapse, and taskbar auto-hide conflict handling."
+    ],
+    "inferences": [
+      "A click near the top edge may invoke configured reveal behavior; original report does not give pointer position.",
+      "Animation/icon shifting and black bookmark icons may be separate defects."
+    ],
+    "analysis": "Isolate the flash transition first; request cursor position and taskbar auto-hide state rather than a generic bug report.",
+    "initial_investigation": [
+      "Read full current issue report and pinned DockWindow auto-hide code.",
+      "PollCursorForReveal reveals when cursor enters one-pixel edge threshold; HandleDeactivationForAutoHide schedules collapse after focus loss.",
+      "Source also detects when Windows taskbar auto-hide owns the same edge."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "For the brief reveal on a desktop click, whether pointer is at the top-edge reveal strip or elsewhere, whether dock is already collapsed, and whether Windows taskbar auto-hide is enabled on the same edge.",
+        "why_needed": "The current-version issue bundles reveal flashes, animation/icon movement, exclusions, and bookmark-icon rendering. Pinned DockWindow has a one-pixel edge reveal poll and separate focus-loss/collapse handling; pointer and taskbar state distinguish intended edge reveal from an unexpected transition.",
+        "how_to_collect": "With dock Top and Auto-hide enabled, let it collapse, move pointer well away from top edge, click desktop once, and report whether it reveals. Repeat at top edge and state whether Windows taskbar also auto-hides there."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm issue details",
+      "comment": {
+        "target": "issue",
+        "number": 52118,
+        "body": "Thanks for the detailed current-version report. Could you isolate the desktop-click flash with the dock already collapsed: does it still reveal when the pointer is well away from the top edge, or only when the pointer is at the top-edge reveal strip? Please also say whether Windows taskbar auto-hide is enabled on that same edge. The current code intentionally reveals at the edge but handles focus loss separately, so this identifies the transition to investigate."
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
-  "owes": "maintainer",
-  "pending_author": false,
-  "evaluated_at": "2026-11-13T16:23:30Z",
-  "generated_at": "2026-11-13T16:23:30Z",
-  "source_updated_at": "2026-11-13T15:14:11Z",
-  "status": {
-    "glyph": "🔍",
-    "label": "Needs focused investigation",
-    "detail": "Command Palette Dock auto-hide has several reported reveal and collapse problems; the reporter separately notes black bookmark icons."
-  },
-  "next_action": {
-    "glyph": "🧭",
-    "label": "Reproduce and review proposal",
-    "reason": "The Dock's edge polling, reveal and slide paths are relevant, but the report's distinct failures need independent reproduction; bookmark icons are outside this proposal."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The Dock's edge polling, reveal and slide paths are relevant, but the report's distinct failures need independent reproduction; bookmark icons are outside this proposal.",
-    "evidence": [
-      "On PowerToys 0.102.3101 the reporter describes several Dock auto-hide failures.",
-      "Black bookmark icons are separately reported; no common cause has been established."
-    ],
-    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
-    "evaluated_at": "2026-11-13T16:23:30Z",
-    "source_updated_at": "2026-11-13T15:14:11Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The Dock's edge polling, reveal and slide paths are relevant, but the report's distinct failures need independent reproduction; bookmark icons are outside this proposal.",
-    "existing_fix_urls": []
-  },
-  "proposed_fixes": [
-    {
-      "title": "Make Dock auto-hide reveal and collapse reliable",
-      "root_cause": "Hypothesis: one or more auto-hide transitions or edge hit tests fail under the reporter's display and cursor conditions; the exact branch is unconfirmed.",
-      "plan": [
-        "Reproduce each reported auto-hide symptom independently with the reporter's configuration.",
-        "Trace cursor-edge polling and reveal/collapse state for the failing transition.",
-        "Correct the demonstrated transition or hit-test defect and add focused regression coverage."
-      ],
-      "verification": [
-        "Verify reveal and collapse at each affected edge and repeat unaffected Dock interactions; assess bookmark icons separately."
-      ],
-      "confidence": {
-        "score": 45,
-        "level": "red",
-        "rationale": "The Dock's edge polling, reveal and slide paths are relevant, but the report's distinct failures need independent reproduction; bookmark icons are outside this proposal."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Command Palette Dock auto-hide has several reported reveal and collapse problems; the reporter separately notes black bookmark icons.",
-    "known_information": [
-      "On PowerToys 0.102.3101 the reporter describes several Dock auto-hide failures.",
-      "Black bookmark icons are separately reported; no common cause has been established."
-    ],
-    "inferences": [
-      "Hypothesis: one or more auto-hide transitions or edge hit tests fail under the reporter's display and cursor conditions; the exact branch is unconfirmed."
-    ],
-    "analysis": "The Dock's edge polling, reveal and slide paths are relevant, but the report's distinct failures need independent reproduction; bookmark icons are outside this proposal.",
-    "initial_investigation": [
-      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs#L1012-L1210",
-      "No covering PR found by issue-number search."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Review and approve scoped fix"
-    },
-    {
-      "type": "reproduce",
-      "label": "Reproduce the reported behavior",
-      "reproduce": {
-        "title": "Make Dock auto-hide reveal and collapse reliable",
-        "module": "Command Palette Dock",
-        "version_requirement": "PowerToys 0.102.3101 and current build",
-        "prerequisites": [
-          "Windows with Command Palette Dock enabled",
-          "Use the display and Dock settings described in the issue"
-        ],
-        "setup": [
-          "Enable auto-hide and configure the affected Dock location."
-        ],
-        "steps": [
-          "Move the cursor to and away from the Dock edge as described in the report.",
-          "Repeat each reported reveal and collapse sequence independently.",
-          "Check bookmark icon rendering separately."
-        ],
-        "expected_result": "The Dock reveals and hides reliably, and separate icon rendering is recorded without assuming the same cause."
-      }
-    }
-  ]
+  "comments": 0
 }

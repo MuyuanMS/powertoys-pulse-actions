@@ -1,33 +1,73 @@
 {
+  "schemaVersion": 5,
   "number": 47683,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Resource use in Taskbar shows incorrect values (gpu and cpu)",
+  "url": "https://github.com/microsoft/PowerToys/issues/47683",
+  "generated_at": "2026-11-13T20:44:19Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-13T20:44:19Z",
   "source_updated_at": "2026-05-10T14:30:25Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue includes a dock screenshot but no same-time Task Manager values, adapter name, or engine selection. The pinned source now explicitly uses Task Manager-like CPU and GPU accounting, so a current comparison is needed before proposing another measurement change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report is from 0.99.1 and says both CPU and GPU values differ from Task Manager.",
+      "The screenshot shows dock values but no matching Task Manager measurement.",
+      "Current CPUStats uses the bounded % Processor Time counter; GPUStats reduces each adapter to maximum 3D-engine utilization and comments that this mirrors Task Manager."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a same-moment comparison with the specific GPU and Task Manager engine on the current release.",
+    "evaluated_at": "2026-11-13T20:44:19Z",
     "source_updated_at": "2026-05-10T14:30:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The pinned current implementation already contains explicit CPU/GPU accounting intended to match Task Manager. Without a current same-time comparison, a new code fix would risk changing correct sampling semantics.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A 0.99.1 Command Palette taskbar resource display was reported to disagree with Task Manager for CPU and GPU.",
+    "known_information": [
+      "The reporter attached a screenshot of the dock values.",
+      "The report does not include Task Manager values captured at the same moment or identify which GPU engine is being compared.",
+      "Current CPUStats and GPUStats implementations include comments describing their alignment with Task Manager metrics."
+    ],
+    "inferences": [
+      "The issue may have changed after the reported 0.99.1 build; current source alone is not release evidence.",
+      "A Task Manager engine or adapter mismatch could explain the comparison without a faulty aggregate."
+    ],
+    "analysis": "The key gap is a matched comparison, not another generic log collection. The current source already changed counter selection and GPU aggregation, so first establish whether the same discrepancy exists now.",
+    "initial_investigation": [
+      "Read the issue screenshot and full report; no comments or linked fix are present.",
+      "Read src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/CPUStats.cs: CPU utilization uses % Processor Time.",
+      "Read src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs: per-adapter GPU usage uses the maximum 3D-engine value and is clamped to 0–100."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A same-moment comparison of the Command Palette dock CPU/GPU values with Task Manager, naming the GPU adapter and Task Manager GPU engine shown.",
+        "why_needed": "The screenshot in the issue shows the dock values but not the comparison or engine/adapter. The pinned CPU and GPU sources explicitly use bounded counters and aggregate 3D engines to mirror Task Manager; the remaining discrepancy may be a mismatched GPU or engine view.",
+        "how_to_collect": "On the current release, capture the dock resource value and Task Manager Performance tab at the same time. Include the GPU name and whether Task Manager is showing 3D or another engine."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Compare current values with matching Task Manager metrics",
+      "comment": {
+        "target": "issue",
+        "number": 47683,
+        "body": "Thanks for the screenshot. The current resource-monitor code uses a bounded CPU counter and the maximum 3D-engine utilization per adapter, so the exact comparison matters. Could you retry the current PowerToys release and capture its dock values alongside Task Manager’s Performance tab at the same moment, including the GPU adapter name and whether Task Manager is showing 3D or another engine? That will identify whether the reported mismatch remains under the same metric."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0
 }

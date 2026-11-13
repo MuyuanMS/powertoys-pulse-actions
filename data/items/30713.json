@@ -1,33 +1,90 @@
 {
   "number": 30713,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Value type incorrectly identified in RegistryPreview",
+  "url": "https://github.com/microsoft/PowerToys/issues/30713",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Registry Preview"
+  ],
+  "assignees": [],
+  "comments": 1,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:48:15Z",
+  "generated_at": "2026-11-13T20:48:15Z",
   "source_updated_at": "2024-12-10T21:27:09Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Likely fix identified",
+    "detail": "Registry Preview classifies a quoted string beginning with hex: as REG_BINARY, although quotes mark it as a string value."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Review the registry value-type parsing proposal.",
+    "reason": "Review the focused parser change and regression cases."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The parser loses a syntactic distinction before its type decision: quoted string data and unquoted hex data can share the same prefix after quote removal. Make the type decision on the raw .reg value or retain a quoted-string flag.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #30713 report and complete discussion: https://github.com/microsoft/PowerToys/issues/30713",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/registrypreview/RegistryPreviewUILib/RegistryPreviewMainPage.Utilities.cs",
+      "No linked fix or current owner was found in the complete issue timeline."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Review the focused parser change and regression cases.",
+    "evaluated_at": "2026-11-13T20:48:15Z",
     "source_updated_at": "2024-12-10T21:27:09Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current parser ordering directly explains the reported type confusion, and the distinction can be preserved without changing valid unquoted binary syntax.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve quoted-string syntax during Registry Preview type detection",
+      "root_cause": "The parser removes quotes before checking for the hex: binary prefix, so a quoted string value can be misclassified as binary.",
+      "plan": [
+        "Keep the raw value or record whether it was quoted before normalization.",
+        "Classify quoted values as strings and apply hex: binary parsing only to unquoted registry syntax.",
+        "Add regression cases for a quoted \"hex:ff\" string and an unquoted hex:ff binary value."
+      ],
+      "verification": [
+        "Import or preview a .reg file containing a quoted hex:-prefixed string and verify it remains a string.",
+        "Verify unquoted hex: binary data continues to be parsed as REG_BINARY."
+      ],
+      "confidence": {
+        "score": 97,
+        "level": "green",
+        "rationale": "The existing normalization-before-classification order directly matches the reported input shape; both sides of the syntax distinction can be tested."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Registry Preview classifies a quoted string beginning with hex: as REG_BINARY, although quotes mark it as a string value.",
+    "known_information": [
+      "The issue reports incorrect value-type detection for a quoted hex:-prefixed string.",
+      "Current RegistryPreview parsing strips quotes before testing whether the value begins with hex:, then classifies that prefix as binary."
+    ],
+    "inferences": [
+      "Preserving whether the original .reg value was quoted should prevent string content from being reinterpreted as a binary-data declaration."
+    ],
+    "analysis": "The parser loses a syntactic distinction before its type decision: quoted string data and unquoted hex data can share the same prefix after quote removal. Make the type decision on the raw .reg value or retain a quoted-string flag.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/registrypreview/RegistryPreviewUILib/RegistryPreviewMainPage.Utilities.cs",
+      "No linked fix or current owner was found in the complete issue timeline."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    }
+  ]
 }

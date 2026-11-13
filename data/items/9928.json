@@ -1,33 +1,91 @@
 {
   "number": 9928,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "[PT Run][Indexer] Warning only shown if at least one result is available",
+  "url": "https://github.com/microsoft/PowerToys/issues/9928",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Priority-3",
+    "Run-Results (Indexer)"
+  ],
+  "assignees": [],
+  "comments": 4,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T20:48:15Z",
+  "generated_at": "2026-11-13T20:48:15Z",
   "source_updated_at": "2024-12-11T21:49:00Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠️",
+    "label": "Likely fix identified",
+    "detail": "PowerToys Run Indexer can discard its warning when a full query returns no items, leaving the user with no warning or result."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Review the empty-results warning proposal.",
+    "reason": "Review the minimal empty-results handling change and focused tests."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The warning is already constructed, but the no-results branch returns an empty collection rather than the warning. Preserve the warning through the full-query empty-results path; unrelated issue #9923 was closed for a separate one-drive configuration and does not resolve this report.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #9928 report and complete discussion: https://github.com/microsoft/PowerToys/issues/9928",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/Main.cs",
+      "Issue #9923 is unrelated and does not establish a fix for this no-results warning."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Review the minimal empty-results handling change and focused tests.",
+    "evaluated_at": "2026-11-13T20:48:15Z",
     "source_updated_at": "2024-12-11T21:49:00Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current no-results control flow discards an already-created warning, directly matching the report.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Retain the Indexer warning when a full query has no results",
+      "root_cause": "The full-query empty-results branch returns an empty list and drops the warning item created earlier in the query path.",
+      "plan": [
+        "Trace warning construction and the full-query empty-results return in the Indexer plugin.",
+        "Return the warning item on the empty-results path while preserving existing non-empty result ordering.",
+        "Add focused coverage for empty and non-empty full queries."
+      ],
+      "verification": [
+        "Run a full Indexer query with no matching items and verify the warning is displayed.",
+        "Run a query with results and verify normal result and warning behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 96,
+        "level": "green",
+        "rationale": "The warning creation and empty-list return are both visible in the current query path; the behavior can be covered with focused query-result tests."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run Indexer can discard its warning when a full query returns no items, leaving the user with no warning or result.",
+    "known_information": [
+      "The issue reports that the Indexer warning appears only when at least one result is available.",
+      "The current Indexer query path adds a warning before querying but returns an empty list when a full query has no results, discarding the warning."
+    ],
+    "inferences": [
+      "Returning the warning item alongside an empty result set should make the existing status visible without changing successful-query behavior."
+    ],
+    "analysis": "The warning is already constructed, but the no-results branch returns an empty collection rather than the warning. Preserve the warning through the full-query empty-results path; unrelated issue #9923 was closed for a separate one-drive configuration and does not resolve this report.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/Main.cs",
+      "Issue #9923 is unrelated and does not establish a fix for this no-results warning."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    }
+  ]
 }

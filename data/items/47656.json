@@ -1,33 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 47656,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Image Resizer two screens",
+  "url": "https://github.com/microsoft/PowerToys/issues/47656",
+  "generated_at": "2026-11-13T20:44:19Z",
+  "stage": "triage_revalidated",
+  "evaluated_at": "2026-11-13T20:44:19Z",
   "source_updated_at": "2026-05-10T14:24:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The 0.99.1 report gives a specific two-display discrepancy. The current launch path builds a batch from command-line files, while MainWindow.ShowWindow centers the first window without receiving an Explorer owner or monitor. This is a plausible, source-grounded explanation, but should be confirmed with the source Explorer window on the secondary display.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter says the Image Resizer panel always appears on the primary screen with two displays.",
+      "App.xaml.cs creates a MainWindow from the selected-file batch and does not pass an Explorer HWND or source-monitor identifier.",
+      "MainWindow.xaml.cs::ShowWindow calls CenterOnScreen before showing and activating the first window."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce from an Explorer window on the secondary display, then design source-monitor-aware initial placement if confirmed.",
+    "evaluated_at": "2026-11-13T20:44:19Z",
     "source_updated_at": "2026-05-10T14:24:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current first-show placement centers without source-window context; a localized source-monitor handoff is a plausible fix, pending confirmation of the reported topology."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Open Image Resizer on the source Explorer display",
+      "root_cause": "Hypothesis: the Image Resizer window centers on the primary display because the launch path carries selected files but no Explorer owner/display context. The source path supports this hypothesis, but it has not been reproduced.",
+      "plan": [
+        "Reproduce with one selected image in an Explorer window on the secondary display and trace the shell invocation through ResizeBatch creation.",
+        "Carry the originating Explorer window or monitor identity into the window placement step.",
+        "Position the first Image Resizer window on the source display while preserving current sizing behavior and handling mixed-DPI displays.",
+        "Add focused coverage that launches from Explorer on both primary and secondary displays."
+      ],
+      "verification": [
+        "Verify the resize panel opens on the display containing the source Explorer window for primary and secondary launches.",
+        "Verify the existing resize UI sizing behavior remains unchanged on a single display and with mixed display scaling."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "MainWindow.ShowWindow centers the window without a source-monitor parameter, which fits the symptom; the exact Explorer placement and behavior should be confirmed before implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Image Resizer opened on the primary display in a report using two displays, although the reporter expected the display containing Explorer and the selected image.",
+    "known_information": [
+      "The report is from PowerToys 0.99.1.",
+      "The reported issue is panel placement, not image processing.",
+      "Current app startup creates the resize batch from command-line arguments and calls ShowWindow after loading the page."
+    ],
+    "inferences": [
+      "Because initial placement calls CenterOnScreen without the originating Explorer window, the primary display may be selected by default.",
+      "The report does not say whether Explorer itself was on the secondary display or whether multiple Explorer windows were open."
+    ],
+    "analysis": "The path is plausible but requires a direct topology repro. A multi-monitor placement plan should preserve the current sizing behavior and account for mixed DPI.",
+    "initial_investigation": [
+      "Read src/modules/imageresizer/ui/ImageResizerXAML/App.xaml.cs: startup creates MainWindow from ResizeBatch.FromCommandLine and selected files.",
+      "Read src/modules/imageresizer/ui/ImageResizerXAML/MainWindow.xaml.cs: ShowWindow centers the window and activates it, without source monitor context.",
+      "Reviewed issue body; no comments, attached logs, or linked fixes are present."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether the Explorer window containing the selected image is on the secondary monitor when Image Resizer opens, plus the monitor scaling if the displays use different DPI.",
+        "why_needed": "The current MainWindow centers itself on screen without receiving the Explorer invocation’s HWND or source monitor. The exact Explorer/source-display relationship will verify whether this explains the primary-monitor placement.",
+        "how_to_collect": "Repeat with one Explorer window on each display, select an image only in the secondary-display window, open Image Resizer, and report which display hosts the dialog and each display’s scaling percentage."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review source-display placement plan"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm the source display for the repro",
+      "comment": {
+        "target": "issue",
+        "number": 47656,
+        "body": "The current first-show path centers Image Resizer without receiving an Explorer window or monitor identifier. Could you retry with the image selected in an Explorer window that is visibly on the secondary display, and tell us which display the panel opens on? If the displays have different scaling, please include each percentage; this will confirm whether the launch needs source-display context or whether a mixed-DPI placement path is involved."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
 }

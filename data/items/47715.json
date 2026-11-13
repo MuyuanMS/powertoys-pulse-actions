@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 47715,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Alt+Scroll Issue with Illustrator and PowerToys",
+  "url": "https://github.com/microsoft/PowerToys/issues/47715",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-10T14:30:16Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Alt+mouse-wheel reportedly behaves incorrectly in Illustrator 29.6 when Grab and Move is enabled.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-10T14:30:16Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "The report gives an app/version/input sequence. Low-level hooks are a plausible interaction, but enabled/disabled comparison is needed before attributing cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Report names Illustrator 29.6, PowerToys 0.99.1, Windows 11 25H2 build 26200.8246.",
+      "Action is holding Alt while scrolling with Grab and Move enabled.",
+      "No discussion clarifies actual response."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-10T14:30:16Z"
-  }
+    "recommended_action": "Compare enabled/disabled before changing hook handling."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Applicable if enabled/disabled comparison isolates Grab and Move.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Illustrator Alt+wheel behavior",
+      "root_cause": "Hypothesis: modifier handling changes Alt/mouse event delivery; ordering is unknown.",
+      "plan": [
+        "Compare same Illustrator action with feature enabled/disabled.",
+        "Trace and fix only a confirmed hook path; add regression."
+      ],
+      "verification": [
+        "Alt+wheel behaves identically with feature on/off while dragging works."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "Specific test and relevant hooks, but causality unproven."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Alt+mouse-wheel reportedly behaves incorrectly in Illustrator 29.6 when Grab and Move is enabled.",
+    "known_information": [
+      "Report names Illustrator 29.6, PowerToys 0.99.1, Windows 11 25H2 build 26200.8246.",
+      "Action is holding Alt while scrolling with Grab and Move enabled.",
+      "No discussion clarifies actual response."
+    ],
+    "inferences": [
+      "Grab and Move may alter Alt/wheel delivery; Illustrator-specific cause is unverified."
+    ],
+    "analysis": "The report gives an app/version/input sequence. Low-level hooks are a plausible interaction, but enabled/disabled comparison is needed before attributing cause.",
+    "initial_investigation": [
+      "src/modules/GrabAndMove/GrabAndMove/main.cpp tracks modifiers and mouse hooks; no linked fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Illustrator Alt+wheel investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Alt+wheel with Grab and Move",
+      "reproduce": {
+        "title": "Preserve Illustrator Alt+wheel behavior",
+        "module": "Grab and Move / Illustrator",
+        "version_requirement": "Reported 0.99.1, Illustrator 29.6, Windows 11 25H2; compare current stable",
+        "prerequisites": [
+          "Illustrator test document"
+        ],
+        "setup": [
+          "Use a tool/document state that normally responds to Alt+wheel."
+        ],
+        "steps": [
+          "1. Hold Alt and scroll; record response.",
+          "2. Repeat with Grab and Move disabled.",
+          "3. Re-enable and repeat."
+        ],
+        "expected_result": "Alt+wheel behavior is independent of Grab and Move state."
+      }
+    }
+  ]
 }

@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 47823,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Fancyzones hold shift to activate while dragging disabling shift when typing normally",
+  "url": "https://github.com/microsoft/PowerToys/issues/47823",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-12T10:09:09Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "After enabling FancyZones Shift-drag activation on PowerToys 0.99.1, the reporter says Shift no longer types capital letters normally.",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T10:09:09Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "Current FancyZones code samples Shift state and includes a guard intended not to swallow Shift+other-key combinations. The symptom could involve key-state transitions during or after a drag, but the report does not say whether it occurs outside a drag. Reproduce those states before changing the hook.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report says Shift-drag-to-activate was enabled after upgrading to PowerToys 0.99.1.",
+      "The reporter says ordinary Shift capitalization stopped working while the setting was active.",
+      "No discussion clarifies whether Shift works when the setting is disabled or whether a drag is required."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T10:09:09Z"
-  }
+    "recommended_action": "Run the concrete before/after-drag typing comparison before selecting a hook change."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is an applicable keyboard input regression if reproduced; concrete maintainer repro should isolate typing outside versus after a drag.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve ordinary Shift typing with FancyZones Shift-drag activation",
+      "root_cause": "Hypothesis: Shift key-state handling for drag activation may consume or leave a stale transition that affects normal typing; current source includes logic intended to preserve Shift+other-key combinations, so that boundary needs a targeted reproduction.",
+      "plan": [
+        "Compare ordinary Shift typing with Shift-drag activation enabled and disabled on a current build.",
+        "Trace the keyboard/drag transitions surrounding the failure, including whether the key event occurs during or after a drag.",
+        "Correct the demonstrated event-state defect and extend FancyZones drag/input regression coverage."
+      ],
+      "verification": [
+        "Shift types uppercase characters both outside a drag and immediately after a drag while Shift-drag activation is enabled."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The current hook has a relevant Shift transition path and the issue describes a direct regression, but the triggering state is unclear."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After enabling FancyZones Shift-drag activation on PowerToys 0.99.1, the reporter says Shift no longer types capital letters normally.",
+    "known_information": [
+      "The report says Shift-drag-to-activate was enabled after upgrading to PowerToys 0.99.1.",
+      "The reporter says ordinary Shift capitalization stopped working while the setting was active.",
+      "No discussion clarifies whether Shift works when the setting is disabled or whether a drag is required."
+    ],
+    "inferences": [
+      "Shift transition handling during drag may interfere with ordinary key delivery, but the issue does not identify the relevant transition."
+    ],
+    "analysis": "Current FancyZones code samples Shift state and includes a guard intended not to swallow Shift+other-key combinations. The symptom could involve key-state transitions during or after a drag, but the report does not say whether it occurs outside a drag. Reproduce those states before changing the hook.",
+    "initial_investigation": [
+      "src/modules/FancyZones/FancyZonesLib/FancyZones.cpp explicitly checks modifier states and guards Shift+other-key input during drag.",
+      "src/modules/FancyZones/FancyZonesLib/DraggingState.cpp tracks Shift state; this is a plausible path, not proof of cause.",
+      "No linked fix or release evidence is present in the issue snapshot."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigation of Shift-drag typing regression"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Shift typing with Shift-drag enabled",
+      "reproduce": {
+        "title": "Preserve ordinary Shift typing with FancyZones Shift-drag activation",
+        "module": "FancyZones",
+        "version_requirement": "Reported PowerToys 0.99.1; compare with current stable build",
+        "prerequisites": [
+          "FancyZones enabled",
+          "A text field and an ordinary draggable window"
+        ],
+        "setup": [
+          "Enable Hold Shift while dragging to activate zones."
+        ],
+        "steps": [
+          "1. Type uppercase letters in a text field without dragging.",
+          "2. Drag a window while holding Shift to activate zones; release the drag, then type uppercase letters again.",
+          "3. Disable the setting and repeat both typing checks as a control."
+        ],
+        "expected_result": "Shift remains available for ordinary typing before and after the drag; only intended drag activation behavior changes."
+      }
+    }
+  ]
 }

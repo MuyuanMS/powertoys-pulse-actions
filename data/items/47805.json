@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 47805,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Command Palette Fails to Find Anything After...",
+  "url": "https://github.com/microsoft/PowerToys/issues/47805",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-12T12:50:15Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "After prolonged uptime with nightly hibernation, Command Palette file-search results reportedly stop appearing for simple queries.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T12:50:15Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "The report gives a lifecycle trigger (days of uptime with hibernation) and failing surface (file-search results), but does not identify whether the provider stops refreshing, its index becomes stale, or the palette view stops receiving updates. Preserve the sleep/wake sequence before selecting a narrow fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter says file-search results disappear after leaving Windows running for days and hibernating nightly.",
+      "Simple queries reportedly continue to return no file-section results.",
+      "The report is on PowerToys 0.99.1 and has no follow-up discussion."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:50:15Z"
-  }
+    "recommended_action": "Reproduce the reported hibernate/resume sequence and inspect the failing provider boundary."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported lifecycle symptom is an applicable bug; the maintainer should reproduce and identify the stale boundary before implementation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Command Palette file results after long sleep/uptime",
+      "root_cause": "Hypothesis: a file-search provider or its result publication path is not refreshed after repeated hibernate/resume cycles; the issue does not establish whether indexing or UI delivery is responsible.",
+      "plan": [
+        "Reproduce on a current build with file search enabled and record whether the provider/index remains responsive after resume.",
+        "Trace provider lifecycle and result publication across suspend/resume before changing refresh behavior.",
+        "Fix only the demonstrated stale lifecycle transition and add a focused resume-cycle regression test."
+      ],
+      "verification": [
+        "After repeated hibernate/resume cycles, simple file queries again produce results equivalent to a fresh-start baseline without restarting PowerToys."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "The report gives a concrete lifecycle trigger, but the faulty provider/index/UI boundary is not established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After prolonged uptime with nightly hibernation, Command Palette file-search results reportedly stop appearing for simple queries.",
+    "known_information": [
+      "The reporter says file-search results disappear after leaving Windows running for days and hibernating nightly.",
+      "Simple queries reportedly continue to return no file-section results.",
+      "The report is on PowerToys 0.99.1 and has no follow-up discussion."
+    ],
+    "inferences": [
+      "A stale provider/index or lifecycle refresh failure is plausible, but the report does not identify which layer fails."
+    ],
+    "analysis": "The report gives a lifecycle trigger (days of uptime with hibernation) and failing surface (file-search results), but does not identify whether the provider stops refreshing, its index becomes stale, or the palette view stops receiving updates. Preserve the sleep/wake sequence before selecting a narrow fix.",
+    "initial_investigation": [
+      "src/modules/cmdpal: inspect the file-search extension/provider lifecycle and result publication only after reproducing the reported sleep/wake sequence.",
+      "The snapshot contains no linked fix or ownership evidence establishing a known solution."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigation of file-search resume behavior"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce file-search failure after hibernate/resume",
+      "reproduce": {
+        "title": "Restore Command Palette file results after long sleep/uptime",
+        "module": "Command Palette file search",
+        "version_requirement": "Reported PowerToys 0.99.1; compare with current stable build",
+        "prerequisites": [
+          "Windows system supporting hibernation",
+          "Command Palette file search enabled with a known local test file"
+        ],
+        "setup": [
+          "Record a known searchable test file and confirm it appears after a fresh start."
+        ],
+        "steps": [
+          "1. Leave PowerToys running through repeated hibernate/resume cycles over several days, or the longest repeatable interval available.",
+          "2. After each resume, open Command Palette and search for the known file using a simple query.",
+          "3. Record when results stop appearing and compare with a fresh PowerToys restart."
+        ],
+        "expected_result": "File-search results continue after resume; if a provider lifecycle fault is confirmed, restarting PowerToys should restore results until the recurrence is fixed."
+      }
+    }
+  ]
 }

@@ -1,33 +1,98 @@
 {
+  "schemaVersion": 5,
   "number": 47770,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Command Palette gets stuck after PowerToys starts and PowerToys itself runs in task manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/47770",
+  "generated_at": "2026-11-13T20:47:46Z",
+  "evaluated_at": "2026-11-13T20:47:46Z",
   "source_updated_at": "2026-05-10T14:22:33Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "After restart, PowerToys 0.99.1 reportedly leaves Command Palette stuck while PowerToys appears in Task Manager; issue gives startup sequence.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-10T14:22:33Z",
+    "evaluated_at": "2026-11-13T20:47:46Z",
+    "rationale": "The sequence supports maintainer reproduction but does not identify stalled component or whether PowerToys Run is causal. Compare module settings before attributing to startup initialization.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Report enables Command Palette, PowerToys Run, and start-at-logon.",
+      "After reboot/login, opening palette reportedly leaves it stuck.",
+      "No diagnostics clarify stalled component."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-10T14:22:33Z"
-  }
+    "recommended_action": "Run supplied sequence and compare with Run disabled."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Concrete startup sequence and applicable launch failure; reproduce before changing initialization order.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover Command Palette startup after logon",
+      "root_cause": "Hypothesis: Command Palette stalls when Runner starts it alongside PowerToys Run after logon; identify stalled component first.",
+      "plan": [
+        "Repeat reboot/logon on current build and note responsiveness.",
+        "Compare Run enabled/disabled; fix confirmed lifecycle or IPC failure and add regression."
+      ],
+      "verification": [
+        "Palette opens after logon in reported configuration without a stuck process."
+      ],
+      "confidence": {
+        "score": 50,
+        "level": "red",
+        "rationale": "Sequence is concrete but stalled component and Run causality are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After restart, PowerToys 0.99.1 reportedly leaves Command Palette stuck while PowerToys appears in Task Manager; issue gives startup sequence.",
+    "known_information": [
+      "Report enables Command Palette, PowerToys Run, and start-at-logon.",
+      "After reboot/login, opening palette reportedly leaves it stuck.",
+      "No diagnostics clarify stalled component."
+    ],
+    "inferences": [
+      "Startup ordering or initialization race is plausible; process presence alone is insufficient."
+    ],
+    "analysis": "The sequence supports maintainer reproduction but does not identify stalled component or whether PowerToys Run is causal. Compare module settings before attributing to startup initialization.",
+    "initial_investigation": [
+      "src/modules/cmdpal launch/initialization and src/runner module startup are relevant; no linked fix established."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Command Palette startup investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Command Palette startup stall",
+      "reproduce": {
+        "title": "Recover Command Palette startup after logon",
+        "module": "Command Palette and Runner",
+        "version_requirement": "Reported 0.99.1; compare current stable",
+        "prerequisites": [
+          "PowerToys start-at-sign-in and both modules available"
+        ],
+        "setup": [
+          "Enable both modules and startup as described."
+        ],
+        "steps": [
+          "1. Restart Windows and sign in.",
+          "2. Open Command Palette after PowerToys starts.",
+          "3. Record responsiveness/process state.",
+          "4. Repeat with PowerToys Run disabled only."
+        ],
+        "expected_result": "Palette opens, or comparison isolates failing dependency."
+      }
+    }
+  ]
 }
