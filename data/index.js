@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-13T10:15:34.6935382Z",
+  "generated_at": "2026-11-13T10:21:22.7385557Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 232,
+    "open_prs": 233,
     "open_issues": 11172,
-    "community": 10287,
-    "artifacts": 1877
+    "community": 10288,
+    "artifacts": 1878
   },
   "impact": {
     "as_of": "2026-11-10T19:13:24.9428557+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52108,
     52079,
     52107,
     52055,
@@ -1977,6 +1978,42 @@ window.BOARD_INDEX = {
     49788
   ],
   "items": [
+    {
+      "id": "pr-52108",
+      "kind": "pr",
+      "number": 52108,
+      "url": "https://github.com/microsoft/PowerToys/pull/52108",
+      "title": "Build(deps): Bump actions/setup-dotnet from 6.0.0 to 6.1.0",
+      "author": "dependabot[bot]",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "labels": [
+        "dependencies",
+        "github_actions",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T08:52:53Z",
+      "updated_at": "2026-11-13T08:53:14Z",
+      "comments": 2,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null,
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "us",
+      "priority": null,
+      "pending_author": false,
+      "waiting_since": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null
+    },
     {
       "id": "pr-52079",
       "kind": "pr",
