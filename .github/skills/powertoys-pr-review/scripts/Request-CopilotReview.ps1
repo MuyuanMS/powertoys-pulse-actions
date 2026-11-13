@@ -42,7 +42,7 @@ $pullRequest = Invoke-GhGet -Endpoint $endpoint
 $headSha = [string]$pullRequest.head.sha
 if ($headSha -notmatch '^[a-f0-9]{40}$') { throw "Missing or invalid fork head: $endpoint" }
 if (@($pullRequest.requested_reviewers | Where-Object {
-    $_.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer')
+    Test-CopilotReviewer -Reviewer $_
 }).Count -gt 0) {
     throw 'A Copilot request is already pending. Resume with Get-CopilotReviewStatus.ps1 instead of submitting another request.'
 }
@@ -59,7 +59,7 @@ $resp = Invoke-GhJsonInput -Endpoint "$endpoint/requested_reviewers" `
 if ($null -eq $resp) { throw "Empty review-request response: $endpoint" }
 
 $requested = @($resp.requested_reviewers | Where-Object {
-    $_.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer')
+    Test-CopilotReviewer -Reviewer $_
 })
 $requestPending = $requested.Count -gt 0
 if (-not $requestPending) {

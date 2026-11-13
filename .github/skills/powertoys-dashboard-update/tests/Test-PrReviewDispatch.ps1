@@ -117,6 +117,10 @@ try {
     $plan = Plan @($queue[0]) @($rows[0])
     Assert-True ($plan.coordinator_actions.Count -eq 0 -and $plan.next_check_at -eq $now.AddSeconds(120).ToString('o')) 'pending cloud state has a bounded next check'
     Assert-True (-not $plan.complete) 'pending cloud request is not completion'
+    $rows[0].review.request_pending = $false
+    $plan = Plan @($queue[0]) @($rows[0])
+    Assert-True ($plan.assignments.Count -eq 0 -and $plan.next_check_at) 'empty assignment does not erase a saved request or consume a worker'
+    $rows[0].review.request_pending = $true
     $rows[0].review.checked_at = $now.AddMinutes(-3).ToString('o')
     Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions.Count -eq 1) 'due cloud check is scheduled without a worker slot'
     $rows[0].review.submitted = $true
@@ -126,13 +130,13 @@ try {
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_fork_head') 'changed fork head cannot consume old review evidence'
     $rows[0].review.head_matches = $true
     $rows[0].review.submitted = $false
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_missing_review') 'absent request is not an indefinite wait'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'empty assignment still reads the saved request'
     $rows[0].round = 2
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_missing_review') 'two used iterations leave room for the third after reconciliation'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'two used iterations do not authorize replacing an outstanding request'
     $rows[0].round = 3
-    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'three used iterations prohibit a fourth request'
-    Assert-True ((Plan @($queue[0]) @($rows[0]) 3).assignments[0].action -eq
-        (Plan @($queue[0]) @($rows[0]) 6).assignments[0].action) 'normal delta and drain use the same capped worker transition'
+    Assert-True ((Plan @($queue[0]) @($rows[0])).coordinator_actions[0].action -eq 'check_saved_review') 'third saved request is not abandoned when assignment empties'
+    Assert-True ((Plan @($queue[0]) @($rows[0]) 3).coordinator_actions[0].action -eq
+        (Plan @($queue[0]) @($rows[0]) 6).coordinator_actions[0].action) 'normal delta and drain use the same saved-request transition'
     $rows[0].review.submitted = $true
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'process_review') 'third review result is consumed rather than discarded at the cap'
     $rows[0].review.submitted = $false
@@ -233,6 +237,8 @@ try {
     $rows[0].review.checked_at = $now.ToString('o')
     $rows[0].request.requested_at = $now.AddMinutes(-11).ToString('o')
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'diagnose_cloud_wait') 'freshly checked old cloud request gets bounded diagnosis rather than infinite polling'
+    $rows[0].review.request_pending = $false
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'diagnose_cloud_wait') 'empty assignment receives the same bounded diagnosis after a fresh read'
     $rows[0].review.diagnosed_request_at = $rows[0].request.requested_at
     $resumedPlan = Plan @($queue[0]) @($rows[0])
     Assert-True ($resumedPlan.assignments.Count -eq 0 -and $resumedPlan.next_check_at) 'persisted diagnosis survives resume without reassigning the same investigation'

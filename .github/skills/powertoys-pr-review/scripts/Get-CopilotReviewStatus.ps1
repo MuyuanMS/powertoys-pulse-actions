@@ -47,7 +47,7 @@ $result = [pscustomobject]@{
     ReviewUrl = if ($latest) { [string]$latest.html_url } else { $null }
     ReviewBody = if ($latest) { [string]$latest.body } else { $null }
     RequestPending = @($pullRequest.requested_reviewers | Where-Object {
-        $_.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer')
+        Test-CopilotReviewer -Reviewer $_
     }).Count -gt 0
     ReviewsScanned = $reviews.Count
 }

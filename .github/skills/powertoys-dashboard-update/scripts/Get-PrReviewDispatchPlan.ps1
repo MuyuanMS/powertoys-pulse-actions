@@ -135,9 +135,6 @@ $seen = @{}
                 } elseif ($row.review.submitted -eq $true) {
                     $action = 'process_review'
                     $rank = 1
-                } elseif ($row.review.request_pending -eq $false) {
-                    $action = 'reconcile_missing_review'
-                    $rank = 1
                 } else {
                     $due = if ($row.review.checked_at) {
                         ([datetimeoffset]$row.review.checked_at).AddSeconds($PollSeconds)
@@ -145,8 +142,7 @@ $seen = @{}
                     $alreadyDiagnosed = $row.review.diagnosed_request_at -and
                         [datetimeoffset]$row.review.diagnosed_request_at -eq
                             [datetimeoffset]$row.request.requested_at
-                    if ($due -gt $Now -and $row.review.request_pending -eq $true -and
-                        -not $alreadyDiagnosed -and
+                    if ($due -gt $Now -and -not $alreadyDiagnosed -and
                         [datetimeoffset]$row.request.requested_at -le $Now.AddMinutes(-10)) {
                         $action = 'diagnose_cloud_wait'
                         $rank = 2

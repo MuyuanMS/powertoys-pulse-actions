@@ -360,6 +360,16 @@ function Get-GhPagedItems {
     return $items.ToArray()
 }
 
+function Test-CopilotReviewer {
+    param([AllowNull()]$Reviewer)
+
+    return $null -ne $Reviewer -and (
+        $Reviewer.id -eq 175728472 -or
+        $Reviewer.databaseId -eq 175728472 -or
+        $Reviewer.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer')
+    )
+}
+
 function Get-LatestCopilotReview {
     param(
         [AllowEmptyCollection()][object[]]$Reviews,
@@ -369,7 +379,7 @@ function Get-LatestCopilotReview {
     )
 
     $Reviews | Where-Object {
-        $_.user.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer') -and
+        (Test-CopilotReviewer -Reviewer $_.user) -and
         $_.state -in @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED') -and
         $_.submitted_at -and
         [string]$_.commit_id -ceq $HeadSha -and

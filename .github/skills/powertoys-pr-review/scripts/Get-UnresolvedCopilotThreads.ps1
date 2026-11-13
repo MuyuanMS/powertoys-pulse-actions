@@ -21,13 +21,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'ReviewPayload.Common.ps1')
 
 $query = @'
 query($owner:String!, $number:Int!, $cursor:String) {
   repository(owner:$owner, name:"PowerToys") {
     pullRequest(number:$number) {
       reviewThreads(first:100, after:$cursor) {
-        nodes { isResolved comments(first:1) { nodes { author { login } } } }
+        nodes { isResolved comments(first:1) { nodes { author { login ... on Bot { databaseId } } } } }
         pageInfo { hasNextPage endCursor }
       }
     }
@@ -48,7 +49,7 @@ do {
     }
     foreach ($thread in @($connection.nodes)) {
         if ($thread.isResolved -eq $false -and
-            $thread.comments.nodes[0].author.login -in @('copilot-pull-request-reviewer', 'copilot-pull-request-reviewer[bot]')) {
+            (Test-CopilotReviewer -Reviewer $thread.comments.nodes[0].author)) {
             $count++
         }
     }

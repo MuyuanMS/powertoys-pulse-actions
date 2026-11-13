@@ -118,7 +118,7 @@ foreach ($number in $PRNumber) {
         $copilotReviews = @(
             $reviews |
                 Where-Object {
-                    $_.user.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer') -and
+                    (Test-CopilotReviewer -Reviewer $_.user) -and
                     $_.state -in @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED') -and $_.submitted_at
                 } |
                 Sort-Object submitted_at

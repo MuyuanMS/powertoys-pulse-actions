@@ -34,6 +34,7 @@ function Reset-Fixture {
     $fixture.sleepCount = 0
     $fixture.threadFailure = $false
     $fixture.threadStalledCursor = $false
+    $fixture.renamedThreadAuthor = $false
 }
 
 # No GitHub writes or waits: exercise the real scripts through a strict gh fake.
@@ -51,7 +52,11 @@ function gh {
         }
         $nodes = if ($secondPage) {
             @(
-                @{ isResolved = $false; comments = @{ nodes = @(@{ author = @{ login = 'copilot-pull-request-reviewer' } }) } },
+                @{ isResolved = $false; comments = @{ nodes = @(@{ author = $(if ($fixture.renamedThreadAuthor) {
+                    @{ login = 'Copilot'; databaseId = 175728472 }
+                } else {
+                    @{ login = 'copilot-pull-request-reviewer' }
+                }) }) } },
                 @{ isResolved = $false; comments = @{ nodes = @(@{ author = @{ login = 'github-advanced-security' } }) } }
             )
         } else {
@@ -169,6 +174,10 @@ try {
     Assert-True (-not (Read-Status).Submitted) 'Human review cannot satisfy Copilot wait.'
     $fixture.reviews[0].user.login = 'copilot-pull-request-reviewer'
     Assert-True ((Read-Status).Submitted) 'Recognized non-bot-suffixed Copilot login is accepted.'
+    $fixture.reviews[0].user = @{ login = 'Copilot'; id = 42 }
+    Assert-True (-not (Read-Status).Submitted) 'A display login without the Copilot bot identity cannot satisfy the wait.'
+    $fixture.reviews[0].user.id = 175728472
+    Assert-True ((Read-Status).Submitted) 'Stable bot identity discovers reviews under the current Copilot login.'
 
     Reset-Fixture
     $fixture.reviews = @()
@@ -177,6 +186,13 @@ try {
     Assert-True (-not $status.Submitted -and $status.RequestPending -and $status.ReviewsScanned -eq 0) 'Empty review list preserves genuine pending state.'
     Assert-Fails { Send-Request } 'already pending' 'Duplicate requests are rejected.'
     Assert-True ($fixture.postCount -eq 0) 'Pending request did not trigger a POST.'
+
+    Reset-Fixture
+    $fixture.reviews = @()
+    $fixture.pending = @(@{ login = 'Copilot'; id = 175728472 })
+    Assert-True ((Read-Status).RequestPending) 'Stable bot identity preserves pending state under the current Copilot login.'
+    Assert-Fails { Send-Request } 'already pending' 'Current Copilot assignment rejects duplicate requests.'
+    Assert-True ($fixture.postCount -eq 0) 'Current Copilot assignment is detected before any POST.'
 
     Reset-Fixture
     $fixture.reviews = @(1..100 | ForEach-Object { New-Review $_ })
@@ -218,6 +234,9 @@ try {
     Reset-Fixture
     $count = & (Join-Path $scripts 'Get-UnresolvedCopilotThreads.ps1') -ForkOwner example -PRNumber 860
     Assert-True ($count -eq 1) 'Unresolved Copilot thread beyond 100 is counted; other bots are not Copilot.'
+    $fixture.renamedThreadAuthor = $true
+    $count = & (Join-Path $scripts 'Get-UnresolvedCopilotThreads.ps1') -ForkOwner example -PRNumber 860
+    Assert-True ($count -eq 1) 'GraphQL bot identity preserves unresolved threads under the current Copilot login.'
     $fixture.threadFailure = $true
     Assert-Fails { & (Join-Path $scripts 'Get-UnresolvedCopilotThreads.ps1') -ForkOwner example -PRNumber 860 } 'Cannot read review threads' 'Thread page failure must not look like zero unresolved threads.'
     $fixture.threadFailure = $false
