@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-13T16:32:00.8180007+00:00",
+  "generated_at": "2026-11-14T04:31:51.1100208+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 237,
-    "open_issues": 11195,
-    "community": 10315,
-    "artifacts": 1996
+    "open_prs": 239,
+    "open_issues": 11200,
+    "community": 10321,
+    "artifacts": 1994
   },
   "impact": {
-    "as_of": "2026-11-14T00:06:36.1654999+08:00",
+    "as_of": "2026-11-14T04:31:51.1100208+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -104,6 +104,7 @@ window.BOARD_INDEX = {
     52079,
     52057,
     52055,
+    52054,
     52040,
     52038,
     51987,
@@ -584,6 +585,7 @@ window.BOARD_INDEX = {
     50845,
     50841,
     50839,
+    46850,
     50828,
     50816,
     50809,
@@ -591,6 +593,7 @@ window.BOARD_INDEX = {
     50801,
     33281,
     50795,
+    50793,
     50791,
     50789,
     50788,
@@ -649,6 +652,7 @@ window.BOARD_INDEX = {
     50496,
     50477,
     50476,
+    47553,
     32954,
     50465,
     50454,
@@ -733,7 +737,7 @@ window.BOARD_INDEX = {
     50127,
     50125,
     50117,
-    50115,
+    32596,
     50111,
     34161,
     50109,
@@ -743,6 +747,7 @@ window.BOARD_INDEX = {
     50084,
     50079,
     50075,
+    47549,
     50065,
     50062,
     50050,
@@ -849,6 +854,7 @@ window.BOARD_INDEX = {
     49530,
     34491,
     49515,
+    31992,
     31989,
     31988,
     31968,
@@ -942,6 +948,7 @@ window.BOARD_INDEX = {
     31521,
     49037,
     49035,
+    50115,
     49022,
     49021,
     49013,
@@ -961,7 +968,6 @@ window.BOARD_INDEX = {
     48947,
     47538,
     48936,
-    32596,
     31403,
     48921,
     31390,
@@ -988,6 +994,7 @@ window.BOARD_INDEX = {
     48825,
     48822,
     31301,
+    31300,
     48817,
     48803,
     31280,
@@ -1025,10 +1032,12 @@ window.BOARD_INDEX = {
     48620,
     31095,
     31094,
+    48611,
     48608,
     31085,
     52000,
     48597,
+    13554,
     48591,
     31068,
     48584,
@@ -1074,6 +1083,7 @@ window.BOARD_INDEX = {
     48440,
     48436,
     48434,
+    48432,
     48430,
     30907,
     13376,
@@ -1167,6 +1177,7 @@ window.BOARD_INDEX = {
     48071,
     48062,
     30537,
+    30530,
     48048,
     48046,
     30515,
@@ -1179,30 +1190,47 @@ window.BOARD_INDEX = {
     30491,
     48009,
     48007,
+    48006,
+    48004,
+    47987,
+    47985,
     30452,
     47965,
     47963,
     47962,
     47961,
+    47960,
     47959,
+    47953,
     30433,
     30432,
     30431,
+    47948,
     30424,
+    47942,
     47941,
     47940,
+    47932,
     48215,
-    47922,
+    47917,
     30394,
     30384,
     47892,
     12850,
+    47883,
+    47877,
+    47873,
     30351,
+    47862,
     47861,
+    47860,
     47858,
     47854,
     30329,
     47839,
+    47836,
+    47835,
+    47832,
     47829,
     30302,
     24312,
@@ -1217,6 +1245,7 @@ window.BOARD_INDEX = {
     30233,
     47736,
     30203,
+    47721,
     30189,
     47698,
     47693,
@@ -1226,21 +1255,37 @@ window.BOARD_INDEX = {
     47655,
     30107,
     47620,
+    47618,
     30084,
     48727,
     30071,
     47585,
+    47577,
     30055,
     47573,
     30053,
+    47565,
+    47561,
     30040,
     30034,
+    47551,
+    47544,
     30023,
     12503,
+    47537,
+    47536,
+    47535,
     47533,
+    47532,
+    47521,
+    47515,
+    47510,
     29984,
     29978,
+    47491,
     29969,
+    29960,
+    47468,
     47446,
     29912,
     47430,
@@ -1251,6 +1296,7 @@ window.BOARD_INDEX = {
     47359,
     29827,
     47337,
+    47328,
     15921,
     29779,
     29764,
@@ -1265,6 +1311,7 @@ window.BOARD_INDEX = {
     47240,
     47238,
     29718,
+    47236,
     1837,
     29701,
     47217,
@@ -1279,6 +1326,7 @@ window.BOARD_INDEX = {
     19182,
     977,
     29567,
+    47869,
     3381,
     29529,
     29528,
@@ -1298,6 +1346,7 @@ window.BOARD_INDEX = {
     29291,
     9119,
     29262,
+    29220,
     47688,
     46697,
     33261,
@@ -1345,6 +1394,7 @@ window.BOARD_INDEX = {
     28704,
     49057,
     30852,
+    46216,
     19053,
     28672,
     8054,
@@ -1412,11 +1462,15 @@ window.BOARD_INDEX = {
     27899,
     10379,
     27897,
+    27873,
+    47503,
     45349,
+    45338,
     16760,
     27771,
     45278,
     21740,
+    33075,
     45208,
     45175,
     45168,
@@ -1445,6 +1499,7 @@ window.BOARD_INDEX = {
     44847,
     27323,
     44578,
+    44830,
     51963,
     44758,
     51962,
@@ -1455,6 +1510,7 @@ window.BOARD_INDEX = {
     44650,
     27074,
     9531,
+    44550,
     33240,
     27021,
     50165,
@@ -1491,6 +1547,7 @@ window.BOARD_INDEX = {
     34266,
     26560,
     9040,
+    26537,
     26520,
     26519,
     48692,
@@ -1526,11 +1583,13 @@ window.BOARD_INDEX = {
     18459,
     43424,
     51949,
+    25858,
     43292,
     43283,
     46295,
     43267,
     49715,
+    43250,
     43206,
     14850,
     43161,
@@ -1570,6 +1629,7 @@ window.BOARD_INDEX = {
     42444,
     24912,
     3442,
+    52111,
     24880,
     49311,
     24872,
@@ -1640,6 +1700,7 @@ window.BOARD_INDEX = {
     6267,
     48837,
     41278,
+    47978,
     41262,
     41260,
     48493,
@@ -1701,6 +1762,7 @@ window.BOARD_INDEX = {
     40391,
     48141,
     40373,
+    47969,
     31524,
     22799,
     22797,
@@ -1771,10 +1833,12 @@ window.BOARD_INDEX = {
     21541,
     3957,
     25285,
+    26405,
     21393,
     38902,
     30952,
     38898,
+    21359,
     21319,
     21316,
     21258,
@@ -1794,6 +1858,7 @@ window.BOARD_INDEX = {
     3569,
     21043,
     21039,
+    47566,
     38513,
     38511,
     38487,
@@ -1805,6 +1870,7 @@ window.BOARD_INDEX = {
     20890,
     20886,
     3309,
+    47949,
     3269,
     20695,
     3159,
@@ -1819,6 +1885,7 @@ window.BOARD_INDEX = {
     20516,
     38020,
     38001,
+    20413,
     20405,
     37923,
     34549,
@@ -1832,6 +1899,7 @@ window.BOARD_INDEX = {
     37803,
     37796,
     37790,
+    37775,
     20255,
     20244,
     37755,
@@ -1906,6 +1974,7 @@ window.BOARD_INDEX = {
     36779,
     36760,
     51712,
+    36729,
     36707,
     36701,
     49307,
@@ -1942,9 +2011,11 @@ window.BOARD_INDEX = {
     51878,
     36142,
     1084,
+    36088,
     264,
     10,
     36026,
+    36021,
     981,
     36009,
     36004,
@@ -1956,8 +2027,11 @@ window.BOARD_INDEX = {
     35934,
     13035,
     18394,
+    35863,
+    35845,
     35821,
     35808,
+    24339,
     35772,
     26971,
     35729,
@@ -2017,85 +2091,79 @@ window.BOARD_INDEX = {
     52039,
     16,
     8,
-    4,
-    52054,
-    26405,
-    26537,
-    27873,
-    29960,
-    31300,
-    36021,
-    36088,
-    36729,
-    44830,
-    47328,
-    47491,
-    47515,
-    47535,
-    47544,
-    47553,
-    47566,
-    47832,
-    47836,
-    47860,
-    47873,
-    47948,
-    47960,
-    47987,
-    48432,
-    52111,
-    20413,
-    21359,
-    24339,
-    29220,
-    33075,
-    35863,
-    44550,
-    46850,
-    47236,
-    47510,
-    47532,
-    47537,
-    47551,
-    47565,
-    47618,
-    47721,
-    47862,
-    47877,
-    47932,
-    47942,
-    47969,
-    47985,
-    48004,
-    48611,
-    52118,
-    13554,
-    25858,
-    30530,
-    31992,
-    35845,
-    43250,
-    46216,
-    47468,
-    47503,
-    47521,
-    47549,
-    47577,
-    47835,
-    47869,
-    47917,
-    47953,
-    47978,
-    48006,
-    50793,
-    37775,
-    45338,
-    47536,
-    47561,
-    47883,
-    47949
+    4
   ],
   "items": [
+    {
+      "id": "pr-52126",
+      "kind": "pr",
+      "number": 52126,
+      "url": "https://github.com/microsoft/PowerToys/pull/52126",
+      "title": "CmdPal: Use the shell to launch things for us",
+      "author": "zadjii-msft",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T18:32:36Z",
+      "updated_at": "2026-11-13T18:32:58Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-52122",
+      "kind": "pr",
+      "number": 52122,
+      "url": "https://github.com/microsoft/PowerToys/pull/52122",
+      "title": "[Advanced Paste] Fix Foundry Local service discovery and enhance model loading",
+      "author": "gerbauz",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-General",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T16:54:27Z",
+      "updated_at": "2026-11-13T16:58:01Z",
+      "comments": 2,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-52116",
       "kind": "pr",
@@ -2261,8 +2329,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-13T08:52:53Z",
-      "updated_at": "2026-11-13T08:53:14Z",
-      "comments": 2,
+      "updated_at": "2026-11-13T17:34:58Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2297,8 +2365,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-13T08:52:43Z",
-      "updated_at": "2026-11-13T08:53:06Z",
-      "comments": 2,
+      "updated_at": "2026-11-13T17:34:21Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2649,7 +2717,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-12T12:09:23Z",
-      "updated_at": "2026-11-12T12:09:42Z",
+      "updated_at": "2026-11-13T17:39:16Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2928,8 +2996,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-11T05:44:58Z",
-      "updated_at": "2026-11-12T05:58:21Z",
-      "comments": 4,
+      "updated_at": "2026-11-13T17:38:51Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2991,7 +3059,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "none",
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3717,8 +3785,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-06T08:52:44Z",
-      "updated_at": "2026-11-06T08:53:04Z",
-      "comments": 2,
+      "updated_at": "2026-11-13T17:34:48Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -3989,7 +4057,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-04T21:29:35Z",
-      "updated_at": "2026-11-13T08:51:32Z",
+      "updated_at": "2026-11-13T20:10:48Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -5738,7 +5806,7 @@ window.BOARD_INDEX = {
         "niels9001"
       ],
       "created_at": "2026-10-28T19:28:10Z",
-      "updated_at": "2026-11-11T20:42:31Z",
+      "updated_at": "2026-11-13T19:35:16Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -5998,8 +6066,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-28T05:51:36Z",
-      "updated_at": "2026-11-11T23:50:05Z",
-      "comments": 5,
+      "updated_at": "2026-11-13T17:41:11Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -7346,8 +7414,8 @@ window.BOARD_INDEX = {
         "crutkas"
       ],
       "created_at": "2026-10-12T17:18:05Z",
-      "updated_at": "2026-11-12T19:13:15Z",
-      "comments": 1,
+      "updated_at": "2026-11-13T19:52:59Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -17868,6 +17936,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-52127",
+      "kind": "issue",
+      "number": 52127,
+      "url": "https://github.com/microsoft/PowerToys/issues/52127",
+      "title": "PowerDisplay doesn't find my monitor (KVM switch)",
+      "author": "drauch",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T19:55:15Z",
+      "updated_at": "2026-11-13T19:55:15Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-34606",
       "kind": "issue",
       "number": 34606,
@@ -17897,6 +17997,37 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2024-09-04T16:20:32Z",
       "updated_at": "2026-04-16T16:14:48Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-52124",
+      "kind": "issue",
+      "number": 52124,
+      "url": "https://github.com/microsoft/PowerToys/issues/52124",
+      "title": "Grab and move incompaptible with left hand mouse",
+      "author": "geoffm",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T17:32:55Z",
+      "updated_at": "2026-11-13T17:32:55Z",
       "comments": 0,
       "priority": null
     },
@@ -17934,12 +18065,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-17082",
+      "id": "issue-52121",
       "kind": "issue",
-      "number": 17082,
-      "url": "https://github.com/microsoft/PowerToys/issues/17082",
-      "title": "Using keyboard shortcuts while a wsl xserver window is active with a text editor, causes text to be written ",
-      "author": "VadimLyubash",
+      "number": 52121,
+      "url": "https://github.com/microsoft/PowerToys/issues/52121",
+      "title": "Windows Spotlight",
+      "author": "Vzd0809",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -17952,19 +18083,47 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Needs-Repro",
-        "Product-Keyboard Manager"
+        "Resolution-Please File on Feedback Hub"
       ],
       "assignees": [],
-      "created_at": "2022-03-16T14:03:18Z",
-      "updated_at": "2026-10-11T16:10:33Z",
-      "comments": 6,
+      "created_at": "2026-11-13T16:53:06Z",
+      "updated_at": "2026-11-13T17:19:33Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-52120",
+      "kind": "issue",
+      "number": 52120,
+      "url": "https://github.com/microsoft/PowerToys/issues/52120",
+      "title": "Performance Plans",
+      "author": "Vzd0809",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T16:47:34Z",
+      "updated_at": "2026-11-13T16:47:34Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -18015,21 +18174,18 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Review and approve scoped fix"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-11-13T14:47:31Z",
-      "updated_at": "2026-11-13T15:14:11Z",
+      "updated_at": "2026-11-13T18:21:26Z",
       "comments": 0,
       "priority": null
     },
@@ -35483,8 +35639,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T15:44:04Z",
-      "updated_at": "2026-11-13T15:48:44Z",
-      "comments": 386,
+      "updated_at": "2026-11-13T20:00:07Z",
+      "comments": 393,
       "priority": null
     },
     {
@@ -52499,7 +52655,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -53586,12 +53742,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve conditional Mouse Jump click-path regression investigation plan"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -54173,37 +54329,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45495",
+      "id": "issue-50775",
       "kind": "issue",
-      "number": 45495,
-      "url": "https://github.com/microsoft/PowerToys/issues/45495",
-      "title": "PowerToys startup always creates a transient console window (black flash), regardless of disabled modules",
-      "author": "Loyrli",
-      "state": "open",
+      "number": 50775,
+      "url": "https://github.com/microsoft/PowerToys/issues/50775",
+      "title": "new update is not an improvement",
+      "author": "traviscarruthers99-ctrl",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Area-Runner",
-        "Needs-Triage",
-        "Product-General"
+        "Needs-Author-Feedback",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-02-10T07:00:50Z",
-      "updated_at": "2026-04-18T14:53:15Z",
-      "comments": 0,
+      "created_at": "2026-09-24T20:14:45Z",
+      "updated_at": "2026-10-01T23:23:24Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -62457,7 +62611,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Investigate StrokePlus gesture coexistence"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -67355,12 +67509,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50775",
+      "id": "issue-50298",
       "kind": "issue",
-      "number": 50775,
-      "url": "https://github.com/microsoft/PowerToys/issues/50775",
-      "title": "new update is not an improvement",
-      "author": "traviscarruthers99-ctrl",
+      "number": 50298,
+      "url": "https://github.com/microsoft/PowerToys/issues/50298",
+      "title": "[aw] Failed jobs: AI Issue Triage",
+      "author": "github-actions[bot]",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -67377,13 +67531,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
-        "Needs-Triage"
+        "agentic-workflows"
       ],
       "assignees": [],
-      "created_at": "2026-09-24T20:14:45Z",
-      "updated_at": "2026-10-01T23:23:24Z",
-      "comments": 2,
+      "created_at": "2026-09-01T19:13:56Z",
+      "updated_at": "2026-09-02T07:58:27Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -72931,38 +73084,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50115",
+      "id": "issue-32596",
       "kind": "issue",
-      "number": 50115,
-      "url": "https://github.com/microsoft/PowerToys/issues/50115",
-      "title": "Administrator mode will not run",
-      "author": "redicanjoe-lgtm",
+      "number": 32596,
+      "url": "https://github.com/microsoft/PowerToys/issues/32596",
+      "title": "Enabling Color Picker Causes White Box on Screen",
+      "author": "ghost",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
-      "stage": "needs_information",
-      "owes": "author",
+      "track": "fix",
+      "stage": "triaged",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Area-Quality",
+        "Area-User Interface",
+        "Product-Color Picker"
       ],
       "assignees": [],
-      "created_at": "2026-08-25T15:35:15Z",
-      "updated_at": "2026-08-25T15:39:39Z",
-      "comments": 1,
+      "created_at": "2024-04-23T20:21:03Z",
+      "updated_at": "2024-09-18T07:11:31Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -74256,12 +74411,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request elevation and app comparison"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -74642,37 +74797,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-21T18:44:29Z",
       "updated_at": "2026-08-24T07:11:07Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-50298",
-      "kind": "issue",
-      "number": 50298,
-      "url": "https://github.com/microsoft/PowerToys/issues/50298",
-      "title": "[aw] Failed jobs: AI Issue Triage",
-      "author": "github-actions[bot]",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "agentic-workflows"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-01T19:13:56Z",
-      "updated_at": "2026-09-02T07:58:27Z",
-      "comments": 0,
       "priority": null
     },
     {
@@ -89008,12 +89132,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate multi-monitor text extractor overlays"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -102516,6 +102640,41 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50115",
+      "kind": "issue",
+      "number": 50115,
+      "url": "https://github.com/microsoft/PowerToys/issues/50115",
+      "title": "Administrator mode will not run",
+      "author": "redicanjoe-lgtm",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "needs_information",
+      "owes": "author",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-08-25T15:35:15Z",
+      "updated_at": "2026-08-25T15:39:39Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-31508",
       "kind": "issue",
       "number": 31508,
@@ -105451,43 +105610,6 @@ window.BOARD_INDEX = {
       "created_at": "2021-10-18T05:14:18Z",
       "updated_at": "2026-10-11T16:15:18Z",
       "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-32596",
-      "kind": "issue",
-      "number": 32596,
-      "url": "https://github.com/microsoft/PowerToys/issues/32596",
-      "title": "Enabling Color Picker Causes White Box on Screen",
-      "author": "ghost",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "triaged",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
-      "labels": [
-        "Issue-Bug",
-        "Area-Quality",
-        "Area-User Interface",
-        "Product-Color Picker"
-      ],
-      "assignees": [],
-      "created_at": "2024-04-23T20:21:03Z",
-      "updated_at": "2024-09-18T07:11:31Z",
-      "comments": 5,
       "priority": null
     },
     {
@@ -108681,7 +108803,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Prevent Quick Accent input loss in WSLg applications"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -114194,7 +114316,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -114827,12 +114949,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve Run autocomplete viewport investigation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -119694,7 +119816,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Clarify the remaining installation path"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -130613,12 +130735,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate repeated screen ruler spacing activation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -131834,12 +131956,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate firefox system-menu availability"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -131908,7 +132030,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Clarify the observed failure and plugin"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -132369,7 +132491,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Clarify restored utility startup"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -132439,7 +132561,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -133216,7 +133338,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Start enabled FancyZones reliably at sign-in"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -133443,12 +133565,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve safe contrast adjustment investigation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -133633,7 +133755,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Ask about the composition transition"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -133644,41 +133766,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-05-17T17:53:02Z",
       "updated_at": "2026-05-17T17:53:13Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-47946",
-      "kind": "issue",
-      "number": 47946,
-      "url": "https://github.com/microsoft/PowerToys/issues/47946",
-      "title": "C:\\Users\\dhanu\\AppData\\Local\\Microsoft\\PowerToys\\PowerToys Run\\Logs\\0.84.1.0\\2026-05-17.txt",
-      "author": "DhanusharavRagu",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Product-PowerToys Run",
-        "Area-Setup/Install",
-        "Needs-Triage",
-        "Product-General"
-      ],
-      "assignees": [],
-      "created_at": "2026-05-17T13:10:15Z",
-      "updated_at": "2026-05-17T16:31:58Z",
-      "comments": 1,
       "priority": null
     },
     {
@@ -133774,7 +133861,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -133784,7 +133871,7 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-05-17T05:45:32Z",
       "updated_at": "2026-05-17T19:17:02Z",
-      "comments": 1,
+      "comments": 3,
       "priority": null
     },
     {
@@ -133981,7 +134068,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -134242,14 +134329,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -134257,8 +134341,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-05-15T18:12:32Z",
-      "updated_at": "2026-10-22T16:37:01Z",
-      "comments": 1,
+      "updated_at": "2026-11-13T17:02:52Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -134376,12 +134460,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve custom system-menu interaction investigation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -135083,12 +135167,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request dock pin disappearance details"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -135252,7 +135336,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -135353,7 +135437,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Remove the cursor artifact when leaving a machine"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -135688,7 +135772,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -135760,7 +135844,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Design reversible all-utility suspension"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -136392,7 +136476,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Resolve the ZoomIt and Office shortcut collision"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -136423,12 +136507,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate sticky notes workspace identity"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -136528,7 +136612,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Exclude Command Palette surfaces from Grab and Move"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -139662,7 +139746,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -142435,7 +142519,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -143586,12 +143670,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request monitor connection details"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -143965,7 +144049,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Distinguish Settings launch from window visibility"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -144030,12 +144114,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request PowerToys module comparison"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -144268,7 +144352,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Identify applications and full-screen mode"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -144502,7 +144586,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Prevent accumulating resize bounds during rapid reversals"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -144764,12 +144848,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Clarify edge mask behavior"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -144805,7 +144889,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Identify the printing conflict"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -144907,7 +144991,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -145131,12 +145215,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request upgrade details"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -145340,7 +145424,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Investigate resizing across mixed-scale monitors"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -145504,7 +145588,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -146040,7 +146124,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Avoid ZoomIt capture collisions with French AltGr"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -146443,7 +146527,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Clarify access to new Chrome windows while pinned"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -146736,12 +146820,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate stale offered update versions"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -146751,7 +146835,7 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-04-30T02:58:10Z",
       "updated_at": "2026-05-16T20:15:52Z",
-      "comments": 1,
+      "comments": 2,
       "priority": null
     },
     {
@@ -149790,7 +149874,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Preserve Alt+wheel shortcuts alongside Grab and Move"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -152070,7 +152154,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Identify the app and launch sequence"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -155466,12 +155550,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate new+ interaction with explorer rename"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -162537,7 +162621,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -173684,12 +173768,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve targeted performance readings investigation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -188596,34 +188680,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-25595",
+      "id": "issue-45495",
       "kind": "issue",
-      "number": 25595,
-      "url": "https://github.com/microsoft/PowerToys/issues/25595",
-      "title": "Improved subpixel text rendering for OLED (WRGB stripe, RGB triangular) -- Unfixable by ClearType Tuner (Over 100 upvotes in Feedback Hub)",
-      "author": "mdrejhon",
+      "number": 45495,
+      "url": "https://github.com/microsoft/PowerToys/issues/45495",
+      "title": "PowerToys startup always creates a transient console window (black flash), regardless of disabled modules",
+      "author": "Loyrli",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy"
+        "Issue-Bug",
+        "Area-Runner",
+        "Needs-Triage",
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2023-04-18T04:07:48Z",
-      "updated_at": "2026-10-15T22:49:37Z",
-      "comments": 361,
+      "created_at": "2026-02-10T07:00:50Z",
+      "updated_at": "2026-04-18T14:53:15Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -190795,7 +190882,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Investigate the missing Windows 10 top border"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -191188,12 +191275,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate layout-aware settings shortcut labels"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -191843,12 +191930,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate installer shutdown with cmd autorun"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -194459,7 +194546,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Clarify a specific reassigned shortcut"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -201659,7 +201746,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Disambiguate Home activation shortcut labels"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -206962,7 +207049,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -220893,6 +220980,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-52125",
+      "kind": "issue",
+      "number": 52125,
+      "url": "https://github.com/microsoft/PowerToys/issues/52125",
+      "title": "Simple Improv on the quick accents",
+      "author": "VIPgamerin",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T18:14:19Z",
+      "updated_at": "2026-11-13T18:31:21Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-8793",
       "kind": "issue",
       "number": 8793,
@@ -224764,6 +224882,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-52123",
+      "kind": "issue",
+      "number": 52123,
+      "url": "https://github.com/microsoft/PowerToys/issues/52123",
+      "title": "mouse jump stopped working",
+      "author": "zerobit97",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-13T17:02:14Z",
+      "updated_at": "2026-11-13T17:02:14Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-41864",
       "kind": "issue",
       "number": 41864,
@@ -227396,6 +227546,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-8474",
+      "kind": "issue",
+      "number": 8474,
+      "url": "https://github.com/microsoft/PowerToys/issues/8474",
+      "title": "Add mouse left click as \"Mapped To\" key in keyboard manager.",
+      "author": "GorvGoyl",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Resolution-Duplicate",
+        "Idea-Enhancement",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-12-08T11:07:03Z",
+      "updated_at": "2026-10-11T16:27:32Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-10746",
       "kind": "issue",
       "number": 10746,
@@ -229073,12 +229256,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigation of account-unique startup tasks"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -231295,12 +231478,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate shortcut editor flashing on key repeat"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -233536,6 +233719,40 @@ window.BOARD_INDEX = {
       "created_at": "2023-04-18T22:21:12Z",
       "updated_at": "2026-05-23T16:40:04Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-17082",
+      "kind": "issue",
+      "number": 17082,
+      "url": "https://github.com/microsoft/PowerToys/issues/17082",
+      "title": "Using keyboard shortcuts while a wsl xserver window is active with a text editor, causes text to be written ",
+      "author": "VadimLyubash",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Repro",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2022-03-16T14:03:18Z",
+      "updated_at": "2026-10-11T16:10:33Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -245800,7 +246017,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Isolate the still-enabled utility"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -268017,12 +268234,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve Ctrl shortcut investigation"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -273220,12 +273437,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-8474",
+      "id": "issue-49289",
       "kind": "issue",
-      "number": 8474,
-      "url": "https://github.com/microsoft/PowerToys/issues/8474",
-      "title": "Add mouse left click as \"Mapped To\" key in keyboard manager.",
-      "author": "GorvGoyl",
+      "number": 49289,
+      "url": "https://github.com/microsoft/PowerToys/issues/49289",
+      "title": "問題が発生しました。",
+      "author": "Esprit-Plage",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -273238,18 +273455,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Issue-Bug",
         "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-Keyboard Manager"
+        "Product-PowerToys Run"
       ],
       "assignees": [],
-      "created_at": "2020-12-08T11:07:03Z",
-      "updated_at": "2026-10-11T16:27:32Z",
-      "comments": 4,
+      "created_at": "2026-07-13T00:21:58Z",
+      "updated_at": "2026-07-13T01:27:03Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -312384,7 +312601,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Investigate service-mode UAC reconnects"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -312987,7 +313204,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -319392,7 +319609,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Preserve Light Switch manual override through updates"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -323072,12 +323289,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request redacted detection details"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -330352,7 +330569,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -330502,36 +330719,34 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49289",
+      "id": "issue-25595",
       "kind": "issue",
-      "number": 49289,
-      "url": "https://github.com/microsoft/PowerToys/issues/49289",
-      "title": "問題が発生しました。",
-      "author": "Esprit-Plage",
-      "state": "closed",
+      "number": 25595,
+      "url": "https://github.com/microsoft/PowerToys/issues/25595",
+      "title": "Improved subpixel text rendering for OLED (WRGB stripe, RGB triangular) -- Unfixable by ClearType Tuner (Over 100 upvotes in Feedback Hub)",
+      "author": "mdrejhon",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-PowerToys Run"
+        "Idea-New PowerToy"
       ],
       "assignees": [],
-      "created_at": "2026-07-13T00:21:58Z",
-      "updated_at": "2026-07-13T01:27:03Z",
-      "comments": 2,
+      "created_at": "2023-04-18T04:07:48Z",
+      "updated_at": "2026-10-15T22:49:37Z",
+      "comments": 361,
       "priority": null
     },
     {
@@ -333539,12 +333754,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve investigate fancyzones idle gpu usage with topmost windows"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -354314,7 +354529,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Apply FancyZones custom defaults without opening the editor"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -365368,7 +365583,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Investigate workspace launch z-order"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -366490,7 +366705,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Approve lightweight direction: Make New+ template location predictable across languages"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -369765,7 +369980,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "approve_design",
-        "label": "Review and approve scoped fix"
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -370131,12 +370346,12 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "tracked",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Request selected OCR language"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -371462,7 +371677,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Identify one setting and exit sequence"
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
