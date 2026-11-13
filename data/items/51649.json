@@ -9,10 +9,10 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-11T18:49:03.1203099Z",
-  "evaluated_at": "2026-11-11T18:49:03.1203099Z",
-  "source_updated_at": "2026-11-11T18:47:53Z",
-  "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
+  "generated_at": "2026-11-13T08:03:50.5423768Z",
+  "evaluated_at": "2026-11-13T08:03:50.5423768Z",
+  "source_updated_at": "2026-11-11T23:50:05Z",
+  "head_sha": "ab31288ad7899403771be4963be41c81e994b0dc",
   "needs_revalidation": false,
   "proposed_comments": [
     {
@@ -27,29 +27,29 @@
         "score": 76,
         "rationale": "The message omission is directly visible in the exact upstream exception path and the same method records and reports startupStage on timeout; severity remains low because the inner exception still preserves the root cause."
       },
-      "body": "**Severity: Low - missing startup-phase context makes receiver initialization failures slower to diagnose.**\n\nThe worker records `startupStage` before each setup operation and includes it on timeout, but this exception wrapper omits it. Keep the existing inner exception and include the recorded phase in the wrapper message.\n\n**If left unchanged:** maintainers must infer which initialization phase failed from the nested exception instead of seeing the recorded phase immediately.\n\n```suggestion\n                throw new InvalidOperationException(\"Receiver initialization failed during \" + startupStage + \".\", error.InnerException);\n```\n\n**Verification:** compile the nine worker sources with the Windows PowerShell 5.1 `Add-Type` command used by `EndpointWorker.ps1`; exercise an initialization failure and confirm that the message includes its phase and preserves the original inner exception.",
+      "body": "### Include the startup phase in receiver initialization errors\n\n**Severity:** `low`\n\n`ReceiverController` records `startupStage` before each setup operation and includes it in the timeout error, but this wrapper omits it. Include that phase in the `InvalidOperationException` message while preserving the original exception as `InnerException`; this makes setup failures faster to localize without losing the underlying cause.\n\n```suggestion\n                throw new InvalidOperationException(\"Receiver initialization failed during \" + startupStage + \".\", error.InnerException);\n```\n\nThe literal replacement compiled with the Windows PowerShell 5.1 worker `Add-Type` source set; an initialization-failure runtime scenario was not exercised.",
       "in_diff": true
     }
   ],
   "actions": [
     {
       "id": "51649-post-current-assessment",
-      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
+      "head_sha": "ab31288ad7899403771be4963be41c81e994b0dc",
       "type": "post_review",
       "label": "Post supported inline suggestion",
       "review": {
         "event": "COMMENT",
-        "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
+        "head_sha": "ab31288ad7899403771be4963be41c81e994b0dc",
         "comment_ids": [
           "startup-stage-diagnostic"
         ],
-        "commit_id": "d94ac0d5bb588e17b02f0411fd1947839cf93528"
+        "commit_id": "ab31288ad7899403771be4963be41c81e994b0dc"
       }
     }
   ],
   "validation": {
     "suggestion_patch": {
-      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
+      "head_sha": "ab31288ad7899403771be4963be41c81e994b0dc",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
@@ -57,7 +57,7 @@
       ]
     },
     "line_ending_safety": {
-      "head_sha": "d94ac0d5bb588e17b02f0411fd1947839cf93528",
+      "head_sha": "ab31288ad7899403771be4963be41c81e994b0dc",
       "result": "passed",
       "checked_comment_ids": [
         "startup-stage-diagnostic"
@@ -66,7 +66,7 @@
         {
           "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/Payload/ReceiverController.cs",
           "result": "passed",
-          "line_endings": "crlf"
+          "line_endings": "lf"
         }
       ]
     }
