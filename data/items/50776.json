@@ -5,10 +5,10 @@
   "title": "Mouse Without Borders: fix Connect page silently dropping credentials on failure",
   "url": "https://github.com/microsoft/PowerToys/pull/50776",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "generated_at": "2026-10-26T10:13:03.6271909+08:00",
-  "evaluated_at": "2026-10-26T10:13:03.6272616+08:00",
-  "source_updated_at": "2026-10-25T18:21:16+08:00",
+  "stage": "review_in_progress",
+  "generated_at": "2026-11-13T08:22:56.9378488Z",
+  "evaluated_at": "2026-11-13T08:22:56.9378488Z",
+  "source_updated_at": "2026-11-12T07:32:08Z",
   "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
   "proposed_comments": [
     {
@@ -24,9 +24,11 @@
       "line": 956,
       "body": "### [P2] Do not report DNS failure while a configured address is connecting\n\n**Severity:** `medium`\n\nThe Name-to-IP branch starts client connections before attempting DNS. When that DNS lookup fails, the earlier placeholder is still reported as HostNotFound even though the configured address can be usable. RequestMachineSocketStateAsync keeps the first non-NA status for a machine, and Settings treats HostNotFound as terminal. Leave the placeholder neutral when mapped clients were started, while preserving HostNotFound when no mapping exists. Verify an unresolvable mapped peer both while its client is connecting and after it connects, plus an unmapped unresolvable peer.\n\n```suggestion\n                    UpdateTcpSockets(dummyTcp, useName2IP ? SocketStatus.NA : SocketStatus.HostNotFound);\n```",
       "side": "RIGHT",
-      "disposition": "proposed",
+      "disposition": "posted",
       "title": "[P2] Do not report DNS failure while a configured address is connecting",
-      "kind": "inline"
+      "kind": "inline",
+      "posted_at": "11/12/2026 07:32:04",
+      "url": "https://github.com/microsoft/PowerToys/pull/50776#discussion_r4547563541"
     },
     {
       "id": "preserve-hostnotfound",
@@ -41,9 +43,11 @@
       "line": 959,
       "body": "### [P2] Preserve the specific host-not-found diagnostic\n\n**Severity:** `medium`\n\nHostNotFound currently reaches the legacy-app override before the status switch. If the standalone app is also detected, a DNS failure is reported as a local application conflict instead of identifying the invalid peer name. Exclude HostNotFound from the override, just like InvalidKey, so the existing specific message remains reachable. Verify HostNotFound with legacy detection both true and false, and retain the conflict message for a generic timeout.\n\n```suggestion\n            if (status is not (SocketStatus.InvalidKey or SocketStatus.HostNotFound) && IsLegacyMouseWithoutBordersPresent())\n```",
       "side": "RIGHT",
-      "disposition": "proposed",
+      "disposition": "posted",
       "title": "[P2] Preserve the specific host-not-found diagnostic",
-      "kind": "inline"
+      "kind": "inline",
+      "posted_at": "11/12/2026 07:32:05",
+      "url": "https://github.com/microsoft/PowerToys/pull/50776#discussion_r4547563558"
     },
     {
       "id": "connection-attempt-recovery-ownership",
@@ -58,29 +62,14 @@
       "line": 920,
       "body": "### [P2] Keep rollback ownership until the failed attempt is settled\n\n**Severity:** `medium`\n\n**Affected code:** `src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs`: `SubmitConnectionRequestAsync`, `ReportConnectFailure`, `CheckPendingConnectStatus`, and `RestorePreviousSecurityKeyIfNeededAsync`; `src/modules/MouseWithoutBorders/App/Class/Program.cs`: `SettingsSyncHelper.ConnectToMachine` and `RestoreSecurityKey`.\n\n**Problem:** `ConnectToMachine` replaces and saves the local key before the remote connection succeeds. On a terminal socket failure, Settings clears the pending machine and removes the saved previous key before attempting the restore. If connecting to the restore endpoint throws before the command is sent, the catch only logs the failure: the module retains the attempted key, the old-key snapshot has been consumed, and subsequent status checks return immediately because no machine remains pending. Separately, an exception after submitting `ConnectToMachine` reports `keyWasChanged: true` but clears the pending machine without starting recovery, even when the module already applied the new key.\n\n**Why it matters:** After a failed connection attempt, the entered fields remain visible, but the previously working local key can remain replaced. This contradicts the promised restoration of the previous key on failure.\n\n**Suggested change:** Retain an attempt-owned recovery record until restoration is confirmed. Route terminal status failures and ambiguous submission failures through a common failure transition. Keep a failed restore pending for retry or expose an explicit recovery action instead of consuming the only snapshot on dispatch. Associate restoration with its attempt so an older recovery cannot overwrite a newer attempt. The awaited restore RPC is useful, but an exception must not discard recovery ownership.\n\n**Verification:** Start with key K0, submit K1, observe a terminal failure, then make the next restore connection fail before sending its command. After endpoint recovery, verify K0 is restored or an explicit recoverable state remains available. Also cover an accepted connection RPC whose response is lost and a later attempt while recovery is pending. These are acceptance checks for the remedy; this finding is based on the existing source transitions, not a claimed runtime fault-injection result.",
       "side": "RIGHT",
-      "disposition": "proposed",
+      "disposition": "posted",
       "title": "Keep rollback ownership until the failed attempt is settled",
-      "kind": "inline"
+      "kind": "inline",
+      "posted_at": "11/12/2026 07:32:05",
+      "url": "https://github.com/microsoft/PowerToys/pull/50776#discussion_r4547563563"
     }
   ],
-  "actions": [
-    {
-      "requires_confirmation": true,
-      "id": "post-review-50776-a20acde9",
-      "label": "Post 3 inline review comments",
-      "note": "Two literal suggestions and one recovery-ownership concern.",
-      "type": "post_review",
-      "review": {
-        "comment_ids": [
-          "mapped-dns-placeholder",
-          "preserve-hostnotfound",
-          "connection-attempt-recovery-ownership"
-        ],
-        "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
-        "event": "COMMENT"
-      }
-    }
-  ],
+  "actions": [],
   "validation": {
     "suggestion_patch": {
       "head_sha": "a20acde910fc5ed1959eab8e614e1f79c6e5fb66",
