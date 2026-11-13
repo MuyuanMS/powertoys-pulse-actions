@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-13T11:56:14.4595007+00:00",
+  "generated_at": "2026-11-13T12:00:45.1548212+00:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 233,
     "open_issues": 11190,
     "community": 10309,
-    "artifacts": 1921
+    "artifacts": 1923
   },
   "impact": {
     "as_of": "2026-11-13T19:45:14.9150857+08:00",
@@ -2018,7 +2018,9 @@ window.BOARD_INDEX = {
     52032,
     52043,
     52046,
-    52047
+    52047,
+    52023,
+    52045
   ],
   "items": [
     {
@@ -19435,13 +19437,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
+      "track": "fix",
+      "stage": "triage",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -20061,13 +20063,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "track": "fix",
+      "stage": "triage",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-09T15:57:54Z",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
