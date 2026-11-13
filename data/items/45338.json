@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 45338,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Installer freezes on 'Processing: Closing PowerToys application' and eventually aborts",
+  "url": "https://github.com/microsoft/PowerToys/issues/45338",
+  "generated_at": "2026-11-13T16:29:44Z",
+  "evaluated_at": "2026-11-13T16:29:44Z",
   "source_updated_at": "2026-05-12T23:31:15Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Installer stalls while closing PowerToys; the original reporter later linked their failure to a damaged command processor AutoRun value.",
+  "labels": [
+    "Issue-Bug",
+    "Area-Setup/Install",
+    "Area-Quality",
+    "Needs-Triage",
+    "Severity-Medium",
+    "Product-General"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T23:31:15Z",
+    "evaluated_at": "2026-11-13T16:29:44Z",
+    "rationale": "The scenario requires a discriminating comparison before the failing boundary can be established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The 0.97.1 installer stalled at Closing PowerToys application; the supplied excerpt shows 0x80070642 after cancellation.",
+      "The original reporter reported a corrupted per-user Command Processor AutoRun value and successful installation after clearing it; another participant installed machine-wide using SYSTEM, and a later participant reported the symptom on a 0.97-to-0.99.1 upgrade.",
+      "Inspected installer/PowerToysSetupVNext/PowerToys.wxs and terminate_powertoys.cmd: the chain invokes a CMD package that runs taskkill in a bounded loop. The excerpt is a cancellation error, not proof of the initial hang cause."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T23:31:15Z"
-  }
+    "recommended_action": "Reproduce the reported sequence on a current build and isolate the failing boundary."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction or supported behavior investigation may be applicable after resolving the identified uncertainty.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate installer shutdown with CMD AutoRun",
+      "root_cause": "A problematic CMD AutoRun value may interfere with the shutdown package, as reported, but another participant’s matching symptom may have a different cause.",
+      "plan": [
+        "Reproduce in a disposable Windows VM with and without a deliberately problematic test-user CMD AutoRun setting.",
+        "Trace bundle shutdown-package invocation and distinguish startup interference from a PowerToys process that fails to close.",
+        "If confirmed, make the shutdown path resilient to user CMD startup configuration while preserving graceful termination.",
+        "Add focused regression coverage for normal and problematic AutoRun and an unresponsive process."
+      ],
+      "verification": [
+        "Installation proceeds in the confirmed AutoRun scenario without modifying user registry settings.",
+        "Running PowerToys receives its intended graceful shutdown and unrelated installation paths remain intact."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The reported failure boundary and current behavior are not yet established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Installer stalls while closing PowerToys; the original reporter later linked their failure to a damaged command processor AutoRun value.",
+    "known_information": [
+      "The 0.97.1 installer stalled at Closing PowerToys application; the supplied excerpt shows 0x80070642 after cancellation.",
+      "The original reporter reported a corrupted per-user Command Processor AutoRun value and successful installation after clearing it; another participant installed machine-wide using SYSTEM, and a later participant reported the symptom on a 0.97-to-0.99.1 upgrade."
+    ],
+    "inferences": [
+      "A problematic CMD AutoRun value may interfere with the shutdown package, as reported, but another participant’s matching symptom may have a different cause."
+    ],
+    "initial_investigation": [
+      "Inspected installer/PowerToysSetupVNext/PowerToys.wxs and terminate_powertoys.cmd: the chain invokes a CMD package that runs taskkill in a bounded loop. The excerpt is a cancellation error, not proof of the initial hang cause.",
+      "Closed unmerged PR #48658 proposed changes for a Windows Sandbox shutdown hang; it does not establish a merged fix for the reported AutoRun case. No matching open AutoRun installer PR was found."
+    ],
+    "analysis": "The report and current source do not establish a root cause or a covering fix; distinguish observed behavior from hypothesis.",
+    "information_gaps": [
+      {
+        "information": "Whether a controlled non-default command processor AutoRun reproduces the installer stall on a current build and where execution blocks.",
+        "why_needed": "Distinguishes the possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer uses a disposable test user or VM to compare normal and intentionally failing AutoRun behavior without altering an existing user profile.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate installer shutdown with cmd autorun"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate installer shutdown with cmd autorun",
+      "reproduce": {
+        "title": "Investigate installer shutdown with CMD AutoRun",
+        "module": "PowerToys installer",
+        "version_requirement": "Use the current PowerToys release and compare with the reported version if practical.",
+        "prerequisites": [
+          "Use a suitable Windows test environment and preserve existing user data and settings."
+        ],
+        "setup": [
+          "Use a disposable Windows VM and test user with PowerToys installed; preserve the normal command processor configuration."
+        ],
+        "steps": [
+          "1. Run an upgrade with the default test-user CMD startup configuration and record the Closing PowerToys step.",
+          "2. In the disposable test profile only, set up a controlled failing or blocking CMD AutoRun command and run the same upgrade.",
+          "3. Compare bundle and shutdown-package progress, then test with a running process that does not promptly close.",
+          "4. Restore the test profile and confirm the installer did not change the existing user configuration."
+        ],
+        "expected_result": "The shutdown step completes or reports a bounded actionable failure without being blocked by unrelated user CMD startup commands."
+      }
+    }
+  ]
 }

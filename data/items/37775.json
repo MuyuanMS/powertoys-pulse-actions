@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 37775,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "FancyZones High GPU usage in case any Window is set to \"Always on Top\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/37775",
+  "generated_at": "2026-11-13T16:29:44Z",
+  "evaluated_at": "2026-11-13T16:29:44Z",
   "source_updated_at": "2026-05-19T15:48:13Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "FancyZones reportedly uses substantial GPU while idle after window manipulation when a topmost window is present.",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-19T15:48:13Z",
+    "evaluated_at": "2026-11-13T16:29:44Z",
+    "rationale": "The scenario requires a discriminating comparison before the failing boundary can be established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.89.0 the reporter saw 15–20% GPU after resizing a window with Task Manager set Always on Top, and supplied a screenshot.",
+      "The reporter answered the maintainer’s GPU question: ASUS Zephyrus G14 with GTX 1650 Ti; a maintainer could not reproduce on an Nvidia 3060.",
+      "Other participants report continued usage and share a restart workaround; a later participant supplied a clip.",
+      "Inspected src/modules/fancyzones/FancyZonesLib/WorkArea.cpp: SetWorkAreaWindowAsTopmost calls SetWindowPos relative to the dragged window or HWND_TOPMOST; this alone does not establish a GPU cause."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-19T15:48:13Z"
-  }
+    "recommended_action": "Reproduce the reported sequence on a current build and isolate the failing boundary."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction or supported behavior investigation may be applicable after resolving the identified uncertainty.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate FancyZones idle GPU usage with topmost windows",
+      "root_cause": "Overlay composition or z-order interaction could contribute, but the reported correlation is not a demonstrated root cause.",
+      "plan": [
+        "Reproduce the supplied sequence on a current build and compare with no topmost window.",
+        "Measure GPU activity and overlay/window lifecycle after dragging or resizing, including different GPU hardware where available.",
+        "Fix the demonstrated rendering or lifecycle cause without regressing snapping and z-order.",
+        "Add focused regression coverage for the affected lifecycle and verify the GPU idle behavior manually."
+      ],
+      "verification": [
+        "GPU usage returns to the idle baseline after a completed operation.",
+        "Dragging, snapping and topmost windows continue to behave correctly."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The reported failure boundary and current behavior are not yet established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones reportedly uses substantial GPU while idle after window manipulation when a topmost window is present.",
+    "known_information": [
+      "On 0.89.0 the reporter saw 15–20% GPU after resizing a window with Task Manager set Always on Top, and supplied a screenshot.",
+      "The reporter answered the maintainer’s GPU question: ASUS Zephyrus G14 with GTX 1650 Ti; a maintainer could not reproduce on an Nvidia 3060.",
+      "Other participants report continued usage and share a restart workaround; a later participant supplied a clip."
+    ],
+    "inferences": [
+      "Overlay composition or z-order interaction could contribute, but the reported correlation is not a demonstrated root cause."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/fancyzones/FancyZonesLib/WorkArea.cpp: SetWorkAreaWindowAsTopmost calls SetWindowPos relative to the dragged window or HWND_TOPMOST; this alone does not establish a GPU cause.",
+      "Reviewed linked #42709, closed as duplicate of this issue, and related #35761 (closed, with later GPU reports); neither proves a covering fix. An open-PR search for FancyZones GPU found no matching title."
+    ],
+    "analysis": "The report and current source do not establish a root cause or a covering fix; distinguish observed behavior from hypothesis.",
+    "information_gaps": [
+      {
+        "information": "Whether high idle GPU persists on a current build and which FancyZones rendering or window activity coincides with it.",
+        "why_needed": "Distinguishes the possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer compares GPU activity and FancyZones window state with and without a topmost window after manipulating a window.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate fancyzones idle gpu usage with topmost windows"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate fancyzones idle gpu usage with topmost windows",
+      "reproduce": {
+        "title": "Investigate FancyZones idle GPU usage with topmost windows",
+        "module": "FancyZones",
+        "version_requirement": "Use the current PowerToys release and compare with the reported version if practical.",
+        "prerequisites": [
+          "Use a suitable Windows test environment and preserve existing user data and settings."
+        ],
+        "setup": [
+          "Enable FancyZones on a Windows test machine; open Task Manager with its Always on Top option."
+        ],
+        "steps": [
+          "1. Measure FancyZones GPU usage at idle before interacting with windows.",
+          "2. Resize or zone a window while Task Manager is topmost, then release and wait for idle.",
+          "3. Compare GPU activity after disabling Task Manager Always on Top and after a FancyZones restart.",
+          "4. If reproducible, inspect FancyZones overlay and window activity and compare a second GPU if available."
+        ],
+        "expected_result": "FancyZones returns to its normal idle GPU baseline after a completed window operation."
+      }
+    }
+  ]
 }
