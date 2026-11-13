@@ -1,33 +1,123 @@
 {
+  "schemaVersion": 5,
   "number": 39783,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-30T18:47:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triage",
+  "title": "Command Palette window launch and focus issues when using custom shortcut key",
+  "url": "https://github.com/microsoft/PowerToys/issues/39783",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.563Z",
+  "evaluated_at": "2026-11-13T11:44:36.563Z",
+  "source_updated_at": "2026-11-07T13:57:55Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The latest report gives current configuration, the low-level hook setting, and a behind-window symptom, while explicitly noting that automated tests were inconclusive and no A/B test was done. The hotkey-to-window activation boundary needs a real reproduction.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue originally reports Win+Space requiring the low-level hook and opening behind other windows.",
+      "A recent comment reports the same behind-window symptom on 0.102.3001 with Alt+Space and low-level hook enabled.",
+      "The commenter says automated Alt+Space tests were inconclusive and no A/B test has isolated the trigger.",
+      "The latest report supplies OS/build, exact shortcut configuration, low-level-hook state, and explicitly distinguishes observation from inconclusive automated tests.",
+      "Command hotkey configuration is stored and updated here. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/HotkeyManager.cs",
+      "The summon path sends a ShowWindowMessage when the message requests window presentation. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ShellViewModel.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-30T18:47:32Z"
-  }
+    "recommended_action": "Reproduce the issue-specific scenario: Foreground Command Palette after a custom low-level hotkey",
+    "evaluated_at": "2026-11-13T11:44:36.563Z",
+    "source_updated_at": "2026-11-07T13:57:55Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A likely activation-path issue is supported by a concrete user observation, but the report does not establish whether the shortcut event or foreground activation fails."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Foreground Command Palette after a custom low-level hotkey",
+      "root_cause": "Hypothesis: the custom low-level hotkey is received, but the Command Palette summon path does not reliably foreground/activate its window when another application owns focus.",
+      "plan": [
+        "Reproduce the custom Alt+Space case over a foreground application and distinguish hotkey delivery from ShowWindow/foreground activation.",
+        "Correct the activation handoff if the hotkey path is confirmed to summon without foregrounding.",
+        "Add a regression that verifies the palette is foreground and keyboard-focused when launched by a custom shortcut."
+      ],
+      "verification": [
+        "Alt+Space opens the palette in front of Chrome/Camtasia and accepts typing immediately.",
+        "The same configured shortcut does not trigger the foreground application's menu instead."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The latest report gives current configuration, the low-level hook setting, and a behind-window symptom, while explicitly noting that automated tests were inconclusive and no A/B test was done. The hotkey-to-window activation boundary needs a real reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Foreground Command Palette after a custom low-level hotkey",
+    "known_information": [
+      "The issue originally reports Win+Space requiring the low-level hook and opening behind other windows.",
+      "A recent comment reports the same behind-window symptom on 0.102.3001 with Alt+Space and low-level hook enabled.",
+      "The commenter says automated Alt+Space tests were inconclusive and no A/B test has isolated the trigger.",
+      "The latest report supplies OS/build, exact shortcut configuration, low-level-hook state, and explicitly distinguishes observation from inconclusive automated tests."
+    ],
+    "inferences": [
+      "Foreground activation may fail after hotkey receipt; the current evidence does not establish the event-delivery or window-activation branch."
+    ],
+    "analysis": "The report is more precise than a generic “hotkey does not work” case. Keep event delivery and foreground activation as separate observations; do not count the inconclusive automated tests as a reproduction.",
+    "initial_investigation": [
+      "Command hotkey configuration is stored and updated here. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/HotkeyManager.cs",
+      "The summon path sends a ShowWindowMessage when the message requests window presentation. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ShellViewModel.cs"
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the same custom Alt+Space shortcut opens the palette in front of the active app with the low-level hook disabled, keeping the other reported settings unchanged.",
+        "why_needed": "The recent comment reports no A/B test, and this comparison isolates hook-dependent delivery from foreground-window activation.",
+        "how_to_collect": "Repeat the same Alt+Space invocation over the same foreground application with the low-level hook enabled and disabled; report whether the palette appears and receives focus.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Foreground Command Palette after a custom low-level hotkey",
+      "reproduce": {
+        "title": "Foreground Command Palette after a custom low-level hotkey",
+        "module": "Command Palette",
+        "version_requirement": "0.102.3001 or newer",
+        "prerequisites": [
+          "Windows 11 x64 with Command Palette enabled and PowerToys Run disabled.",
+          "Use the reported custom Alt+Space shortcut, low-level keyboard hook enabled, and foreground Chrome or Camtasia."
+        ],
+        "setup": [
+          "Keep fullscreen/busy-state suppression disabled and Command Palette Dock/compact mode disabled, matching the latest report."
+        ],
+        "steps": [
+          "With the foreground application active, invoke Command Palette using Alt+Space during ordinary keyboard use.",
+          "Check whether the palette appears above the application and receives keyboard focus.",
+          "Repeat with the low-level hook setting disabled if the shortcut remains available; record separately whether the shortcut is received and whether the palette is foreground."
+        ],
+        "expected_result": "The palette appears above the foreground application and accepts typing immediately; an inconclusive invocation is not counted as reproduction."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Compare Command Palette hook setting",
+      "comment": {
+        "target": "issue",
+        "number": 39783,
+        "body": "Thanks for the detailed Alt+Space setup. You noted that an enabled/disabled comparison has not yet been done. Could you repeat the same shortcut over the same foreground application with the low-level hook enabled and disabled, keeping the other settings unchanged, and report whether the palette appears and receives focus in each case?"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Foreground Command Palette after a custom low-level hotkey"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "author": "shibaku",
+  "authorAssociation": "NONE",
+  "comments": 3
 }

@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 28932,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-08-06T06:34:07Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triage",
+  "title": "FancyZones briefly slows down Windows after switching virtual desktops",
+  "url": "https://github.com/microsoft/PowerToys/issues/28932",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.297Z",
+  "evaluated_at": "2026-11-13T11:44:36.297Z",
+  "source_updated_at": "2026-11-11T02:45:31Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The reporter supplied a concrete stale Calculator frame scenario, and the pinned source confirms a bounded retry loop that can block FancyZones history lookups. The exact safe stale-frame handling still needs maintainer validation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter describes 1–3 seconds of delayed keyboard response after desktop switches and identifies a suspended CalculatorApp.exe with a stale frame window.",
+      "The reporter says terminating the suspended Calculator process clears the symptom.",
+      "The latest issue comment names get_process_path_waiting_uwp and explains the stale frame / no-child-window sequence.",
+      "The helper retries up to 29 times with 5 ms sleeps while the resolved process remains ApplicationFrameHost.exe. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/common/utils/process_path.h",
+      "AppZoneHistory calls the helper in multiple history operations, including GetAppLastZoneIndexSet. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-08-06T06:34:07Z"
-  }
+    "recommended_action": "Reproduce the issue-specific scenario: Avoid repeated waits on stale suspended UWP frames",
+    "evaluated_at": "2026-11-13T11:44:36.297Z",
+    "source_updated_at": "2026-11-11T02:45:31Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted fix direction is supported by the reporter's specific scenario and the current call path; no implementation or full design was performed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid repeated waits on stale suspended UWP frames",
+      "root_cause": "Hypothesis: a stale ApplicationFrameHost frame for a suspended UWP app keeps the process-path helper retrying on a latency-sensitive FancyZones path; repeated history lookups magnify the desktop-switch delay.",
+      "plan": [
+        "Avoid synchronous repeated process-path waits when a stale UWP frame has no live child window, or reuse a bounded resolution result across the related history operations.",
+        "Add a focused regression for a suspended Calculator frame during a virtual-desktop switch; preserve normal UWP resolution and exclusion behavior."
+      ],
+      "verification": [
+        "With the stale suspended-frame scenario, desktop switching and immediate keyboard input should no longer pause for the repeated lookup interval.",
+        "Verify active UWP windows still resolve to their application process and retain FancyZones history."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The reporter supplied a concrete stale Calculator frame scenario, and the pinned source confirms a bounded retry loop that can block FancyZones history lookups. The exact safe stale-frame handling still needs maintainer validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Avoid repeated waits on stale suspended UWP frames",
+    "known_information": [
+      "The reporter describes 1–3 seconds of delayed keyboard response after desktop switches and identifies a suspended CalculatorApp.exe with a stale frame window.",
+      "The reporter says terminating the suspended Calculator process clears the symptom.",
+      "The latest issue comment names get_process_path_waiting_uwp and explains the stale frame / no-child-window sequence."
+    ],
+    "inferences": [
+      "The stale-frame path is a plausible contributor to the broader desktop-switch delay; this has not been independently reproduced."
+    ],
+    "analysis": "The report is unusually specific and matches a blocking retry in the pinned source. Keep the fix narrow: avoid repeated waits for a stale frame without changing resolution for active UWP windows.",
+    "initial_investigation": [
+      "The helper retries up to 29 times with 5 ms sleeps while the resolved process remains ApplicationFrameHost.exe. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/common/utils/process_path.h",
+      "AppZoneHistory calls the helper in multiple history operations, including GetAppLastZoneIndexSet. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp"
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the same delayed keyboard response occurs while Calculator is suspended with its stale frame, and whether it stops immediately after terminating Calculator.",
+        "why_needed": "This distinguishes the reported stale-frame trigger from a general desktop-switch delay before maintainers change the shared process-path helper.",
+        "how_to_collect": "Repeat one desktop switch with Calculator suspended, then terminate the suspended process and repeat; report the two observed delays and the PowerToys version.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Avoid repeated waits on stale suspended UWP frames",
+      "reproduce": {
+        "title": "Avoid repeated waits on stale suspended UWP frames",
+        "module": "FancyZones",
+        "version_requirement": "Current stable; issue originally reported on 0.74.0, with the latest discussion describing the same stale-frame scenario.",
+        "prerequisites": [
+          "Windows 11 with FancyZones enabled and at least two virtual desktops.",
+          "Calculator is left suspended with a stale ApplicationFrameHost frame and no live child window."
+        ],
+        "setup": [
+          "Open Calculator, then leave it suspended in the background while its stale frame window remains. Use Task Manager to confirm the suspended state."
+        ],
+        "steps": [
+          "Switch virtual desktops repeatedly with Ctrl+Win+Left/Right.",
+          "Immediately type into a focused application after a desktop switch.",
+          "Repeat after terminating the suspended Calculator process to compare the reporter's workaround."
+        ],
+        "expected_result": "Desktop switching and keyboard input remain responsive with the suspended frame present; terminating Calculator should not be required."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm the stale-frame input-delay sequence",
+      "comment": {
+        "target": "issue",
+        "number": 28932,
+        "body": "Thanks for the detailed stale Calculator frame report. To distinguish that trigger from general desktop-switch latency, could you compare one switch while Calculator is suspended with the stale frame against one immediately after terminating Calculator, and report whether keyboard response is delayed in each case and your PowerToys version?"
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Avoid repeated waits on stale suspended UWP frames"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones"
+  ],
+  "assignees": [],
+  "author": "Avi0",
+  "authorAssociation": "NONE",
+  "comments": 16
 }

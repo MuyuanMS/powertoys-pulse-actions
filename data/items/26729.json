@@ -1,60 +1,124 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 26729,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-04-23T15:55:28Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/26729",
+  "stage": "triage",
   "title": "Fancy Zones just mixed up the monitors ",
-  "author": "Wheathead",
-  "authorAssociation": "NONE",
+  "url": "https://github.com/microsoft/PowerToys/issues/26729",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.452Z",
+  "evaluated_at": "2026-11-13T11:44:36.452Z",
+  "source_updated_at": "2026-11-10T00:15:28Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The latest report confirms repeatable layout swaps after sleep on two monitors with different orientations and custom layouts. The monitor identity/reconciliation path is a plausible area, but no current runtime capture proves where the identity changes.",
+    "evidence": [
+      "The latest comment says the issue is consistent on two monitors, one horizontal and one vertical, each with a custom layout.",
+      "After sleep/resume the layouts swap, and reopening the editor and reassigning them is the current workaround.",
+      "The latest comment reports PowerToys v0.102.3101.0.",
+      "The latest issue comment gives a current-version sleep/resume scenario and a repeatable mixed-orientation monitor setup.",
+      "Monitor utilities provide the display identity boundary. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/MonitorUtils.cpp",
+      "Work-area configuration maps monitor work areas and saved layout state. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp"
+    ],
+    "recommended_action": "Reproduce the issue-specific scenario: Reconcile per-monitor layouts after display wake",
+    "evaluated_at": "2026-11-13T11:44:36.452Z",
+    "source_updated_at": "2026-11-10T00:15:28Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The fix direction is based on the current two-monitor sleep/wake report and the per-work-area monitor mapping; maintainers should confirm identity transitions before implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reconcile per-monitor layouts after display wake",
+      "root_cause": "Hypothesis: after sleep/wake re-enumerates the mixed-orientation displays, FancyZones associates saved work-area layouts with a changed monitor identity/order and restores them to the opposite display.",
+      "plan": [
+        "Compare stable monitor device identities and FancyZones work-area IDs before sleep and after wake.",
+        "If identity/order changes, reconcile saved layouts using stable display identity rather than transient enumeration order.",
+        "Add a regression for two differently oriented monitors with distinct custom layouts across sleep/resume."
+      ],
+      "verification": [
+        "After repeated sleep/resume cycles, each monitor retains its own assigned layout.",
+        "Changing display enumeration order does not swap layout assignments."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The latest report confirms repeatable layout swaps after sleep on two monitors with different orientations and custom layouts. The monitor identity/reconciliation path is a plausible area, but no current runtime capture proves where the identity changes."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Reconcile per-monitor layouts after display wake",
+    "known_information": [
+      "The latest comment says the issue is consistent on two monitors, one horizontal and one vertical, each with a custom layout.",
+      "After sleep/resume the layouts swap, and reopening the editor and reassigning them is the current workaround.",
+      "The latest comment reports PowerToys v0.102.3101.0.",
+      "The latest issue comment gives a current-version sleep/resume scenario and a repeatable mixed-orientation monitor setup."
+    ],
+    "inferences": [
+      "Display re-enumeration and per-monitor identity reconciliation are plausible but unconfirmed."
+    ],
+    "analysis": "The current report is a useful reproduction scenario. Focus investigation on mapping before and after resume; do not ask for a generic bug report in place of that comparison.",
+    "initial_investigation": [
+      "Monitor utilities provide the display identity boundary. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/MonitorUtils.cpp",
+      "Work-area configuration maps monitor work areas and saved layout state. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp"
+    ],
+    "information_gaps": [
+      {
+        "information": "A screenshot or brief description of which physical monitor receives each layout immediately before sleep and after resume, including whether the display arrangement changes.",
+        "why_needed": "This checks whether the saved layout association follows the physical display or transient enumeration/order after wake.",
+        "how_to_collect": "Capture the FancyZones layout assignment on both displays before sleep and after resume, and note any Windows display rearrangement.",
+        "evidence_type": "screenshot_image"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reconcile per-monitor layouts after display wake",
+      "reproduce": {
+        "title": "Reconcile per-monitor layouts after display wake",
+        "module": "FancyZones",
+        "version_requirement": "0.102.3101.0 or newer",
+        "prerequisites": [
+          "Two monitors with different orientations.",
+          "FancyZones enabled with distinct custom layouts assigned to each display."
+        ],
+        "setup": [
+          "Assign one custom layout to the horizontal display and a different custom layout to the vertical display."
+        ],
+        "steps": [
+          "Confirm each display shows its intended layout.",
+          "Put the computer to sleep and resume it.",
+          "Reopen the FancyZones editor and check whether the layouts remain associated with the same physical displays.",
+          "Repeat once with display enumeration/order noted before and after resume."
+        ],
+        "expected_result": "Each physical monitor retains its own custom layout after wake."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm monitor layout after resume",
+      "comment": {
+        "target": "issue",
+        "number": 26729,
+        "body": "Thanks for confirming the mixed-orientation, two-monitor reproduction on 0.102.3101. Could you share a screenshot of the FancyZones layout assignment on each physical display immediately before sleep and after resume, and note whether Windows changes the display arrangement? This will help distinguish a layout restore error from a changed monitor/work-area mapping."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Reconcile per-monitor layouts after display wake"
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Priority-2"
   ],
-  "comments": 22,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
-    "evidence": [
-      "Labels: Issue-Bug, Product-FancyZones, Priority-2",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
-    ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-04-23T15:55:28Z"
-  },
-  "actions": [
-    {
-      "id": "request-info-26729",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 26729,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "assignees": [],
+  "author": "Wheathead",
+  "authorAssociation": "NONE",
+  "comments": 24
 }

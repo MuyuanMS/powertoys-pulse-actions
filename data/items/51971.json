@@ -1,107 +1,125 @@
 {
-  "summary": "Service-mode startup and pairing failure needs phase-specific tracing.",
-  "stage": "triaged",
+  "schemaVersion": 5,
+  "number": 51971,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "Mouse Without Borders: with \"Use Service\" enabled, SYSTEM instances start but never open TCP 15100/15101",
+  "url": "https://github.com/microsoft/PowerToys/issues/51971",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.46Z",
+  "evaluated_at": "2026-11-13T11:44:36.46Z",
+  "source_updated_at": "2026-11-09T22:55:11Z",
   "judgment": {
-    "status": "reproducible",
-    "rationale": "Service-mode startup and pairing failure needs phase-specific tracing. Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "status": "actionable_design",
+    "rationale": "The reporter supplies a current reproduction, a tested Connect workaround, and a code-level explanation. Pinned source confirms service-mode DPAPI key handling and that toggling UseService saves the setting without an evident key migration; safe transition behavior needs design review.",
     "evidence": [
-      "Reporter supplies SYSTEM/normal log comparisons and a normal-mode control on 0.102.3101/0.102.2933.",
-      "New independent reply reproduces 0.102.3101; listeners occasionally exist but pairing still fails, and switching to an unconnected machine loses usable input.",
-      "Service Stopped with exit code 0 is consistent with its launch-and-exit worker and is not proof of launch failure.",
-      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs: screen/session initialization precedes socket setup; trace it with FrmScreen.HelperTimer_Tick, service launch and pairing IPC. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs"
+      "The reporter reproduced on 0.102.3101 and describes a per-user install with Use Service enabled.",
+      "After the transition the service instances have no TCP listeners until Connect is completed with the existing key.",
+      "The reporter tested Connect as a workaround; it restored listeners within about a second.",
+      "The latest issue comment includes a numbered setup, observed missing listeners, tested recovery, and a proposed security-preserving transition.",
+      "The codec encrypts service-mode keys using the SYSTEM identity and rejects values without the expected encrypted prefix. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/DpapiPairingKeyCodec.cs",
+      "UseService persists the mode setting; the pairing-key codec is selected for the executing identity. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/Setting.cs"
     ],
-    "recommended_action": "Reproduce: Service-mode startup and pairing failure needs phase-specific tracing",
-    "evaluated_at": "2026-11-09T02:20:01.355Z",
-    "source_updated_at": "2026-11-08T12:46:35Z"
+    "recommended_action": "Reproduce the issue-specific scenario: Make service-mode pairing-key transition explicit and recoverable",
+    "evaluated_at": "2026-11-13T11:44:36.46Z",
+    "source_updated_at": "2026-11-09T22:55:11Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "Service-mode startup and pairing failure needs phase-specific tracing. Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct. This is an initial investigation direction, not a runtime-confirmed diagnosis."
+    "rationale": "The issue is well grounded, but migration must preserve the service-mode security boundary and must not silently expose a key to standard users."
   },
   "proposed_fixes": [
     {
-      "title": "Service-mode startup and pairing failure needs phase-specific tracing",
-      "root_cause": "Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct.",
+      "title": "Make service-mode pairing-key transition explicit and recoverable",
+      "root_cause": "When service mode uses the SYSTEM-bound DPAPI codec, an existing normal-mode plaintext pairing key is not readable by the service instance. Toggling UseService alone can leave it without a usable key, so it opens no pairing sockets until Connect supplies a valid key.",
       "plan": [
-        "Instrument initialization and desktop-active transitions on SYSTEM default/winlogon instances.",
-        "Distinguish no listeners from listeners with rejected SettingsSync/pairing.",
-        "Keep input local when no usable target is connected and fix the confirmed startup/policy boundary."
+        "Keep the SYSTEM identity protection boundary; never silently accept a normal-user plaintext key in the secure-desktop service.",
+        "Add an explicit, permission-checked pairing transition that lets the service re-encrypt an existing key when authorized, and make the unavailable-key state visible in Settings.",
+        "Ensure the service does not install input hooks or allow switching when no usable pairing key is configured; add tests for both service-mode transitions."
       ],
       "verification": [
-        "Service mode establishes a usable connection and supports its intended desktop transitions.",
-        "A failed/disconnected target cannot leave both machines without input."
+        "Pair normally, enable Use Service as an administrator, restart, and verify the service listens on 15100/15101 with the existing key.",
+        "Disable service mode and verify the inverse transition is explicit and recoverable.",
+        "A non-elevated toggle cannot silently transfer a plaintext user key into the secure-desktop service."
       ],
       "confidence": {
-        "score": 65,
+        "score": 82,
         "level": "yellow",
-        "rationale": "Service-mode startup and pairing failure needs phase-specific tracing. Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct. This is an initial investigation direction, not a runtime-confirmed diagnosis."
+        "rationale": "The reporter supplies a current reproduction, a tested Connect workaround, and a code-level explanation. Pinned source confirms service-mode DPAPI key handling and that toggling UseService saves the setting without an evident key migration; safe transition behavior needs design review."
       }
     }
   ],
   "issue_context": {
-    "summary": "Service-mode startup and pairing failure needs phase-specific tracing.",
+    "summary": "Make service-mode pairing-key transition explicit and recoverable",
     "known_information": [
-      "Reporter supplies SYSTEM/normal log comparisons and a normal-mode control on 0.102.3101/0.102.2933.",
-      "New independent reply reproduces 0.102.3101; listeners occasionally exist but pairing still fails, and switching to an unconnected machine loses usable input.",
-      "Service Stopped with exit code 0 is consistent with its launch-and-exit worker and is not proof of launch failure."
+      "The reporter reproduced on 0.102.3101 and describes a per-user install with Use Service enabled.",
+      "After the transition the service instances have no TCP listeners until Connect is completed with the existing key.",
+      "The reporter tested Connect as a workaround; it restored listeners within about a second.",
+      "The latest issue comment includes a numbered setup, observed missing listeners, tested recovery, and a proposed security-preserving transition."
     ],
     "inferences": [
-      "Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct."
+      "The code path and report support a mode-specific pairing-key incompatibility; an authorized migration must retain the intended SYSTEM isolation."
     ],
-    "analysis": "Service-mode startup and pairing failure needs phase-specific tracing. Hypothesis: service-mode initialization or pairing policy prevents usable connections; no-socket and rejected-pairing cases may be distinct. This is an initial investigation direction, not a runtime-confirmed diagnosis.",
+    "analysis": "The report's proposed direction is consistent with the key codec and mode toggle, but do not weaken the DPAPI boundary. A maintainer can verify the exact failed transition using the supplied scenario.",
     "initial_investigation": [
-      "Source at ba946c9885d189dda9b40e2990c5cbf3b4835bbc: src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs: screen/session initialization precedes socket setup; trace it with FrmScreen.HelperTimer_Tick, service launch and pairing IPC. https://github.com/microsoft/PowerToys/blob/ba946c9885d189dda9b40e2990c5cbf3b4835bbc/src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs",
-      "Read the full live issue body, all comment pages and relevant timeline events; reassessed labels, ownership and prior artifacts against activity through 2026-11-08T12:46:35Z. No runtime reproduction or implementation is claimed."
+      "The codec encrypts service-mode keys using the SYSTEM identity and rejects values without the expected encrypted prefix. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/DpapiPairingKeyCodec.cs",
+      "UseService persists the mode setting; the pairing-key codec is selected for the executing identity. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/Setting.cs"
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Whether disabling Use Service and restarting restores the pre-existing normal-mode pairing without pressing Connect, after the service-mode failure has been observed.",
+        "why_needed": "This verifies whether the key transition is one-way or whether the service mode simply lacks a usable key while enabled.",
+        "how_to_collect": "After reproducing the missing listeners in service mode, disable Use Service, restart, and check pairing before using Connect.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
   "actions": [
     {
-      "id": "51971-reproduce",
       "type": "reproduce",
-      "label": "Reproduce: Service-mode startup and pairing failure needs phase-specific tracing",
-      "primary": true,
+      "label": "Make service-mode pairing-key transition explicit and recoverable",
       "reproduce": {
-        "title": "Reproduce: Service-mode startup and pairing failure needs phase-specific tracing",
+        "title": "Make service-mode pairing-key transition explicit and recoverable",
         "module": "Mouse Without Borders",
-        "version_requirement": "Compare the reported build with the latest stable release on a controlled test account.",
+        "version_requirement": "0.102.3101.0 or newer",
         "prerequisites": [
-          "Use non-sensitive test assets and preserve the current module configuration."
+          "Two or more Windows PCs with Mouse Without Borders paired in normal mode.",
+          "An administrator-capable test machine; do not use a production secure-desktop setup."
         ],
-        "setup": [],
+        "setup": [
+          "Confirm normal-mode peers connect before changing the service option."
+        ],
         "steps": [
-          "1. Confirm normal-mode pairing on two test PCs, then enable service mode and restart.",
-          "2. Record SYSTEM startup phase, listeners and pairing verification separately, using existing supplied logs as the baseline.",
-          "3. With disposable test machines, check disconnected-target switching and verify recovery without changing service security."
+          "Run PowerToys as administrator and enable Use Service on one paired machine.",
+          "Restart PowerToys and wait three minutes.",
+          "Check whether TCP 15100/15101 are listening and whether the peer remains paired.",
+          "Use Connect with the existing key and verify whether listeners and connectivity recover."
         ],
-        "expected_result": "Service mode establishes a usable connection and supports its intended desktop transitions. A failed/disconnected target cannot leave both machines without input.",
-        "attachment_urls": []
+        "expected_result": "The current key remains usable through an authorized transition, or Settings clearly requests the required pairing action without silently losing local input."
       }
     },
     {
-      "id": "51971-design",
+      "type": "request_info",
+      "label": "Confirm service-mode key transition",
+      "comment": {
+        "target": "issue",
+        "number": 51971,
+        "body": "Thanks for the detailed service-mode reproduction and the Connect workaround. After observing the missing listeners with Use Service enabled, could you disable Use Service and restart without pressing Connect, then confirm whether the original normal-mode pairing returns? This distinguishes a service-only key incompatibility from a pairing state that is lost across the transition."
+      }
+    },
+    {
       "type": "approve_design",
-      "label": "Review Service-mode startup and pairing failure needs phase-specific tracing",
-      "confirm": true,
-      "note": "Qualified lightweight investigation direction, not an implementation-grade approved design; resolve the stated uncertainty before implementation."
+      "label": "Approve lightweight direction: Make service-mode pairing-key transition explicit and recoverable"
     }
   ],
-  "schemaVersion": 5,
-  "number": 51971,
-  "kind": "issue",
-  "repository": "microsoft/PowerToys",
-  "url": "https://github.com/microsoft/PowerToys/issues/51971",
-  "title": "Mouse Without Borders: with \"Use Service\" enabled, SYSTEM instances start but never open TCP 15100/15101",
-  "track": "fix",
-  "evaluated_at": "2026-11-09T02:20:01.355Z",
-  "source_updated_at": "2026-11-08T12:46:35Z",
-  "generated_at": "2026-11-09T02:20:01.355Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "pending_author": false,
-  "owes": "us"
+  "author": "sergiodanielale",
+  "authorAssociation": "NONE",
+  "comments": 2
 }

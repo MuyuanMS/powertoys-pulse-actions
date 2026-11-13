@@ -1,96 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 49057,
   "kind": "issue",
   "track": "fix",
-  "stage": "reproduction_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-13T13:10:24Z",
-  "evaluated_at": "2026-09-13T13:10:24Z",
-  "source_updated_at": "2026-07-01T07:14:08Z",
-  "status": {
-    "glyph": "🧪",
-    "label": "Ready for maintainer reproduction",
-    "detail": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change."
+  "stage": "triage",
+  "title": "with power toys v0.100.2 it is not possible to assign different fancy zones to different \"desktops\" in Windows 11. Before it was working as expected",
+  "url": "https://github.com/microsoft/PowerToys/issues/49057",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.534Z",
+  "evaluated_at": "2026-11-13T11:44:36.534Z",
+  "source_updated_at": "2026-11-09T12:40:04Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "A commenter confirms the same behavior on 0.102.3101 and Windows 11 Insider: selecting a layout on one desktop forces it on all desktops. The current source has per-work-area and virtual-desktop layout state, but no runtime trace establishes why the per-desktop association is lost.",
+    "evidence": [
+      "The original report says distinct layouts per Windows 11 desktop stopped working after version 0.100.2.",
+      "A later commenter says it still reproduces on 0.102.3101.0 with Windows 11 Insider build 26320.9876.",
+      "The latest commenter confirms that selecting a FancyZones layout on one desktop forces that same layout on all desktops.",
+      "Work-area configuration maps layouts to monitor/desktop work areas. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp",
+      "AppZoneHistory receives a WorkAreaId that includes virtual-desktop identity. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp"
+    ],
+    "recommended_action": "Reproduce the issue-specific scenario: Keep FancyZones layouts scoped to virtual desktops",
+    "evaluated_at": "2026-11-13T11:44:36.534Z",
+    "source_updated_at": "2026-11-09T12:40:04Z"
   },
-  "next_action": {
-    "glyph": "➡️",
-    "label": "Run the documented scenario on a current build before selecting a fix design.",
-    "reason": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The fix direction is grounded in a current report and the existing per-desktop work-area model; verify that state is being overwritten before changing persistence."
   },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "reproduce-49057",
-      "type": "reproduce",
-      "label": "Reproduce with power toys v0.100.2 it is not possible to assign different fancy…",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "FancyZones",
-        "version_requirements": "0.100.2",
-        "prerequisites": [
-          "Use the reported configuration for FancyZones.",
-          "Compare the reported PowerToys auto-update installation with a clean current installation if practical."
-        ],
-        "steps": [
-          "just try to apply different fancy zones to different desktops"
-        ],
-        "expected_result": "each desktop can have a different screen layout"
+      "title": "Keep FancyZones layouts scoped to virtual desktops",
+      "root_cause": "Hypothesis: FancyZones is reusing or synchronizing layout state across virtual-desktop work areas instead of preserving the selected layout for each desktop.",
+      "plan": [
+        "Trace the work-area and virtual-desktop identifiers used when selecting and restoring layouts on separate desktops.",
+        "If an update path writes the selected layout globally, preserve the per-desktop work-area association.",
+        "Add a regression with two virtual desktops, one monitor, and distinct custom layouts."
+      ],
+      "verification": [
+        "Applying a layout on desktop A leaves desktop B's layout unchanged.",
+        "Switching repeatedly between desktops restores each desktop's assigned layout."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "A commenter confirms the same behavior on 0.102.3101 and Windows 11 Insider: selecting a layout on one desktop forces it on all desktops. The current source has per-work-area and virtual-desktop layout state, but no runtime trace establishes why the per-desktop association is lost."
       }
     }
   ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The public report contains a concrete scenario and expected-versus-actual behavior, but the current evidence does not yet establish a safe implementation change.",
-    "evidence": [
-      "The report covers PowerToys 0.100.2, installed via PowerToys auto-update, affecting FancyZones.",
-      "Reported reproduction: just try to apply different fancy zones to different desktops",
-      "Reported result: on all desktops the same screen layout is getting populated",
-      "Expected result: each desktop can have a different screen layout",
-      "Current labels: Issue-Bug, Product-FancyZones, Needs-Triage."
-    ],
-    "recommended_action": "Run a focused maintainer reproduction on a current build and use the observed failing path to decide whether detailed design is warranted.",
-    "evaluated_at": "2026-09-13T13:10:24Z",
-    "source_updated_at": "2026-07-01T07:14:08Z"
-  },
-  "schemaVersion": 5,
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A separate code fix is not appropriate at this stage because the issue is waiting, handled, external or by-design, or still requires maintainer reproduction.",
-    "existing_fix_urls": []
-  },
   "issue_context": {
-    "summary": "The FancyZones report describes on all desktops the same screen layout is getting populated.",
+    "summary": "Keep FancyZones layouts scoped to virtual desktops",
     "known_information": [
-      "The report covers PowerToys 0.100.2, installed via PowerToys auto-update, affecting FancyZones.",
-      "Reported reproduction: just try to apply different fancy zones to different desktops",
-      "Reported result: on all desktops the same screen layout is getting populated",
-      "Expected result: each desktop can have a different screen layout",
-      "Current labels: Issue-Bug, Product-FancyZones, Needs-Triage."
+      "The original report says distinct layouts per Windows 11 desktop stopped working after version 0.100.2.",
+      "A later commenter says it still reproduces on 0.102.3101.0 with Windows 11 Insider build 26320.9876.",
+      "The latest commenter confirms that selecting a FancyZones layout on one desktop forces that same layout on all desktops."
     ],
     "inferences": [
-      "A PowerToys code defect may be present, but the exact failing branch remains unconfirmed until current-build reproduction."
+      "The persistence or virtual-desktop work-area association may be collapsing to a shared layout; exact write path is not yet demonstrated."
     ],
-    "analysis": "The live body, complete comment history, labels, assignees, and linked-work timeline were reviewed. The issue is specific enough for local verification, but no confirmed fix or sufficiently narrow root cause is present.",
+    "analysis": "The public report establishes a current regression-like behavior despite existing per-desktop state. Investigate the work-area identity and persistence transition, not monitor layout selection in isolation.",
     "initial_investigation": [
-      "Reviewed the complete live issue body, 0 public comment(s), current labels, assignees, and timeline through 2026-07-01T07:14:08Z.",
-      "No linked issue or pull request in the live timeline establishes a current fix or duplicate.",
-      "No current fix, active assignee, or confirmed duplicate was found; maintainer reproduction is the next discriminating step."
+      "Work-area configuration maps layouts to monitor/desktop work areas. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp",
+      "AppZoneHistory receives a WorkAreaId that includes virtual-desktop identity. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp"
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Whether changing the layout on desktop A changes desktop B immediately, before switching back to B, or only after returning to it.",
+        "why_needed": "This distinguishes a shared selection update from an incorrect restore when switching virtual desktops.",
+        "how_to_collect": "With different layouts assigned, change A and observe B without switching desktops; then switch to B and compare.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
   },
-  "url": "https://github.com/microsoft/PowerToys/issues/49057",
-  "title": "with power toys v0.100.2 it is not possible to assign different fancy zones to different \"desktops\" in Windows 11. Before it was working as expected",
-  "author": "Jabadabo",
-  "authorAssociation": "NONE",
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Keep FancyZones layouts scoped to virtual desktops",
+      "reproduce": {
+        "title": "Keep FancyZones layouts scoped to virtual desktops",
+        "module": "FancyZones",
+        "version_requirement": "0.102.3101.0 or newer",
+        "prerequisites": [
+          "Windows 11 with at least two virtual desktops and FancyZones enabled.",
+          "One monitor with two distinct custom layouts available."
+        ],
+        "setup": [
+          "Assign layout A to desktop 1 and layout B to desktop 2."
+        ],
+        "steps": [
+          "Switch to desktop 1 and verify layout A.",
+          "Switch to desktop 2 and verify layout B.",
+          "Change the selected layout on desktop 1, then switch to desktop 2 and check whether its layout changed too."
+        ],
+        "expected_result": "Each virtual desktop retains its own selected layout; changing one does not overwrite the other."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm per-desktop layout overwrite",
+      "comment": {
+        "target": "issue",
+        "number": 49057,
+        "body": "Thanks for confirming this on 0.102.3101 and Windows 11 Insider. With distinct layouts assigned, could you change the selected layout on desktop A and check whether desktop B changes immediately while still on A, or only after switching back to B? This separates a shared layout update from a restore-time association issue."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Keep FancyZones layouts scoped to virtual desktops"
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
-  "summary": "The FancyZones report describes on all desktops the same screen layout is getting populated.",
-  "proposed_fixes": []
+  "author": "Jabadabo",
+  "authorAssociation": "NONE",
+  "comments": 1
 }

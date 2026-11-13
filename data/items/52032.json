@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "number": 52032,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "ZoomIt (12.0+) Record mode - Yellow border around screen remains in the captured video",
+  "url": "https://github.com/microsoft/PowerToys/issues/52032",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.504Z",
+  "evaluated_at": "2026-11-13T11:44:36.504Z",
+  "source_updated_at": "2026-11-09T21:01:43Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue gives a clear version comparison (12.31 records the border; 11.0 does not). Pinned source leaves the system capture border enabled for the full-screen path while explicitly disabling it for cropped capture, matching the reported distinction.",
+    "evidence": [
+      "The report says ZoomIt standalone 12.0–12.31 records the yellow screen border, while 11.0 did not.",
+      "The issue concerns Record mode and provides no additional software or settings context.",
+      "The issue provides a before/after-version comparison and a concrete Record-mode expected result.",
+      "Full-screen recording does not take the cropped-mode branch that calls ShowCaptureBorder(false). Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/VideoRecordingSession.cpp",
+      "The helper documents that borderRequired false suppresses the system capture border before session start. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/CaptureFrameWait.h"
+    ],
+    "recommended_action": "Reproduce the issue-specific scenario: Disable the system capture border for ZoomIt recording",
+    "evaluated_at": "2026-11-13T11:44:36.504Z",
+    "source_updated_at": "2026-11-09T21:01:43Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current source supports a likely full-screen border configuration gap; confirm that suppressing the Windows capture border is supported and appropriate for the affected capture mode."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Disable the system capture border for ZoomIt recording",
+      "root_cause": "The full-screen recording path appears to leave the Windows Graphics Capture system border enabled, while the cropped path explicitly disables it; the system border is then visible in captured frames.",
+      "plan": [
+        "Trace how CaptureFrameWait initializes borderRequired for full-screen recording versus cropped recording.",
+        "Disable the system border for the supported recording mode without suppressing required OS capture indicators or breaking crop capture.",
+        "Add a focused recording regression for full-screen and cropped captures."
+      ],
+      "verification": [
+        "On ZoomIt 12.x, a full-screen recording does not contain the yellow capture border.",
+        "Cropped recording remains border-free and the Windows capture session still starts correctly."
+      ],
+      "confidence": {
+        "score": 80,
+        "level": "yellow",
+        "rationale": "The issue gives a clear version comparison (12.31 records the border; 11.0 does not). Pinned source leaves the system capture border enabled for the full-screen path while explicitly disabling it for cropped capture, matching the reported distinction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Disable the system capture border for ZoomIt recording",
+    "known_information": [
+      "The report says ZoomIt standalone 12.0–12.31 records the yellow screen border, while 11.0 did not.",
+      "The issue concerns Record mode and provides no additional software or settings context.",
+      "The issue provides a before/after-version comparison and a concrete Record-mode expected result."
+    ],
+    "inferences": [
+      "The system Graphics Capture border is a likely source of the recorded outline; confirm against the affected release and recording mode."
+    ],
+    "analysis": "The code makes the full-screen versus crop distinction concrete. Keep the fix scoped to border policy and validate both recording modes.",
+    "initial_investigation": [
+      "Full-screen recording does not take the cropped-mode branch that calls ShowCaptureBorder(false). Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/VideoRecordingSession.cpp",
+      "The helper documents that borderRequired false suppresses the system capture border before session start. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/CaptureFrameWait.h"
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the yellow border appears in the saved full-screen recording itself, and whether the same version also shows it for cropped recording.",
+        "why_needed": "This confirms the capture artifact and distinguishes the full-screen path from the crop path before changing capture-border policy.",
+        "how_to_collect": "On the affected 12.x version, compare saved full-screen and cropped recordings and report which contains the border.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Disable the system capture border for ZoomIt recording",
+      "reproduce": {
+        "title": "Disable the system capture border for ZoomIt recording",
+        "module": "ZoomIt standalone",
+        "version_requirement": "12.0–12.31; compare with 11.0",
+        "prerequisites": [
+          "A Windows system running ZoomIt standalone.",
+          "A display capture that can be reviewed after recording."
+        ],
+        "setup": [],
+        "steps": [
+          "Start ZoomIt Record mode for the full screen and record a few seconds.",
+          "Review the captured video for a yellow border around the screen.",
+          "Repeat with cropped recording, then compare with ZoomIt 11.0 if available."
+        ],
+        "expected_result": "The recorded video contains no system capture border in either mode, while the recording still starts and captures the selected content."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm full-screen capture border",
+      "comment": {
+        "target": "issue",
+        "number": 52032,
+        "body": "Thanks for the 12.31 versus 11.0 comparison. Could you confirm whether the yellow border is visible in the saved full-screen video itself, and whether the same 12.x build shows it in a cropped recording too? This distinguishes a full-screen capture-border setting from an on-screen-only indicator."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Disable the system capture border for ZoomIt recording"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "author": "Rikk",
+  "authorAssociation": "NONE",
+  "comments": 0
+}

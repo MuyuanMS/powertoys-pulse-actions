@@ -1,88 +1,119 @@
 {
   "schemaVersion": 5,
-  "pending_author": false,
-  "issue_context": {
-    "inferences": [
-      "The current modifier condition explains the missing bare-digit gesture; this does not prove that removing it is safe for every interrupted drag."
+  "number": 51054,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "FancyZones cant change press number",
+  "url": "https://github.com/microsoft/PowerToys/issues/51054",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.44Z",
+  "evaluated_at": "2026-11-13T11:44:36.44Z",
+  "source_updated_at": "2026-11-10T05:05:37Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives exact steps and a clear expected result. The pinned FancyZones code has a digit-to-layout hotkey path, but the interaction with right-button drag and Shift still needs a maintainer reproduction.",
+    "evidence": [
+      "The issue supplies numbered steps using a custom layout, an assigned quick-layout number, right-button drag, Shift, then the number key.",
+      "Zones display during the drag, but the assigned number does not switch the layout.",
+      "The report includes a concrete trigger sequence and an expected quick-layout switch.",
+      "The quick-layout keyboard path converts top-row and numpad digit key codes into a layout number. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp"
     ],
-    "known_information": [
-      "The report supplies PowerToys version 0.101.2362, assigned quick-layout numbers, Shift plus right-button dragging and an existing diagnostic archive.",
-      "The replies confirm the same lost gesture or suggest an older working version; none supplies a new key trace or validates the draft.",
-      "Current FancyZones::OnKeyDown recognizes both top-row and numpad digits, but requires Win+Ctrl+Alt in the active-drag quick-layout branch to guard stuck-drag key stealing.",
-      "PR50695 remains an open draft that removes that modifier requirement. Its author explicitly has not built or run it and requests a maintainer behavior/safety decision.",
-      "A November 5 commenter reports downgrading because the drag-time digit-switch behavior remains unavailable; no new trace or validation of draft #50695 was provided.",
-      "A November 6 commenter notes that mouse-wheel layout switching is available in version 0.102, but explicitly says it does not solve the assigned-number shortcut."
-    ],
-    "analysis": "The downgrade report confirms user impact, and the new mouse-wheel option is explicitly described as a workaround rather than a fix for assigned-number switching. The source-level behavior and safety question remain unchanged. Reuse open draft PR #50695, which is still a draft and has not established a released fix; do not create a competing proposal.",
-    "initial_investigation": [
-      "Read the full report and current discussion; the new confirmation does not supply a different failure.",
-      "Read current FancyZones::OnKeyDown digit/modifier branches and the complete current50695 description/state. The existing attachment need not be requested again to make this ownership decision.",
-      "Read the November 5 downgrade report and November 6 workaround comment, then rechecked that PR #50695 remains open as a draft at head 497aaf2376330f1ef2e6a52308b9b6114178bd4c."
-    ],
-    "information_gaps": [],
-    "summary": "The drag-time digit regression has an existing draft restoration, still awaiting behavior and stuck-drag validation."
+    "recommended_action": "Reproduce the issue-specific scenario: Preserve quick-layout number handling during Shift drag",
+    "evaluated_at": "2026-11-13T11:44:36.44Z",
+    "source_updated_at": "2026-11-10T05:05:37Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The proposed direction is conditional on confirming the quick-layout event is lost during the modifier/drag state."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve quick-layout number handling during Shift drag",
+      "root_cause": "Hypothesis: the right-button drag/Shift interaction changes the keyboard-hook dispatch state so the assigned quick-layout digit is not delivered to FancyZones' quick-layout handler.",
+      "plan": [
+        "Trace the digit event through the right-button drag and Shift state while a quick-layout key is assigned.",
+        "Correct the input-state gating only if the reproduction shows the quick-layout event is consumed or bypassed.",
+        "Add a regression covering assigned digit keys during Shift + right-button drag."
+      ],
+      "verification": [
+        "During the reported drag sequence, pressing the assigned number switches to that layout without breaking zone display or drag behavior.",
+        "Unassigned digits and ordinary drags retain existing behavior."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The report gives exact steps and a clear expected result. The pinned FancyZones code has a digit-to-layout hotkey path, but the interaction with right-button drag and Shift still needs a maintainer reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Preserve quick-layout number handling during Shift drag",
+    "known_information": [
+      "The issue supplies numbered steps using a custom layout, an assigned quick-layout number, right-button drag, Shift, then the number key.",
+      "Zones display during the drag, but the assigned number does not switch the layout.",
+      "The report includes a concrete trigger sequence and an expected quick-layout switch."
+    ],
+    "inferences": [
+      "A keyboard/drag state interaction is plausible but has not been independently reproduced."
+    ],
+    "analysis": "The input sequence is specific enough for a maintainer test. Do not change the quick-layout binding until the hook dispatch under this exact modifier/drag state is observed.",
+    "initial_investigation": [
+      "The quick-layout keyboard path converts top-row and numpad digit key codes into a layout number. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp"
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the assigned quick-layout number works during the same right-button drag when Shift is released, and whether the failure occurs for both top-row and numpad digits.",
+        "why_needed": "This isolates whether the failure is tied to Shift-state handling or to the drag/hook path generally.",
+        "how_to_collect": "Repeat the assigned-number sequence once with Shift held and once with Shift released; if available, compare the top-row and numpad key.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Preserve quick-layout number handling during Shift drag",
+      "reproduce": {
+        "title": "Preserve quick-layout number handling during Shift drag",
+        "module": "FancyZones",
+        "version_requirement": "0.101.2362 or newer",
+        "prerequisites": [
+          "FancyZones enabled.",
+          "A custom layout has a quick-layout number assigned."
+        ],
+        "setup": [
+          "Use a window that can be dragged and a layout with an assigned digit key."
+        ],
+        "steps": [
+          "Open the FancyZones layout editor and assign a quick-layout number to a custom layout.",
+          "Drag a window with the right mouse button.",
+          "Hold Shift and press the assigned number key."
+        ],
+        "expected_result": "FancyZones switches to the assigned layout while the zones are displayed."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm quick-layout behavior during Shift drag",
+      "comment": {
+        "target": "issue",
+        "number": 51054,
+        "body": "Thanks for the numbered FancyZones steps. Could you compare the assigned number during the same right-button drag with Shift held versus released, and note whether the result differs between the top-row and numpad number? This would isolate a modifier-state interaction from a general drag/hotkey failure."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Preserve quick-layout number handling during Shift drag"
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Needs-Triage"
   ],
-  "owes": "maintainer",
-  "judgment": {
-    "recommended_action": "Validate draft PR #50695 against normal and interrupted drags before deciding the intended modifier behavior.",
-    "evaluated_at": "2026-11-07T04:54:00Z",
-    "source_updated_at": "2026-11-06T16:45:53Z",
-    "rationale": "The downgrade report confirms user impact, and the new mouse-wheel option is explicitly described as a workaround rather than a fix for assigned-number switching. The source-level behavior and safety question remain unchanged. Reuse open draft PR #50695, which remains a draft and has not established a released fix; do not create a competing proposal.",
-    "evidence": [
-      "The report supplies PowerToys version 0.101.2362, assigned quick-layout numbers, Shift plus right-button dragging and an existing diagnostic archive.",
-      "The replies confirm the same lost gesture or suggest an older working version; none supplies a new key trace or validates the draft.",
-      "Current FancyZones::OnKeyDown recognizes both top-row and numpad digits, but requires Win+Ctrl+Alt in the active-drag quick-layout branch to guard stuck-drag key stealing.",
-      "PR50695 remains an open draft that removes that modifier requirement. Its author explicitly has not built or run it and requests a maintainer behavior/safety decision.",
-      "A November 5 commenter says they downgraded because of the drag-time digit-switch behavior; this strengthens the impact evidence but does not add a different failure mechanism or validate the draft.",
-      "A November 6 commenter notes the new mouse-wheel layout-switching option as a workaround but says it does not resolve the assigned-number behavior."
-    ],
-    "status": "duplicate_or_handled"
-  },
-  "repository": "microsoft/PowerToys",
-  "actions": [
-    {
-      "primary": true,
-      "id": "issue-51054-reproduce-existing-draft",
-      "reproduce": {
-        "module": "FancyZones",
-        "expected_result": "The agreed drag-time gesture switches layouts without leaving overlays, swallowing later digits or regressing the non-dragging shortcut.",
-        "prerequisites": [
-          "Enable quick layout switching; assign different layouts to digits 1 and 2; retain current settings."
-        ],
-        "steps": [
-          "Compare Shift plus drag and digit 2 with Win+Ctrl+Alt+digit 2 while dragging; test top-row and numpad digits.",
-          "Repeat the reported right-button drag and ordinary title-bar drag.",
-          "On the draft PR #50695 candidate, interrupt a drag by destroying the dragged window, then type digits in another application.",
-          "Compare the normal non-dragging shortcut and verify zone overlays and drag state are cleared."
-        ],
-        "version_requirement": "Current build and draft PR #50695"
-      },
-      "type": "reproduce",
-      "label": "Validate existing drag-shortcut restoration"
-    }
-  ],
-  "stage": "triage_revalidated",
-  "source_updated_at": "2026-11-06T16:45:53Z",
-  "evaluated_at": "2026-11-07T04:54:00Z",
   "assignees": [],
-  "fix_assessment": {
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/50695"
-    ],
-    "rationale": "The open draft targets the exact current modifier condition; it is an in-progress candidate, not an accepted or shipped fix.",
-    "status": "existing_fix"
-  },
-  "number": 51054,
-  "kind": "issue",
-  "comments": 8,
-  "track": "triage",
-  "url": "https://github.com/microsoft/PowerToys/issues/51054",
-  "generated_at": "2026-11-07T04:54:00Z",
-  "proposed_fixes": [],
-  "title": "FancyZones cant change press number"
+  "author": "khoant0801",
+  "authorAssociation": "NONE",
+  "comments": 9
 }

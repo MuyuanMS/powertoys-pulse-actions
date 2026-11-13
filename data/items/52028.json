@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 5,
+  "number": 52028,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "New colour picker grid glow effect creates bad contrast",
+  "url": "https://github.com/microsoft/PowerToys/issues/52028",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.526Z",
+  "evaluated_at": "2026-11-13T11:44:36.526Z",
+  "source_updated_at": "2026-11-09T16:53:26Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter describes a newly bright grid treatment that makes fine boundaries hard to see and supplies a screenshot. The pinned Color Picker editor has a color-matched selected-swatch stroke, but the screenshot's exact control and cause have not been independently confirmed.",
+    "evidence": [
+      "The reporter says the new grid glow makes low-contrast items and thin outlines hard to see.",
+      "The issue includes a public screenshot and was reported on 0.102.3101.",
+      "The issue description provides the affected version, visual symptom, expected contrast behavior, and a public screenshot: https://github.com/user-attachments/assets/b992fcf1-1969-4d2c-93a5-1ff8759a3434",
+      "The editor defines a color-matched selected swatch stroke in its custom ListViewItem template. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ColorPicker/ColorPickerUI/Views/ColorEditorView.xaml",
+      "The Color Picker overlay is a separate surface; the report's screenshot must be matched to the responsible view before changing visuals. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ColorPicker/ColorPickerUI/Views/ColorPickerView.xaml"
+    ],
+    "recommended_action": "Reproduce the issue-specific scenario: Restore contrast around Color Picker grid selections",
+    "evaluated_at": "2026-11-13T11:44:36.526Z",
+    "source_updated_at": "2026-11-09T16:53:26Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The visual adjustment should follow a maintainer reproduction that identifies whether the contrast loss comes from the Color Picker selection stroke, focus treatment, or another surface."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore contrast around Color Picker grid selections",
+      "root_cause": "Hypothesis: a recent Color Picker grid/selection visual treatment uses a bright glow or color-matched outline that obscures adjacent low-contrast boundaries.",
+      "plan": [
+        "Reproduce the reported low-contrast case and identify which Color Picker surface owns the bright treatment.",
+        "If the selection stroke/glow is confirmed, reduce or constrain its intensity and retain a clear non-color-dependent focus indicator.",
+        "Add a visual/accessibility regression with adjacent low-contrast edges and both light/dark themes."
+      ],
+      "verification": [
+        "The edge of the reported checkbox and other thin boundaries remain distinguishable while a color is selected.",
+        "Selected and unselected swatches remain identifiable in light and dark themes."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The reporter describes a newly bright grid treatment that makes fine boundaries hard to see and supplies a screenshot. The pinned Color Picker editor has a color-matched selected-swatch stroke, but the screenshot's exact control and cause have not been independently confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Restore contrast around Color Picker grid selections",
+    "known_information": [
+      "The reporter says the new grid glow makes low-contrast items and thin outlines hard to see.",
+      "The issue includes a public screenshot and was reported on 0.102.3101.",
+      "The issue description provides the affected version, visual symptom, expected contrast behavior, and a public screenshot: https://github.com/user-attachments/assets/b992fcf1-1969-4d2c-93a5-1ff8759a3434"
+    ],
+    "inferences": [
+      "The custom selected-swatch stroke in the Color Picker editor may be involved, but the screenshot surface has not been confirmed."
+    ],
+    "analysis": "The visual complaint is concrete, but do not equate the reported grid glow with the history swatch stroke without reproducing the screenshot's exact surface.",
+    "initial_investigation": [
+      "The editor defines a color-matched selected swatch stroke in its custom ListViewItem template. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ColorPicker/ColorPickerUI/Views/ColorEditorView.xaml",
+      "The Color Picker overlay is a separate surface; the report's screenshot must be matched to the responsible view before changing visuals. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ColorPicker/ColorPickerUI/Views/ColorPickerView.xaml"
+    ],
+    "information_gaps": [
+      {
+        "information": "Which Color Picker page/control in the attached screenshot has the bright glow, and whether it appears only for the selected item or also for focus/hover.",
+        "why_needed": "The pinned source contains separate overlay and editor surfaces, so identifying the control is required to avoid changing the wrong visual treatment.",
+        "how_to_collect": "Name the page/control in the screenshot and compare the appearance when the item is selected versus merely focused or hovered.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Restore contrast around Color Picker grid selections",
+      "reproduce": {
+        "title": "Restore contrast around Color Picker grid selections",
+        "module": "Color Picker",
+        "version_requirement": "0.102.3101.0",
+        "prerequisites": [
+          "PowerToys Color Picker enabled on Windows.",
+          "Use the same theme and display scaling as the report if known."
+        ],
+        "setup": [],
+        "steps": [
+          "Open the Color Picker UI and navigate to the grid/selection surface shown in the issue attachment.",
+          "Select colors adjacent to a low-contrast boundary, including the reported checkbox/outline case.",
+          "Compare the selected and unselected boundary visibility in light and dark themes."
+        ],
+        "expected_result": "The selected color is distinguishable without obscuring adjacent thin boundaries or low-contrast outlines.",
+        "attachment_urls": [
+          "https://github.com/user-attachments/assets/b992fcf1-1969-4d2c-93a5-1ff8759a3434"
+        ]
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Identify the Color Picker surface",
+      "comment": {
+        "target": "issue",
+        "number": 52028,
+        "body": "Thanks for the screenshot and the contrast description. Could you identify which Color Picker page/control is shown and whether the bright effect appears only on the selected item or also on focus/hover? The source has separate overlay and editor surfaces, so this will identify the correct visual treatment to investigate."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Restore contrast around Color Picker grid selections"
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Color Picker"
+  ],
+  "assignees": [],
+  "author": "NotOnii",
+  "authorAssociation": "NONE",
+  "comments": 1
+}

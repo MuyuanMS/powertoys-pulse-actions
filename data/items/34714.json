@@ -3,109 +3,72 @@
   "number": 34714,
   "kind": "issue",
   "track": "fix",
-  "stage": "actionable_design",
-  "pending_author": false,
+  "stage": "triage",
   "title": "keyboard manager steals completely CTRL after few hours of running",
   "url": "https://github.com/microsoft/PowerToys/issues/34714",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.574Z",
+  "evaluated_at": "2026-11-13T11:44:36.574Z",
+  "source_updated_at": "2026-11-06T07:13:44Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The latest author response says the failure has not occurred recently after updating to PowerToys 0.102 and Windows 11 25H2. No current defect reproduction remains to justify a fix proposal.",
+    "evidence": [
+      "The original report maps Ctrl+F8–F12 to multimedia actions and says left Ctrl stops responding after several hours.",
+      "The latest author says the issue has not occurred recently after updating to PowerToys 0.102 and Windows 11 25H2.",
+      "The latest author comment explicitly reports no recent occurrence after updating both PowerToys and Windows.",
+      "The low-level hook routes keyboard events into KeyboardManager state handling. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp"
+    ],
+    "recommended_action": "Confirm current Ctrl-remap behavior",
+    "evaluated_at": "2026-11-13T11:44:36.574Z",
+    "source_updated_at": "2026-11-06T07:13:44Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The reported behavior is currently absent on the author's updated environment; first confirm whether the old Ctrl+F8–F12 mapping scenario is resolved or has recurred."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "keyboard manager steals completely CTRL after few hours of running",
+    "known_information": [
+      "The original report maps Ctrl+F8–F12 to multimedia actions and says left Ctrl stops responding after several hours.",
+      "The latest author says the issue has not occurred recently after updating to PowerToys 0.102 and Windows 11 25H2.",
+      "The latest author comment explicitly reports no recent occurrence after updating both PowerToys and Windows."
+    ],
+    "inferences": [
+      "The version update may have resolved the symptom, but the author has not confirmed whether the issue is permanently resolved."
+    ],
+    "analysis": "The current report is a status update rather than a current reproducible defect. Request a narrow confirmation; do not duplicate the separate left-Ctrl report in #35772.",
+    "initial_investigation": [
+      "The low-level hook routes keyboard events into KeyboardManager state handling. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp"
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the Ctrl+F8–F12 multimedia remap still causes left Ctrl to stop responding on PowerToys 0.102 and Windows 11 25H2.",
+        "why_needed": "The author reports no recent failure after upgrading, so current fix coverage depends on whether the original trigger is still reproducible.",
+        "how_to_collect": "Reply with whether the mapped-shortcut/long-uptime sequence has recurred on the updated versions.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm current Ctrl-remap behavior",
+      "comment": {
+        "target": "issue",
+        "number": 34714,
+        "body": "Thanks for the update that the problem has not occurred recently on PowerToys 0.102 and Windows 11 25H2. Could you confirm whether the original Ctrl+F8–F12 multimedia mapping and several-hours use scenario has also remained clear on those versions? If it has recurred, please note the mapped shortcut and approximate time to failure; otherwise we can distinguish an apparently resolved report from an active regression."
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
   "assignees": [],
-  "comments": 15,
-  "generated_at": "2026-10-21T06:31:47Z",
-  "evaluated_at": "2026-10-21T06:31:47Z",
-  "source_updated_at": "2026-10-11T16:49:11Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Several users report that Ctrl ceases to reach ordinary applications while Keyboard Manager remaps may still work. One current 0.100.2 RDP user supplied a concrete full-screen/windowed transition sequence, and a later user confirmed the failure on Aug 27. The trigger is intermittent, so the state transition and root cause remain unconfirmed.",
-    "evidence": [
-      "The thread has 15 comments with reports across Windows 10/11 and multiple PowerToys releases.",
-      "A July 23 reporter described RDP full-screen, windowed, and full-screen transitions on 0.100.2, after which Ctrl shortcuts become plain letters; KM-defined Ctrl+H still works.",
-      "A separate June 18 reporter said left Ctrl is detected but ordinary Ctrl shortcuts, including on-screen keyboard input, fail while Ctrl remaps continue.",
-      "The last comment on Aug 27 says exiting PowerToys immediately resolved a fresh occurrence."
-    ],
-    "recommended_action": "Have a maintainer replay the documented RDP transition on a current build and trace modifier key-up/state cleanup at the failure boundary."
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Stale modifier bookkeeping after a focus/session transition is plausible, and recent modifier cleanup fixes show relevant code paths, but the reports do not prove a shared root cause. A bounded tracing and regression-test design is warranted."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Reconcile Ctrl hook state across RDP and focus transitions without disrupting active remaps",
-      "root_cause": "A Ctrl key-up or focus/session transition may not be reconciled between the low-level hook's physical state and Keyboard Manager's logical state, leaving ordinary applications without Ctrl even while the remap engine continues to consume the modifier. This remains a hypothesis.",
-      "plan": [
-        "Reproduce the reporter's RDP full-screen to windowed to full-screen sequence while capturing physical Ctrl down/up, foreground-window, and session/focus transitions.",
-        "Trace the modifier state reset and cleanup paths in KeyboardEventHandlers.cpp to identify the first point where ordinary Ctrl and the remap engine diverge.",
-        "Add an event-sequence regression test for the observed missing/reordered key-up or focus transition before changing state handling.",
-        "If a stale logical state is confirmed, reconcile only the modifier state invalidated by that transition, preserving intentionally active remaps and avoiding synthetic key-up events for physically held keys."
-      ],
-      "verification": [
-        "After repeated RDP full-screen/windowed transitions, ordinary Ctrl+A/C/V works on both local and remote desktops.",
-        "Keyboard Manager Ctrl remaps continue to work and do not leave Ctrl stuck.",
-        "The test covers the exact observed event ordering and adjacent held-key/release orderings."
-      ],
-      "confidence": {
-        "score": 63,
-        "level": "yellow",
-        "rationale": "The intermittent symptom and one detailed RDP sequence are well evidenced, but no event trace identifies the lost transition and the thread contains more than one trigger pattern."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Ctrl periodically stops reaching ordinary application shortcuts while Keyboard Manager-defined mappings may continue to function; toggling/restarting Keyboard Manager or changing RDP focus temporarily restores normal behavior.",
-    "known_information": [
-      "The RDP reporter confirmed the issue on PowerToys 0.100.2 and supplied Windows 11 24H2 remote and 25H2 local environments using Microsoft Japanese IME.",
-      "Their steps are remote desktop full-screen, repeated typing/Ctrl shortcuts, exit to windowed mode, type locally, return to full-screen, then observe Ctrl+key being processed as the key alone.",
-      "The issue has multiple independent reports, including a fresh Aug 27 occurrence.",
-      "Related stuck-modifier and AltGr cleanup changes exist in source history, but none is confirmed to resolve this exact sequence."
-    ],
-    "inferences": [
-      "A missed or stale modifier state across RDP/focus transitions is plausible but not proven.",
-      "The reports may include distinct trigger paths that converge on the same visible symptom."
-    ],
-    "analysis": "The RDP reporter already supplied a useful reproduction sequence and explicitly said the failure is not reliably reproducible, so another generic step request or log request is unnecessary. Focused maintainer replay and event-state tracing can narrow the hypothesis without claiming a confirmed cause.",
-    "initial_investigation": [
-      "Read the full live issue and all 15 comments, including the 0.100.2 RDP sequence and the newest Aug 27 report.",
-      "Checked current labels, assignees, linked duplicates, and referenced reports.",
-      "Inspected KeyboardEventHandlers.cpp modifier cleanup paths and focused recent history; related changes do not establish that the current report is fixed."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-34714",
-      "type": "approve_design",
-      "label": "Trace and reconcile Ctrl state across RDP focus changes",
-      "confirm": true,
-      "design": {
-        "title": "Reconcile Ctrl hook state across RDP and focus transitions without disrupting active remaps"
-      }
-    },
-    {
-      "id": "reproduce-34714",
-      "type": "reproduce",
-      "label": "Replay the documented RDP transition",
-      "reproduce": {
-        "title": "Reproduce Ctrl shortcut loss through RDP full-screen transitions",
-        "module": "Keyboard Manager",
-        "prerequisites": [
-          "Current upstream main or a current build",
-          "Local Windows 11 and remote Windows 11 sessions connected with mstsc.exe",
-          "Keyboard Manager enabled; optional Ctrl remap to confirm mapped shortcuts remain functional"
-        ],
-        "steps": [
-          "Connect to the remote PC using mstsc.exe in full-screen mode.",
-          "Type on the remote PC and use Ctrl+key shortcuts.",
-          "Exit RDP full-screen to multi-window mode and type/use Ctrl+key shortcuts locally.",
-          "Return to RDP full-screen and continue typing and using Ctrl+key shortcuts.",
-          "If ordinary Ctrl shortcuts degrade, test Ctrl+A/C/V and a Keyboard Manager Ctrl mapping before toggling or restarting the module; capture the hook/focus event sequence."
-        ],
-        "expected_result": "Ordinary Ctrl shortcuts and configured Ctrl mappings remain functional on local and remote sessions after repeated focus/full-screen transitions.",
-        "version_requirement": "Current upstream main"
-      }
-    }
-  ]
+  "author": "ATAMANCZ",
+  "authorAssociation": "NONE",
+  "comments": 16
 }

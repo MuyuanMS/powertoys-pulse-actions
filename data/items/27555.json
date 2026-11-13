@@ -3,126 +3,119 @@
   "number": 27555,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidated",
-  "owes": "maintainer",
-  "pending_author": false,
-  "author": "reporter",
-  "generated_at": "2026-09-13T02:39:20.323Z",
-  "evaluated_at": "2026-09-13T02:39:20.323Z",
-  "source_updated_at": "2026-08-03T00:48:18Z",
+  "stage": "triage",
   "title": "Fancy Zones causing performance issues",
   "url": "https://github.com/microsoft/PowerToys/issues/27555",
-  "labels": [
-    "Issue-Bug"
-  ],
-  "assignees": [],
-  "comments": 0,
-  "status": {
-    "glyph": "🎯",
-    "label": "Fix plan ready for design",
-    "detail": "Triage revalidation completed during scheduled run."
-  },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Design fix",
-    "reason": "Advance triage state based on revalidation findings."
-  },
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-13T11:44:36.586Z",
+  "evaluated_at": "2026-11-13T11:44:36.586Z",
+  "source_updated_at": "2026-10-03T19:36:11Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The latest user comment supplies a specific workaround: leaving Windows Settings open or minimized prevents the desktop-switch slowdown. This is a useful timing clue, but it does not establish whether FancyZones, the shell, or foreground-window timing is causal.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Issue #27555 is labeled `Priority-1` and the latest report on 0.100.2 includes A/B PresentMon measurements showing DWM freezes are materially worse with FancyZones enabled.",
-      "The latest issue comment points directly at `FancyZones::ShouldWorkAreasBeRecreated()` and notes that `UniqueId().virtualDesktopId != virtualDesktop` is true on every virtual desktop switch, forcing `UpdateWorkAreas()` to clear and rebuild all work areas.",
-      "In `src/modules/fancyzones/FancyZonesLib/FancyZones.cpp`, `UpdateWorkAreas` calls `m_workAreaConfiguration.Clear()` whenever `ShouldWorkAreasBeRecreated` returns true, which destroys each `WorkArea`, its `ZonesOverlay`, and the pooled overlay HWND bookkeeping.",
-      "In `src/modules/fancyzones/FancyZonesLib/WorkArea.h`, the work-area identity is stored as `const FancyZonesDataTypes::WorkAreaId m_uniqueId`, so the current implementation cannot simply retag existing work areas for the new desktop."
+      "The original report says switching virtual desktops can take about five seconds with FancyZones enabled.",
+      "The latest commenter says leaving Windows Settings minimized on an unused desktop prevents the slowdown.",
+      "The latest comment provides an actionable A/B scenario involving the Windows Settings window and desktop switching.",
+      "FancyZones processes virtual-desktop/work-area changes and accesses saved zone history. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp",
+      "Work-area configuration owns the per-desktop work-area mapping. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp"
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-09-13T02:39:20.323Z",
-    "source_updated_at": "2026-08-03T00:48:18Z"
+    "recommended_action": "Reproduce the issue-specific scenario: Isolate FancyZones virtual-desktop switching stalls",
+    "evaluated_at": "2026-11-13T11:44:36.586Z",
+    "source_updated_at": "2026-10-03T19:36:11Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
+    "rationale": "A conditional investigation direction is warranted; require a maintainer reproduction and isolate the virtual-desktop event path before changing code."
   },
   "proposed_fixes": [
     {
-      "title": "Targeted fix for Fancy Zones causing performance issues",
-      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "title": "Isolate FancyZones virtual-desktop switching stalls",
+      "root_cause": "Hypothesis: FancyZones virtual-desktop work-area updates interact with shell/window enumeration and stall desktop switching; an unrelated foreground Settings window changes timing but is not itself a fix.",
       "plan": [
-        "Investigate event flow and lifecycle state in the affected component.",
-        "Add boundary validation or synchronization to prevent unexpected state transition.",
-        "Add regression tests verifying normal and error recovery paths."
+        "Measure desktop-switch completion with FancyZones enabled and disabled, with Settings closed and minimized, using the same desktop-switch sequence.",
+        "Trace the FancyZones virtual-desktop/work-area update path only if the delay correlates with the module being enabled.",
+        "Add a regression or timing guard for the confirmed slow transition."
       ],
       "verification": [
-        "Reproduce the reported scenario and confirm consistent behavior.",
-        "Run targeted module unit tests."
+        "Desktop switching completes promptly with FancyZones enabled regardless of whether Windows Settings is open.",
+        "FancyZones retains correct per-desktop work areas after repeated switches."
       ],
       "confidence": {
-        "score": 70,
+        "score": 57,
         "level": "yellow",
-        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+        "rationale": "The latest user comment supplies a specific workaround: leaving Windows Settings open or minimized prevents the desktop-switch slowdown. This is a useful timing clue, but it does not establish whether FancyZones, the shell, or foreground-window timing is causal."
       }
     }
   ],
   "issue_context": {
-    "summary": "Open PowerToys report: Fancy Zones causing performance issues",
+    "summary": "Isolate FancyZones virtual-desktop switching stalls",
     "known_information": [
-      "Title: Fancy Zones causing performance issues",
-      "Labels: Issue-Bug",
-      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+      "The original report says switching virtual desktops can take about five seconds with FancyZones enabled.",
+      "The latest commenter says leaving Windows Settings minimized on an unused desktop prevents the slowdown.",
+      "The latest comment provides an actionable A/B scenario involving the Windows Settings window and desktop switching."
     ],
     "inferences": [
-      "The issue may involve environment-specific configuration or module state."
+      "The Settings-window workaround suggests timing sensitivity but does not prove a FancyZones defect or identify a root cause."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The workaround is a discriminating test, not evidence that Settings should be required. Do not ask for generic logs before timing the two window states and module state.",
     "initial_investigation": [
-      "Read metadata and labels for #27555.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "FancyZones processes virtual-desktop/work-area changes and accesses saved zone history. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp",
+      "Work-area configuration owns the per-desktop work-area mapping. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/WorkAreaConfiguration.cpp"
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
-        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
-        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+        "information": "The measured desktop-switch delay with FancyZones enabled and disabled, both with Settings closed and minimized.",
+        "why_needed": "The Settings-window workaround alone does not establish whether FancyZones is causal; the module on/off comparison is needed before targeting its virtual-desktop path.",
+        "how_to_collect": "Time the same desktop-switch sequence with FancyZones enabled/disabled and Settings closed/minimized.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
   },
   "actions": [
     {
-      "id": "design-27555",
-      "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+      "type": "reproduce",
+      "label": "Isolate FancyZones virtual-desktop switching stalls",
+      "reproduce": {
+        "title": "Isolate FancyZones virtual-desktop switching stalls",
+        "module": "FancyZones",
+        "version_requirement": "Current stable",
+        "prerequisites": [
+          "Windows 11 with two or more virtual desktops and FancyZones enabled."
+        ],
+        "setup": [
+          "Prepare the same desktop-switch sequence with the Windows Settings window closed, then minimized on another desktop."
+        ],
+        "steps": [
+          "Switch desktops repeatedly with Ctrl+Win+Left/Right while Settings is closed and record the delay.",
+          "Repeat with Settings open, then minimized on an unused desktop.",
+          "Repeat both states with FancyZones disabled as a control."
+        ],
+        "expected_result": "Desktop switching remains prompt with FancyZones enabled, independent of whether Settings is open or minimized."
+      }
     },
     {
-      "type": "reproduce",
-      "label": "Reproduce Fancy Zones causing performance iss",
-      "reproduce": {
-        "title": "Local reproduction for #27555",
-        "module": "Issue-Bug",
-        "version_requirement": "Current build",
-        "prerequisites": [
-          "PowerToys running"
-        ],
-        "setup": [],
-        "steps": [
-          "Launch PowerToys and open the affected module for #27555.",
-          "Execute the reported sequence of actions.",
-          "Inspect logs and module behavior to confirm whether the failure reproduces."
-        ],
-        "expected_result": "Module functions without error or unexpected termination."
+      "type": "request_info",
+      "label": "Compare FancyZones desktop-switch timing",
+      "comment": {
+        "target": "issue",
+        "number": 27555,
+        "body": "Thanks for the Settings-window workaround. Could you compare the same desktop-switch sequence with FancyZones enabled and disabled, first with Settings closed and then minimized, and report the approximate delays? This will show whether the workaround is timing-related or whether the slowdown follows FancyZones itself."
       }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve lightweight direction: Isolate FancyZones virtual-desktop switching stalls"
     }
-  ]
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-1",
+    "FancyZones-VirtualDesktop"
+  ],
+  "assignees": [],
+  "author": "jareddyck",
+  "authorAssociation": "NONE",
+  "comments": 5
 }
