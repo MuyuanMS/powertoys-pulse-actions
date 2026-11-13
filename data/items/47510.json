@@ -1,33 +1,111 @@
 {
   "number": 47510,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Grab And Move suppresses standard drag & drop modifier for shortcut creation",
+  "url": "https://github.com/microsoft/PowerToys/issues/47510",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 4,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-12T12:54:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "With Grab And Move's Alt modifier enabled, pressing Alt after starting an Explorer drag reportedly prevents shortcut creation."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "The current keyboard hook can absorb the modifier on key-down, consistent with the report, but the drag timing and normal Grab And Move activation need verification."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The current keyboard hook can absorb the modifier on key-down, consistent with the report, but the drag timing and normal Grab And Move activation need verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter supplied an eight-step reproduction and says changing the module modifier to Win restores Alt-drag.",
+      "Ctrl+Shift while dragging was offered as a workaround; it does not resolve the Alt conflict."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-12T12:54:57Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current keyboard hook can absorb the modifier on key-down, consistent with the report, but the drag timing and normal Grab And Move activation need verification.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Pass through Alt pressed during an existing file drag",
+      "root_cause": "Hypothesis: Grab And Move consumes Alt after the mouse drag has already started, preventing Explorer from seeing its shortcut modifier.",
+      "plan": [
+        "Reproduce Alt pressed after drag start and trace the modifier-session state.",
+        "Detect the existing drag without disrupting Alt-first window movement and pass that modifier through when appropriate.",
+        "Add regression coverage for drag-first Alt, Alt-first movement, and modifier release."
+      ],
+      "verification": [
+        "Explorer Alt-drag creates a shortcut and normal Alt-first Grab And Move remains functional."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The current keyboard hook can absorb the modifier on key-down, consistent with the report, but the drag timing and normal Grab And Move activation need verification."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Grab And Move's Alt modifier enabled, pressing Alt after starting an Explorer drag reportedly prevents shortcut creation.",
+    "known_information": [
+      "The reporter supplied an eight-step reproduction and says changing the module modifier to Win restores Alt-drag.",
+      "Ctrl+Shift while dragging was offered as a workaround; it does not resolve the Alt conflict."
+    ],
+    "inferences": [
+      "Hypothesis: Grab And Move consumes Alt after the mouse drag has already started, preventing Explorer from seeing its shortcut modifier."
+    ],
+    "analysis": "The current keyboard hook can absorb the modifier on key-down, consistent with the report, but the drag timing and normal Grab And Move activation need verification.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/grabandmove/GrabAndMove/main.cpp#L2448-L2524",
+      "https://github.com/microsoft/PowerToys/issues/47667",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Pass through Alt pressed during an existing file drag",
+        "module": "Grab And Move",
+        "version_requirement": "PowerToys 0.99.1 and current build",
+        "prerequisites": [
+          "Windows Explorer",
+          "Grab And Move enabled with Alt modifier"
+        ],
+        "setup": [
+          "Create a disposable test file and a destination folder."
+        ],
+        "steps": [
+          "Start dragging the file in Explorer, then press Alt before dropping it.",
+          "Compare the drag tooltip and destination with Grab And Move disabled or set to Win.",
+          "Start a normal Alt-first window move to check for regressions."
+        ],
+        "expected_result": "Alt pressed during file drag creates a shortcut; Alt-first window move remains functional."
+      }
+    }
+  ]
 }

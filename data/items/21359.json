@@ -1,33 +1,111 @@
 {
   "number": 21359,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Dragging windows etc. via MobaXterm RDP Connection doesn't work when using \"always on top\" ",
+  "url": "https://github.com/microsoft/PowerToys/issues/21359",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-3"
+  ],
+  "assignees": [],
+  "comments": 5,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2024-11-05T13:53:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "A pinned Chrome window is reported to interfere with mouse actions in MobaXterm RDP sessions; the reporter provided a recording and confirmed persistence in 2024."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "The topmost border window is a plausible interaction point, but it is not established whether the border, window ordering, or MobaXterm itself causes the remote-input failures."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The topmost border window is a plausible interaction point, but it is not established whether the border, window ordering, or MobaXterm itself causes the remote-input failures.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue describes double-click, dragging, and selection failures that cease when Always on Top is disabled.",
+      "A later participant also reports keyboard trouble in an attached RDP tab."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2024-11-05T13:53:57Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The topmost border window is a plausible interaction point, but it is not established whether the border, window ordering, or MobaXterm itself causes the remote-input failures.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent Always on Top from interfering with remote session input",
+      "root_cause": "Hypothesis: the topmost window or its border interferes with MobaXterm input handling; this needs isolation before changing input or z-order behavior.",
+      "plan": [
+        "Reproduce with and without the border and with Always on Top disabled.",
+        "Inspect input hit-testing and focus at the failing remote interaction.",
+        "Correct the demonstrated interaction and add a focused regression scenario without changing normal pinned-window behavior."
+      ],
+      "verification": [
+        "Remote double-click, selection, and dragging work while Chrome remains pinned, with and without the outline."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The topmost border window is a plausible interaction point, but it is not established whether the border, window ordering, or MobaXterm itself causes the remote-input failures."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A pinned Chrome window is reported to interfere with mouse actions in MobaXterm RDP sessions; the reporter provided a recording and confirmed persistence in 2024.",
+    "known_information": [
+      "The issue describes double-click, dragging, and selection failures that cease when Always on Top is disabled.",
+      "A later participant also reports keyboard trouble in an attached RDP tab."
+    ],
+    "inferences": [
+      "Hypothesis: the topmost window or its border interferes with MobaXterm input handling; this needs isolation before changing input or z-order behavior."
+    ],
+    "analysis": "The topmost border window is a plausible interaction point, but it is not established whether the border, window ordering, or MobaXterm itself causes the remote-input failures.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/WindowBorder.cpp#L90-L110",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L635-L647",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Prevent Always on Top from interfering with remote session input",
+        "module": "Always on Top",
+        "version_requirement": "Reported build and current PowerToys build",
+        "prerequisites": [
+          "MobaXterm with a safe test RDP session",
+          "Chrome and Always on Top enabled"
+        ],
+        "setup": [
+          "Pin Chrome at a screen corner and open the RDP session as described in the issue."
+        ],
+        "steps": [
+          "In the guest, test double-click, window dragging, and text selection.",
+          "Repeat with the Always on Top outline disabled, then with Always on Top disabled.",
+          "Compare attached and detached MobaXterm tabs where available."
+        ],
+        "expected_result": "Guest input works normally while Chrome is pinned; controls identify whether the outline affects the failure."
+      }
+    }
+  ]
 }

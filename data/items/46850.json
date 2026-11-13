@@ -1,33 +1,110 @@
 {
   "number": 46850,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Fancy Zones and Chrome Browser do not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/46850",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-21T03:27:44Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "Chrome reportedly fails to interact with FancyZones unless elevated; later commenters separately describe Win+Arrow falling back to Windows snapping."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Current Win+Arrow handling checks the override option, foreground window eligibility, and active work-area layout. The initial elevation report and later shortcut reports may be distinct."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Current Win+Arrow handling checks the override option, foreground window eligibility, and active work-area layout. The initial elevation report and later shortcut reports may be distinct.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The initial report distinguishes elevated from unelevated Chrome.",
+      "Later 0.99.1 comments say Shift-drag works while Win+Arrow does not."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-21T03:27:44Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current Win+Arrow handling checks the override option, foreground window eligibility, and active work-area layout. The initial elevation report and later shortcut reports may be distinct.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Chrome zoning eligibility and snap-hotkey routing",
+      "root_cause": "Hypothesis: Chrome's foreground window is rejected or no active zone layout is found in one reported path; the elevation and hotkey symptoms may have different causes.",
+      "plan": [
+        "Reproduce the initial elevated-versus-unelevated Chrome behavior and the later Win+Arrow behavior independently.",
+        "Check FancyZones override settings, foreground eligibility, and active layout before changing routing.",
+        "Fix the verified path and add coverage without regressing Shift-drag or Windows snap fallback."
+      ],
+      "verification": [
+        "Chrome can be zoned by the configured method at both reported privilege levels; unrelated Windows snap behavior remains intact."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "Current Win+Arrow handling checks the override option, foreground window eligibility, and active work-area layout. The initial elevation report and later shortcut reports may be distinct."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Chrome reportedly fails to interact with FancyZones unless elevated; later commenters separately describe Win+Arrow falling back to Windows snapping.",
+    "known_information": [
+      "The initial report distinguishes elevated from unelevated Chrome.",
+      "Later 0.99.1 comments say Shift-drag works while Win+Arrow does not."
+    ],
+    "inferences": [
+      "Hypothesis: Chrome's foreground window is rejected or no active zone layout is found in one reported path; the elevation and hotkey symptoms may have different causes."
+    ],
+    "analysis": "Current Win+Arrow handling checks the override option, foreground window eligibility, and active work-area layout. The initial elevation report and later shortcut reports may be distinct.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp#L1653-L1690",
+      "https://github.com/microsoft/PowerToys/issues/31258",
+      "https://github.com/microsoft/PowerToys/issues/34975"
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Investigate Chrome zoning eligibility and snap-hotkey routing",
+        "module": "FancyZones",
+        "version_requirement": "PowerToys 0.98.1, 0.99.1 and current build",
+        "prerequisites": [
+          "Windows with Chrome and an active FancyZones layout"
+        ],
+        "setup": [
+          "Enable Win+Arrow override and Shift-drag zoning in Settings."
+        ],
+        "steps": [
+          "Compare zoning normal and elevated Chrome as described in the original report.",
+          "Separately test Win+Arrow and Shift-drag on normal Chrome.",
+          "Check the same shortcuts on another ordinary window."
+        ],
+        "expected_result": "Chrome participates in the configured zoning methods and the distinct symptoms are recorded separately."
+      }
+    }
+  ]
 }

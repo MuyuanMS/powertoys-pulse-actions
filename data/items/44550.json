@@ -1,33 +1,110 @@
 {
   "number": 44550,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "MS Teams processes bundled with Command Palette in Task Manager",
+  "url": "https://github.com/microsoft/PowerToys/issues/44550",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 4,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-12T17:59:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "Task Manager sometimes groups Teams and other applications launched via Command Palette under the Command Palette process."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Current launch paths use COM activation for packaged applications and shell execution for executables; the maintainer's earlier investigation did not establish a safe general solution."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Current launch paths use COM activation for packaged applications and shell execution for executables; the maintainer's earlier investigation did not establish a safe general solution.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter observed the grouping disappear after a Teams update and later return.",
+      "A maintainer investigated and reported no consistent shell-equivalent launch method in May 2026."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-12T17:59:38Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current launch paths use COM activation for packaged applications and shell execution for executables; the maintainer's earlier investigation did not establish a safe general solution.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate shell-equivalent launch ownership and Task Manager grouping",
+      "root_cause": "Hypothesis: the launch route or process-parent relationship leads Task Manager to group applications with Command Palette; Windows grouping behavior and packaged-app activation require verification.",
+      "plan": [
+        "Reproduce the exact Teams launch path and capture process parentage before and after the grouping appears.",
+        "Compare shell and Command Palette launches for packaged and executable apps.",
+        "Only if a supported shell-equivalent route preserves launch semantics, adopt it and test both activation types."
+      ],
+      "verification": [
+        "Teams and representative packaged and executable apps launch correctly and Task Manager grouping is verified without breaking elevation or arguments."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "Current launch paths use COM activation for packaged applications and shell execution for executables; the maintainer's earlier investigation did not establish a safe general solution."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Task Manager sometimes groups Teams and other applications launched via Command Palette under the Command Palette process.",
+    "known_information": [
+      "The reporter observed the grouping disappear after a Teams update and later return.",
+      "A maintainer investigated and reported no consistent shell-equivalent launch method in May 2026."
+    ],
+    "inferences": [
+      "Hypothesis: the launch route or process-parent relationship leads Task Manager to group applications with Command Palette; Windows grouping behavior and packaged-app activation require verification."
+    ],
+    "analysis": "Current launch paths use COM activation for packaged applications and shell execution for executables; the maintainer's earlier investigation did not establish a safe general solution.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/AppCommand.cs#L35-L67",
+      "https://github.com/microsoft/PowerToys/issues/44550#issuecomment-4433303612",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Investigate shell-equivalent launch ownership and Task Manager grouping",
+        "module": "Command Palette",
+        "version_requirement": "PowerToys 0.96.1 and current build",
+        "prerequisites": [
+          "Windows 11 and Microsoft Teams desktop",
+          "Task Manager available"
+        ],
+        "setup": [
+          "Close test Teams processes and start Command Palette."
+        ],
+        "steps": [
+          "Launch Teams using Command Palette and inspect its process grouping and parentage.",
+          "Repeat launching the same app from the Windows shell.",
+          "Repeat after Teams restart or update and compare another packaged application."
+        ],
+        "expected_result": "The grouping and parentage differences are documented; launches retain normal arguments and behavior."
+      }
+    }
+  ]
 }

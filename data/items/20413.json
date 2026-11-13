@@ -1,33 +1,112 @@
 {
   "number": 20413,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Space bar (almost) stops working in Pidgin with Quick Accent enabled",
+  "url": "https://github.com/microsoft/PowerToys/issues/20413",
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Area-App Compat",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 3,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2024-11-08T19:30:46Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "Quick Accent reportedly suppresses ordinary spaces in Pidgin; the reporter confirmed the problem still occurred in 2024."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Space is an activation/navigation trigger and current tests cover intentional gestures, but the report does not establish which ordinary typing event is swallowed."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Space is an activation/navigation trigger and current tests cover intentional gestures, but the report does not establish which ordinary typing event is swallowed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report compares Quick Accent enabled and disabled, with similar lesser behavior in Notepad++.",
+      "A second participant also reported the Pidgin issue on PowerToys 0.71."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2024-11-08T19:30:46Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Space is an activation/navigation trigger and current tests cover intentional gestures, but the report does not establish which ordinary typing event is swallowed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve ordinary space input when Quick Accent does not activate",
+      "root_cause": "Hypothesis: a normal space is treated as an accent trigger or fails to be replayed after an incomplete gesture; verify event timing before changing the hook.",
+      "plan": [
+        "Reproduce normal typing in Pidgin with Quick Accent enabled and disabled and compare a current build.",
+        "Trace key-down/up decisions around space and the accent activation threshold.",
+        "Correct the demonstrated suppression or replay defect and add tests for normal typing and intentional accent selection."
+      ],
+      "verification": [
+        "Normal spaces reach Pidgin and intentional space-triggered accent selection still works."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "Space is an activation/navigation trigger and current tests cover intentional gestures, but the report does not establish which ordinary typing event is swallowed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent reportedly suppresses ordinary spaces in Pidgin; the reporter confirmed the problem still occurred in 2024.",
+    "known_information": [
+      "The original report compares Quick Accent enabled and disabled, with similar lesser behavior in Notepad++.",
+      "A second participant also reported the Pidgin issue on PowerToys 0.71."
+    ],
+    "inferences": [
+      "Hypothesis: a normal space is treated as an accent trigger or fails to be replayed after an incomplete gesture; verify event timing before changing the hook."
+    ],
+    "analysis": "Space is an activation/navigation trigger and current tests cover intentional gestures, but the report does not establish which ordinary typing event is swallowed.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs#L250-L294",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs#L203-L226",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Preserve ordinary space input when Quick Accent does not activate",
+        "module": "Quick Accent",
+        "version_requirement": "Reported build and current PowerToys build",
+        "prerequisites": [
+          "Windows, Pidgin and Quick Accent enabled",
+          "A test account and a non-sensitive text input"
+        ],
+        "setup": [
+          "Select Space as the Quick Accent activation key and focus a Pidgin chat field."
+        ],
+        "steps": [
+          "Type several ordinary words with spaces at normal speed.",
+          "Repeat with Quick Accent disabled and compare.",
+          "Enable it again and deliberately trigger an accent to check the intended gesture."
+        ],
+        "expected_result": "Ordinary spaces appear reliably while deliberate accent selection remains available."
+      }
+    }
+  ]
 }

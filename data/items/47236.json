@@ -1,33 +1,123 @@
 {
   "number": 47236,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "help",
+  "url": "https://github.com/microsoft/PowerToys/issues/47236",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-12T12:55:41Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "PowerToys Run shows a NullReferenceException while launching a packaged app; the reporter supplied a screenshot and a text log."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "The screenshot identifies the launch path but not which packaged app, the query or the sequence that produced the exception."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The screenshot identifies the launch path but not which packaged app, the query or the sequence that produced the exception.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The screenshot names a UWPApplication.Launch lambda in PowerToys 0.98.1.",
+      "The text log contains additional errors; none is established as the cause of the screenshot."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-12T12:55:41Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The screenshot identifies the launch path but not which packaged app, the query or the sequence that produced the exception.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle the failing packaged-app launch",
+      "root_cause": "Hypothesis: launch state for a particular packaged app is missing or invalid; the null object and trigger have not been identified.",
+      "plan": [
+        "Identify the packaged app and exact launch sequence, then reproduce on the reported and current builds.",
+        "Locate the null object in the launch callback using a captured exception stack.",
+        "Correct the demonstrated null state or gracefully report the failure and add a focused regression test."
+      ],
+      "verification": [
+        "The affected packaged app launches or reports a recoverable error without crashing PowerToys Run."
+      ],
+      "confidence": {
+        "score": 25,
+        "level": "red",
+        "rationale": "The screenshot identifies the launch path but not which packaged app, the query or the sequence that produced the exception."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run shows a NullReferenceException while launching a packaged app; the reporter supplied a screenshot and a text log.",
+    "known_information": [
+      "The screenshot names a UWPApplication.Launch lambda in PowerToys 0.98.1.",
+      "The text log contains additional errors; none is established as the cause of the screenshot."
+    ],
+    "inferences": [
+      "Hypothesis: launch state for a particular packaged app is missing or invalid; the null object and trigger have not been identified."
+    ],
+    "analysis": "The screenshot identifies the launch path but not which packaged app, the query or the sequence that produced the exception.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs#L206-L230",
+      "https://github.com/microsoft/PowerToys/issues/47236"
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Packaged app name and steps immediately before the screenshot",
+        "why_needed": "The screenshot pinpoints a launch callback but not its input or triggering sequence.",
+        "how_to_collect": "Name the app and describe the search and selection used to trigger the error."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Handle the failing packaged-app launch",
+        "module": "PowerToys Run Program plugin",
+        "version_requirement": "PowerToys 0.98.1 and current build",
+        "prerequisites": [
+          "Windows and the affected packaged app"
+        ],
+        "setup": [
+          "Open PowerToys Run with the Program plugin enabled."
+        ],
+        "steps": [
+          "Search for the app identified by the reporter and activate its result.",
+          "Record whether the exception appears and repeat with another packaged app.",
+          "Compare the current build."
+        ],
+        "expected_result": "The selected packaged app launches without a NullReferenceException."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Identify the app and launch sequence",
+      "comment": {
+        "body": "Thanks for attaching the screenshot and the text log. The screenshot identifies the packaged-app launch path, but it does not show which app was selected or how the error was triggered. Could you name the app and describe the search and activation steps immediately before the error?"
+      }
+    }
+  ]
 }

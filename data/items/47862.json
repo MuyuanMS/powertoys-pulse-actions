@@ -1,33 +1,110 @@
 {
   "number": 47862,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Creating an instance of the COM component with CLSID from the IClassFactory failed",
+  "url": "https://github.com/microsoft/PowerToys/issues/47862",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-13T17:22:43Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "PowerToys Run failed when launching Teams because COM activation of the application activation manager reported class not registered."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Current source constructs the COM activation manager before the try/catch around ActivateApplication; a registration failure at construction can escape that handler. Handling it cannot by itself repair Windows COM registration or guarantee Teams launches."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Current source constructs the COM activation manager before the try/catch around ActivateApplication; a registration failure at construction can escape that handler. Handling it cannot by itself repair Windows COM registration or guarantee Teams launches.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter supplied the 0x80040154 COM exception and stack from PowerToys Run 0.97.1.",
+      "The reporter cannot upload logs from the work laptop."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-13T17:22:43Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current source constructs the COM activation manager before the try/catch around ActivateApplication; a registration failure at construction can escape that handler. Handling it cannot by itself repair Windows COM registration or guarantee Teams launches.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle activation-manager construction failures gracefully",
+      "root_cause": "The reported class-not-registered exception may arise while constructing the COM manager, outside the existing activation exception handler.",
+      "plan": [
+        "Move or wrap manager construction inside the existing failure-handling boundary.",
+        "Keep the user-facing launch failure notification and diagnostic context without assuming the app was launched.",
+        "Add a test seam that simulates a COM class-not-registered construction failure and confirms no unhandled exception."
+      ],
+      "verification": [
+        "A missing activation COM class produces a bounded error instead of crashing PowerToys Run; normal packaged-app launches still work."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "Current source constructs the COM activation manager before the try/catch around ActivateApplication; a registration failure at construction can escape that handler. Handling it cannot by itself repair Windows COM registration or guarantee Teams launches."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run failed when launching Teams because COM activation of the application activation manager reported class not registered.",
+    "known_information": [
+      "The reporter supplied the 0x80040154 COM exception and stack from PowerToys Run 0.97.1.",
+      "The reporter cannot upload logs from the work laptop."
+    ],
+    "inferences": [
+      "The reported class-not-registered exception may arise while constructing the COM manager, outside the existing activation exception handler."
+    ],
+    "analysis": "Current source constructs the COM activation manager before the try/catch around ActivateApplication; a registration failure at construction can escape that handler. Handling it cannot by itself repair Windows COM registration or guarantee Teams launches.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs#L206-L222",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/ApplicationActivationManager.cs#L11-L17",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Handle activation-manager construction failures gracefully",
+        "module": "PowerToys Run",
+        "version_requirement": "PowerToys 0.97.1 and current build",
+        "prerequisites": [
+          "Windows test environment where missing activation-manager registration can be simulated safely"
+        ],
+        "setup": [
+          "Use an isolated test seam rather than modifying system COM registration."
+        ],
+        "steps": [
+          "Launch a packaged-app result with manager creation configured to throw 0x80040154.",
+          "Observe whether Run remains responsive and reports launch failure.",
+          "Repeat with successful activation."
+        ],
+        "expected_result": "The launch failure is reported without an unhandled crash and successful activation still launches the app."
+      }
+    }
+  ]
 }

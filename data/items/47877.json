@@ -1,33 +1,111 @@
 {
   "number": 47877,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Screen Recording Tool Inside ZoomIt (Ctrl + 5) is Broken",
+  "url": "https://github.com/microsoft/PowerToys/issues/47877",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-14T05:23:22Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "ZoomIt recording reportedly opens briefly and then ZoomIt crashes on Ctrl+5 in PowerToys 0.99.1."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Recording has an asynchronous startup and session initialization path; the issue does not identify which step fails or whether a newer build still reproduces."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Recording has an asynchronous startup and session initialization path; the issue does not identify which step fails or whether a newer build still reproduces.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter supplied the shortcut, Windows 11 build, and a PowerToys report ZIP.",
+      "The specific capture initialization failure is not established."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-14T05:23:22Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Recording has an asynchronous startup and session initialization path; the issue does not identify which step fails or whether a newer build still reproduces.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep ZoomIt usable when recording startup fails",
+      "root_cause": "Hypothesis: capture-session initialization fails or raises an exception during recording startup; the failure point is unconfirmed.",
+      "plan": [
+        "Reproduce Ctrl+5 on the reported and current builds and inspect the supplied report for startup failure details.",
+        "Trace selection, capture session initialization, and asynchronous error handling.",
+        "Fix the demonstrated failure and ensure cleanup preserves the rest of ZoomIt; add failure-path coverage."
+      ],
+      "verification": [
+        "Recording starts and saves normally, and a simulated initialization failure leaves ZoomIt responsive."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "Recording has an asynchronous startup and session initialization path; the issue does not identify which step fails or whether a newer build still reproduces."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ZoomIt recording reportedly opens briefly and then ZoomIt crashes on Ctrl+5 in PowerToys 0.99.1.",
+    "known_information": [
+      "The reporter supplied the shortcut, Windows 11 build, and a PowerToys report ZIP.",
+      "The specific capture initialization failure is not established."
+    ],
+    "inferences": [
+      "Hypothesis: capture-session initialization fails or raises an exception during recording startup; the failure point is unconfirmed."
+    ],
+    "analysis": "Recording has an asynchronous startup and session initialization path; the issue does not identify which step fails or whether a newer build still reproduces.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/Zoomit.cpp#L7180-L7200",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/VideoRecordingSession.cpp#L1263-L1314",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Keep ZoomIt usable when recording startup fails",
+        "module": "ZoomIt",
+        "version_requirement": "PowerToys 0.99.1 and current build",
+        "prerequisites": [
+          "Windows 11 and ZoomIt enabled",
+          "A test display with no sensitive content"
+        ],
+        "setup": [
+          "Confirm the recording shortcut is Ctrl+5."
+        ],
+        "steps": [
+          "Press Ctrl+5 and select a capture area if prompted.",
+          "Observe whether recording stays active or ZoomIt exits.",
+          "Test another ZoomIt shortcut afterward and repeat on the current build."
+        ],
+        "expected_result": "Recording remains active and ZoomIt continues responding to other shortcuts."
+      }
+    }
+  ]
 }

@@ -1,33 +1,111 @@
 {
   "number": 29220,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "[MWB] Once running in service mode the file transfering function will not work",
+  "url": "https://github.com/microsoft/PowerToys/issues/29220",
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 5,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2024-11-22T19:45:38Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "Mouse Without Borders file clipboard transfers reportedly fail when the sending machine uses service mode."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "The current clipboard path checks transfer settings and impersonates the logged-on user to examine a file, but the actual failed boundary in this old service-mode report remains unconfirmed."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The current clipboard path checks transfer settings and impersonates the logged-on user to examine a file, but the actual failed boundary in this old service-mode report remains unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter supplied two-machine steps and observed asymmetry between service and normal modes.",
+      "A separate 2024 commenter reports persistence; issue #51077 aggregates this report with other clipboard cases."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2024-11-22T19:45:38Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current clipboard path checks transfer settings and impersonates the logged-on user to examine a file, but the actual failed boundary in this old service-mode report remains unconfirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore file clipboard transfer in service mode",
+      "root_cause": "Hypothesis: the service-mode sender or its logged-on-user helper fails to publish the file clipboard event; the reported stopped service is not proven to be the cause.",
+      "plan": [
+        "Reproduce the two-machine normal/service-mode matrix with a small disposable file.",
+        "Trace clipboard notification, helper connection, impersonated file access, and transfer initiation at the failing sender.",
+        "Fix the verified boundary and add regression coverage for both transfer directions and normal mode."
+      ],
+      "verification": [
+        "File clipboard transfers succeed in both directions with either machine in service mode without regressing text clipboard sharing."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The current clipboard path checks transfer settings and impersonates the logged-on user to examine a file, but the actual failed boundary in this old service-mode report remains unconfirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders file clipboard transfers reportedly fail when the sending machine uses service mode.",
+    "known_information": [
+      "The reporter supplied two-machine steps and observed asymmetry between service and normal modes.",
+      "A separate 2024 commenter reports persistence; issue #51077 aggregates this report with other clipboard cases."
+    ],
+    "inferences": [
+      "Hypothesis: the service-mode sender or its logged-on-user helper fails to publish the file clipboard event; the reported stopped service is not proven to be the cause."
+    ],
+    "analysis": "The current clipboard path checks transfer settings and impersonates the logged-on user to examine a file, but the actual failed boundary in this old service-mode report remains unconfirmed.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/mousewithoutborders/App/Core/Clipboard.cs#L84-L165",
+      "https://github.com/microsoft/PowerToys/issues/51077",
+      "No covering PR found by issue-number search."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Restore file clipboard transfer in service mode",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Reported build and current PowerToys build",
+        "prerequisites": [
+          "Two paired Windows test machines on a trusted network",
+          "Mouse Without Borders clipboard sharing and file transfer enabled"
+        ],
+        "setup": [
+          "Create a small non-sensitive disposable file and confirm transfer with both machines in normal mode."
+        ],
+        "steps": [
+          "Switch only the sender to service mode and restart the module as described.",
+          "Copy the test file and paste it on the other machine; repeat in the opposite direction.",
+          "Compare text clipboard transfer and actual service/helper state."
+        ],
+        "expected_result": "File and text clipboard transfers succeed in each direction across normal and service modes."
+      }
+    }
+  ]
 }

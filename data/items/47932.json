@@ -1,33 +1,113 @@
 {
   "number": 47932,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Cannot turn off admin mode elevation even in local JSON settings",
+  "url": "https://github.com/microsoft/PowerToys/issues/47932",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Area-Setup/Install",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-16T15:28:00Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "A per-machine installation reportedly keeps launching elevated after the run-as-admin option is disabled and the machine restarted."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "The runner distinguishes current process elevation, the run_elevated setting and restart flags; scheduled startup and external launch configuration could also affect the result."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The runner distinguishes current process elevation, the run_elevated setting and restart flags; scheduled startup and external launch configuration could also affect the result.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter supplied a PowerToys report ZIP and reports editing the local JSON setting.",
+      "The report does not specify whether elevation occurs only at logon or also after manual launch."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-16T15:28:00Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The runner distinguishes current process elevation, the run_elevated setting and restart flags; scheduled startup and external launch configuration could also affect the result.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Honor the configured non-elevated startup",
+      "root_cause": "Hypothesis: the startup task, launcher elevation, or stored setting causes an elevated process despite the disabled preference; the actual source is unconfirmed.",
+      "plan": [
+        "Check actual process elevation, the stored preference, launch origin, and scheduled-task settings for logon and manual launches.",
+        "Trace the verified failing startup path without assuming JSON edits change the current process token.",
+        "Correct PowerToys-controlled startup behavior if it retains elevation incorrectly and cover existing elevated-launch and restart paths."
+      ],
+      "verification": [
+        "A normal launch and configured startup run non-elevated when the preference is off; explicitly elevated launches remain possible."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The runner distinguishes current process elevation, the run_elevated setting and restart flags; scheduled startup and external launch configuration could also affect the result."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A per-machine installation reportedly keeps launching elevated after the run-as-admin option is disabled and the machine restarted.",
+    "known_information": [
+      "The reporter supplied a PowerToys report ZIP and reports editing the local JSON setting.",
+      "The report does not specify whether elevation occurs only at logon or also after manual launch."
+    ],
+    "inferences": [
+      "Hypothesis: the startup task, launcher elevation, or stored setting causes an elevated process despite the disabled preference; the actual source is unconfirmed."
+    ],
+    "analysis": "The runner distinguishes current process elevation, the run_elevated setting and restart flags; scheduled startup and external launch configuration could also affect the result.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/main.cpp#L652-L693",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/general_settings.cpp#L425-L456",
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/restart_elevated.cpp#L16-L51"
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Honor the configured non-elevated startup",
+        "module": "General",
+        "version_requirement": "PowerToys 0.99.1 and current build",
+        "prerequisites": [
+          "Per-machine PowerToys installation",
+          "Windows account with permission to inspect its own scheduled tasks"
+        ],
+        "setup": [
+          "Disable Always run as administrator and fully exit PowerToys."
+        ],
+        "steps": [
+          "Start PowerToys normally and record the actual process elevation.",
+          "Restart Windows and compare the logon-started process.",
+          "Inspect the PowerToys startup task and launcher compatibility settings without changing unrelated policy."
+        ],
+        "expected_result": "Normal launch and logon startup honor the disabled elevation preference."
+      }
+    }
+  ]
 }

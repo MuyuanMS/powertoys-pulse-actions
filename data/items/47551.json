@@ -1,33 +1,122 @@
 {
   "number": 47551,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "always on top doesnt work when i open tabs in fullscreen",
+  "url": "https://github.com/microsoft/PowerToys/issues/47551",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-13T16:23:30Z",
+  "generated_at": "2026-11-13T16:23:30Z",
   "source_updated_at": "2026-05-12T12:53:39Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔍",
+    "label": "Needs focused investigation",
+    "detail": "An Always on Top pinned window reportedly falls behind a full-screen video or tab and reappears when full-screen exits."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Reproduce and review proposal",
+    "reason": "Always on Top uses the Windows topmost window band; a full-screen application may itself be topmost, so the pin sound alone does not establish a PowerToys defect."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Always on Top uses the Windows topmost window band; a full-screen application may itself be topmost, so the pin sound alone does not establish a PowerToys defect.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter hears the pin sound on Windows 10.",
+      "The browser or application and full-screen mode are not specified."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the reported behavior and review the scoped proposal before implementation.",
+    "evaluated_at": "2026-11-13T16:23:30Z",
     "source_updated_at": "2026-05-12T12:53:39Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Always on Top uses the Windows topmost window band; a full-screen application may itself be topmost, so the pin sound alone does not establish a PowerToys defect.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate pinned-window ordering against full-screen applications",
+      "root_cause": "Hypothesis: the full-screen window enters or changes topmost z-order after the pinned window; the application and behavior need confirmation before changing policy.",
+      "plan": [
+        "Identify both windows and full-screen mode and reproduce while inspecting their topmost state.",
+        "Determine whether the behavior follows Windows topmost ordering or a PowerToys regression.",
+        "Only if a PowerToys-controlled defect is demonstrated, correct it with regression checks for normal full-screen and unpin behavior."
+      ],
+      "verification": [
+        "Document the actual full-screen ordering and ensure normal pin and unpin still work without focus stealing."
+      ],
+      "confidence": {
+        "score": 20,
+        "level": "red",
+        "rationale": "Always on Top uses the Windows topmost window band; a full-screen application may itself be topmost, so the pin sound alone does not establish a PowerToys defect."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "An Always on Top pinned window reportedly falls behind a full-screen video or tab and reappears when full-screen exits.",
+    "known_information": [
+      "The reporter hears the pin sound on Windows 10.",
+      "The browser or application and full-screen mode are not specified."
+    ],
+    "inferences": [
+      "Hypothesis: the full-screen window enters or changes topmost z-order after the pinned window; the application and behavior need confirmation before changing policy."
+    ],
+    "analysis": "Always on Top uses the Windows topmost window band; a full-screen application may itself be topmost, so the pin sound alone does not establish a PowerToys defect.",
+    "initial_investigation": [
+      "https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L613-L647"
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The pinned window, full-screen application and how full-screen was entered",
+        "why_needed": "Different full-screen modes can create a topmost window and alter z-order.",
+        "how_to_collect": "Name both apps and describe the full-screen action."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce the reported behavior",
+      "reproduce": {
+        "title": "Investigate pinned-window ordering against full-screen applications",
+        "module": "Always on Top",
+        "version_requirement": "PowerToys 0.99.1 and current build",
+        "prerequisites": [
+          "Windows with the reporter's applications"
+        ],
+        "setup": [
+          "Pin a separate normal window using Always on Top."
+        ],
+        "steps": [
+          "Enter the reported video's or browser's full-screen mode.",
+          "Observe ordering and compare with a non-full-screen window.",
+          "Exit full-screen and verify the pin state."
+        ],
+        "expected_result": "Pinned-window behavior is understood for the specified full-screen mode without disrupting normal pinning."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Identify applications and full-screen mode",
+      "comment": {
+        "body": "Thanks for describing the pin sound and the window returning after full-screen exits. Full-screen modes can use different window ordering, so could you identify the pinned application, the application playing the video or showing the tab, and how you enter full-screen?"
+      }
+    }
+  ]
 }
