@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 47953,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Power Display: Setting contrast to 0 causes black screen",
+  "url": "https://github.com/microsoft/PowerToys/issues/47953",
+  "generated_at": "2026-11-13T16:17:38Z",
+  "evaluated_at": "2026-11-13T16:17:38Z",
   "source_updated_at": "2026-05-22T16:51:30Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Setting contrast to zero turns one reported Power Display monitor black.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-22T16:51:30Z",
+    "evaluated_at": "2026-11-13T16:17:38Z",
+    "rationale": "The reporter supplied the precise value and monitor model, permitting a controlled maintainer comparison; device behavior and an appropriate guard remain uncertain.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter says setting contrast to zero blacks the screen while the application continues; moving the slider restores it.",
+      "The reporter identified the affected monitor as a SANC G52 Plus IPS.",
+      "MonitorViewModel.SetContrastAsync clamps to 0–100 and passes the chosen value to the hardware manager; that does not prove how every display renders zero."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-22T16:51:30Z"
-  }
+    "recommended_action": "Safely compare the monitor’s native behavior and Power Display behavior before considering a warning or recovery affordance."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A device-safe warning or reversible change may be warranted after behavior and recovery are characterized; arbitrary universal clamping is not justified.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate safe contrast adjustment and recovery",
+      "root_cause": "The device may legitimately produce an all-black image at its minimum contrast; whether Power Display creates additional unrecoverable risk is unknown.",
+      "plan": [
+        "Safely reproduce on the reported or comparable display and compare the monitor’s own minimum setting.",
+        "Determine whether an accessible recovery path or confirmation is needed for potentially unreadable values.",
+        "Design any warning or timed revert without imposing an unverified universal minimum, and consider saved settings and CLI paths.",
+        "Test restoration, cancellation, multi-monitor behavior and monitors whose minimum is safe."
+      ],
+      "verification": [
+        "A user can recover from a display becoming unreadable without relying on the affected display.",
+        "Supported monitor contrast ranges and intentional low values remain available according to the agreed design."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The observed value and hardware are known, but current behavior and whether a cross-device warning or recovery design is justified are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Setting contrast to zero turns one reported Power Display monitor black.",
+    "known_information": [
+      "On 0.99.1 the reporter says setting contrast to zero blacks the screen while the application continues; moving the slider restores it.",
+      "The reporter identified the affected monitor as a SANC G52 Plus IPS."
+    ],
+    "inferences": [
+      "A device may legitimately interpret minimum contrast as black; the appropriate protection and affected monitor range are not established."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/PowerDisplay/PowerDisplay/ViewModels/MonitorViewModel.cs: SetContrastAsync permits 0 and delegates the hardware write.",
+      "Reviewed complete issue discussion including the answered monitor-model question, no assignee and no timeline fix.",
+      "Searched open upstream PR titles for contrast work; no covering Power Display fix was established."
+    ],
+    "analysis": "The report gives an actionable hardware-specific scenario. Reproduction must have an independently operable recovery path and should not assume a universal safe minimum.",
+    "information_gaps": [
+      {
+        "information": "Whether the affected device’s own controls also render zero black and what recovery options exist on current Power Display.",
+        "why_needed": "Distinguishes hardware semantics from a Power Display-specific defect and informs a safe warning or recovery design.",
+        "how_to_collect": "Maintainer uses a recoverable monitor test setup and compares the device’s native control with Power Display.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve safe contrast adjustment investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Safely compare minimum contrast behavior",
+      "reproduce": {
+        "title": "Compare monitor and Power Display contrast",
+        "module": "Power Display",
+        "version_requirement": "Use the current PowerToys release; report was on 0.99.1.",
+        "prerequisites": [
+          "Use a test monitor with known physical on-screen controls or a separately visible display and verified recovery method; do not perform this on an only display without recovery."
+        ],
+        "setup": [
+          "Record the original contrast value and verify that the monitor hardware controls or separate display can restore it."
+        ],
+        "steps": [
+          "1. On the test monitor, compare the native on-screen contrast control at a low setting and restore the original value.",
+          "2. With the verified independent recovery available, set contrast to zero through Power Display and observe the image.",
+          "3. Restore the original value immediately using the independent control and verify display usability.",
+          "4. Repeat with another compatible monitor only if it can be recovered independently."
+        ],
+        "expected_result": "The monitor remains recoverable and the behavior at minimum is understood without assuming all devices share one safe value."
+      }
+    }
+  ]
 }

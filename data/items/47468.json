@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 47468,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "PowerToys does not check for a newer version (B) if it has already notified that a new version (A) is ready",
+  "url": "https://github.com/microsoft/PowerToys/issues/47468",
+  "generated_at": "2026-11-13T16:22:59Z",
+  "evaluated_at": "2026-11-13T16:22:59Z",
   "source_updated_at": "2026-05-16T20:15:52Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "The advertised PowerToys update may remain stale when a newer release becomes available.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-16T20:15:52Z",
+    "evaluated_at": "2026-11-13T16:22:59Z",
+    "rationale": "The report gives an actionable scenario, but current behavior and the failing boundary are unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.97.2 the reporter saw 0.99.0 offered after 0.99.1 became available and could not force an update check without restarting.",
+      "The reporter was unsure whether automatic downloading was enabled and suggested keeping a manual check available.",
+      "Inspected src/runner/UpdateUtils.cpp CheckForUpdatesCallback, which obtains GitHub version information and passes it to ProcessNewVersionInfo."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-16T20:15:52Z"
-  }
+    "recommended_action": "Reproduce on a current build and identify the first failing stage before choosing a targeted correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after current behavior and its boundary are confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate stale offered update versions",
+      "root_cause": "An update state or UI gating condition may keep an earlier offer visible; the exact current path is unverified.",
+      "plan": [
+        "Reproduce sequential available versions in a controlled update feed without installing the first offer.",
+        "Trace automatic and manual check gating, update state and downloaded-file handling.",
+        "Choose a refresh behavior that preserves valid downloads and respects prerelease, network and policy settings.",
+        "Add tests for successive release metadata, failed refresh and an already-downloaded installer."
+      ],
+      "verification": [
+        "An undownloaded older offer can be refreshed to a newer eligible release.",
+        "Downloaded installers and policy or prerelease choices are not silently invalidated."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The reported scenario is concrete but the current-build behavior and failing stage remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The advertised PowerToys update may remain stale when a newer release becomes available.",
+    "known_information": [
+      "On 0.97.2 the reporter saw 0.99.0 offered after 0.99.1 became available and could not force an update check without restarting.",
+      "The reporter was unsure whether automatic downloading was enabled and suggested keeping a manual check available."
+    ],
+    "inferences": [
+      "An update state or UI gating condition may keep an earlier offer visible; the exact current path is unverified."
+    ],
+    "initial_investigation": [
+      "Inspected src/runner/UpdateUtils.cpp CheckForUpdatesCallback, which obtains GitHub version information and passes it to ProcessNewVersionInfo.",
+      "Reviewed complete thread, no assignee and no timeline fix; bounded search of open update-check PR titles did not establish a covering change."
+    ],
+    "analysis": "The supplied scenario supports a targeted maintainer comparison rather than another generic information request.",
+    "information_gaps": [
+      {
+        "information": "Whether a current build refreshes an existing undownloaded offer when a newer version is published and what update state is shown.",
+        "why_needed": "Distinguishes possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer uses a controlled update metadata feed or equivalent deterministic test with sequential version offers and records state transitions.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate stale offered update versions"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate stale offered update versions",
+      "reproduce": {
+        "title": "Investigate stale offered update versions",
+        "module": "PowerToys updater and Settings",
+        "version_requirement": "Use the current PowerToys release and compare the reported version if practical.",
+        "prerequisites": [
+          "Use a Windows test environment and preserve the original configuration."
+        ],
+        "setup": [
+          "Use a controlled test update feed or equivalent test seam representing installed version X and available versions A then B."
+        ],
+        "steps": [
+          "1. Start on X with automatic download disabled and publish eligible version A to the test feed.",
+          "2. Observe the offered A without downloading or installing it.",
+          "3. Publish eligible version B, invoke any available manual check or wait for the scheduled check, and inspect update state.",
+          "4. Repeat with A already downloaded and with a failed metadata refresh."
+        ],
+        "expected_result": "The update state reflects a newer eligible version without losing a valid download or bypassing user and policy choices."
+      }
+    }
+  ]
 }

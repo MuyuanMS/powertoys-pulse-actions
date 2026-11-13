@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 47917,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "PowerToys breaks win32 system menu showing on app with custom titlebar",
+  "url": "https://github.com/microsoft/PowerToys/issues/47917",
+  "generated_at": "2026-11-13T16:15:25Z",
+  "evaluated_at": "2026-11-13T16:15:25Z",
   "source_updated_at": "2026-05-17T12:11:30Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "A custom Win32 title bar reports an invalid system-menu handle when Always On Top is enabled.",
+  "labels": [
+    "Issue-Bug",
+    "Area-Setup/Install",
+    "Product-Always On Top",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-17T12:11:30Z",
+    "evaluated_at": "2026-11-13T16:15:25Z",
+    "rationale": "The reporter supplied the menu-handling sequence, diagnostic ZIP and an Always On Top on/off comparison; the mechanism remains unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1, the reported custom-title-bar application gets ERROR_INVALID_MENU_HANDLE from TrackPopupMenu on one machine; disabling Always On Top restores behavior.",
+      "The report includes code excerpts and a bug report ZIP; a complete standalone sample is not supplied.",
+      "Current AlwaysOnTop.cpp obtains a system menu and adds or updates an Always On Top entry; this is a relevant boundary, not proof it invalidates a handle."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-17T12:11:30Z"
-  }
+    "recommended_action": "Reproduce using the reported menu-handling sequence and isolate the interaction before proposing a narrowly scoped correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted menu-lifecycle correction is applicable if the interaction is reproduced; no specific causal call is confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Always On Top custom system-menu interaction",
+      "root_cause": "Hypothesis: a system-menu update or lifecycle interaction interferes with a custom title bar; no particular invalidating call is established.",
+      "plan": [
+        "Reproduce with a minimal custom-title-bar window based on the provided snippets and compare module-enabled and disabled behavior.",
+        "Trace GetSystemMenu, menu update events, TrackPopupMenu results and handle lifecycle without assuming a race.",
+        "Correct only the demonstrated interference while retaining the Always On Top menu command and normal window handling.",
+        "Add coverage for custom and standard title bars, menu open/close, toggling the setting, and repeated interactions."
+      ],
+      "verification": [
+        "The custom title bar opens its menu repeatedly without ERROR_INVALID_MENU_HANDLE with Always On Top enabled.",
+        "The Always On Top command still toggles correctly on supported standard windows and disabling the feature removes its entry."
+      ],
+      "confidence": {
+        "score": 50,
+        "level": "red",
+        "rationale": "The on/off comparison is useful, but the report is machine-specific and the triggering operation has not been reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A custom Win32 title bar reports an invalid system-menu handle when Always On Top is enabled.",
+    "known_information": [
+      "On 0.99.1, the reported custom-title-bar application gets ERROR_INVALID_MENU_HANDLE from TrackPopupMenu on one machine; disabling Always On Top restores behavior.",
+      "The report includes code excerpts and a bug report ZIP; a complete standalone sample is not supplied."
+    ],
+    "inferences": [
+      "A system-menu lifecycle or concurrent update interaction is plausible, but the issue does not establish a specific race or causal call."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp UpdateSystemMenuItem: it calls GetSystemMenu and adds or updates a command.",
+      "Reviewed complete issue and comments; there is no assignee or linked fix in the collected timeline. A bug report was supplied, not independently analyzed.",
+      "Searched public PRs for the issue number and open system-menu work; no covering PR was established."
+    ],
+    "analysis": "The concrete on/off comparison supports maintainer reproduction rather than another generic bug-report request. A minimal test harness is needed to exercise the provided Win32 excerpts.",
+    "information_gaps": [
+      {
+        "information": "Which menu operation or event precedes the invalid handle on a current build.",
+        "why_needed": "Distinguishes the PowerToys menu update path from application or Explorer lifecycle effects.",
+        "how_to_collect": "Maintainer constructs a minimal application from the issue excerpts and compares menu handles and results with Always On Top on and off.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve custom system-menu interaction investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce custom title-bar menu failure",
+      "reproduce": {
+        "title": "Compare custom system menus with Always On Top enabled",
+        "module": "Always On Top",
+        "version_requirement": "Use the current PowerToys release; compare 0.99.1 if needed.",
+        "prerequisites": [
+          "Use a Windows test machine and a minimal Win32 window implementing the title-bar and WM_NCRBUTTONUP menu sequence in the issue."
+        ],
+        "setup": [
+          "Enable Always On Top and its system-menu integration; preserve the ability to disable the module as a control."
+        ],
+        "setup_prompt": "Create a minimal Win32 test app using the issue’s DwmExtendFrameIntoClientArea, WM_NCCALCSIZE and HTCAPTION handling, then GetSystemMenu and TrackPopupMenu in WM_NCRBUTTONUP; report return values and GetLastError.",
+        "steps": [
+          "1. Launch the test window and repeatedly right-click its title bar with Always On Top enabled.",
+          "2. Record GetSystemMenu and TrackPopupMenu results, error code and menu-event sequence.",
+          "3. Disable Always On Top and repeat; compare a standard title-bar window and an independently restarted Explorer session if required."
+        ],
+        "expected_result": "The custom window opens a valid system menu each time and its commands remain usable with or without Always On Top."
+      }
+    }
+  ]
 }

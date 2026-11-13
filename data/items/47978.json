@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 47978,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "control key does not work when keyboard manager is active",
+  "url": "https://github.com/microsoft/PowerToys/issues/47978",
+  "generated_at": "2026-11-13T16:24:27Z",
+  "evaluated_at": "2026-11-13T16:24:27Z",
   "source_updated_at": "2026-05-19T06:03:20Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Control shortcuts reportedly stop working after using a Keyboard Manager shortcut remap.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-19T06:03:20Z",
+    "evaluated_at": "2026-11-13T16:24:27Z",
+    "rationale": "The report gives an intermittent scenario, but the triggering event and current-build behavior need isolation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter maps Ctrl+Left to Home and says after some Edge use Ctrl+A/C/V behave as if Ctrl is not pressed.",
+      "Current KeyboardManager::HandleKeyboardHookEvent routes events through single-key, app-specific and OS-level shortcut handlers; the routing alone does not establish a modifier-state defect."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-19T06:03:20Z"
-  }
+    "recommended_action": "Reproduce using the reported mapping and compare physical and logical Ctrl state before and after the failure."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted modifier-handling correction may be applicable after reproducing the current failing sequence.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Ctrl shortcut state after remapping",
+      "root_cause": "A remap-related modifier state or suppression issue is possible but the triggering event is unverified.",
+      "plan": [
+        "Reproduce the Ctrl+Left to Home mapping with Edge and control applications.",
+        "Record physical and logical key transitions and isolate any stale state or suppressed event.",
+        "Correct the demonstrated state transition without disturbing remapped and ordinary Ctrl combinations.",
+        "Add regression tests for the triggering sequence, key release and unrelated shortcuts."
+      ],
+      "verification": [
+        "The mapped shortcut works and ordinary Ctrl shortcuts continue working after the reproduced sequence.",
+        "Other modifier combinations and application-specific remaps remain correct."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The report is intermittent and neither the current trigger nor cause is established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Control shortcuts reportedly stop working after using a Keyboard Manager shortcut remap.",
+    "known_information": [
+      "On 0.99.1 the reporter maps Ctrl+Left to Home and says after some Edge use Ctrl+A/C/V behave as if Ctrl is not pressed.",
+      "The issue does not identify a deterministic trigger or provide a diagnostic ZIP."
+    ],
+    "inferences": [
+      "A stale or suppressed modifier state is possible but unproven."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp: the keyboard hook routes input through multiple remap handlers in priority order.",
+      "Reviewed the complete thread and linked issue bodies #47985 (Copy as Path shortcut interrupted) and #48003 (intermittent text shortcuts); neither establishes a covering fix or identical cause. An open-PR title search for Keyboard Manager Ctrl found no match."
+    ],
+    "analysis": "Intermittent modifier symptoms warrant a bounded maintainer reproduction before choosing an implementation.",
+    "information_gaps": [
+      {
+        "information": "The exact event sequence and keyboard state when Ctrl shortcuts stop working on a current build.",
+        "why_needed": "Distinguishes remap state, application focus and other causes.",
+        "how_to_collect": "Exercise the stated remap and compare Ctrl key events and shortcuts before and after failure.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Ctrl shortcut investigation"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce intermittent Ctrl shortcuts",
+      "reproduce": {
+        "title": "Investigate Ctrl shortcut state after remapping",
+        "module": "Keyboard Manager",
+        "version_requirement": "Use the current PowerToys release and compare with 0.99.1 if practical.",
+        "prerequisites": [
+          "Use a Windows test environment and back up existing Keyboard Manager mappings."
+        ],
+        "setup": [
+          "Enable Keyboard Manager and map Ctrl+Left to Home. Open Edge and a standard text editor."
+        ],
+        "steps": [
+          "1. Confirm Ctrl+Left performs Home and Ctrl+A/C/V work normally in Edge and the editor.",
+          "2. Use the remap and ordinary shortcuts repeatedly while switching focus, watching for the reported intermittent failure.",
+          "3. If it occurs, compare physical and logical Ctrl key state and keydown/up events; check another application.",
+          "4. Disable the remap and compare, preserving the triggering sequence for a focused regression test."
+        ],
+        "expected_result": "The remap works and unrelated Ctrl shortcuts continue to behave normally."
+      }
+    }
+  ]
 }

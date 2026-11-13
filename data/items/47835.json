@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 47835,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Workspaces treats MS Sticky Notes (new) as instances of MS OneNote",
+  "url": "https://github.com/microsoft/PowerToys/issues/47835",
+  "generated_at": "2026-11-13T16:21:34Z",
+  "evaluated_at": "2026-11-13T16:21:34Z",
   "source_updated_at": "2026-05-12T16:06:55Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Workspaces launches OneNote instead of restoring the new Sticky Notes windows.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T16:06:55Z",
+    "evaluated_at": "2026-11-13T16:21:34Z",
+    "rationale": "The report gives an actionable scenario, but the current failing boundary has not been established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.98.0 the reporter captured new Sticky Notes windows and says workspace relaunch opens OneNote windows at their saved positions.",
+      "The report supplies numbered capture and relaunch steps but no diagnostic archive or follow-up discussion.",
+      "Inspected src/modules/workspaces/WorkspacesLib/WindowUtils.cpp and WorkspacesData.cpp: process/window app identity is read and app-user-model IDs are stored."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T16:06:55Z"
-  }
+    "recommended_action": "Reproduce on a current build and identify the first failing stage before choosing a targeted correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after the current failure is confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Sticky Notes workspace identity",
+      "root_cause": "Captured application identity or launch matching may identify Sticky Notes as OneNote; the exact identity boundary and application architecture are unknown.",
+      "plan": [
+        "Reproduce capture and launch using the new Sticky Notes and record the saved application identity.",
+        "Compare the identity of the captured window, launch target and window matching with OneNote.",
+        "Correct the demonstrated identity mismatch while preserving packaged-app and OneNote launch behavior.",
+        "Add focused tests for application identity disambiguation using non-sensitive fixtures."
+      ],
+      "verification": [
+        "Saved Sticky Notes windows relaunch or are handled according to the supported application model rather than opening unrelated OneNote windows.",
+        "Existing OneNote and other packaged applications continue to launch and match correctly."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The reported scenario is concrete but the current-build behavior and failing stage remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces launches OneNote instead of restoring the new Sticky Notes windows.",
+    "known_information": [
+      "On 0.98.0 the reporter captured new Sticky Notes windows and says workspace relaunch opens OneNote windows at their saved positions.",
+      "The report supplies numbered capture and relaunch steps but no diagnostic archive or follow-up discussion."
+    ],
+    "inferences": [
+      "Captured application identity or launch matching may identify Sticky Notes as OneNote; the exact identity boundary and application architecture are unknown."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/workspaces/WorkspacesLib/WindowUtils.cpp and WorkspacesData.cpp: process/window app identity is read and app-user-model IDs are stored.",
+      "Reviewed the complete thread and found no assignee or linked fix; searched open PRs for Sticky Notes Workspaces without finding a covering change."
+    ],
+    "analysis": "The supplied steps support a focused maintainer reproduction rather than a generic information request.",
+    "information_gaps": [
+      {
+        "information": "The captured app identity and launch target for new Sticky Notes compared with OneNote on a current build.",
+        "why_needed": "Distinguishes possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer inspects a disposable workspace capture and compares saved identity with the process and launched application.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate sticky notes workspace identity"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate sticky notes workspace identity",
+      "reproduce": {
+        "title": "Investigate Sticky Notes workspace identity",
+        "module": "Workspaces",
+        "version_requirement": "Use the current PowerToys release and compare the reported version if practical.",
+        "prerequisites": [
+          "Use a Windows test machine and preserve the original configuration."
+        ],
+        "setup": [
+          "Use a test machine with the new Sticky Notes and OneNote installed; create a disposable workspace with multiple notes."
+        ],
+        "steps": [
+          "1. Open and position multiple new Sticky Notes windows.",
+          "2. Capture and save a workspace with a desktop shortcut, then close the application windows.",
+          "3. Launch the workspace and observe which application opens and where windows are placed.",
+          "4. Compare captured application identity and launch target with the actual Sticky Notes and OneNote process identities."
+        ],
+        "expected_result": "The workspace does not mistake Sticky Notes windows for unrelated OneNote windows."
+      }
+    }
+  ]
 }

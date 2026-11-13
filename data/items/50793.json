@@ -4,37 +4,30 @@
   "kind": "issue",
   "title": "## Mouse Jump preview window does not respond to mouse clicks in v0.101.2362.0",
   "url": "https://github.com/microsoft/PowerToys/issues/50793",
-  "generated_at": "2026-10-28T16:44:51Z",
-  "evaluated_at": "2026-10-28T16:44:51Z",
-  "source_updated_at": "2026-10-28T16:25:28Z",
+  "generated_at": "2026-11-13T16:11:59Z",
+  "evaluated_at": "2026-11-13T16:11:59Z",
+  "source_updated_at": "2026-11-13T13:00:42Z",
   "stage": "triaged",
   "pending_author": false,
-  "summary": "The version-controlled Mouse Jump click regression is now also confirmed on 0.102.3001; reproduce input delivery versus coordinate mapping.",
+  "summary": "Mouse Jump preview clicks fail after a version change; another user reports the same multi-monitor symptom.",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Utilities"
   ],
-  "assignees": [
-    null
-  ],
+  "assignees": [],
   "judgment": {
     "evidence": [
-      "The original report supplies a repeatable preview-click failure on 0.101.2362.0 and a working 0.100.2 control on the same machine and settings.",
-      "Its Windows 11 25H2 configuration has a mirrored display pair plus a display to the right. The preview opens but left clicks neither move the pointer nor dismiss it.",
-      "A new October 28 reply independently confirms persistence on 0.102.3001.0; asking merely to try that version is now obsolete.",
-      "The attached Mouse Jump log is from the working 0.100.2 baseline and records successful target-coordinate handling; it does not trace the failing WinUI preview.",
-      "Read the full report and new confirmation and independently inspected the supplied archive, separating working-baseline logs from failing-version evidence.",
-      "Current PreviewWindow.xaml.cs::PreviewImage_PointerPressed filters mouse devices, reads a point relative to the image, applies a DPI ratio, searches screen bounds and returns without hiding the window when no layout matches.",
-      "Focused history locates the WinUI migration in #48393. This is a plausible regression boundary, not proof that its DPI transform is wrong.",
-      "The earlier focused investigation identified a center-click UI test but no mirrored-topology regression case; a single-display click test does not cover this report.",
-      "Bounded issue/PR/fork searches and timeline show no exact covering implementation or assignee. Adjacent Mouse Jump library PRs are not evidence of a shipped click fix."
+      "The reporter compares a working 0.100.2 with failures on 0.101.2362.0 and 0.102.3001.0 using a mirrored display pair plus a third display.",
+      "A second user reports the same symptom in a multiple-monitor setup on November 13.",
+      "The reporter supplied a diagnostic ZIP. Earlier triage describes the Mouse Jump log as coming from the working 0.100.2 baseline; that characterization was not independently verified in this pass.",
+      "In the current source, PreviewImage_PointerPressed checks the mouse and left button, scales the point, and returns if no screen bounds match; failure in that branch is unproven."
     ],
     "status": "reproducible",
-    "source_updated_at": "2026-10-28T16:25:28Z",
-    "evaluated_at": "2026-10-28T16:44:51Z",
+    "source_updated_at": "2026-11-13T13:00:42Z",
+    "evaluated_at": "2026-11-13T16:11:59Z",
     "recommended_action": "Route a bounded full-design investigation after locating the first divergent click-path branch; preserve the working-baseline control.",
-    "rationale": "The public report already provides topology, steps, a working baseline and a latest-version confirmation. The evidence supports a focused maintainer reproduction, not another generic logs or version request."
+    "rationale": "The supplied comparison and independent multi-monitor report support reproduction, not a specific root cause."
   },
   "fix_assessment": {
     "existing_fix_urls": [],
@@ -51,9 +44,9 @@
         "Retest on a non-mirrored layout and on the reporter topology at 0.102.3001; do not claim success based only on the baseline log."
       ],
       "confidence": {
-        "score": 76,
-        "rationale": "The source identifies a plausible boundary, but this pass did not reproduce the failing transition. The accompanying diagnostic action distinguishes competing explanations.",
-        "level": "yellow"
+        "score": 50,
+        "rationale": "The handler has testable input and coordinate branches, but no failure was reproduced and the exact cause remains unconfirmed.",
+        "level": "red"
       },
       "plan": [
         "Reproduce the supplied mirrored topology and compare the working baseline with the first failing and latest-confirmed versions.",
@@ -65,21 +58,18 @@
   ],
   "issue_context": {
     "initial_investigation": [
-      "Read the full report and new confirmation and independently inspected the supplied archive, separating working-baseline logs from failing-version evidence.",
-      "Current PreviewWindow.xaml.cs::PreviewImage_PointerPressed filters mouse devices, reads a point relative to the image, applies a DPI ratio, searches screen bounds and returns without hiding the window when no layout matches.",
-      "Focused history locates the WinUI migration in #48393. This is a plausible regression boundary, not proof that its DPI transform is wrong.",
-      "The earlier focused investigation identified a center-click UI test but no mirrored-topology regression case; a single-display click test does not cover this report.",
-      "Bounded issue/PR/fork searches and timeline show no exact covering implementation or assignee. Adjacent Mouse Jump library PRs are not evidence of a shipped click fix."
+      "Inspected src/modules/mouseutils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs: the handler checks mouse type, left button, DPI-scaled position, and screen hit before cursor movement.",
+      "Earlier triage identified the WinUI migration #48393 as a possible version boundary, not a confirmed root cause.",
+      "The issue timeline snapshot contains no linked fix or assignee; the prior triage recorded bounded ownership searches."
     ],
     "inferences": [
       "The WinUI migration/input-mapping boundary is plausible, but the report does not prove a particular DPI calculation or require that every affected system is mirrored."
     ],
-    "summary": "The version-controlled Mouse Jump click regression is now also confirmed on 0.102.3001; reproduce input delivery versus coordinate mapping.",
+    "summary": "Mouse Jump preview clicks fail after a version change; another user reports the same multi-monitor symptom.",
     "known_information": [
-      "The original report supplies a repeatable preview-click failure on 0.101.2362.0 and a working 0.100.2 control on the same machine and settings.",
-      "Its Windows 11 25H2 configuration has a mirrored display pair plus a display to the right. The preview opens but left clicks neither move the pointer nor dismiss it.",
-      "A new October 28 reply independently confirms persistence on 0.102.3001.0; asking merely to try that version is now obsolete.",
-      "The attached Mouse Jump log is from the working 0.100.2 baseline and records successful target-coordinate handling; it does not trace the failing WinUI preview."
+      "The reporter compares a working 0.100.2 with failures on 0.101.2362.0 and 0.102.3001.0 using a mirrored display pair plus a third display.",
+      "A second user reports the same symptom in a multiple-monitor setup on November 13.",
+      "The reporter supplied a diagnostic ZIP. Earlier triage describes the Mouse Jump log as coming from the working 0.100.2 baseline; that characterization was not independently verified in this pass."
     ],
     "information_gaps": [
       {
@@ -89,7 +79,7 @@
         "information": "Whether the failing-version handler receives the click and whether the transformed point matches a screen layout."
       }
     ],
-    "analysis": "Do not mistake the supplied working-version click log for a failing-version trace. The new confirmation advances current-release relevance without establishing root cause."
+    "analysis": "The report supports maintainer reproduction rather than another generic request. The first failing branch and the need for mirrored displays remain unconfirmed."
   },
   "actions": [
     {

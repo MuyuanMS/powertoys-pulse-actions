@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 47503,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Keyboard shortcut rendering in settings doesn't take keyboard layout into account",
+  "url": "https://github.com/microsoft/PowerToys/issues/47503",
+  "generated_at": "2026-11-13T16:16:30Z",
+  "evaluated_at": "2026-11-13T16:16:30Z",
   "source_updated_at": "2026-05-12T12:55:04Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Settings displays the digit-row shortcut as Ctrl+1 rather than Ctrl+& under French AZERTY.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-12T12:55:04Z",
+    "evaluated_at": "2026-11-13T16:16:30Z",
+    "rationale": "The report has a concrete scenario, but the affected boundary is unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On PowerToys 0.99.1 the reporter expects the unshifted French AZERTY key label Ctrl+& for the ZoomIt shortcut but sees Ctrl+1.",
+      "The report includes comparison screenshots and scripts; no comments, assignee or linked fix appear in the collected thread.",
+      "Inspected src/settings-ui/Settings.UI.Library/HotkeySettings.cs and Utilities/Helper.cs, which use LayoutMap for key names."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:55:04Z"
-  }
+    "recommended_action": "Reproduce the reported scenario on a current build and isolate the failing boundary before choosing a correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after the reported behavior and boundary are confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate layout-aware Settings shortcut labels",
+      "root_cause": "The layout or naming path used for rendering may not match the active layout for this shortcut; an incorrect mapping or stale UI is not established.",
+      "plan": [
+        "Reproduce the ZoomIt shortcut under French AZERTY and US layouts and compare actual virtual-key semantics with its displayed name.",
+        "Trace the active thread layout and shortcut label refresh when switching layouts.",
+        "Correct only the demonstrated display mapping or refresh boundary without silently changing the stored shortcut or activation semantics.",
+        "Add focused tests for French and US layouts, layout switches and special non-printable keys."
+      ],
+      "verification": [
+        "Shortcut labels match the effective active key meaning and refresh after layout changes.",
+        "Existing shortcuts continue to activate with the same stored virtual keys."
+      ],
+      "confidence": {
+        "score": 50,
+        "level": "red",
+        "rationale": "The scenario and relevant source path are known, but current behavior and the failing boundary are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Settings displays the digit-row shortcut as Ctrl+1 rather than Ctrl+& under French AZERTY.",
+    "known_information": [
+      "On PowerToys 0.99.1 the reporter expects the unshifted French AZERTY key label Ctrl+& for the ZoomIt shortcut but sees Ctrl+1.",
+      "The report includes comparison screenshots and scripts; no comments, assignee or linked fix appear in the collected thread."
+    ],
+    "inferences": [
+      "The layout or naming path used for rendering may not match the active layout for this shortcut; an incorrect mapping or stale UI is not established."
+    ],
+    "initial_investigation": [
+      "Inspected src/settings-ui/Settings.UI.Library/HotkeySettings.cs and Utilities/Helper.cs, which use LayoutMap for key names.",
+      "Inspected src/common/interop/keyboard_layout.cpp: the map uses the current thread keyboard layout and ToUnicodeEx and is refreshed by layout identity; the UI binding path and actual result were not reproduced.",
+      "Searched open upstream PRs for keyboard-layout shortcut work; no covering PR was established."
+    ],
+    "analysis": "The report supports a specific maintainer comparison rather than another generic information request; no root cause or covering fix is established.",
+    "information_gaps": [
+      {
+        "information": "Which layout, virtual key and displayed value the Settings shortcut rendering actually uses on a current build.",
+        "why_needed": "Distinguishes the possible boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer compares the saved key, active input layout, LayoutMap result and rendered shortcut under French and US layouts.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate layout-aware settings shortcut labels"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate layout-aware settings shortcut labels",
+      "reproduce": {
+        "title": "Investigate layout-aware Settings shortcut labels",
+        "module": "PowerToys Settings and ZoomIt",
+        "version_requirement": "Use the current PowerToys release and compare with 0.99.1 where practical.",
+        "prerequisites": [
+          "Use a Windows test machine and preserve the original configuration."
+        ],
+        "setup": [
+          "Enable French AZERTY and US keyboard layouts on a test Windows system; enable ZoomIt."
+        ],
+        "steps": [
+          "1. Select French AZERTY and inspect the Zoom toggle shortcut label and stored virtual key in Settings.",
+          "2. Compare the label with the actual key used to activate the shortcut.",
+          "3. Switch to US layout, reopen or revisit Settings, and compare the label and activation; switch back to French.",
+          "4. In a maintainer diagnostic session, inspect the layout supplied to key-name mapping and the UI update path."
+        ],
+        "expected_result": "The displayed label accurately describes the active shortcut under each layout without changing its activation semantics."
+      }
+    }
+  ]
 }

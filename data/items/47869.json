@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 47869,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "New+ disables explorer's native rename function",
+  "url": "https://github.com/microsoft/PowerToys/issues/47869",
+  "generated_at": "2026-11-13T16:20:21Z",
+  "evaluated_at": "2026-11-13T16:20:21Z",
   "source_updated_at": "2026-05-14T00:01:57Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "After creating a New+ template item, Explorer rename reportedly stops working.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-New+"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-14T00:01:57Z",
+    "evaluated_at": "2026-11-13T16:20:21Z",
+    "rationale": "The report gives an actionable scenario and supplied diagnostics, but the current failing boundary has not been established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter says creating a template file or folder causes Explorer F2 and context-menu rename to stop working even elsewhere.",
+      "A PowerToys report ZIP was supplied; the thread has no follow-up comments.",
+      "Inspected src/modules/NewPlus/NewShellExtensionContextMenu/template_item.cpp and new_utilities.h: New+ launches a worker to enter Explorer rename mode after copying."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-14T00:01:57Z"
-  }
+    "recommended_action": "Reproduce on a current build and identify the first failing stage before choosing a targeted correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted lifecycle correction may be applicable after the current failure is confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate New+ interaction with Explorer rename",
+      "root_cause": "New+ rename-mode or shell interaction may affect later Explorer rename, but the report does not establish that the presence of the created file is causal.",
+      "plan": [
+        "Reproduce using a disposable folder and compare F2 and context-menu rename before and after New+ template creation.",
+        "Compare behavior after canceling the initial inline rename and after restarting Explorer to isolate shell state from file presence.",
+        "Trace the confirmed shell or worker interaction and coordinate with merged New+ rename changes before choosing a fix.",
+        "Add regression coverage that unrelated files can still be renamed after template creation."
+      ],
+      "verification": [
+        "F2 and context-menu rename work for new and existing items after New+ use.",
+        "Template creation, initial inline rename and desktop positioning continue to work."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The reported scenario is concrete but the current-build behavior and failing stage remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After creating a New+ template item, Explorer rename reportedly stops working.",
+    "known_information": [
+      "On 0.99.1 the reporter says creating a template file or folder causes Explorer F2 and context-menu rename to stop working even elsewhere.",
+      "A PowerToys report ZIP was supplied; the thread has no follow-up comments."
+    ],
+    "inferences": [
+      "New+ rename-mode or shell interaction may affect later Explorer rename, but the report does not establish that the presence of the created file is causal."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/NewPlus/NewShellExtensionContextMenu/template_item.cpp and new_utilities.h: New+ launches a worker to enter Explorer rename mode after copying.",
+      "Reviewed merged #48083, which changes New+ rename and desktop icon behavior for #36440; it does not explicitly establish a fix for this separate report.",
+      "Reviewed complete thread, no assignee or timeline fix; no covering PR for this issue number was found."
+    ],
+    "analysis": "The supplied evidence supports maintainer reproduction rather than another generic diagnostic request.",
+    "information_gaps": [
+      {
+        "information": "Whether rename remains broken after New+ creation on a current build and whether restarting Explorer or canceling the initial rename changes it.",
+        "why_needed": "Distinguishes possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer compares F2 and context-menu rename before and after template creation and uses Explorer restart as a control.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate new+ interaction with explorer rename"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate new+ interaction with explorer rename",
+      "reproduce": {
+        "title": "Investigate New+ interaction with Explorer rename",
+        "module": "New+",
+        "version_requirement": "Use the current PowerToys release and compare the reported version if practical.",
+        "prerequisites": [
+          "Use a Windows test machine and preserve the original configuration."
+        ],
+        "setup": [
+          "Use a disposable local folder with an ordinary file and a simple New+ file and folder template."
+        ],
+        "steps": [
+          "1. Verify F2 and context-menu rename on an existing file in Explorer.",
+          "2. Create a file using New+ and finish or cancel its initial inline rename.",
+          "3. Try both rename methods on the created file and an unrelated existing file in another folder.",
+          "4. Repeat with a folder template, then restart Explorer as a control and retry."
+        ],
+        "expected_result": "Explorer rename works normally for both new and unrelated items after creating a template."
+      }
+    }
+  ]
 }

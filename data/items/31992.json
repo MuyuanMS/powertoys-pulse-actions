@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 31992,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Text extractor moving screen contents",
+  "url": "https://github.com/microsoft/PowerToys/issues/31992",
+  "generated_at": "2026-11-13T16:21:34Z",
+  "evaluated_at": "2026-11-13T16:21:34Z",
   "source_updated_at": "2024-11-20T17:25:16Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Text Extractor overlays appear on the wrong displays in some multi-monitor configurations.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2024-11-20T17:25:16Z",
+    "evaluated_at": "2026-11-13T16:21:34Z",
+    "rationale": "The report gives an actionable scenario, but the current failing boundary has not been established.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.79 the reporter described three 1080p displays, with the right display duplicating the center and selection failing on other screens.",
+      "Multiple users reported similar behavior through 0.84.1; the thread includes diagnostic ZIPs and screenshots. Docked and direct connections are both mentioned.",
+      "Inspected src/modules/PowerOCR/PowerOCR/Services/OverlayManager.cs: the current implementation enumerates displays and captures each before creating overlays."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2024-11-20T17:25:16Z"
-  }
+    "recommended_action": "Reproduce on a current build and identify the first failing stage before choosing a targeted correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after the current failure is confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate multi-monitor Text Extractor overlays",
+      "root_cause": "A monitor capture, display-bound or overlay-position mismatch could explain the historical symptom; the current failing stage is unknown.",
+      "plan": [
+        "Reproduce the reported extended-display topology with a centered primary and the capture tool open on the right display.",
+        "Compare each display capture, physical bounds and overlay position, including negative-origin and mixed-DPI layouts.",
+        "Correct the demonstrated coordinate or association failure without changing single-monitor selection.",
+        "Add focused coverage for multiple monitors, negative origins and mixed DPI."
+      ],
+      "verification": [
+        "Every display shows its own dimmed content and selection works on each monitor.",
+        "Single-monitor capture and screenshot selection continue to work."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The reported scenario is concrete but the current-build behavior and failing stage remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor overlays appear on the wrong displays in some multi-monitor configurations.",
+    "known_information": [
+      "On 0.79 the reporter described three 1080p displays, with the right display duplicating the center and selection failing on other screens.",
+      "Multiple users reported similar behavior through 0.84.1; the thread includes diagnostic ZIPs and screenshots. Docked and direct connections are both mentioned."
+    ],
+    "inferences": [
+      "A monitor capture, display-bound or overlay-position mismatch could explain the historical symptom; the current failing stage is unknown."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/PowerOCR/PowerOCR/Services/OverlayManager.cs: the current implementation enumerates displays and captures each before creating overlays.",
+      "Inspected Helpers/NativeSelectionWindow.cs: the selection window uses capture bounds; this current implementation alone does not establish a fix for the historical report.",
+      "Reviewed complete thread and linked duplicate issues; no assignee or covering PR for the issue number was found."
+    ],
+    "analysis": "The supplied steps support a focused maintainer reproduction rather than a generic information request.",
+    "information_gaps": [
+      {
+        "information": "Whether the historical display mismatch occurs with current Text Extractor and which display capture or overlay bounds diverge.",
+        "why_needed": "Distinguishes possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer compares each captured image and overlay bounds with the Windows display topology, including negative origins.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate multi-monitor text extractor overlays"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate multi-monitor text extractor overlays",
+      "reproduce": {
+        "title": "Investigate multi-monitor Text Extractor overlays",
+        "module": "Text Extractor",
+        "version_requirement": "Use the current PowerToys release and compare the reported version if practical.",
+        "prerequisites": [
+          "Use a Windows test machine and preserve the original configuration."
+        ],
+        "setup": [
+          "Use three extended 1080p displays side by side, with the center as primary; open Snipping Tool on the right."
+        ],
+        "steps": [
+          "1. Activate Text Extractor with Win+Shift+T.",
+          "2. Compare the dimmed image on each display with its pre-activation content and attempt selection on each.",
+          "3. Repeat with Snipping Tool closed and with a two-display configuration, recording monitor origins and scaling.",
+          "4. In a maintainer diagnostic session, compare capture identity and bounds with overlay windows."
+        ],
+        "expected_result": "Each monitor displays its own content and accepts selection in the correct coordinates."
+      }
+    }
+  ]
 }

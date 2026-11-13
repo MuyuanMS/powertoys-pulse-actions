@@ -1,33 +1,92 @@
 {
+  "schemaVersion": 5,
   "number": 47549,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Bug: The “Always On Top” feature does not work with applications running with administrator privileges.",
+  "url": "https://github.com/microsoft/PowerToys/issues/47549",
+  "generated_at": "2026-11-13T16:23:43Z",
+  "evaluated_at": "2026-11-13T16:23:43Z",
   "source_updated_at": "2026-05-12T12:53:43Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Always On Top reportedly does not work with administrator-elevated applications.",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "source_updated_at": "2026-05-12T12:53:43Z",
+    "evaluated_at": "2026-11-13T16:23:43Z",
+    "rationale": "The target is reportedly elevated, but PowerToys elevation and behavior on a standard elevated window are unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter says elevated applications including Genshin Impact do not stay on top and Game Mode is off.",
+      "Current AlwaysOnTop.cpp warns when its process is not elevated and the foreground window is elevated; that warning does not prove which process ran elevated in the report."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:53:43Z"
-  }
+    "recommended_action": "Ask whether PowerToys itself ran as administrator and whether a standard elevated application exhibits the same behavior."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "An Always On Top correction may be applicable if the behavior persists with appropriate elevation and a standard target.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate elevated-window pinning",
+      "root_cause": "A privilege mismatch or application-specific topmost behavior may explain the report; neither is established.",
+      "plan": [
+        "Confirm PowerToys and target elevation and reproduce with a standard elevated application.",
+        "Compare topmost state and any elevation warning with a non-elevated target and a game where available.",
+        "Correct a confirmed supported-case defect while respecting Windows privilege boundaries; do not bypass elevation restrictions.",
+        "Add focused regression coverage for the supported process-elevation combinations."
+      ],
+      "verification": [
+        "Pinning works in confirmed supported privilege combinations.",
+        "Warnings remain appropriate and privilege boundaries are preserved."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "Process elevation and target-specific behavior are not known."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top reportedly does not work with administrator-elevated applications.",
+    "known_information": [
+      "On 0.99.1 the reporter says elevated applications including Genshin Impact do not stay on top and Game Mode is off.",
+      "The reporter did not state whether PowerToys itself was elevated or describe a standard non-game application comparison."
+    ],
+    "inferences": [
+      "A privilege mismatch is possible but is not established by the report."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp: on foreground events it checks is_process_elevated and IsProcessOfWindowElevated and may warn about elevation.",
+      "Reviewed complete thread and timeline: no comments, assignee, or linked fix. An open-PR title search for Always On Top elevation found no match."
+    ],
+    "analysis": "Separate an elevation mismatch from application-specific topmost behavior before proposing a correction.",
+    "information_gaps": [
+      {
+        "information": "Whether PowerToys was running elevated and whether a standard elevated application also fails.",
+        "why_needed": "Distinguishes process privilege mismatch from game-specific behavior.",
+        "how_to_collect": "Reporter checks PowerToys elevation and compares a standard elevated window, following their organization’s security policies.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve elevated-window investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request elevation and app comparison",
+      "comment": {
+        "body": "Thanks for reporting this.\n\n- Was PowerToys itself running as administrator when this occurred?\n- Does the same shortcut fail on a standard elevated application (for example, an administrator Command Prompt), or only in the game?\n\nPlease follow your organization’s security policies when testing elevation."
+      }
+    }
+  ]
 }

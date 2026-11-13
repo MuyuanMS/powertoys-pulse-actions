@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 43250,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "PowerToys shortcut editors flash the shortcut when holding the shortcut for the module activation (not inluding PowerToys keyboard manager module)",
+  "url": "https://github.com/microsoft/PowerToys/issues/43250",
+  "generated_at": "2026-11-13T16:22:59Z",
+  "evaluated_at": "2026-11-13T16:22:59Z",
   "source_updated_at": "2026-05-23T16:32:22Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Holding a shortcut in the Settings editor makes its preview flash.",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-23T16:32:22Z",
+    "evaluated_at": "2026-11-13T16:22:59Z",
+    "rationale": "The report gives an actionable scenario, but current behavior and the failing boundary are unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.95.1 the reporter describes opening an activation shortcut editor and holding the keys before saving, causing the preview to flash.",
+      "The report includes a video and identifies an ARM64 Windows machine; Keyboard Manager remapping is excluded.",
+      "Inspected src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs: keydown updates the internal settings and compares the new key list before updating the display."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-23T16:32:22Z"
-  }
+    "recommended_action": "Reproduce on a current build and identify the first failing stage before choosing a targeted correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after current behavior and its boundary are confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate shortcut editor flashing on key repeat",
+      "root_cause": "Repeated key events or visual refresh may cause the observed flashing, but the current guard and actual trigger require comparison.",
+      "plan": [
+        "Reproduce held shortcut input on a current build and compare with normal press and release.",
+        "Trace repeated key events, shortcut state and visual refresh; account for existing same-value checks.",
+        "Correct the demonstrated unnecessary visual update without losing valid key changes or accessibility behavior.",
+        "Add focused regression coverage for repeated keydown, changing modifiers and key release."
+      ],
+      "verification": [
+        "Holding a shortcut leaves a stable preview and saving captures the intended combination.",
+        "Changing or releasing keys and accessible keyboard navigation still work."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The reported scenario is concrete but the current-build behavior and failing stage remain unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Holding a shortcut in the Settings editor makes its preview flash.",
+    "known_information": [
+      "On 0.95.1 the reporter describes opening an activation shortcut editor and holding the keys before saving, causing the preview to flash.",
+      "The report includes a video and identifies an ARM64 Windows machine; Keyboard Manager remapping is excluded."
+    ],
+    "inferences": [
+      "Repeated key events or visual refresh may cause the observed flashing, but the current guard and actual trigger require comparison."
+    ],
+    "initial_investigation": [
+      "Inspected src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs: keydown updates the internal settings and compares the new key list before updating the display.",
+      "Reviewed complete thread and linked duplicate #43791; no assignee and no covering PR for the repeat behavior was found in the bounded open-PR search."
+    ],
+    "analysis": "The supplied scenario supports a targeted maintainer comparison rather than another generic information request.",
+    "information_gaps": [
+      {
+        "information": "Whether held keys still flash in the current editor and which key or visual update causes it.",
+        "why_needed": "Distinguishes possible failure boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer holds a valid shortcut and compares repeated key events, key-list changes and visible updates.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate shortcut editor flashing on key repeat"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate shortcut editor flashing on key repeat",
+      "reproduce": {
+        "title": "Investigate shortcut editor flashing on key repeat",
+        "module": "PowerToys Settings",
+        "version_requirement": "Use the current PowerToys release and compare the reported version if practical.",
+        "prerequisites": [
+          "Use a Windows test environment and preserve the original configuration."
+        ],
+        "setup": [
+          "Open Settings and an activation shortcut editor for a module other than Keyboard Manager."
+        ],
+        "steps": [
+          "1. Press and hold a valid activation shortcut without saving.",
+          "2. Observe the preview for repeated flashing, then release the keys.",
+          "3. Change one modifier and save; verify the saved shortcut.",
+          "4. Compare ARM64 and x64 if available and inspect repeated key events and visual updates."
+        ],
+        "expected_result": "The shortcut preview remains stable while held and accurately reflects valid changes."
+      }
+    }
+  ]
 }

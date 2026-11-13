@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 47521,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Upgrading using silent install does not update all installed powertoys",
+  "url": "https://github.com/microsoft/PowerToys/issues/47521",
+  "generated_at": "2026-11-13T16:19:14Z",
+  "evaluated_at": "2026-11-13T16:19:14Z",
   "source_updated_at": "2026-05-12T12:54:37Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "Command Palette features remain old after a reported silent machine-wide PowerToys upgrade.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "source_updated_at": "2026-05-12T12:54:37Z",
+    "evaluated_at": "2026-11-13T16:19:14Z",
+    "rationale": "The silent-upgrade scenario and successful interactive reinstall are reported, but the original version and exact deployment invocation are needed to reproduce it.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter says silent machine-wide upgrades leave new Command Palette features unavailable, while uninstalling and interactively reinstalling restores them.",
+      "The report does not include the starting version, deployment command or installed package versions.",
+      "The current installer carries the CmdPal MSIX and schedules an impersonated package installation custom action; whether this path explains the report is unknown."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-12T12:54:37Z"
-  }
+    "recommended_action": "Request the upgrade version pair, sanitized deployment command and observed Command Palette package version."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A package deployment or registration correction may be needed after the failing upgrade path is identified.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate silent upgrade of Command Palette",
+      "root_cause": "Hypothesis: a per-user package remains old after a silent machine-wide upgrade; a stale process or configuration is also possible.",
+      "plan": [
+        "Collect the reported upgrade version pair, sanitized command and affected user package version.",
+        "Reproduce the same machine-wide transition and compare installed payload, package registration and running process versions with interactive upgrade.",
+        "Correct only the established deployment or registration failure, accounting for user scope and restart behavior.",
+        "Add focused regression coverage for silent and interactive upgrades across supported install scopes."
+      ],
+      "verification": [
+        "The reported version transition gives the affected user the target Command Palette features after normal restart.",
+        "Other users and existing installations are not removed or downgraded by the correction."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The upgrade symptom is reported but the invocation, initial version and stale component are not established."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette features remain old after a reported silent machine-wide PowerToys upgrade.",
+    "known_information": [
+      "On 0.99.1 the reporter says silent machine-wide upgrades leave new Command Palette features unavailable, while uninstalling and interactively reinstalling restores them.",
+      "The report does not include the starting version, deployment command or installed package versions."
+    ],
+    "inferences": [
+      "A stale per-user package or another deployment difference could explain the old UI, but neither is established."
+    ],
+    "initial_investigation": [
+      "Inspected installer/PowerToysSetupVNext/CmdPal.wxs and Product.wxs: the installer includes an MSIX and has a CmdPal installation custom action.",
+      "Reviewed complete thread, no assignee and no timeline fix; searched open PRs for silent CmdPal and issue number without establishing a covering fix."
+    ],
+    "analysis": "The exact version transition and deployment command are missing and distinguish package upgrade behavior from a feature setting or stale process. Do not request a generic diagnostic archive before these comparisons.",
+    "information_gaps": [
+      {
+        "information": "Starting and target PowerToys versions and the sanitized silent installation command or deployment tool context.",
+        "why_needed": "Recreates the actual upgrade transition and install context.",
+        "how_to_collect": "Reply with the version pair, installer name and silent command with any private paths removed.",
+        "evidence_type": "repro_steps"
+      },
+      {
+        "information": "Installed Command Palette package version and which feature is missing after upgrade.",
+        "why_needed": "Distinguishes an old registered package from a configuration or feature-display difference.",
+        "how_to_collect": "After reproduction, run Get-AppxPackage Microsoft.CommandPalette | Select-Object Name,Version as the affected user, and report the missing feature.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve silent Command Palette upgrade investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request upgrade details",
+      "comment": {
+        "body": "Thanks for the report. You noted that reinstalling interactively restored the missing Command Palette features. To compare the silent upgrade path, could you share:\n- The starting and target PowerToys versions, installer filename, and silent command or deployment tool used (please remove private paths)?\n- After a silent upgrade, the Command Palette package version for the affected user and an example of a missing feature? In PowerShell, run `Get-AppxPackage Microsoft.CommandPalette | Select-Object Name,Version` while signed in as that user.\n\nThese details help distinguish an old registered package from a feature or configuration difference."
+      }
+    }
+  ]
 }

@@ -1,33 +1,108 @@
 {
+  "schemaVersion": 5,
   "number": 48006,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "title": "Always On Top not showing context menu action on Firefox window title bar",
+  "url": "https://github.com/microsoft/PowerToys/issues/48006",
+  "generated_at": "2026-11-13T16:16:30Z",
+  "evaluated_at": "2026-11-13T16:16:30Z",
   "source_updated_at": "2026-05-20T14:40:11Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "stage": "triaged",
+  "pending_author": false,
+  "summary": "The Always On Top menu entry is absent from Firefox title-bar right-click despite the shortcut working.",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "source_updated_at": "2026-05-20T14:40:11Z",
+    "evaluated_at": "2026-11-13T16:16:30Z",
+    "rationale": "The report has a concrete scenario, but the affected boundary is unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.99.1 the reporter can toggle Always On Top by keyboard, but the expected title-bar context-menu entry does not appear in Firefox.",
+      "The issue does not state Firefox title-bar customization or whether the Windows system menu was used.",
+      "Inspected src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp: the menu integration uses GetSystemMenu and InsertMenuItemW on the native system menu when enabled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-20T14:40:11Z"
-  }
+    "recommended_action": "Reproduce the reported scenario on a current build and isolate the failing boundary before choosing a correction."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A targeted correction may be applicable after the reported behavior and boundary are confirmed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Investigate Firefox system-menu availability",
+      "root_cause": "Firefox may present a custom title-bar context menu rather than the native Windows system menu; the reported configuration and menu type are unknown.",
+      "plan": [
+        "Check current Firefox with and without its native title-bar option and compare right-click with Alt+Space.",
+        "Determine whether PowerToys receives a native system-menu event and whether the insertion succeeds.",
+        "If the native menu is affected, correct the confirmed integration boundary; if Firefox shows a separate custom menu, assess feasibility without modifying or impersonating its menu.",
+        "Add regression coverage for native system menus and an appropriate manual check for Firefox configurations."
+      ],
+      "verification": [
+        "Native system-menu integration remains usable on supported windows with the setting enabled.",
+        "Keyboard toggling and unrelated Firefox menu behavior remain unchanged."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The scenario and relevant source path are known, but current behavior and the failing boundary are unverified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Always On Top menu entry is absent from Firefox title-bar right-click despite the shortcut working.",
+    "known_information": [
+      "On 0.99.1 the reporter can toggle Always On Top by keyboard, but the expected title-bar context-menu entry does not appear in Firefox.",
+      "The issue does not state Firefox title-bar customization or whether the Windows system menu was used."
+    ],
+    "inferences": [
+      "Firefox may present a custom title-bar context menu rather than the native Windows system menu; the reported configuration and menu type are unknown."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp: the menu integration uses GetSystemMenu and InsertMenuItemW on the native system menu when enabled.",
+      "Reviewed complete issue, no comments, no assignee and no timeline fix; searched upstream PR titles for Firefox menu work without establishing a covering fix."
+    ],
+    "analysis": "The report supports a specific maintainer comparison rather than another generic information request; no root cause or covering fix is established.",
+    "information_gaps": [
+      {
+        "information": "Whether the missing entry occurs in the native Windows system menu or only Firefox’s custom context menu.",
+        "why_needed": "Distinguishes the possible boundaries before selecting an implementation.",
+        "how_to_collect": "Maintainer compares Alt+Space, native title bar and Firefox custom-title-bar menus with the integration setting enabled.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve investigate firefox system-menu availability"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce investigate firefox system-menu availability",
+      "reproduce": {
+        "title": "Investigate Firefox system-menu availability",
+        "module": "Always On Top",
+        "version_requirement": "Use the current PowerToys release and compare with 0.99.1 where practical.",
+        "prerequisites": [
+          "Use a Windows test machine and preserve the original configuration."
+        ],
+        "setup": [
+          "Enable Always On Top and the setting that shows its command in the Windows system menu; install Firefox."
+        ],
+        "steps": [
+          "1. Open Firefox with its title-bar option disabled and right-click its title area; note the menu contents.",
+          "2. Press Alt+Space to open the Windows system menu and check for the Always On Top command.",
+          "3. Enable Firefox’s native title bar, repeat both menu paths, and compare with a standard Win32 window.",
+          "4. Confirm the shortcut still toggles the Firefox window and determine whether the affected menu is native or application-owned."
+        ],
+        "expected_result": "The Always On Top command is available in supported native Windows system menus; the shortcut remains functional."
+      }
+    }
+  ]
 }
