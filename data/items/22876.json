@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 22876,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
   "source_updated_at": "2024-10-25T13:02:36Z",
+  "title": "Fancy Zones wrong size when minimising and restoring window",
+  "url": "https://github.com/microsoft/PowerToys/issues/22876",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-2"
+  ],
+  "assignees": [],
+  "comments": 5,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "FancyZones window restore can change Chrome size across mixed-DPI monitors"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #22876; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter supplied laptop and external-monitor resolutions/scales, identified Chrome as the only affected app, and confirmed the issue remained in October 2024; a bugreport was attached. A stale DPI/monitor rectangle is plausible, but the report predates current FancyZones and may have changed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #22876 (https://github.com/microsoft/PowerToys/issues/22876): The reporter supplied laptop and external-monitor resolutions/scales, identified Chrome as the only affected app, and confirmed the issue remained in October 2024; a bugreport was attached.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp#L931; this supports an investigation route but is not runtime proof.",
+      "A stale DPI/monitor rectangle is plausible, but the report predates current FancyZones and may have changed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
     "source_updated_at": "2024-10-25T13:02:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "FancyZones window restore can change Chrome size across mixed-DPI monitors",
+      "root_cause": "Restore placement may recompute a window rectangle using stale monitor/DPI work-area dimensions after minimize/restore on a different-DPI display.",
+      "plan": [
+        "Trace FancyZones placement before minimize and after restore on the mixed-DPI laptop/external display.",
+        "Use the restored window's current monitor DPI/work area when reapplying zone bounds.",
+        "Add a regression test for restore across mixed-DPI monitor topology."
+      ],
+      "verification": [
+        "Minimize/restore Chrome on the external display and verify its bounds stay within the same zone under mixed scaling."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "A stale DPI/monitor rectangle is plausible, but the report predates current FancyZones and may have changed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones window restore can change Chrome size across mixed-DPI monitors.",
+    "known_information": [
+      "The reporter supplied laptop and external-monitor resolutions/scales, identified Chrome as the only affected app, and confirmed the issue remained in October 2024; a bugreport was attached."
+    ],
+    "inferences": [
+      "A stale DPI/monitor rectangle is plausible, but the report predates current FancyZones and may have changed."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2024-10-25T13:02:36Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp#L931; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Whether it reproduces on the latest stable release and the current external/laptop scaling/topology.",
+        "why_needed": "The original workaround changed laptop resolution or closed its lid, but current topology is unknown and determines whether the old mixed-DPI path still exists.",
+        "how_to_collect": "Confirm current PowerToys version and whether the same Chrome restore sequence still crosses the zone; include current resolution/scaling for laptop and external displays."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm mixed-DPI restore repro",
+      "comment": {
+        "body": "Thanks for confirming this on the original laptop and supplying a bugreport. Your workaround changed the laptop resolution or closed its lid, which points toward mixed-DPI placement. Could you confirm the current PowerToys version and whether Chrome still crosses the zone on the latest release? If so, please give the current resolution/scaling of the laptop and external displays. This determines whether the original DPI topology is still reproducible."
+      }
+    }
+  ]
 }

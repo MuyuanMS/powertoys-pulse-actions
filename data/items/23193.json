@@ -3,15 +3,15 @@
   "number": 23193,
   "kind": "issue",
   "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "author": "jpirez",
-  "generated_at": "2026-09-14T00:53:55.2254937Z",
-  "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-  "source_updated_at": "2026-05-25T03:54:12Z",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
+  "source_updated_at": "2026-09-23T11:29:05Z",
   "title": "It does not run at startup",
   "url": "https://github.com/microsoft/PowerToys/issues/23193",
+  "author": "",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
@@ -19,51 +19,83 @@
     "Product-General"
   ],
   "assignees": [],
-  "comments": 15,
+  "comments": 16,
   "status": {
-    "glyph": "ℹ️",
-    "label": "Waiting on author",
-    "detail": "Revalidated during scheduled update run."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "PowerToys intermittently fails to stay running at Windows startup"
   },
-  "next_action": {
-    "glyph": "▶️",
-    "label": "Review status",
-    "reason": "Advance triage state based on revalidation findings."
-  },
+  "next_action": "Request the discriminating evidence described for issue #23193; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "Revalidation determined status 'waiting_on_author' based on current assignees, labels, and discussion.",
+    "status": "needs_information",
+    "rationale": "A reporter supplied v0.99.1 failure and later described intermittent startup/exit; another reporter confirmed a manual Startup-folder shortcut with -tray-only works but disables the built-in toggle. The startup mechanism may race elevation or module initialization, but the successful shortcut is a workaround, not evidence that the runner defect is resolved.",
     "evidence": [
-      "Title: It does not run at startup",
-      "Assignees: ",
-      "Labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-General"
+      "Issue #23193 (https://github.com/microsoft/PowerToys/issues/23193): A reporter supplied v0.99.1 failure and later described intermittent startup/exit; another reporter confirmed a manual Startup-folder shortcut with -tray-only works but disables the built-in toggle.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/general_settings.cpp#L190-L205; this supports an investigation route but is not runtime proof.",
+      "The startup mechanism may race elevation or module initialization, but the successful shortcut is a workaround, not evidence that the runner defect is resolved."
     ],
-    "recommended_action": "Wait for author feedback.",
-    "evaluated_at": "2026-09-14T00:53:55.2254937Z",
-    "source_updated_at": "2026-05-25T03:54:12Z"
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
+    "source_updated_at": "2026-09-23T11:29:05Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Revalidated issue in stage 'waiting_on_author': a repository fix attempt is not yet actionable."
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "PowerToys intermittently fails to stay running at Windows startup",
+      "root_cause": "The startup task may launch the runner before required elevated/module initialization completes, or the runner may exit during startup; the report spans auto-start and early process exit.",
+      "plan": [
+        "Trace runner startup and exit on cold logon for per-user and machine-wide installs, including elevated startup.",
+        "Apply a narrow retry/delay or startup-state correction only after identifying the failing transition.",
+        "Add a startup regression test covering tray-only launch and runner survival."
+      ],
+      "verification": [
+        "Cold-logon with Run at startup enabled and verify PowerToys stays resident without a manual launch or duplicate shortcut."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The startup mechanism may race elevation or module initialization, but the successful shortcut is a workaround, not evidence that the runner defect is resolved."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Revalidated PowerToys bug report: It does not run at startup",
+    "summary": "PowerToys intermittently fails to stay running at Windows startup.",
     "known_information": [
-      "Title: It does not run at startup",
-      "Labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-General",
-      "Upstream issue revalidated during scheduled update run."
+      "A reporter supplied v0.99.1 failure and later described intermittent startup/exit; another reporter confirmed a manual Startup-folder shortcut with -tray-only works but disables the built-in toggle."
     ],
     "inferences": [
-      "Behavior may depend on local environment or configuration."
+      "The startup mechanism may race elevation or module initialization, but the successful shortcut is a workaround, not evidence that the runner defect is resolved."
     ],
-    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
     "initial_investigation": [
-      "Read issue metadata and comments for issue.",
-      "Checked repository history and duplicate records.",
-      "Revalidated contract requirements for scheduled run."
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2026-09-23T11:29:05Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/general_settings.cpp#L190-L205; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the built-in startup toggle still fails on the latest stable release and whether the process exits or never launches.",
+        "why_needed": "The symptom spans launch and post-launch exit, which require different fixes; the workaround does not reveal which path occurs on current builds.",
+        "how_to_collect": "Confirm current PowerToys version, whether startup is configured as administrator, and whether the process appears in Task Manager before disappearing after cold logon."
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Clarify startup failure mode",
+      "comment": {
+        "body": "Thanks for sharing the `-tray-only` Startup-folder workaround and noting that it works for you. Could you confirm the current PowerToys version and whether the built-in startup toggle still fails? If it does, please say whether PowerToys never appears in Task Manager or appears and then exits, and whether “Always run as administrator” is enabled. That separates task registration from a startup crash without asking for the same workaround again."
+      }
+    }
+  ]
 }

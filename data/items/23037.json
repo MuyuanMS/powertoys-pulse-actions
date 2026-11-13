@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 23037,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
   "source_updated_at": "2024-10-28T16:26:24Z",
+  "title": "Microphone Communication with Teammates in DotA 2 Causes Windows 11 Taskbar to Override Always on Top",
+  "url": "https://github.com/microsoft/PowerToys/issues/23037",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Priority-2"
+  ],
+  "assignees": [],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "Always On Top can lose taskbar coverage during Dota 2 push-to-talk"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #23037; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter provided a Dota 2 borderless-window repro and bugreport; they said the problem occurs after push-to-talk even with other keys, and reenabling Always On Top temporarily restores behavior. The game/OS focus transition may disturb z-order; the reported link to party/solo mode and taskbar behavior is not isolated.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #23037 (https://github.com/microsoft/PowerToys/issues/23037): The reporter provided a Dota 2 borderless-window repro and bugreport; they said the problem occurs after push-to-talk even with other keys, and reenabling Always On Top temporarily restores behavior.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L346-L850; this supports an investigation route but is not runtime proof.",
+      "The game/OS focus transition may disturb z-order; the reported link to party/solo mode and taskbar behavior is not isolated."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
     "source_updated_at": "2024-10-28T16:26:24Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Always On Top can lose taskbar coverage during Dota 2 push-to-talk",
+      "root_cause": "A game or push-to-talk focus/window transition may change topmost/z-order state or taskbar auto-hide activation without triggering Always On Top refresh.",
+      "plan": [
+        "Reproduce with Dota 2 borderless mode and track window z-order/taskbar activation before and after push-to-talk.",
+        "Restore the pinned window's topmost state only when the game transition removes it.",
+        "Add a targeted regression check for the push-to-talk transition."
+      ],
+      "verification": [
+        "In a borderless Dota 2 solo game, use push-to-talk and move the pointer to the taskbar edge; verify the taskbar stays hidden behind the pinned window."
+      ],
+      "confidence": {
+        "score": 53,
+        "level": "yellow",
+        "rationale": "The game/OS focus transition may disturb z-order; the reported link to party/solo mode and taskbar behavior is not isolated."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top can lose taskbar coverage during Dota 2 push-to-talk.",
+    "known_information": [
+      "The reporter provided a Dota 2 borderless-window repro and bugreport; they said the problem occurs after push-to-talk even with other keys, and reenabling Always On Top temporarily restores behavior."
+    ],
+    "inferences": [
+      "The game/OS focus transition may disturb z-order; the reported link to party/solo mode and taskbar behavior is not isolated."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2024-10-28T16:26:24Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L346-L850; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether current PowerToys and Dota 2 still reproduce and whether any push-to-talk key causes the taskbar to cover the pinned window.",
+        "why_needed": "The report is two years old; a current confirmation is necessary before pursuing a game-specific z-order path.",
+        "how_to_collect": "Confirm current PowerToys/Windows versions and whether the issue still occurs in Dota 2 borderless mode after push-to-talk; if so say whether it happens with another PTT key too."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm Dota 2 repro",
+      "comment": {
+        "body": "Thanks for providing the Dota 2 borderless-mode sequence and noting that reenabling Always On Top temporarily restores behavior. Could you confirm whether this still happens on the current PowerToys/Windows release, and whether it occurs with a different push-to-talk key as well? This will tell us whether the trigger is the game’s focus/z-order transition or a specific key path."
+      }
+    }
+  ]
 }

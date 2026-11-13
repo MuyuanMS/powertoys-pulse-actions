@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 37200,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-02-21T02:12:17Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
+  "source_updated_at": "2026-09-21T11:25:17Z",
+  "title": "ZoomIt Draw Activation Shortcut - Ctrl+Alt+4 still actives even if change to different keypress",
+  "url": "https://github.com/microsoft/PowerToys/issues/37200",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Priority-1",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "comments": 4,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "ZoomIt retains an old draw hotkey after shortcut changes"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #37200; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Several reporters confirmed old Ctrl+number chords remain active after changing ZoomIt shortcuts; the latest report uses a German layout where Ctrl+! maps to Ctrl+Shift+1. Current source explicitly unregisters hotkey IDs during one registration path and later registers configured key values. The issue may be stale registration in the settings dialog or a character/virtual-key interpretation mismatch; the German-layout report makes layout-specific behavior material.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #37200 (https://github.com/microsoft/PowerToys/issues/37200): Several reporters confirmed old Ctrl+number chords remain active after changing ZoomIt shortcuts; the latest report uses a German layout where Ctrl+! maps to Ctrl+Shift+1. Current source explicitly unregisters hotkey IDs during one registration path and later registers configured key values.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/Zoomit.cpp#L3649-L3698; this supports an investigation route but is not runtime proof.",
+      "The issue may be stale registration in the settings dialog or a character/virtual-key interpretation mismatch; the German-layout report makes layout-specific behavior material."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-02-21T02:12:17Z"
-  }
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
+    "source_updated_at": "2026-09-21T11:25:17Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "ZoomIt retains an old draw hotkey after shortcut changes",
+      "root_cause": "The options dialog may register a new shortcut without unregistering every prior draw/zoom hotkey, or modifier/key encoding may differ on non-US layouts and leave the previous virtual-key binding active.",
+      "plan": [
+        "Compare option-dialog hotkey registration with the startup unregister/register path for draw and zoom bindings.",
+        "Ensure old IDs are unregistered before applying new key/modifier values and preserve correct virtual-key semantics on non-US layouts.",
+        "Add regression coverage that changes a binding and verifies the old chord no longer activates ZoomIt."
+      ],
+      "verification": [
+        "Change the draw shortcut, restart ZoomIt, and confirm the old Ctrl+Alt+number chord no longer activates drawing on US and German layouts."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The issue may be stale registration in the settings dialog or a character/virtual-key interpretation mismatch; the German-layout report makes layout-specific behavior material."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ZoomIt retains an old draw hotkey after shortcut changes.",
+    "known_information": [
+      "Several reporters confirmed old Ctrl+number chords remain active after changing ZoomIt shortcuts; the latest report uses a German layout where Ctrl+! maps to Ctrl+Shift+1. Current source explicitly unregisters hotkey IDs during one registration path and later registers configured key values."
+    ],
+    "inferences": [
+      "The issue may be stale registration in the settings dialog or a character/virtual-key interpretation mismatch; the German-layout report makes layout-specific behavior material."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2026-09-21T11:25:17Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/ZoomIt/ZoomIt/Zoomit.cpp#L3649-L3698; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Whether the old chord remains after restarting ZoomIt on current v0.101.2362 and whether this depends on keyboard layout.",
+        "why_needed": "A post-restart check distinguishes stale runtime registration from persisted shortcut interpretation; keyboard layout determines whether a shifted symbol maps to the unexpected virtual key.",
+        "how_to_collect": "Confirm whether the old chord still activates after restarting ZoomIt on v0.101.2362 and provide the Windows keyboard layout plus the configured shortcut as shown in settings."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm ZoomIt hotkey mapping",
+      "comment": {
+        "body": "Thanks for the repeated reports, including the German-layout example where Ctrl+Shift+1 displays as Ctrl+!. Could you confirm whether the old Ctrl+number chord still activates after restarting ZoomIt on v0.101.2362, and provide the Windows keyboard layout and the configured shortcut exactly as displayed? This distinguishes stale runtime registration from a virtual-key/layout mapping mismatch."
+      }
+    }
+  ]
 }

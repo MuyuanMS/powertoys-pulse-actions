@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 26103,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
   "source_updated_at": "2024-10-31T14:52:04Z",
+  "title": "FanceZones incompatible with \"Activate a window by hovering over it with the mouse\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/26103",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-2"
+  ],
+  "assignees": [],
+  "comments": 3,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "FancyZones Win+Arrow movement loses focus when focus-follows-mouse is enabled"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #26103; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report specifies Windows 10 22H2, active-window-by-hover enabled, FancyZones Override Windows Snap, and all windows affected; a reporter reconfirmed on v0.85.1. FancyZones movement likely interacts with Windows focus-follows-mouse when the moved window uncovers another window; current-build behavior is unknown.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #26103 (https://github.com/microsoft/PowerToys/issues/26103): The report specifies Windows 10 22H2, active-window-by-hover enabled, FancyZones Override Windows Snap, and all windows affected; a reporter reconfirmed on v0.85.1.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.h; this supports an investigation route but is not runtime proof.",
+      "FancyZones movement likely interacts with Windows focus-follows-mouse when the moved window uncovers another window; current-build behavior is unknown."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
     "source_updated_at": "2024-10-31T14:52:04Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "FancyZones Win+Arrow movement loses focus when focus-follows-mouse is enabled",
+      "root_cause": "Moving the focused window under a stationary pointer may activate another window when Windows focus-follows-mouse is enabled, so later Win+Arrow input targets the newly activated window.",
+      "plan": [
+        "Trace focus and pointer position while FancyZones handles Win+Left/Right under Windows focus-follows-mouse.",
+        "Keep the moved window active or move the pointer consistently with the snap operation.",
+        "Add a regression test for repeated Win+Arrow movement while another window lies under the pointer."
+      ],
+      "verification": [
+        "With focus-follows-mouse enabled and Override Windows Snap active, repeat Win+Left/Right and verify the originally focused window continues moving."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "FancyZones movement likely interacts with Windows focus-follows-mouse when the moved window uncovers another window; current-build behavior is unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones Win+Arrow movement loses focus when focus-follows-mouse is enabled.",
+    "known_information": [
+      "The report specifies Windows 10 22H2, active-window-by-hover enabled, FancyZones Override Windows Snap, and all windows affected; a reporter reconfirmed on v0.85.1."
+    ],
+    "inferences": [
+      "FancyZones movement likely interacts with Windows focus-follows-mouse when the moved window uncovers another window; current-build behavior is unknown."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2024-10-31T14:52:04Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.h; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether this still reproduces on current PowerToys/Windows and whether moving the pointer to the active window changes the result.",
+        "why_needed": "The 2024 confirmation is old; a current repro distinguishes a FancyZones-specific focus transition from Windows focus behavior.",
+        "how_to_collect": "Confirm current PowerToys/Windows versions and whether the same setting combination still switches focus during Win+Left/Right; say whether moving the pointer to the moved window prevents it."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm focus-follows-mouse repro",
+      "comment": {
+        "body": "Thanks for confirming the issue affected all windows on Windows 10 22H2 and v0.85.1. Could you confirm whether it still reproduces on your current PowerToys/Windows versions with “Activate a window by hovering” and Override Windows Snap enabled? If you can, note whether placing the pointer over the moved window prevents the next Win+Arrow from switching targets. This distinguishes focus activation from FancyZones snap selection."
+      }
+    }
+  ]
 }

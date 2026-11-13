@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 15602,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
   "source_updated_at": "2024-11-04T17:28:25Z",
+  "title": "[PT Run] Typing \"github.\" brings up \"Windows File Manager\" UWP app as first result",
+  "url": "https://github.com/microsoft/PowerToys/issues/15602",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Priority-3",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comments": 4,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "PowerToys Run ranks an unrelated Store app above a URL query"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #15602; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter gave exact search tokens and the Store app; v0.73 results changed with an installed WSA GitHub result, then github.c ranked Windows File Manager first; issue confirmed on v0.85.1. A query-shape/ranking collision is plausible, but current results depend on installed apps and system indexing.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #15602 (https://github.com/microsoft/PowerToys/issues/15602): The reporter gave exact search tokens and the Store app; v0.73 results changed with an installed WSA GitHub result, then github.c ranked Windows File Manager first; issue confirmed on v0.85.1.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/SearchHelper/WindowsSearchAPI.cs; this supports an investigation route but is not runtime proof.",
+      "A query-shape/ranking collision is plausible, but current results depend on installed apps and system indexing."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
     "source_updated_at": "2024-11-04T17:28:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "PowerToys Run ranks an unrelated Store app above a URL query",
+      "root_cause": "The application index can supply a UWP app result that fuzzy ranking treats as a better match for a partial URL token such as github.c, especially when similarly named apps are installed.",
+      "plan": [
+        "Trace indexed application candidates and scoring for github., github.c, and github.com with the named Store app installed.",
+        "Avoid promoting unrelated app-name matches above a valid URL handler when the query is URL-like.",
+        "Add ranking regression tests with an unrelated UWP app and a matching URI handler."
+      ],
+      "verification": [
+        "With the unrelated Store app installed, type github.com and verify the default browser URL result outranks the app."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "A query-shape/ranking collision is plausible, but current results depend on installed apps and system indexing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run ranks an unrelated Store app above a URL query.",
+    "known_information": [
+      "The reporter gave exact search tokens and the Store app; v0.73 results changed with an installed WSA GitHub result, then github.c ranked Windows File Manager first; issue confirmed on v0.85.1."
+    ],
+    "inferences": [
+      "A query-shape/ranking collision is plausible, but current results depend on installed apps and system indexing."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2024-11-04T17:28:25Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/SearchHelper/WindowsSearchAPI.cs; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether current PowerToys Run still ranks Windows File Manager first for github.c and whether the app remains installed.",
+        "why_needed": "The last report is two years old and query results are index-dependent; current confirmation is required before altering ranking.",
+        "how_to_collect": "Confirm current PowerToys version and whether Windows File Manager remains installed; with it present, note the first result for github., github.c, and github.com."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm URL search ranking",
+      "comment": {
+        "body": "Thanks for testing `github.`/`github.c` on v0.73 and confirming the `github.c` result again on v0.85.1. Could you confirm the current PowerToys version, whether Windows File Manager is still installed, and the first result for those three exact queries? This distinguishes a persistent URL-vs-app ranking issue from an index change."
+      }
+    }
+  ]
 }

@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 30720,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-10-16T07:08:35Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
+  "source_updated_at": "2026-09-30T12:55:13Z",
+  "title": "Mouse without borders stops working after sleep",
+  "url": "https://github.com/microsoft/PowerToys/issues/30720",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 2,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "Mouse Without Borders does not reconnect after both PCs resume from sleep"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #30720; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says failure is repeatable after both PCs sleep and wake, and restarting PowerToys on either PC restores connectivity; a bugreport was attached in 2024. A reconnect/session recovery path is implicated, but the report does not identify which endpoint or network transition fails.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #30720 (https://github.com/microsoft/PowerToys/issues/30720): The reporter says failure is repeatable after both PCs sleep and wake, and restarting PowerToys on either PC restores connectivity; a bugreport was attached in 2024.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs; this supports an investigation route but is not runtime proof.",
+      "A reconnect/session recovery path is implicated, but the report does not identify which endpoint or network transition fails."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-10-16T07:08:35Z"
-  }
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
+    "source_updated_at": "2026-09-30T12:55:13Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Mouse Without Borders does not reconnect after both PCs resume from sleep",
+      "root_cause": "Peer transport/session state may remain stale when both machines suspend, leaving the connection unable to recover until the MWB process restarts.",
+      "plan": [
+        "Trace peer connection and socket recovery when local and remote suspend/resume events occur in either order.",
+        "Reset or renegotiate stale transport/session state on resume without a full process restart.",
+        "Add a two-endpoint regression test for simultaneous sleep/resume and delayed network availability."
+      ],
+      "verification": [
+        "With both endpoints asleep, wake both and verify MWB reconnects without exiting/restarting PowerToys."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "A reconnect/session recovery path is implicated, but the report does not identify which endpoint or network transition fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders does not reconnect after both PCs resume from sleep.",
+    "known_information": [
+      "The reporter says failure is repeatable after both PCs sleep and wake, and restarting PowerToys on either PC restores connectivity; a bugreport was attached in 2024."
+    ],
+    "inferences": [
+      "A reconnect/session recovery path is implicated, but the report does not identify which endpoint or network transition fails."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2026-09-30T12:55:13Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Current PowerToys versions on both PCs and contemporaneous diagnostics from both endpoints after the failed reconnect.",
+        "why_needed": "Both endpoints participate in the failed session, so current versions and post-resume diagnostics are needed before selecting a transport-side fix.",
+        "how_to_collect": "Confirm versions on both PCs, reproduce sleep/resume, then comment `/bugreport` from each endpoint before restarting; use BugReportTool.exe if the UI is unavailable."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Request fresh MWB reports",
+      "comment": {
+        "body": "Thanks for the repeatable sleep/resume sequence and earlier report. Could you confirm the PowerToys version on both PCs, then reproduce once and comment `/bugreport` from each computer before restarting MWB? If Settings/tray is unavailable, use `BugReportTool.exe` from the PowerToys installation directory. Reports from both endpoints can distinguish stale local state from a peer-side handshake failure."
+      }
+    }
+  ]
 }

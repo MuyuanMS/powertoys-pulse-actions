@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 20622,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
   "source_updated_at": "2024-11-04T17:54:28Z",
+  "title": "[Text Extractor] Text popup windows disappear on activating Text Extractor",
+  "url": "https://github.com/microsoft/PowerToys/issues/20622",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Priority-2",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
+  "comments": 3,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "Text Extractor activation can dismiss transient UI popups"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #20622; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter gave a specific Qt6 Anki 2.1.54 tooltip repro and confirmed on PowerToys v0.85.1/Windows 11 24H2; other commenters observed context menus also dismiss except Explorer. Overlay activation may alter focus/foreground state, but newer Anki versions use different UI technology and current-build behavior is unconfirmed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #20622 (https://github.com/microsoft/PowerToys/issues/20622): The reporter gave a specific Qt6 Anki 2.1.54 tooltip repro and confirmed on PowerToys v0.85.1/Windows 11 24H2; other commenters observed context menus also dismiss except Explorer.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/PowerOCR; this supports an investigation route but is not runtime proof.",
+      "Overlay activation may alter focus/foreground state, but newer Anki versions use different UI technology and current-build behavior is unconfirmed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
     "source_updated_at": "2024-11-04T17:54:28Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Text Extractor activation can dismiss transient UI popups",
+      "root_cause": "Activating capture may change display affinity, focus, or overlay state in a way that causes transient application popups to dismiss before the capture surface is ready.",
+      "plan": [
+        "Trace foreground/focus and overlay activation when Text Extractor starts over a transient Qt tooltip/context menu.",
+        "Preserve the target popup long enough for capture when possible without breaking normal dismissal semantics.",
+        "Add a regression check using the reporter's Qt6 Anki tooltip sequence."
+      ],
+      "verification": [
+        "With the specified Qt6 Anki tooltip open, activate Text Extractor and verify the popup remains visible long enough to select/capture it."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "Overlay activation may alter focus/foreground state, but newer Anki versions use different UI technology and current-build behavior is unconfirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor activation can dismiss transient UI popups.",
+    "known_information": [
+      "The reporter gave a specific Qt6 Anki 2.1.54 tooltip repro and confirmed on PowerToys v0.85.1/Windows 11 24H2; other commenters observed context menus also dismiss except Explorer."
+    ],
+    "inferences": [
+      "Overlay activation may alter focus/foreground state, but newer Anki versions use different UI technology and current-build behavior is unconfirmed."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2024-11-04T17:54:28Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/PowerOCR; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the issue reproduces on current PowerToys using the old Qt6 Anki tooltip or another transient popup.",
+        "why_needed": "The exact app/version is old and commenters reported multiple popup types; current repro determines whether this remains in Text Extractor.",
+        "how_to_collect": "Confirm current PowerToys version and whether issue still reproduces with Qt6 Anki 2.1.54 or another popup; specify whether the popup disappears before the capture overlay appears."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm Text Extractor popup behavior",
+      "comment": {
+        "body": "Thanks for narrowing the repro to Qt6 Anki 2.1.54 and noting newer Anki versions use different rendering technology. Could you confirm whether the popup still disappears with the current PowerToys release using that Qt6 build, or with another transient popup? Please say whether it disappears before the capture overlay appears. That distinguishes a capture-start focus transition from Anki-specific behavior."
+      }
+    }
+  ]
 }

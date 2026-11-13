@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 24412,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-08-03T18:30:10Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
+  "source_updated_at": "2026-09-16T12:40:24Z",
+  "title": "Always on Top: Stale pinned window border when switching to windows on other virtual desktops",
+  "url": "https://github.com/microsoft/PowerToys/issues/24412",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Team-Response",
+    "Status-Reproducible"
+  ],
+  "assignees": [],
+  "comments": 6,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "Always On Top border can remain on the wrong virtual desktop"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #24412; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue gives a precise two-desktop repro with taskbar windows shown on All desktops, and a 2025 follow-up confirms stale or missing border; #40608 describes a related stale frame on desktop switch. The border refresh path may miss a virtual-desktop event; related #40608 is closed, but no concrete merged fix was established in this batch.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #24412 (https://github.com/microsoft/PowerToys/issues/24412): The issue gives a precise two-desktop repro with taskbar windows shown on All desktops, and a 2025 follow-up confirms stale or missing border; #40608 describes a related stale frame on desktop switch.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L346-L850; this supports an investigation route but is not runtime proof.",
+      "The border refresh path may miss a virtual-desktop event; related #40608 is closed, but no concrete merged fix was established in this batch."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-08-03T18:30:10Z"
-  }
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
+    "source_updated_at": "2026-09-16T12:40:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Always On Top border can remain on the wrong virtual desktop",
+      "root_cause": "Border visibility may be refreshed on focus changes but not every virtual-desktop visibility transition, allowing a border window to outlive the pinned window on another desktop.",
+      "plan": [
+        "Trace border visibility on virtual-desktop switch and direct taskbar activation with the All desktops taskbar option.",
+        "Synchronize border hide/show with window desktop visibility transitions rather than relying solely on focus changes.",
+        "Add a regression test for switching directly between pinned and unpinned windows on separate desktops."
+      ],
+      "verification": [
+        "Switch desktops by clicking taskbar windows and verify the border follows only the pinned window across repeated transitions."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The border refresh path may miss a virtual-desktop event; related #40608 is closed, but no concrete merged fix was established in this batch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top border can remain on the wrong virtual desktop.",
+    "known_information": [
+      "The issue gives a precise two-desktop repro with taskbar windows shown on All desktops, and a 2025 follow-up confirms stale or missing border; #40608 describes a related stale frame on desktop switch."
+    ],
+    "inferences": [
+      "The border refresh path may miss a virtual-desktop event; related #40608 is closed, but no concrete merged fix was established in this batch."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2026-09-16T12:40:24Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp#L346-L850; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Whether the precise All desktops/taskbar sequence still reproduces on current stable and whether related #40608 closed as fixed or duplicate.",
+        "why_needed": "Current behavior and the closure outcome of the related issue decide whether this remains a defect or is already covered.",
+        "how_to_collect": "Confirm current PowerToys and Windows versions, the Taskbar “show windows on all desktops” setting, and whether the border remains stale after a desktop switch."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm desktop border behavior",
+      "comment": {
+        "body": "Thanks for the video and the exact All desktops taskbar sequence. You later noted that the frame sometimes resolves after another focus change and linked #40608. Could you confirm the current PowerToys/Windows versions and whether the stale border still appears with that taskbar setting enabled? This will show whether the desktop-visibility transition remains uncovered or overlaps the later report."
+      }
+    }
+  ]
 }

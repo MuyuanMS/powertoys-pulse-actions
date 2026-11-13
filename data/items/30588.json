@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 30588,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T16:07:26Z",
+  "generated_at": "2026-11-13T11:38:50Z",
+  "evaluated_at": "2026-11-13T11:38:50Z",
+  "source_updated_at": "2026-09-28T06:57:28Z",
+  "title": "Enables modules reset on system boot",
+  "url": "https://github.com/microsoft/PowerToys/issues/30588",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 4,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Evidence needed",
+    "detail": "Enabled modules sometimes reset after startup"
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "next_action": "Request the discriminating evidence described for issue #30588; keep the proposed root cause provisional.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original reporter confirmed PowerToys runs as the logged-in user; an earlier report came from v0.76.2, and a 2026 commenter reports v0.101.2362 after a recent onset. A setting persistence or startup ordering problem is possible, but different report histories may reflect distinct causes.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue #30588 (https://github.com/microsoft/PowerToys/issues/30588): The original reporter confirmed PowerToys runs as the logged-in user; an earlier report came from v0.76.2, and a 2026 commenter reports v0.101.2362 after a recent onset.",
+      "At pinned revision 237dc893c8c76b1bfa65994afda41ea7315a914c, the relevant source path is https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/general_settings.cpp#L190-L205; this supports an investigation route but is not runtime proof.",
+      "A setting persistence or startup ordering problem is possible, but different report histories may reflect distinct causes."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:07:26Z"
-  }
+    "recommended_action": "Request the current-build/trigger evidence in the specific request_info action before treating this lightweight fix hypothesis as confirmed.",
+    "evaluated_at": "2026-11-13T11:38:50Z",
+    "source_updated_at": "2026-09-28T06:57:28Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix remains plausible; the issue is open and no confirmed covering merged fix was established in this batch. This is a low-confidence triage hypothesis, not a detailed design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Enabled modules sometimes reset after startup",
+      "root_cause": "Startup may load stale or differently scoped persisted module settings before the runner finishes updating configuration, so enabled state differs between cold start and an in-process restart.",
+      "plan": [
+        "Trace enabled-module settings from disk through runner startup and compare cold autostart with manual restart under the same user/elevation.",
+        "Correct the startup persistence or ordering path only where stored state is lost or read from the wrong scope.",
+        "Add a startup/restart regression test preserving enabled modules."
+      ],
+      "verification": [
+        "Enable several modules, cold boot, and verify the same modules remain enabled without restarting PowerToys."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "A setting persistence or startup ordering problem is possible, but different report histories may reflect distinct causes."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Enabled modules sometimes reset after startup.",
+    "known_information": [
+      "The original reporter confirmed PowerToys runs as the logged-in user; an earlier report came from v0.76.2, and a 2026 commenter reports v0.101.2362 after a recent onset."
+    ],
+    "inferences": [
+      "A setting persistence or startup ordering problem is possible, but different report histories may reflect distinct causes."
+    ],
+    "analysis": "The issue and pinned source make this a plausible PowerToys investigation, but the available evidence does not establish the proposed mechanism on the current release. The request asks only for the discriminator that changes whether or where a fix belongs.",
+    "initial_investigation": [
+      "Read the issue body and relevant discussion, labels, assignees and public attachments through 2026-09-28T06:57:28Z.",
+      "Inspected the pinned source at https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/runner/general_settings.cpp#L190-L205; this is source context, not runtime proof.",
+      "Checked linked issues, current assignment and the prior artifact before retaining this provisional proposal."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the current reporter sees the same modules toggle off after a cold boot on v0.101.2362, and whether a manual restart changes them.",
+        "why_needed": "The new report lacks steps/details beyond recent onset; confirmation separates persisted-setting loss from module startup failure.",
+        "how_to_collect": "Reply with affected modules, whether their Settings toggles are actually off after boot or modules merely fail to start, and whether a manual restart restores them."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve provisional investigation",
+      "note": "Approval does not represent a completed detailed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Clarify startup module state",
+      "comment": {
+        "body": "Thanks for confirming the same-user setup and sharing that this began recently on v0.101.2362. Could you clarify which modules are affected and, after boot, whether their Settings toggles are actually off or remain on while the modules fail to start? Please also say whether restarting PowerToys restores them. This distinguishes persisted-setting loss from module initialization failure."
+      }
+    }
+  ]
 }
