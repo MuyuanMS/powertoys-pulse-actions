@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-13T09:49:59.4527943Z",
+  "generated_at": "2026-11-13T10:03:40.8488690Z",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 232,
+    "open_prs": 233,
     "open_issues": 11172,
-    "community": 10286,
-    "artifacts": 1877
+    "community": 10287,
+    "artifacts": 1878
   },
   "impact": {
     "as_of": "2026-11-10T19:13:24.9428557+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52079,
     52107,
     52055,
     52040,
@@ -1977,6 +1978,44 @@ window.BOARD_INDEX = {
     49788
   ],
   "items": [
+    {
+      "id": "pr-52079",
+      "kind": "pr",
+      "number": 52079,
+      "url": "https://github.com/microsoft/PowerToys/pull/52079",
+      "title": "[PowerDisplay] Follow built-in display brightness on external monitors",
+      "author": "piereligio",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "labels": [
+        "Product-PowerDisplay",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-11T20:46:53Z",
+      "updated_at": "2026-11-12T13:15:47Z",
+      "comments": 3,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": null,
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "priority": null,
+      "pending_author": false,
+      "waiting_since": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post inline review comment"
+      },
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null
+    },
     {
       "id": "pr-52107",
       "kind": "pr",
