@@ -1,0 +1,100 @@
+{
+  "number": 52053,
+  "kind": "issue",
+  "track": "triage",
+  "title": "CursorHide doesn't always restore mouse cursor after moving mouse.",
+  "url": "https://github.com/microsoft/PowerToys/issues/52053",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-CursorHide"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "🎯",
+    "label": "Actionable fix candidate",
+    "detail": "Pointer hover behavior continues over an unresponsive foreground app, but cursor image is absent until a click. This differs from elevated-window reports; failing transition is unmeasured."
+  },
+  "next_action": {
+    "glyph": "🧭",
+    "label": "Review focused evidence",
+    "reason": "Pointer hover behavior continues over an unresponsive foreground app, but cursor image is absent until a click. This differs from elevated-window reports; failing transition is unmeasured."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Pointer hover behavior continues over an unresponsive foreground app, but cursor image is absent until a click. This differs from elevated-window reports; failing transition is unmeasured.",
+    "evidence": [
+      "Movement and click produce different recovery results in busy-app state.",
+      "No trace establishes whether restore is lost or target rendering stalls."
+    ],
+    "recommended_action": "Pointer hover behavior continues over an unresponsive foreground app, but cursor image is absent until a click. This differs from elevated-window reports; failing transition is unmeasured.",
+    "evaluated_at": "2026-11-13T11:50:42Z",
+    "source_updated_at": "2026-11-12T11:20:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The sequence is specific, but no trace establishes whether cursor restoration or target rendering fails."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore cursor visibility while foreground app is busy",
+      "root_cause": "Hypothesis: restoration is deferred or lost after pointer movement while foreground UI thread is unresponsive.",
+      "plan": [
+        "Reproduce the render/UI-thread block and record hook action and restore result.",
+        "If movement is observed but restore is lost, repair the state transition without waiting on foreground app.",
+        "Add a blocked-window regression."
+      ],
+      "verification": [
+        "Movement alone restores cursor; timeout, click recovery and multi-monitor behavior remain unchanged."
+      ],
+      "confidence": {
+        "score": 52,
+        "level": "yellow",
+        "rationale": "The sequence is specific, but no trace establishes whether cursor restoration or target rendering fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Pointer hover behavior continues over an unresponsive foreground app, but cursor image is absent until a click. This differs from elevated-window reports; failing transition is unmeasured.",
+    "known_information": [
+      "The report gives an OpenSCAD render sequence where the UI thread is unresponsive.",
+      "Mouse movement may produce hover behavior without a visible cursor; clicking restores it.",
+      "Current low-level hook/restore path does not show which step fails."
+    ],
+    "inferences": [],
+    "analysis": "The sequence is specific, but no trace establishes whether cursor restoration or target rendering fails.",
+    "initial_investigation": [
+      "Read the complete issue discussion and recent activity; reassessed related fixes and ownership.",
+      "Inspected the relevant pinned source path: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp#L275."
+    ],
+    "information_gaps": [
+      {
+        "information": "A trace of pointer movement, hook action and restore result while a foreground test window is blocked.",
+        "why_needed": "This evidence distinguishes the reported failure boundary from the current plausible explanation.",
+        "how_to_collect": "Please repeat the busy-app sequence with CursorHide on and off and report whether movement alone restores the cursor on a second display. A maintainer trace should distinguish hook observation from restore.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request the specific missing evidence",
+      "comment": {
+        "body": "Please repeat the busy-app sequence with CursorHide on and off and report whether movement alone restores the cursor on a second display. A maintainer trace should distinguish hook observation from restore."
+      }
+    }
+  ],
+  "owes": "maintainer",
+  "pending_author": false,
+  "schemaVersion": 5,
+  "stage": "triage",
+  "evaluated_at": "2026-11-13T11:50:42Z",
+  "generated_at": "2026-11-13T11:50:42Z",
+  "source_updated_at": "2026-11-12T11:20:15Z"
+}

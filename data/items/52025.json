@@ -1,0 +1,100 @@
+{
+  "number": 52025,
+  "kind": "issue",
+  "track": "triage",
+  "title": "I keep getting this message and Power Display is disabled every time Windows IS STARTED",
+  "url": "https://github.com/microsoft/PowerToys/issues/52025",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "🎯",
+    "label": "Actionable fix candidate",
+    "detail": "A reply gives a shutdown-during-rescan timeline, leftover discovery.lock and next-start auto-disable. This is a testable hypothesis, not a confirmed reproduction."
+  },
+  "next_action": {
+    "glyph": "🧭",
+    "label": "Review focused evidence",
+    "reason": "A reply gives a shutdown-during-rescan timeline, leftover discovery.lock and next-start auto-disable. This is a testable hypothesis, not a confirmed reproduction."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "A reply gives a shutdown-during-rescan timeline, leftover discovery.lock and next-start auto-disable. This is a testable hypothesis, not a confirmed reproduction.",
+    "evidence": [
+      "The reported event order fits lock-based crash recovery.",
+      "The commenter labels shutdown reproduction unconfirmed."
+    ],
+    "recommended_action": "A reply gives a shutdown-during-rescan timeline, leftover discovery.lock and next-start auto-disable. This is a testable hypothesis, not a confirmed reproduction.",
+    "evaluated_at": "2026-11-13T11:50:42Z",
+    "source_updated_at": "2026-11-12T22:24:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported lock sequence fits recovery behavior, but the reporter says it was not deliberately reproduced."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Distinguish graceful shutdown from a Power Display crash",
+      "root_cause": "Hypothesis: shutdown terminates after lock creation but before cleanup, causing false crash classification.",
+      "plan": [
+        "Reproduce shutdown with lock present and observe cleanup/next-start recovery.",
+        "If confirmed, distinguish graceful shutdown while retaining genuine crash recovery.",
+        "Test shutdown, forced termination and exception paths."
+      ],
+      "verification": [
+        "Normal shutdown does not trigger auto-disable; forced termination still uses crash recovery."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The reported lock sequence fits recovery behavior, but the reporter says it was not deliberately reproduced."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A reply gives a shutdown-during-rescan timeline, leftover discovery.lock and next-start auto-disable. This is a testable hypothesis, not a confirmed reproduction.",
+    "known_information": [
+      "The reply reports wake/rescan, lock creation, normal shutdown, then orphan-lock auto-disable.",
+      "No corresponding crash event was found.",
+      "Current recovery treats an orphan lock as crash evidence."
+    ],
+    "inferences": [],
+    "analysis": "The reported lock sequence fits recovery behavior, but the reporter says it was not deliberately reproduced.",
+    "initial_investigation": [
+      "Read the complete issue discussion and recent activity; reassessed related fixes and ownership.",
+      "Inspected the relevant pinned source path: https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/powerdisplay/PowerDisplay.Lib/Services/CrashDetectionScope.cs#L53."
+    ],
+    "information_gaps": [
+      {
+        "information": "A controlled normal shutdown while discovery.lock exists, with next-start recovery result.",
+        "why_needed": "This evidence distinguishes the reported failure boundary from the current plausible explanation.",
+        "how_to_collect": "Please reproduce one normal Windows shutdown during an active monitor rescan and report whether Power Display disables on next startup. Distinguish normal shutdown from forced termination; no generic logs are needed.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused investigation"
+    },
+    {
+      "type": "request_info",
+      "label": "Request the specific missing evidence",
+      "comment": {
+        "body": "Please reproduce one normal Windows shutdown during an active monitor rescan and report whether Power Display disables on next startup. Distinguish normal shutdown from forced termination; no generic logs are needed."
+      }
+    }
+  ],
+  "owes": "maintainer",
+  "pending_author": false,
+  "schemaVersion": 5,
+  "stage": "triage",
+  "evaluated_at": "2026-11-13T11:50:42Z",
+  "generated_at": "2026-11-13T11:50:42Z",
+  "source_updated_at": "2026-11-12T22:24:54Z"
+}
