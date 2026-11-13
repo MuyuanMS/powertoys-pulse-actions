@@ -5,118 +5,18 @@
   "repository": "microsoft/PowerToys",
   "title": "Migrate Workspaces Launcher UI from WPF to WinUI 3",
   "url": "https://github.com/microsoft/PowerToys/pull/48700",
-  "stage": "awaiting_review_approval",
-  "generated_at": "2026-10-10T06:37:40.2542926Z",
-  "evaluated_at": "2026-10-10T06:37:40.2542926Z",
-  "source_updated_at": "2026-10-10T01:58:20Z",
-  "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
-  "proposed_comments": [
-    {
-      "start_line": 72,
-      "path": "src/modules/Workspaces/WorkspacesLauncherUI.WinUI/Views/App.xaml.cs",
-      "severity": "medium",
-      "id": "startup-register-before-receiver",
-      "in_diff": true,
-      "title": "Register status callback before starting receiver",
-      "side": "RIGHT",
-      "line": 74,
-      "kind": "inline",
-      "body": "### [P2] Register the status callback before starting the pipe receiver\n**Severity:** `medium`\n\n`StatusWindow` constructs `StatusPage`, whose `MainViewModel` assigns `IPCMessageReceivedCallback`. Starting the receiver first leaves a window in which an arriving status message fails the callback-null check and is discarded without being queued. Construct the window before starting reception; activation can remain last. Later updates may recover the display, so this fixes the registration gap rather than guaranteeing delivery of every startup message.\n\n```suggestion\n            _mainWindow = new StatusWindow();\n            _ipcManager.Start();\n```",
-      "confidence": {
-        "score": 88,
-        "rationale": "Exact caller chain assigns the callback only after Start; the receiving delegate drops rather than enqueues when callback is null. Source-order proof only, no claim of runtime timing reproduction."
-      }
-    },
-    {
-      "start_line": 42,
-      "path": "src/modules/Workspaces/WorkspacesLauncherUI.WinUI/WorkspacesLauncherUI.WinUI.csproj",
-      "severity": "medium",
-      "id": "workspaces-winui-assets-not-harvested",
-      "in_diff": true,
-      "title": "Harvest Workspaces assets at the WinUI installation path",
-      "side": "RIGHT",
-      "line": 42,
-      "kind": "inline",
-      "body": "### [P2] Harvest the launcher assets at their new WinUI installation path\n**Severity:** `medium`\n\n#### Affected paths\n`WorkspacesLauncherUI.WinUI.csproj` copies the icons to `WinUI3Apps/Assets/Workspaces`. The matching installer work belongs in `installer/PowerToysSetupVNext/Workspaces.wxs` and `generateAllFileComponents.ps1`.\n\n#### Current behavior and impact\nThe generic WinUI harvest enumerates only top-level files. The existing Workspaces harvest instead targets the old root `Assets/Workspaces` directory. Neither includes the new app-local directory. `StatusWindow.xaml` refers to `/Assets/Workspaces/Workspaces.ico`, and `IconHelper` resolves its fallback from `AppContext.BaseDirectory/Assets/Workspaces/DefaultIcon.ico`; the old root copy does not satisfy these paths. Both icons are present in the Release build output but absent from the current generated WinUI component list. This establishes a missing installation payload, not a claim that the launcher necessarily crashes.\n\n#### Required change\nKeep the old asset component for the Workspaces Editor. Add a separate WinUI asset directory and file list, generate its file component into the existing `WorkspacesComponentGroup`, and add uninstall cleanup for the new directory. `Product.wxs` already references that group, and the installer project already compiles `Workspaces.wxs`.\n\n#### Implementation\nAdd these definitions beside the existing Workspaces definitions:\n```xml\n<?define WorkspacesWinUIImagesComponentFiles=?>\n<?define WorkspacesWinUIImagesComponentFilesPath=$(var.BinDir)WinUI3Apps\\Assets\\Workspaces\\?>\n```\nInside the existing fragment, add:\n```xml\n<DirectoryRef Id=\"WinUI3AppsAssetsFolder\">\n  <Directory Id=\"WorkspacesWinUIAssetsInstallFolder\" Name=\"Workspaces\" />\n</DirectoryRef>\n<DirectoryRef Id=\"WorkspacesWinUIAssetsInstallFolder\" FileSource=\"$(var.WorkspacesWinUIImagesComponentFilesPath)\">\n  <!--WorkspacesWinUIImagesComponentFiles_Component_Def-->\n</DirectoryRef>\n```\nInside `WorkspacesComponentGroup`, add:\n```xml\n<Component Id=\"RemoveWorkspacesWinUIAssetsFolder\" Guid=\"A588FB5C-DFC5-441C-A192-8F427276F288\" Directory=\"WorkspacesWinUIAssetsInstallFolder\">\n  <RegistryKey Root=\"$(var.RegistryScope)\" Key=\"Software\\Classes\\powertoys\\components\">\n    <RegistryValue Type=\"string\" Name=\"RemoveWorkspacesWinUIAssetsFolder\" Value=\"\" KeyPath=\"yes\" />\n  </RegistryKey>\n  <RemoveFolder Id=\"RemoveFolderWorkspacesWinUIAssetsFolder\" Directory=\"WorkspacesWinUIAssetsInstallFolder\" On=\"uninstall\" />\n</Component>\n```\nImmediately after the existing two Workspaces generator calls, add:\n```powershell\nGenerate-FileList -fileDepsJson \"\" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\\Workspaces.wxs -depsPath \"$PSScriptRoot..\\..\\..\\$platform\\Release\\WinUI3Apps\\Assets\\Workspaces\\\"\nGenerate-FileComponents -fileListName \"WorkspacesWinUIImagesComponentFiles\" -wxsFilePath $PSScriptRoot\\Workspaces.wxs\n```\nThe generator supplies the new component reference to the existing group, so no new Product group reference is needed. Apply both installer-file changes together.\n\n#### Focused verification\nBuild with `tools\\build\\build.ps1 -Platform x64 -Configuration Release -Path src\\modules\\Workspaces\\WorkspacesLauncherUI.WinUI /restore /t:Rebuild /p:AppxPackageSigningEnabled=false /p:EnableMsixTooling=false`. On a non-UTF-8 compiler default code page, set `$env:CL = '/utf-8'` for that invocation; this selects the source charset without changing the system locale. Confirm both icons under `x64\\Release\\WinUI3Apps\\Assets\\Workspaces`; run the exact harvest functions on that output and verify both new File entries, their DirectoryRef, and the generated ComponentRef. The generated Workspaces fragment compiled successfully as a WiX 5.0.2 bound library containing the real icon payloads. Complete MSI linkage, installation/uninstallation, and rendered UI were not exercised.",
-      "confidence": {
-        "score": 94,
-        "rationale": "Actual Release icons exist; exact generic generator excludes the nested directory; existing dedicated harvest targets root assets. Remedied actual generated fragment compiles as a bound WiX library. No MSI/UI runtime claim."
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-48700",
-      "review": {
-        "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
-        "event": "COMMENT",
-        "comments": [
-          {
-            "start_line": 72,
-            "path": "src/modules/Workspaces/WorkspacesLauncherUI.WinUI/Views/App.xaml.cs",
-            "severity": "medium",
-            "id": "startup-register-before-receiver",
-            "in_diff": true,
-            "title": "Register status callback before starting receiver",
-            "side": "RIGHT",
-            "line": 74,
-            "kind": "inline",
-            "body": "### [P2] Register the status callback before starting the pipe receiver\n**Severity:** `medium`\n\n`StatusWindow` constructs `StatusPage`, whose `MainViewModel` assigns `IPCMessageReceivedCallback`. Starting the receiver first leaves a window in which an arriving status message fails the callback-null check and is discarded without being queued. Construct the window before starting reception; activation can remain last. Later updates may recover the display, so this fixes the registration gap rather than guaranteeing delivery of every startup message.\n\n```suggestion\n            _mainWindow = new StatusWindow();\n            _ipcManager.Start();\n```",
-            "confidence": {
-              "score": 88,
-              "rationale": "Exact caller chain assigns the callback only after Start; the receiving delegate drops rather than enqueues when callback is null. Source-order proof only, no claim of runtime timing reproduction."
-            }
-          },
-          {
-            "start_line": 42,
-            "path": "src/modules/Workspaces/WorkspacesLauncherUI.WinUI/WorkspacesLauncherUI.WinUI.csproj",
-            "severity": "medium",
-            "id": "workspaces-winui-assets-not-harvested",
-            "in_diff": true,
-            "title": "Harvest Workspaces assets at the WinUI installation path",
-            "side": "RIGHT",
-            "line": 42,
-            "kind": "inline",
-            "body": "### [P2] Harvest the launcher assets at their new WinUI installation path\n**Severity:** `medium`\n\n#### Affected paths\n`WorkspacesLauncherUI.WinUI.csproj` copies the icons to `WinUI3Apps/Assets/Workspaces`. The matching installer work belongs in `installer/PowerToysSetupVNext/Workspaces.wxs` and `generateAllFileComponents.ps1`.\n\n#### Current behavior and impact\nThe generic WinUI harvest enumerates only top-level files. The existing Workspaces harvest instead targets the old root `Assets/Workspaces` directory. Neither includes the new app-local directory. `StatusWindow.xaml` refers to `/Assets/Workspaces/Workspaces.ico`, and `IconHelper` resolves its fallback from `AppContext.BaseDirectory/Assets/Workspaces/DefaultIcon.ico`; the old root copy does not satisfy these paths. Both icons are present in the Release build output but absent from the current generated WinUI component list. This establishes a missing installation payload, not a claim that the launcher necessarily crashes.\n\n#### Required change\nKeep the old asset component for the Workspaces Editor. Add a separate WinUI asset directory and file list, generate its file component into the existing `WorkspacesComponentGroup`, and add uninstall cleanup for the new directory. `Product.wxs` already references that group, and the installer project already compiles `Workspaces.wxs`.\n\n#### Implementation\nAdd these definitions beside the existing Workspaces definitions:\n```xml\n<?define WorkspacesWinUIImagesComponentFiles=?>\n<?define WorkspacesWinUIImagesComponentFilesPath=$(var.BinDir)WinUI3Apps\\Assets\\Workspaces\\?>\n```\nInside the existing fragment, add:\n```xml\n<DirectoryRef Id=\"WinUI3AppsAssetsFolder\">\n  <Directory Id=\"WorkspacesWinUIAssetsInstallFolder\" Name=\"Workspaces\" />\n</DirectoryRef>\n<DirectoryRef Id=\"WorkspacesWinUIAssetsInstallFolder\" FileSource=\"$(var.WorkspacesWinUIImagesComponentFilesPath)\">\n  <!--WorkspacesWinUIImagesComponentFiles_Component_Def-->\n</DirectoryRef>\n```\nInside `WorkspacesComponentGroup`, add:\n```xml\n<Component Id=\"RemoveWorkspacesWinUIAssetsFolder\" Guid=\"A588FB5C-DFC5-441C-A192-8F427276F288\" Directory=\"WorkspacesWinUIAssetsInstallFolder\">\n  <RegistryKey Root=\"$(var.RegistryScope)\" Key=\"Software\\Classes\\powertoys\\components\">\n    <RegistryValue Type=\"string\" Name=\"RemoveWorkspacesWinUIAssetsFolder\" Value=\"\" KeyPath=\"yes\" />\n  </RegistryKey>\n  <RemoveFolder Id=\"RemoveFolderWorkspacesWinUIAssetsFolder\" Directory=\"WorkspacesWinUIAssetsInstallFolder\" On=\"uninstall\" />\n</Component>\n```\nImmediately after the existing two Workspaces generator calls, add:\n```powershell\nGenerate-FileList -fileDepsJson \"\" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\\Workspaces.wxs -depsPath \"$PSScriptRoot..\\..\\..\\$platform\\Release\\WinUI3Apps\\Assets\\Workspaces\\\"\nGenerate-FileComponents -fileListName \"WorkspacesWinUIImagesComponentFiles\" -wxsFilePath $PSScriptRoot\\Workspaces.wxs\n```\nThe generator supplies the new component reference to the existing group, so no new Product group reference is needed. Apply both installer-file changes together.\n\n#### Focused verification\nBuild with `tools\\build\\build.ps1 -Platform x64 -Configuration Release -Path src\\modules\\Workspaces\\WorkspacesLauncherUI.WinUI /restore /t:Rebuild /p:AppxPackageSigningEnabled=false /p:EnableMsixTooling=false`. On a non-UTF-8 compiler default code page, set `$env:CL = '/utf-8'` for that invocation; this selects the source charset without changing the system locale. Confirm both icons under `x64\\Release\\WinUI3Apps\\Assets\\Workspaces`; run the exact harvest functions on that output and verify both new File entries, their DirectoryRef, and the generated ComponentRef. The generated Workspaces fragment compiled successfully as a WiX 5.0.2 bound library containing the real icon payloads. Complete MSI linkage, installation/uninstallation, and rendered UI were not exercised.",
-            "confidence": {
-              "score": 94,
-              "rationale": "Actual Release icons exist; exact generic generator excludes the nested directory; existing dedicated harvest targets root assets. Remedied actual generated fragment compiles as a bound WiX library. No MSI/UI runtime claim."
-            }
-          }
-        ]
-      },
-      "type": "post_review",
-      "source_updated_at": "2026-10-10T01:58:20Z",
-      "label": "Post inline suggestion and installer note",
-      "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7"
-    }
-  ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
-      "result": "passed"
-    },
-    "suggestion_patch": {
-      "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "startup-register-before-receiver"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
-      "result": "passed",
-      "checked_comment_ids": [
-        "startup-register-before-receiver"
-      ],
-      "files": [
-        {
-          "path": "src/modules/Workspaces/WorkspacesLauncherUI.WinUI/Views/App.xaml.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
-    }
-  }
+  "state": "closed",
+  "merged": true,
+  "track": "review",
+  "stage": "closed",
+  "owes": "none",
+  "pending_author": false,
+  "waiting_since": null,
+  "generated_at": "2026-11-13T10:12:47.6497102Z",
+  "evaluated_at": "2026-11-13T10:12:47.6497102Z",
+  "source_updated_at": "2026-11-13T09:13:22Z",
+  "head_sha": "315f3fa82286ce93654b0c68dfe14477ba39915c",
+  "needs_revalidation": false,
+  "proposed_comments": [],
+  "actions": []
 }
