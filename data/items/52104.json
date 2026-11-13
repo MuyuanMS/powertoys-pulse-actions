@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 5,
+  "number": 52104,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[Peek] Clear the WebView before hiding so the previous file doesn't flash",
+  "url": "https://github.com/microsoft/PowerToys/pull/52104",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "waiting_since": null,
+  "generated_at": "2026-11-13T10:48:09.5990179Z",
+  "evaluated_at": "2026-11-13T10:48:09.5990179Z",
+  "source_updated_at": "2026-11-13T08:02:24Z",
+  "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "teardown-reopen-race",
+      "kind": "inline",
+      "title": "Reopening Peek while browser cleanup is pending can be undone",
+      "severity": "medium",
+      "confidence": {
+        "score": 87,
+        "rationale": "Exact upstream control flow proves an async-void teardown yields while visible, while the same-file Toggle path calls Initialize/Activate without checking the in-progress guard; behavioral timing was not reproduced."
+      },
+      "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+      "side": "RIGHT",
+      "line": 255,
+      "body": "### Reopening Peek while browser cleanup is pending can be undone\n\n**Severity:** `medium`\n\n`Uninitialize()` yields here while the window remains visible, but `Toggle()` does not check `_isUninitializing` before taking its same-file path into `Initialize()`/`Activate()`. If that activation occurs before the clear finishes, the older teardown continues to `Hide()` and closes the newly reopened preview. Please serialize same-file activation against teardown, or recheck that teardown still owns the close before hiding, and cover a same-file reopen while the clear is delayed.",
+      "in_diff": true
+    },
+    {
+      "id": "navigation-completion-correlation",
+      "kind": "inline",
+      "title": "Correlate NavigationCompleted with the about:blank navigation",
+      "severity": "medium",
+      "confidence": {
+        "score": 83,
+        "rationale": "The completion handler ignores navigation identity; WebView2 exposes NavigationId correlation and permits overlapping navigations, though this timing race was not reproduced."
+      },
+      "path": "src/modules/peek/Peek.FilePreviewer/Controls/BrowserControl.xaml.cs",
+      "side": "RIGHT",
+      "line": 165,
+      "body": "### Correlate NavigationCompleted with the about:blank navigation\n\n**Severity:** `medium`\n\nThis handler completes `navigated` for every `NavigationCompleted` event, even though it has just started `about:blank`. If an overlapping earlier navigation completes after this subscription, the wait can finish before the blank document does, so the subsequent paint wait does not guarantee that the old frame has been cleared. Please capture the blank navigation's `NavigationId` and complete the wait only for the corresponding `NavigationCompleted` event.",
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_review",
+      "review": {
+        "comment_ids": [
+          "teardown-reopen-race",
+          "navigation-completion-correlation"
+        ],
+        "commit_id": "7e95000aa346c03f763023ab6f92c6789e18e730",
+        "event": "COMMENT",
+        "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730"
+      },
+      "id": "52104-post-current-findings",
+      "label": "Post inline review comments",
+      "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730"
+    }
+  ],
+  "validation": {
+    "affected_source": {
+      "scope": "Exact-head source/control-flow and navigation-event correlation grounding. No replacement code is proposed; compilation, runtime timing and visual behavior were not tested.",
+      "result": "passed",
+      "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730"
+    }
+  }
+}
