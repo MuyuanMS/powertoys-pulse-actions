@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-14T08:54:25.3212411+08:00",
+  "generated_at": "2026-11-14T01:07:11.1316769+00:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
