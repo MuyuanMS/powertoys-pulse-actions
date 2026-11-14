@@ -1,33 +1,106 @@
 {
   "number": 32782,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "PowerToys Run Web Search plugin can't open Arc",
+  "url": "https://github.com/microsoft/PowerToys/issues/32782",
+  "labels": [
+    "Issue-Bug",
+    "Help Wanted",
+    "Product-PowerToys Run",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comments": 10,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:07:17Z",
+  "evaluated_at": "2026-11-14T01:07:17Z",
   "source_updated_at": "2024-12-18T17:52:02Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "PowerToys Run 0.80.1 Web Search sometimes reports Failed to open Arc or foregrounds Arc without opening search results."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm Arc browser launch",
+    "reason": "Confirm current Arc registration before implementing general packaged-browser command parsing."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The current code makes browser-command parsing plausible, and PR #34505 was closed unmerged. Since the report is from 0.80.1, confirm current behavior and Arc install format before proposing general parser work; do not apply the issue comment registry workaround.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue and related reports: https://github.com/microsoft/PowerToys/issues/32782",
+      "Closed/unmerged PR: https://github.com/microsoft/PowerToys/pull/34505",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/launcher/Wox.Plugin/Common/DefaultBrowserInfo.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm current Arc registration before implementing general packaged-browser command parsing.",
+    "evaluated_at": "2026-11-14T01:07:17Z",
     "source_updated_at": "2024-12-18T17:52:02Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Parse packaged default-browser launch commands without Arc-specific hacks",
+      "root_cause": "DefaultBrowserInfo may fail to extract a packaged Arc executable command when registration uses an unquoted WindowsApps path; this requires confirmation against the current registration.",
+      "plan": [
+        "Inspect default-browser ProgId command parsing for packaged applications.",
+        "Parse executable and argument boundaries according to the registered command format rather than hard-coding browser names.",
+        "Add tests for quoted/unquoted packaged commands and URI-based launch targets."
+      ],
+      "verification": [
+        "Confirm parsed target and arguments for Arc registration.",
+        "Run Web Search and verify a new tab opens with the requested search."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The parser has a product-specific Firefox workaround, but Arc registration and current behavior are unknown."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run 0.80.1 Web Search sometimes reports Failed to open Arc or foregrounds Arc without opening search results.",
+    "known_information": [
+      "Report lists Arc 1.0.1.24682, Windows 11 22H2, default-browser setting and Web Search activation command.",
+      "Related Arc reports #31803/#33094/#33376 and proposed PR #34505 are linked.",
+      "Current DefaultBrowserInfo parses default-browser command and has a WindowsApps quoting workaround for Firefox only; parse failures fall back to Edge."
+    ],
+    "inferences": [
+      "Arc packaged command line may be parsed as a filesystem path, but its registration format is not supplied."
+    ],
+    "analysis": "The current code makes browser-command parsing plausible, and PR #34505 was closed unmerged. Since the report is from 0.80.1, confirm current behavior and Arc install format before proposing general parser work; do not apply the issue comment registry workaround.",
+    "initial_investigation": [
+      "`src/modules/launcher/Wox.Plugin/Common/DefaultBrowserInfo.cs` parses default-browser command and contains a Firefox-only WindowsApps quoting workaround.",
+      "Closed/unmerged PR #34505 and closed related reports do not establish a shipped fix."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Web Search still fails on latest stable and whether Arc is installed as packaged/MSIX or standard desktop app.",
+        "why_needed": "The report is from 0.80.1 and the suspected command-parser branch depends on registration format.",
+        "how_to_collect": "Confirm About version, Arc build/install source and whether selection still opens no tab; do not edit registry associations.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm Arc browser launch",
+      "comment": {
+        "body": "Thanks for listing the Arc build, Windows version, activation command and both failure outcomes. The earlier Arc PR #34505 was closed unmerged, and the current parser’s packaged-browser workaround is Firefox-specific. Could you confirm whether the failure still occurs on latest stable and whether Arc is installed as a packaged/MSIX app or standard desktop app? Please do not edit registry associations. This determines whether the command parser is still the relevant path."
+      }
+    }
+  ]
 }

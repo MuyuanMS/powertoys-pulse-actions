@@ -1,33 +1,103 @@
 {
   "number": 47448,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "bug problem of power toys",
+  "url": "https://github.com/microsoft/PowerToys/issues/47448",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:06:27Z",
+  "evaluated_at": "2026-11-14T01:06:27Z",
   "source_updated_at": "2026-04-30T08:17:37Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "A reported WPF NullReferenceException occurred while Windows changed the system theme; no PowerToys version or reproduction sequence is in the issue."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm current theme-change reproduction",
+    "reason": "Confirm the affected process and current-version reproduction before narrowing the resource lookup."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The exception text alone cannot localize the fault to PowerToys Settings; the report calls it WPF while current Settings code is WinUI-based. Confirm the affected process and current-version reproduction before choosing a code path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue and collected attachment: https://github.com/microsoft/PowerToys/issues/47448"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm the affected process and current-version reproduction before narrowing the resource lookup.",
+    "evaluated_at": "2026-11-14T01:06:27Z",
     "source_updated_at": "2026-04-30T08:17:37Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Guard theme-resource lookup during system-theme transitions",
+      "root_cause": "A WPF resource lookup may dereference a resource that is unavailable during a theme change; this is low confidence because no stack frame or process is identified.",
+      "plan": [
+        "Identify the failing process and theme-change callback from the captured stack.",
+        "If the fault is in PowerToys, tolerate a temporarily unavailable resource dictionary and retain the prior theme until replacement resources are ready.",
+        "Add a regression test for a theme change while the affected view initializes."
+      ],
+      "verification": [
+        "Reproduce on latest stable while changing Windows light/dark theme.",
+        "Verify the affected window stays open and no matching exception is logged."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The report gives an exception and transition, but not a PowerToys process or stack frame."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A reported WPF NullReferenceException occurred while Windows changed the system theme; no PowerToys version or reproduction sequence is in the issue.",
+    "known_information": [
+      "The issue includes an exception description and screenshot/text attachment.",
+      "The reporter associates the fault with a Windows system-theme resource change.",
+      "No issue comments identify the process or add reproduction steps."
+    ],
+    "inferences": [
+      "A theme resource lookup may run while resources are changing, but the exception is not tied to a PowerToys component."
+    ],
+    "analysis": "The exception text alone cannot localize the fault to PowerToys Settings; the report calls it WPF while current Settings code is WinUI-based. Confirm the affected process and current-version reproduction before choosing a code path.",
+    "initial_investigation": [
+      "Read issue body and attachment description; no timeline fix or duplicate is recorded.",
+      "The mismatch between reported WPF and current Settings UI means the failing process must be established."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which process/window throws, exact current PowerToys version, and whether the same theme-change sequence reproduces on latest stable.",
+        "why_needed": "This distinguishes a PowerToys resource race from an unrelated WPF process and avoids proposing a fix in the wrong component.",
+        "how_to_collect": "Confirm About version and visible window; if it reproduces, repeat the theme change and comment `/bugreport` immediately.",
+        "evidence_type": "powertoys_version"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm current theme-change reproduction",
+      "comment": {
+        "body": "Thanks for including the exception and Windows theme-change context. The stack does not identify whether a PowerToys process throws it. Could you confirm the PowerToys version shown in About and, if it still occurs on latest stable, which PowerToys window is open when changing Windows between light and dark? Please add `/bugreport` immediately after reproducing. This will determine whether the resource lookup is in PowerToys and which UI path needs investigation."
+      }
+    }
+  ]
 }

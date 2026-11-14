@@ -1,33 +1,110 @@
 {
   "number": 47434,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Workspace not creating desktop shortcut or launching",
+  "url": "https://github.com/microsoft/PowerToys/issues/47434",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Workspaces"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:06:27Z",
+  "evaluated_at": "2026-11-14T01:06:27Z",
   "source_updated_at": "2026-04-29T14:37:30Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "Workspaces 0.99.1 reportedly created no desktop shortcut and a launch target whose JSON file was missing after saving a captured workspace."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Check workspace save target",
+    "reason": "Determine whether the project save or shortcut target fails before proposing a persistence change."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "WorkspacesData serializes the shortcut-needed flag and WorkspaceStore owns persisted project state. The missing file and shortcut do not yet distinguish a write failure from a target-path mismatch.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue report: https://github.com/microsoft/PowerToys/issues/47434",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/Workspaces/WorkspacesLib/WorkspacesData.cpp",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/Workspaces/WorkspacesLib/WorkspaceStore.cpp"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Determine whether the project save or shortcut target fails before proposing a persistence change.",
+    "evaluated_at": "2026-11-14T01:06:27Z",
     "source_updated_at": "2026-04-29T14:37:30Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Workspaces persistence and shortcut creation consistent",
+      "root_cause": "The workspace may not be persisted before shortcut creation, or the shortcut may use a different path; the report does not distinguish these cases.",
+      "plan": [
+        "Trace editor save through WorkspaceStore and desktop shortcut creation.",
+        "Use the successfully persisted project path for shortcut creation and surface save failures instead of leaving a dangling shortcut.",
+        "Test failed save and shortcut target resolution."
+      ],
+      "verification": [
+        "Repeat saving a new workspace with shortcut creation enabled.",
+        "Verify the project JSON exists at the target and the shortcut launches all configured apps."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The report isolates a save/shortcut inconsistency but does not establish whether the file write or target-path selection fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces 0.99.1 reportedly created no desktop shortcut and a launch target whose JSON file was missing after saving a captured workspace.",
+    "known_information": [
+      "The report gives a capture/select-shortcut/save sequence and says the displayed target JSON was absent.",
+      "The reporter tried to create a bug report but could not find the output."
+    ],
+    "inferences": [
+      "The project write may fail before shortcut creation, or the shortcut may point to a different/missing project file."
+    ],
+    "analysis": "WorkspacesData serializes the shortcut-needed flag and WorkspaceStore owns persisted project state. The missing file and shortcut do not yet distinguish a write failure from a target-path mismatch.",
+    "initial_investigation": [
+      "`src/modules/Workspaces/WorkspacesLib/WorkspacesData.cpp` serializes shortcut state; `WorkspaceStore.cpp` owns project storage.",
+      "No linked fix or duplicate is recorded."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the project JSON is created anywhere and whether the shortcut Properties target matches the path displayed by Workspaces.",
+        "why_needed": "This separates a failed project write from a dangling or misdirected shortcut.",
+        "how_to_collect": "Repeat with a new workspace name; inspect shortcut Properties and whether the target exists. Share no personal directory names.",
+        "evidence_type": "settings_permissions"
+      },
+      {
+        "information": "Fresh diagnostics captured immediately after failed save/launch.",
+        "why_needed": "The reporter says the earlier bug-report flow claimed success without leaving a visible file.",
+        "how_to_collect": "After reproducing, use the tray/Settings `/bugreport` flow and attach the package; omit private workspace contents.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Check workspace save target",
+      "comment": {
+        "body": "Thanks for documenting the capture/save sequence and checking the shortcut target; the report already says the target JSON was missing. Could you check these two points?\n1. Repeat once with a new workspace name and confirm whether that JSON exists anywhere and whether shortcut Properties matches the path shown by Workspaces. Share only the file name/relative location, not personal paths.\n2. If it fails again, add `/bugreport` immediately after the failed save/launch and attach the package. If Settings and the tray are unavailable, run `BugReportTool.exe` from the PowerToys installation directory.\nThis distinguishes a failed project write from a dangling shortcut target."
+      }
+    }
+  ]
 }

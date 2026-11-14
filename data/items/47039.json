@@ -1,33 +1,105 @@
 {
   "number": 47039,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Mouse Without Borders : Exception encountered while saving MouseWithoutBorders settings. System.IO.IOException",
+  "url": "https://github.com/microsoft/PowerToys/issues/47039",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 4,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:06:27Z",
+  "evaluated_at": "2026-11-14T01:06:27Z",
   "source_updated_at": "2026-04-29T22:38:25Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "Mouse Without Borders intermittently loses its connection; the reporter supplied a log and said it persisted through PowerToys 0.98.1."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm current MWB disconnect",
+    "reason": "Confirm current-build repro and correlate the first disconnect before treating #51080 as coverage."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The next decisive evidence is whether the same loss occurs on current stable and which peer first changes state. PR #51080 is unmerged and must not be presented as a shipped fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue and supplied log: https://github.com/microsoft/PowerToys/issues/47039",
+      "Tracking: https://github.com/microsoft/PowerToys/issues/51077",
+      "Open, unmerged candidate: https://github.com/microsoft/PowerToys/pull/51080"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm current-build repro and correlate the first disconnect before treating #51080 as coverage.",
+    "evaluated_at": "2026-11-14T01:06:27Z",
     "source_updated_at": "2026-04-29T22:38:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve MWB connection configuration across saves and reconnects",
+      "root_cause": "A failed or partial settings persistence/reload may leave peers with inconsistent connection configuration, but the supplied log has not been correlated with this path.",
+      "plan": [
+        "Compare the supplied log with the current MWB settings load/save and reconnect path.",
+        "If the same settings failure is present, preserve the last valid configuration across write/retry failures and reconnect using validated peer state.",
+        "Add regression coverage for settings-write failure followed by reconnect."
+      ],
+      "verification": [
+        "Repeat the issue sequence on current stable with two PCs.",
+        "Verify both peers retain configuration and reconnect after a transient settings-write failure."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The linked open PR identifies a plausible persistence path, but the reporter log and symptom are not shown to share that cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders intermittently loses its connection; the reporter supplied a log and said it persisted through PowerToys 0.98.1.",
+    "known_information": [
+      "The issue discussion includes an MWB log.",
+      "The reporter says the failure persisted through 0.98.1.",
+      "Timeline links MWB tracking #51077 and open PR #51080 about atomic settings persistence/retries."
+    ],
+    "inferences": [
+      "The settings-save PR may be relevant to some disconnects, but the existing log is not shown to share its cause."
+    ],
+    "analysis": "The next decisive evidence is whether the same loss occurs on current stable and which peer first changes state. PR #51080 is unmerged and must not be presented as a shipped fix.",
+    "initial_investigation": [
+      "Current source includes MWB settings/service and reconnect paths; the issue links tracking #51077.",
+      "The open #51080 settings-save change is not verified coverage or a released fix."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether connection loss persists on latest stable and which peer first reports disconnection.",
+        "why_needed": "This separates an old-version failure from a current reconnect defect and narrows which peer transition matters.",
+        "how_to_collect": "Test the same pairing on current stable; if it fails, reproduce once and submit `/bugreport` from both PCs with timestamps and the first visible connection-state change.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm current MWB disconnect",
+      "comment": {
+        "body": "Thanks for the MWB log and for confirming this persisted through 0.98.1. The linked settings-save PR does not prove it covers your disconnect. Could you confirm whether the same two-PC loss still occurs on current latest stable and which PC first shows the disconnect? If it still reproduces, please comment `/bugreport` immediately after one failure on both PCs and include the approximate time. This will show whether the settings/reconnect path is involved or the peers fail independently."
+      }
+    }
+  ]
 }

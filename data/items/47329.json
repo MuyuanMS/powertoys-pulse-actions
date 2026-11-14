@@ -1,33 +1,126 @@
 {
   "number": 47329,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "In the semi-transparent highlight mode of ZoomIt, there are straight drag traces",
+  "url": "https://github.com/microsoft/PowerToys/issues/47329",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:06:43Z",
+  "evaluated_at": "2026-11-14T01:06:43Z",
   "source_updated_at": "2026-04-29T07:20:29Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "ZoomIt 0.99 semi-transparent highlight mode reportedly leaves the curved original stroke visible after Shift straight-line or Shift+Ctrl arrow correction."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm ZoomIt straight-line rendering",
+    "reason": "Reproduce both modifier paths on current build, then trace the highlight erase/commit path."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "ZoomIt drawing code has a straight-direction path and a highlight rendering path. The report is clear enough for reproduction, but the interaction is not verified on current source.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue report and illustration: https://github.com/microsoft/PowerToys/issues/47329",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/ZoomIt/ZoomIt/Zoomit.cpp"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce both modifier paths on current build, then trace the highlight erase/commit path.",
+    "evaluated_at": "2026-11-14T01:06:43Z",
     "source_updated_at": "2026-04-29T07:20:29Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Replace the original highlight stroke when applying straightening",
+      "root_cause": "The straightening branch may composite its corrected line over the original semi-transparent stroke instead of replacing that stroke on the backing surface.",
+      "plan": [
+        "Trace Shift and Shift+Ctrl drawing through straight-direction and highlight rendering branches.",
+        "When correction commits, remove the original stroke from the same backing surface before rendering the corrected line/arrow.",
+        "Add focused regression validation for line and arrow modes in semi-transparent highlight mode."
+      ],
+      "verification": [
+        "Repeat the curved-stroke sequence with both modifiers on current stable.",
+        "Verify each correction leaves only the straight line or arrow, without the original stroke beneath it."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reported visual result fits an overlay/erase mismatch, but the current rendering sequence needs confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ZoomIt 0.99 semi-transparent highlight mode reportedly leaves the curved original stroke visible after Shift straight-line or Shift+Ctrl arrow correction.",
+    "known_information": [
+      "The report describes a curved original stroke remaining beneath a straight corrected line.",
+      "The issue is specific to semi-transparent highlight mode with Shift and Shift+Ctrl drawing.",
+      "No follow-up confirms behavior on current builds."
+    ],
+    "inferences": [
+      "The straightening path may draw a corrected overlay without replacing the original highlight layer."
+    ],
+    "analysis": "ZoomIt drawing code has a straight-direction path and a highlight rendering path. The report is clear enough for reproduction, but the interaction is not verified on current source.",
+    "initial_investigation": [
+      "`src/modules/ZoomIt/ZoomIt/Zoomit.cpp` contains straight-direction state and highlight drawing/rendering paths.",
+      "No linked fix or duplicate is recorded."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether double-rendering still occurs on latest stable for both Shift line and Shift+Ctrl arrow.",
+        "why_needed": "The report predates current ZoomIt changes; confirmation separates an active defect from a historical one.",
+        "how_to_collect": "On latest stable, use semi-transparent highlight mode, draw a curved stroke, then repeat Shift and Shift+Ctrl corrections; report which variant still leaves the original.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm ZoomIt straight-line rendering",
+      "comment": {
+        "body": "Thanks for the image and the exact Shift/Shift+Ctrl distinction. The unresolved point is whether the original stroke remains under both correction modes on current ZoomIt. Could you confirm on latest stable whether (1) Shift straight-line correction and (2) Shift+Ctrl arrow correction still leave the curved stroke underneath? This will show whether one or both drawing paths fail to replace the highlight layer."
+      }
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The reported sequence is concrete enough for maintainer validation.",
+      "reproduce": {
+        "title": "Reproduce ZoomIt highlight straightening overlay",
+        "module": "ZoomIt",
+        "version_requirement": "PowerToys 0.99 or latest stable",
+        "prerequisites": [
+          "Windows with ZoomIt available."
+        ],
+        "setup": [
+          "Enable semi-transparent highlight mode."
+        ],
+        "steps": [
+          "Draw a visibly curved stroke.",
+          "Use Shift to apply straight-line correction and inspect whether the curve remains beneath the corrected line.",
+          "Repeat with Shift+Ctrl for an arrow and inspect whether the original remains."
+        ],
+        "expected_result": "Each correction leaves only the straight line or arrow, without the curved stroke beneath it."
+      }
+    }
+  ]
 }

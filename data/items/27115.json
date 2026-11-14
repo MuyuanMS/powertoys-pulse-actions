@@ -1,33 +1,105 @@
 {
   "number": 27115,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "PowerToys disabling some diacritic marks in Windows",
+  "url": "https://github.com/microsoft/PowerToys/issues/27115",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "comments": 8,
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-11-14T01:07:17Z",
+  "evaluated_at": "2026-11-14T01:07:17Z",
   "source_updated_at": "2024-12-18T17:29:17Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧭",
+    "label": "Needs Information",
+    "detail": "Polish and French AltGr diacritics were lost with Keyboard Manager enabled; follow-ups through 0.83 in 2024 disagree on whether Mouse Without Borders also matters."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧭",
+    "label": "Confirm AltGr layout behavior",
+    "reason": "Confirm the exact AltGr A/B on current stable before changing keyboard interception."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The discussion contains useful layouts and toggle comparisons, but it predates current releases and has conflicting results for feature combinations. The next discriminating evidence is a current-build A/B using one exact key and layout.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue discussion: https://github.com/microsoft/PowerToys/issues/27115",
+      "Related keyboard-layout issue: https://github.com/microsoft/PowerToys/issues/34193"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm the exact AltGr A/B on current stable before changing keyboard interception.",
+    "evaluated_at": "2026-11-14T01:07:17Z",
     "source_updated_at": "2024-12-18T17:29:17Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely PowerToys path remains uncertain; the proposed direction is provisional and paired with the specific evidence request.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve AltGr layout input when Keyboard Manager is enabled",
+      "root_cause": "Keyboard Manager interception may normalize an AltGr combination before the active layout processes it; reports do not identify the responsible mapping branch.",
+      "plan": [
+        "Trace right-Alt/control events for the reported layout through Keyboard Manager handling.",
+        "Preserve layout-generated characters when no remap applies rather than swallowing the original AltGr sequence.",
+        "Add regression cases for Polish Programmer and French AltGr with Keyboard Manager enabled and disabled."
+      ],
+      "verification": [
+        "Test the reporter’s exact key/layout with Keyboard Manager on and off on latest stable.",
+        "Verify the same expected character is produced in both cases when no remap matches."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The key/layout examples are concrete, but latest reports date to 2024 and disagree about module combinations."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Polish and French AltGr diacritics were lost with Keyboard Manager enabled; follow-ups through 0.83 in 2024 disagree on whether Mouse Without Borders also matters.",
+    "known_information": [
+      "Initial report used Polish (Programmers) layout and PowerToys 0.70.1.",
+      "Follow-ups name Polish AltGr+L/Ń and French AltGr+E.",
+      "A 2024 report says the problem persisted on 0.83 with Keyboard Manager enabled and Mouse Without Borders disabled.",
+      "Timeline links open #34193 about Keyboard Manager overriding system keyboard settings."
+    ],
+    "inferences": [
+      "AltGr/right-Alt handling may interact with Keyboard Manager interception or layout normalization; the discussion does not isolate a current hook path."
+    ],
+    "analysis": "The discussion contains useful layouts and toggle comparisons, but it predates current releases and has conflicting results for feature combinations. The next discriminating evidence is a current-build A/B using one exact key and layout.",
+    "initial_investigation": [
+      "Current Keyboard Manager has low-level keyboard input handling; #34193 is related but not proven duplicate.",
+      "No covering PR or merged fix is identified in the timeline."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Polish AltGr+L/Ń or French AltGr+E still fails on latest stable with Keyboard Manager on and off and MWB disabled.",
+        "why_needed": "This distinguishes a current Keyboard Manager regression from behavior fixed since 0.83 and avoids conflating MWB.",
+        "how_to_collect": "Test one affected key on the stated layout once with Keyboard Manager enabled and once disabled, leaving MWB disabled; report the resulting characters.",
+        "evidence_type": "keyboard_layout"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm AltGr layout behavior",
+      "comment": {
+        "body": "Thanks for the exact Polish/French AltGr examples and the Keyboard Manager versus Mouse Without Borders comparisons. The latest confirmation is from 0.83, and reports disagree about which combination matters. Could you test one affected key on latest stable using the same layout, once with Keyboard Manager enabled and once disabled (leave MWB disabled for both), and report both characters? This will show whether the input-hook path still regresses AltGr today."
+      }
+    }
+  ]
 }
