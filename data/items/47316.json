@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 47316,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-14T01:15:13.0138342Z",
+  "evaluated_at": "2026-11-14T01:15:13.0138342Z",
   "source_updated_at": "2026-04-29T07:20:37Z",
+  "pending_author": false,
+  "summary": "On PowerToys 0.99.0 from Microsoft Store, ZoomIt recording starts with Ctrl+Shift+5, the same chord does not stop it, and Ctrl+5 reportedly freezes before Save As.",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Reproduce before design",
+    "detail": "The current handler treats the shifted crop variant separately and ignores it while recording. This is a plausible match if Ctrl+Shift+5 starts the crop variant, but exact physical key and layout and configured format must be confirmed before changing stop semantics."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "➡️",
+    "label": "Reproduce before design",
+    "reason": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design.",
+    "source_updated_at": "2026-04-29T07:20:37Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/47316",
+      "On PowerToys 0.99.0 from Microsoft Store, ZoomIt recording starts with Ctrl+Shift+5, the same chord does not stop it, and Ctrl+5 reportedly freezes before Save As.",
+      "The reporter identifies the recording hotkey as Ctrl+Shift+5 and the stop attempt as Ctrl+5; the UI is bypassed by stopping from the tray.",
+      "Current Zoomit.cpp registers separate RECORD_HOTKEY and RECORD_CROP_HOTKEY variants; the crop-hotkey branch exits early when g_RecordToggle is already true, while ordinary recording toggles call StopRecording.",
+      "Inspected src/modules/ZoomIt/ZoomIt/Zoomit.cpp recording hotkey registration and WM_HOTKEY switch.",
+      "The RECORD_CROP_HOTKEY branch explicitly breaks when recording is already active; the generic RECORD_HOTKEY branch later toggles StopRecording.",
+      "The crop recording hotkey is handled as a separate WM_HOTKEY id and returns early while g_RecordToggle is true, so the chord that began capture may not reach stop and save handling.",
+      "The reported shortcut maps plausibly to the crop variant, which current code explicitly ignores while recording; exact keyboard layout and settings remain to be confirmed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-29T07:20:37Z"
-  }
+    "status": "actionable_design",
+    "evaluated_at": "2026-11-14T01:15:13.0138342Z",
+    "rationale": "The current handler treats the shifted crop variant separately and ignores it while recording. This is a plausible match if Ctrl+Shift+5 starts the crop variant, but exact physical key and layout and configured format must be confirmed before changing stop semantics."
+  },
+  "issue_context": {
+    "summary": "On PowerToys 0.99.0 from Microsoft Store, ZoomIt recording starts with Ctrl+Shift+5, the same chord does not stop it, and Ctrl+5 reportedly freezes before Save As.",
+    "analysis": "The current handler treats the shifted crop variant separately and ignores it while recording. This is a plausible match if Ctrl+Shift+5 starts the crop variant, but exact physical key and layout and configured format must be confirmed before changing stop semantics.",
+    "inferences": [
+      "The suspected mechanism remains a hypothesis unless identified as current source behavior; no release coverage is inferred."
+    ],
+    "known_information": [
+      "The reporter identifies the recording hotkey as Ctrl+Shift+5 and the stop attempt as Ctrl+5; the UI is bypassed by stopping from the tray.",
+      "Current Zoomit.cpp registers separate RECORD_HOTKEY and RECORD_CROP_HOTKEY variants; the crop-hotkey branch exits early when g_RecordToggle is already true, while ordinary recording toggles call StopRecording."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/ZoomIt/ZoomIt/Zoomit.cpp recording hotkey registration and WM_HOTKEY switch.",
+      "The RECORD_CROP_HOTKEY branch explicitly breaks when recording is already active; the generic RECORD_HOTKEY branch later toggles StopRecording."
+    ],
+    "information_gaps": [
+      {
+        "information": "The configured recording shortcut, physical key sequence and keyboard layout, plus whether recording is GIF or MP4",
+        "evidence_type": "keyboard_layout",
+        "why_needed": "These determine which ZoomIt hotkey id starts capture and whether the ignored crop-stop branch matches this report.",
+        "how_to_collect": "In ZoomIt settings, record the configured recording shortcut and format; state the keyboard language and layout and exact physical keys pressed for start and stop."
+      }
+    ]
+  },
+  "fix_assessment": {
+    "rationale": "A tentative, evidence-grounded code-fix path is applicable; the listed uncertainty-reducing action is required before convergence.",
+    "status": "proposed"
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Stop recording from the active capture hotkey"
+    },
+    {
+      "label": "Confirm ZoomIt capture hotkey",
+      "comment": {
+        "body": "Thanks for identifying that Ctrl+Shift+5 starts recording and that tray stop succeeds, while Ctrl+5 freezes before Save As. Current ZoomIt handles the shifted crop hotkey separately and ignores it while a recording is active, which may match this sequence. Please share the configured recording format and hotkey, keyboard layout, and exact physical keys used; this will confirm whether the crop-stop path is involved."
+      },
+      "type": "request_info"
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Start capture with the configured Ctrl+Shift+5 chord and stop with the same chord; verify Save As opens.",
+        "Verify Ctrl+5 and tray stop behavior do not freeze or corrupt capture and no recording variant cross-stops another session."
+      ],
+      "confidence": {
+        "rationale": "The reported shortcut maps plausibly to the crop variant, which current code explicitly ignores while recording; exact keyboard layout and settings remain to be confirmed.",
+        "level": "yellow",
+        "score": 72
+      },
+      "title": "Stop recording from the active capture hotkey",
+      "root_cause": "The crop recording hotkey is handled as a separate WM_HOTKEY id and returns early while g_RecordToggle is true, so the chord that began capture may not reach stop and save handling.",
+      "plan": [
+        "Track the active recording mode and hotkey when recording starts.",
+        "Route the matching second press to StopRecording before crop-selection guards, preserving other recording modes.",
+        "Add state-machine tests for starting and stopping full-screen and crop GIF/MP4 capture and save-dialog completion."
+      ]
+    }
+  ]
 }

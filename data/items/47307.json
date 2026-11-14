@@ -1,33 +1,107 @@
 {
+  "schemaVersion": 5,
   "number": 47307,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-14T01:15:12.9781569Z",
+  "evaluated_at": "2026-11-14T01:15:12.9781569Z",
   "source_updated_at": "2026-04-29T07:20:44Z",
+  "pending_author": false,
+  "summary": "Power Display popup visibly opens through black, nontransparent, then acrylic frames before reaching its expected background.",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce before design",
+    "detail": "The animation appears during popup activation, not after a control action. Current XAML sets the acrylic backdrop, so a first-frame composition/backdrop readiness race is plausible but not established from the single clip."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "➡️",
+    "label": "Reproduce before design",
+    "reason": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design.",
+    "source_updated_at": "2026-04-29T07:20:44Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/47307",
+      "Power Display popup visibly opens through black, nontransparent, then acrylic frames before reaching its expected background.",
+      "Issue reports PowerToys 0.99.0 on auto-update and includes a short screen recording.",
+      "Current Power Display MainWindow.xaml assigns DesktopAcrylicBackdrop through WindowEx.SystemBackdrop; MainWindow.xaml.cs configures window size and position before display.",
+      "Inspected src/modules/PowerDisplay/PowerDisplay/PowerDisplayXAML/MainWindow.xaml for SystemBackdrop and root content.",
+      "Inspected MainWindow.xaml.cs window configuration and activation path; code sets initial dimensions and position before showing.",
+      "The popup may be presented before DesktopAcrylicBackdrop and the initial root surface complete composition, exposing intermediate black or transparent frames.",
+      "The report clip and current DesktopAcrylicBackdrop identify the rendering surface, but no trace establishes whether backdrop initialization, theme transition, or another compositor event causes the frames."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-29T07:20:44Z"
-  }
+    "status": "reproducible",
+    "evaluated_at": "2026-11-14T01:15:12.9781569Z",
+    "rationale": "The animation appears during popup activation, not after a control action. Current XAML sets the acrylic backdrop, so a first-frame composition/backdrop readiness race is plausible but not established from the single clip."
+  },
+  "issue_context": {
+    "summary": "Power Display popup visibly opens through black, nontransparent, then acrylic frames before reaching its expected background.",
+    "analysis": "The animation appears during popup activation, not after a control action. Current XAML sets the acrylic backdrop, so a first-frame composition/backdrop readiness race is plausible but not established from the single clip.",
+    "inferences": [
+      "The suspected mechanism remains a hypothesis unless identified as current source behavior; no release coverage is inferred."
+    ],
+    "known_information": [
+      "Issue reports PowerToys 0.99.0 on auto-update and includes a short screen recording.",
+      "Current Power Display MainWindow.xaml assigns DesktopAcrylicBackdrop through WindowEx.SystemBackdrop; MainWindow.xaml.cs configures window size and position before display."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/PowerDisplay/PowerDisplay/PowerDisplayXAML/MainWindow.xaml for SystemBackdrop and root content.",
+      "Inspected MainWindow.xaml.cs window configuration and activation path; code sets initial dimensions and position before showing."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "rationale": "A tentative, evidence-grounded code-fix path is applicable; the listed uncertainty-reducing action is required before convergence.",
+    "status": "proposed"
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Avoid showing an uncomposed Power Display surface"
+    },
+    {
+      "note": "Use the supplied evidence and isolate the failing transition before changing code.",
+      "label": "Reproduce backdrop first-frame glitch",
+      "type": "reproduce",
+      "reproduce": {
+        "setup": [],
+        "version_requirement": "PowerToys 0.99.0 or current stable",
+        "steps": [
+          "Close the Power Display popup completely.",
+          "Open it using the same tray or shortcut route as the report while recording the window from before it appears.",
+          "Repeat several times and note whether black or transparent frames precede the final backdrop."
+        ],
+        "expected_result": "The popup should be acrylic from its first visible frame, without black or transparent intermediate backgrounds.",
+        "attachments": null,
+        "prerequisites": [
+          "Windows 11 with Power Display enabled."
+        ],
+        "title": "Avoid showing an uncomposed Power Display surface",
+        "module": "Power Display"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Open Power Display repeatedly from its activation shortcut and tray entry on Windows 11; verify the first visible frame already has the final acrylic background.",
+        "Check light and dark theme and high contrast behavior before accepting any root surface change."
+      ],
+      "confidence": {
+        "rationale": "The report clip and current DesktopAcrylicBackdrop identify the rendering surface, but no trace establishes whether backdrop initialization, theme transition, or another compositor event causes the frames.",
+        "level": "red",
+        "score": 45
+      },
+      "title": "Avoid showing an uncomposed Power Display surface",
+      "root_cause": "The popup may be presented before DesktopAcrylicBackdrop and the initial root surface complete composition, exposing intermediate black or transparent frames.",
+      "plan": [
+        "Trace backdrop and window activation timing before changing rendering behavior.",
+        "If the intermediate frame is confirmed, initialize an opaque theme-appropriate root surface before activation and avoid revealing the window before backdrop readiness.",
+        "Add a regression check for the first visible frame on supported Windows builds."
+      ]
+    }
+  ]
 }

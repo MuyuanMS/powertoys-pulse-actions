@@ -1,33 +1,127 @@
 {
+  "schemaVersion": 5,
   "number": 47481,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-14T01:15:12.90721Z",
+  "evaluated_at": "2026-11-14T01:15:12.90721Z",
   "source_updated_at": "2026-04-30T07:38:36Z",
+  "pending_author": false,
+  "summary": "In PowerToys 0.98, Quick Access features fail when the icon is selected from notification-area overflow, while the pinned tray icon works; reporter supplied a PowerToys report ZIP and screenshots.",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Reproduce before design",
+    "detail": "The two shell surfaces should ultimately dispatch through the same tray single-click path, but the report does not isolate whether failure occurs in notification callback timing, Quick Access activation, or downstream actions. Preserve supplied diagnostics and compare overflow versus pinned invocation."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "➡️",
+    "label": "Reproduce before design",
+    "reason": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design.",
+    "source_updated_at": "2026-04-30T07:38:36Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/47481",
+      "In PowerToys 0.98, Quick Access features fail when the icon is selected from notification-area overflow, while the pinned tray icon works; reporter supplied a PowerToys report ZIP and screenshots.",
+      "Issue body contrasts the hidden-icon overflow invocation with the working pinned-icon invocation.",
+      "Reporter attached a PowerToysReport ZIP and two screenshots.",
+      "Current src/runner/tray_icon.cpp routes single click through click_timer_elapsed and open_quick_access_flyout_window; src/runner/quick_access_host.cpp signals the separate Quick Access process.",
+      "Inspected src/runner/tray_icon.cpp: WM_LBUTTONUP starts a double-click timer and later single-click callback shows Quick Access.",
+      "Inspected src/runner/quick_access_host.cpp: show() starts the host and signals its show event.",
+      "No overflow-specific branch or established root cause was evident in these entry points.",
+      "The shell overflow may deliver a different notification sequence that leaves tray single/double-click state stale, suppressing or misrouting Quick Access activation.",
+      "The runner contains a shared timer-based click path and a separate-process show event, but the supplied report does not identify which step fails or establish that overflow sends a different sequence."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-30T07:38:36Z"
-  }
+    "status": "reproducible",
+    "evaluated_at": "2026-11-14T01:15:12.90721Z",
+    "rationale": "The two shell surfaces should ultimately dispatch through the same tray single-click path, but the report does not isolate whether failure occurs in notification callback timing, Quick Access activation, or downstream actions. Preserve supplied diagnostics and compare overflow versus pinned invocation."
+  },
+  "issue_context": {
+    "summary": "In PowerToys 0.98, Quick Access features fail when the icon is selected from notification-area overflow, while the pinned tray icon works; reporter supplied a PowerToys report ZIP and screenshots.",
+    "analysis": "The two shell surfaces should ultimately dispatch through the same tray single-click path, but the report does not isolate whether failure occurs in notification callback timing, Quick Access activation, or downstream actions. Preserve supplied diagnostics and compare overflow versus pinned invocation.",
+    "inferences": [
+      "The suspected mechanism remains a hypothesis unless identified as current source behavior; no release coverage is inferred."
+    ],
+    "known_information": [
+      "Issue body contrasts the hidden-icon overflow invocation with the working pinned-icon invocation.",
+      "Reporter attached a PowerToysReport ZIP and two screenshots.",
+      "Current src/runner/tray_icon.cpp routes single click through click_timer_elapsed and open_quick_access_flyout_window; src/runner/quick_access_host.cpp signals the separate Quick Access process."
+    ],
+    "initial_investigation": [
+      "Inspected src/runner/tray_icon.cpp: WM_LBUTTONUP starts a double-click timer and later single-click callback shows Quick Access.",
+      "Inspected src/runner/quick_access_host.cpp: show() starts the host and signals its show event.",
+      "No overflow-specific branch or established root cause was evident in these entry points."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "rationale": "A tentative, evidence-grounded code-fix path is applicable; the listed uncertainty-reducing action is required before convergence.",
+    "status": "proposed"
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Normalize tray overflow single-click dispatch"
+    },
+    {
+      "note": "Use the supplied evidence and isolate the failing transition before changing code.",
+      "label": "Reproduce tray overflow activation",
+      "type": "reproduce",
+      "reproduce": {
+        "setup": [
+          "Pin the PowerToys tray icon for comparison, then hide it in notification-area overflow."
+        ],
+        "version_requirement": "PowerToys 0.98 or current stable",
+        "steps": [
+          "Click the pinned PowerToys icon once and test the Quick Access controls shown.",
+          "Open notification-area overflow, click the hidden PowerToys icon once, and test the same controls.",
+          "Record whether Quick Access opens, which controls fail, and whether a second click or restarting PowerToys changes the result."
+        ],
+        "expected_result": "The same Quick Access surface and controls should work from the pinned and overflow tray icon.",
+        "attachments": [
+          {
+            "url": "https://github.com/microsoft/PowerToys/files/27233803/PowerToysReport_2026-04-30-15-17-48.zip",
+            "label": "Reporter diagnostic report"
+          },
+          {
+            "url": "https://github.com/user-attachments/assets/06a3cd08-0d81-442b-b0cf-aaeccd2e3ff1",
+            "label": "Reporter screenshot, overflow icon"
+          },
+          {
+            "url": "https://github.com/user-attachments/assets/7fb9cfce-33a3-48e1-84f8-693df3855bed",
+            "label": "Reporter screenshot, pinned icon"
+          }
+        ],
+        "prerequisites": [
+          "Windows 11 with the PowerToys tray icon visible.",
+          "Quick Access enabled; use the reporter-provided diagnostic ZIP and screenshots as context."
+        ],
+        "title": "Normalize tray overflow single-click dispatch",
+        "module": "PowerToys Runner / Quick Access"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Repeat the supplied overflow-versus-pinned comparison and confirm the same Quick Access controls respond on both paths.",
+        "Verify double-click still opens Settings and single click opens Quick Access."
+      ],
+      "confidence": {
+        "rationale": "The runner contains a shared timer-based click path and a separate-process show event, but the supplied report does not identify which step fails or establish that overflow sends a different sequence.",
+        "level": "red",
+        "score": 43
+      },
+      "title": "Normalize tray overflow single-click dispatch",
+      "root_cause": "The shell overflow may deliver a different notification sequence that leaves tray single/double-click state stale, suppressing or misrouting Quick Access activation.",
+      "plan": [
+        "Capture and compare notification messages received from pinned and overflow icons.",
+        "Normalize single-click state per activation so an overflow click cannot be lost to stale double-click state.",
+        "Add a regression test for duplicate or late click notifications and verify the Quick Access host receives one show signal."
+      ]
+    }
+  ]
 }

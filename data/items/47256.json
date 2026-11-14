@@ -1,33 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 47256,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-14T01:15:12.8427694Z",
+  "evaluated_at": "2026-11-14T01:15:12.8427694Z",
   "source_updated_at": "2026-04-30T08:48:04Z",
+  "pending_author": false,
+  "summary": "In Hyper-V Enhanced Session, Grab and Move moves Calculator although the pointer is over Word. Reporter says the foreground-window fallback is involved and tested a modified executable.",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Reproduce before design",
+    "detail": "The remote-session branch intentionally avoids unstable hit testing by selecting the foreground window, which conflicts with the report when a different window is under the pointer. A configurable alternative can preserve the safe default."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "➡️",
+    "label": "Reproduce before design",
+    "reason": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design."
   },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "recommended_action": "Validate the uncertainty-reducing evidence, then refine the tentative fix before any detailed design.",
+    "source_updated_at": "2026-04-30T08:48:04Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/47256",
+      "In Hyper-V Enhanced Session, Grab and Move moves Calculator although the pointer is over Word. Reporter says the foreground-window fallback is involved and tested a modified executable.",
+      "PowerToys 0.99.0, Windows 11 25H2 host and guest, Hyper-V Enhanced Session; guest runs elevated.",
+      "Current src/modules/GrabAndMove/GrabAndMove/main.cpp selects the normalized foreground window when SM_REMOTESESSION is set.",
+      "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp around the SM_REMOTESESSION target-selection branch.",
+      "Compared the issue scenario and reporter-reported modified executable test in Hyper-V Enhanced Session.",
+      "Remote sessions force the foreground top-level window to avoid hit-testing instability, so the active window wins even when the pointer is over another window.",
+      "The current remote-session code directly selects the foreground window and matches the reported mismatch; the reporter says a modified executable was tested, but exact activation steps and the desired default need confirmation."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-30T08:48:04Z"
-  }
+    "status": "actionable_design",
+    "evaluated_at": "2026-11-14T01:15:12.8427694Z",
+    "rationale": "The remote-session branch intentionally avoids unstable hit testing by selecting the foreground window, which conflicts with the report when a different window is under the pointer. A configurable alternative can preserve the safe default."
+  },
+  "issue_context": {
+    "summary": "In Hyper-V Enhanced Session, Grab and Move moves Calculator although the pointer is over Word. Reporter says the foreground-window fallback is involved and tested a modified executable.",
+    "analysis": "The remote-session branch intentionally avoids unstable hit testing by selecting the foreground window, which conflicts with the report when a different window is under the pointer. A configurable alternative can preserve the safe default.",
+    "inferences": [
+      "The suspected mechanism remains a hypothesis unless identified as current source behavior; no release coverage is inferred."
+    ],
+    "known_information": [
+      "PowerToys 0.99.0, Windows 11 25H2 host and guest, Hyper-V Enhanced Session; guest runs elevated.",
+      "Current src/modules/GrabAndMove/GrabAndMove/main.cpp selects the normalized foreground window when SM_REMOTESESSION is set."
+    ],
+    "initial_investigation": [
+      "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp around the SM_REMOTESESSION target-selection branch.",
+      "Compared the issue scenario and reporter-reported modified executable test in Hyper-V Enhanced Session."
+    ],
+    "information_gaps": [
+      {
+        "information": "Exact Grab and Move activation gesture and whether the intended behavior is pointer-under-cursor as an optional remote-session setting",
+        "evidence_type": "repro_steps",
+        "why_needed": "This distinguishes a target-selection preference from an unexpected focus transition before deciding how the opt-in should behave.",
+        "how_to_collect": "Reply with the modifier and drag sequence and confirm whether Word or Calculator owns foreground when the move begins; redact private window titles."
+      }
+    ]
+  },
+  "fix_assessment": {
+    "rationale": "A tentative, evidence-grounded code-fix path is applicable; the listed uncertainty-reducing action is required before convergence.",
+    "status": "proposed"
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Offer an opt-in pointer target for remote sessions"
+    },
+    {
+      "label": "Confirm Grab and Move activation",
+      "comment": {
+        "body": "Thanks for identifying the SM_REMOTESESSION foreground-window fallback and testing a modified executable in Hyper-V Enhanced Session. To shape a safe opt-in without changing the existing default, please share the exact modifier and drag sequence and confirm whether Word or Calculator owns foreground when the move begins. This distinguishes pointer targeting from a focus transition."
+      },
+      "type": "request_info"
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "verification": [
+        "In Hyper-V Enhanced Session, move the pointer over Word while Calculator remains foreground and verify the configured target is moved.",
+        "Verify the default still selects the foreground window and local-session behavior is unchanged."
+      ],
+      "confidence": {
+        "rationale": "The current remote-session code directly selects the foreground window and matches the reported mismatch; the reporter says a modified executable was tested, but exact activation steps and the desired default need confirmation.",
+        "level": "yellow",
+        "score": 74
+      },
+      "title": "Offer an opt-in pointer target for remote sessions",
+      "root_cause": "Remote sessions force the foreground top-level window to avoid hit-testing instability, so the active window wins even when the pointer is over another window.",
+      "plan": [
+        "Add an explicit opt-in target strategy for remote sessions while keeping the current foreground default.",
+        "Apply the selected strategy only to remote sessions and keep normal local hit-testing unchanged.",
+        "Add focused tests for foreground-versus-pointer targets and invalid or child HWND normalization."
+      ]
+    }
+  ]
 }
