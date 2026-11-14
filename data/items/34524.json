@@ -2,32 +2,85 @@
   "number": 34524,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:41:16Z",
+  "evaluated_at": "2026-11-14T05:41:16Z",
   "source_updated_at": "2026-04-18T16:20:20Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The 0.83 report says disabling does not persist but gives no sequence or policy status. Current code ignores toggle changes when Find My Mouse GPO is configured and otherwise saves the setting.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue reports PowerToys 0.83.0 and says Find My Mouse remains enabled after disabling.",
+      "Reporter ran as administrator but does not mention policy.",
+      "MouseUtilsViewModel checks GPO before updating the saved general enabled state."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Source has policy and persistence paths, but issue does not state whether the control was policy-managed or when it re-enabled.",
+    "evaluated_at": "2026-11-14T05:41:16Z",
     "source_updated_at": "2026-04-18T16:20:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Source has policy and persistence paths, but issue does not state whether the control was policy-managed or when it re-enabled.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Find My Mouse state consistent with policy and saved settings",
+      "root_cause": "The toggle may appear to turn off without changing persisted state, or configured GPO may force the effective module state back on.",
+      "plan": [
+        "Trace UI toggle, GeneralSettings enabled value, and GPO override.",
+        "Show policy ownership accurately and persist unmanaged changes across Settings/Runner restart.",
+        "Test unmanaged disable and policy-managed state."
+      ],
+      "verification": [
+        "Disable Find My Mouse, reopen Settings and restart PowerToys; confirm it remains disabled when no policy enforces it."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "Source has policy and persistence paths, but issue does not state whether the control was policy-managed or when it re-enabled."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Find My Mouse reportedly remains active after the reporter disables it in Mouse Utilities.",
+    "known_information": [
+      "Issue reports PowerToys 0.83.0 and says Find My Mouse remains enabled after disabling.",
+      "Reporter ran as administrator but does not mention policy.",
+      "MouseUtilsViewModel checks GPO before updating the saved general enabled state."
+    ],
+    "inferences": [
+      "The toggle may appear to turn off without changing persisted state, or configured GPO may force the effective module state back on."
+    ],
+    "analysis": "The 0.83 report says disabling does not persist but gives no sequence or policy status. Current code ignores toggle changes when Find My Mouse GPO is configured and otherwise saves the setting.",
+    "initial_investigation": [
+      "Inspected src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel.cs: GPO guard and general setting persistence.",
+      "Issue has a video but no ordered repro or policy details."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "settings_permissions",
+        "information": "Whether a Find My Mouse policy is configured and when the setting becomes enabled again after the user disables it.",
+        "why_needed": "Current code ignores manual changes when GPO controls the setting; timing distinguishes policy from persistence/runtime state.",
+        "how_to_collect": "Please say whether Settings marks the toggle policy-managed, then disable it and note whether it returns immediately, after reopening Settings, or after restarting PowerToys."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Keep Find My Mouse state consistent with policy and saved settings"
+    },
+    {
+      "type": "request_info",
+      "label": "Request Whether a Find My Mouse policy is configured and when t",
+      "comment": {
+        "body": "Thanks for identifying Find My Mouse and linking the video. Current code ignores manual toggle changes when a GPO controls this module, but otherwise saves the disabled state. Please tell us whether Settings marks this toggle policy-managed and when it becomes enabled again: immediately, after reopening Settings, or only after restarting PowerToys."
+      }
+    }
+  ]
 }

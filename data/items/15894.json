@@ -2,32 +2,85 @@
   "number": 15894,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:40:41Z",
+  "evaluated_at": "2026-11-14T05:40:41Z",
   "source_updated_at": "2026-04-19T10:28:10Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report confirms two installer screens on 0.53.3 and a commenter reports it again on 0.74.1→0.75.1. No current confirmation or linked fix is present.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Original report describes double-clicking update in 0.53.3 and seeing two installer screens.",
+      "A commenter says it also occurred on 0.74.1→0.75.1.",
+      "Current UpdateViewModel has an in-progress gate; issue does not identify whether toast or Settings bypassed it."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Duplicate windows fit repeated activation, but current behavior and UI entry point need confirmation.",
+    "evaluated_at": "2026-11-14T05:40:41Z",
     "source_updated_at": "2026-04-19T10:28:10Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Duplicate windows fit repeated activation, but current behavior and UI entry point need confirmation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make update activation idempotent while setup starts",
+      "root_cause": "Repeated clicks may dispatch multiple update-launch requests before shared update state changes to busy.",
+      "plan": [
+        "Trace toast and Settings update activation paths to a shared launch boundary.",
+        "Atomically mark update launch in progress before starting setup and ignore subsequent activation attempts.",
+        "Test invoking the same update action twice and verify a single installer request."
+      ],
+      "verification": [
+        "Double-click the update surface and verify only one installer window/process opens."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "Duplicate windows fit repeated activation, but current behavior and UI entry point need confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Double-clicking an update prompt reportedly opens two installer windows and leaves installation incomplete.",
+    "known_information": [
+      "Original report describes double-clicking update in 0.53.3 and seeing two installer screens.",
+      "A commenter says it also occurred on 0.74.1→0.75.1.",
+      "Current UpdateViewModel has an in-progress gate; issue does not identify whether toast or Settings bypassed it."
+    ],
+    "inferences": [
+      "Repeated clicks may dispatch multiple update-launch requests before shared update state changes to busy."
+    ],
+    "analysis": "The report confirms two installer screens on 0.53.3 and a commenter reports it again on 0.74.1→0.75.1. No current confirmation or linked fix is present.",
+    "initial_investigation": [
+      "Inspected src/settings-ui/Settings.UI/ViewModels/UpdateViewModel.cs and src/runner/UpdateUtils.cpp for update gating and notification launch.",
+      "No linked fix or duplicate is identified."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether two installer windows still open on the current build and whether the double-click was on a toast or Settings button.",
+        "why_needed": "The old issue spans releases, and notification and Settings may route differently.",
+        "how_to_collect": "Please state your current PowerToys version and exact surface double-clicked; if it still reproduces, tell us whether both windows appear before either starts installing."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Make update activation idempotent while setup starts"
+    },
+    {
+      "type": "request_info",
+      "label": "Request Whether two installer windows still open on the current",
+      "comment": {
+        "body": "Thanks for confirming this happened on 0.74.1→0.75.1. The current updater has an in-progress gate, but toast and Settings may follow different paths. Please confirm whether two installer windows still open on your current PowerToys version and whether you double-clicked the toast or Settings update button; if it reproduces, tell us whether both appear before either starts installing."
+      }
+    }
+  ]
 }

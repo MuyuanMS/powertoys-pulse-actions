@@ -2,32 +2,85 @@
   "number": 36479,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:41:16Z",
+  "evaluated_at": "2026-11-14T05:41:16Z",
   "source_updated_at": "2024-12-21T16:23:18Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report precisely describes Windows App Cloud PC fullscreen conflicting with prior FancyZones placement, but uses PowerToys 0.86.0 and lacks current Windows App/version and mode. A similar issue was disputed as duplicate.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Reporter says fullscreen-sized Cloud PC window retains prior zone offset and is clipped; Restore fixes it.",
+      "A commenter says FancyZones and Windows App appear to fight over fullscreen state.",
+      "Original report is from PowerToys 0.86.0; no linked fix is identified."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "The described offset maps to stale zone geometry, but app version and fullscreen transition need confirmation.",
+    "evaluated_at": "2026-11-14T05:41:16Z",
     "source_updated_at": "2024-12-21T16:23:18Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The described offset maps to stale zone geometry, but app version and fullscreen transition need confirmation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid retaining zone offsets after a Cloud PC enters fullscreen",
+      "root_cause": "FancyZones may preserve zone coordinates after Windows App transitions the Cloud PC window into fullscreen.",
+      "plan": [
+        "Trace Windows App window-state transition and FancyZones placement notifications around fullscreen entry.",
+        "Skip or undo zone geometry when a window becomes fullscreen.",
+        "Add regression scenario for a Cloud PC entering fullscreen from a zone."
+      ],
+      "verification": [
+        "Connect to a Cloud PC through Windows App from a zone and verify fullscreen fills the display; Restore should return a normal window."
+      ],
+      "confidence": {
+        "score": 59,
+        "level": "yellow",
+        "rationale": "The described offset maps to stale zone geometry, but app version and fullscreen transition need confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Windows App Cloud PC enters fullscreen but remains offset by its prior FancyZones zone, clipping the remote desktop until Restore is selected.",
+    "known_information": [
+      "Reporter says fullscreen-sized Cloud PC window retains prior zone offset and is clipped; Restore fixes it.",
+      "A commenter says FancyZones and Windows App appear to fight over fullscreen state.",
+      "Original report is from PowerToys 0.86.0; no linked fix is identified."
+    ],
+    "inferences": [
+      "FancyZones may preserve zone coordinates after Windows App transitions the Cloud PC window into fullscreen."
+    ],
+    "analysis": "The report precisely describes Windows App Cloud PC fullscreen conflicting with prior FancyZones placement, but uses PowerToys 0.86.0 and lacks current Windows App/version and mode. A similar issue was disputed as duplicate.",
+    "initial_investigation": [
+      "Inspected FancyZones window-state and placement handling in src/modules/fancyzones/FancyZonesLib/FancyZonesWindowProcessing.cpp and WindowUtils.cpp.",
+      "No linked merged fix is identified."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether clipping still occurs on current PowerToys/Windows App versions and whether the session is exclusive fullscreen or windowed.",
+        "why_needed": "The original is old and the client fullscreen transition determines whether FancyZones geometry is retained.",
+        "how_to_collect": "Please state current PowerToys and Windows App versions, confirm the issue still reproduces, and say whether the Cloud PC session is exclusive fullscreen or windowed."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Avoid retaining zone offsets after a Cloud PC enters fullscreen"
+    },
+    {
+      "type": "request_info",
+      "label": "Request Whether clipping still occurs on current PowerToys/Wind",
+      "comment": {
+        "body": "Thanks for explaining that the Cloud PC is fullscreen-sized but clipped by the previous zone offset, and that Restore fixes it. A similar issue was disputed as a duplicate, so we are keeping this behavior separate. Please confirm whether it still reproduces on your current PowerToys and Windows App versions and whether the session is exclusive fullscreen or windowed."
+      }
+    }
+  ]
 }

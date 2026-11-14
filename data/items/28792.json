@@ -2,32 +2,85 @@
   "number": 28792,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:40:56Z",
+  "evaluated_at": "2026-11-14T05:40:56Z",
   "source_updated_at": "2026-04-19T06:41:00Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The current formatter builds columns from occupied OCR cell bounds; tests cover an empty second-row cell, not a leading empty column. Source geometry and expected output are needed to determine recoverability.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue on 0.74.0 says columns are not respected when first cell is empty and includes a UI screenshot.",
+      "TableTextFormatter builds segments from observed OCR bounds.",
+      "Current tests cover a sparse second row but not a leading empty column."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Current segmentation depends on occupied bounds and lacks a leading-empty test; empty-cell width may need source geometry.",
+    "evaluated_at": "2026-11-14T05:40:56Z",
     "source_updated_at": "2026-04-19T06:41:00Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Current segmentation depends on occupied bounds and lacks a leading-empty test; empty-cell width may need source geometry.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve leading empty columns in OCR table formatting",
+      "root_cause": "Building a column grid only from occupied bounds may omit an unrepresented leading column and shift later cells.",
+      "plan": [
+        "Use a representative source table to see whether OCR geometry can infer the empty leading column.",
+        "Preserve column boundaries across rows where geometry supports them.",
+        "Add a regression test with a blank first cell and expected tab-separated output."
+      ],
+      "verification": [
+        "Run the sample through table mode and verify each row retains its original columns, including the leading empty cell."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "Current segmentation depends on occupied bounds and lacks a leading-empty test; empty-cell width may need source geometry."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor table mode can shift columns when the first cell is empty.",
+    "known_information": [
+      "Issue on 0.74.0 says columns are not respected when first cell is empty and includes a UI screenshot.",
+      "TableTextFormatter builds segments from observed OCR bounds.",
+      "Current tests cover a sparse second row but not a leading empty column."
+    ],
+    "inferences": [
+      "Building a column grid only from occupied bounds may omit an unrepresented leading column and shift later cells."
+    ],
+    "analysis": "The current formatter builds columns from occupied OCR cell bounds; tests cover an empty second-row cell, not a leading empty column. Source geometry and expected output are needed to determine recoverability.",
+    "initial_investigation": [
+      "Inspected src/modules/PowerOCR/PowerOCR.Core/Formatting/TableTextFormatter.cs and TableTextFormatterTests.cs.",
+      "Existing test Format_SparseSecondRow_PreservesEmptyColumn does not cover the leading-empty case."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "sample_file",
+        "information": "A small source image containing the table with an empty first cell and exact expected row/column text.",
+        "why_needed": "Source geometry determines whether the missing leading column is detectable and how wide it should be.",
+        "how_to_collect": "Please attach a small sanitized crop of the original table (not another PowerToys-window screenshot) and write the expected tab-separated output for each row."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Preserve leading empty columns in OCR table formatting"
+    },
+    {
+      "type": "request_info",
+      "label": "Request A small source image containing the table with an empty",
+      "comment": {
+        "body": "Thanks for the screenshot showing shifted columns. The formatter uses OCR cell bounds, so a blank leading cell may have no geometry from which to recover its width. Please attach a small, sanitized crop of the original table (not another screenshot of the PowerToys window) and include the exact expected tab-separated text for each row."
+      }
+    }
+  ]
 }
