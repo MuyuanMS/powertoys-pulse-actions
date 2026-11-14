@@ -2,32 +2,93 @@
   "number": 46094,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:38:15Z",
+  "evaluated_at": "2026-11-14T05:38:15Z",
   "source_updated_at": "2026-04-26T13:12:09Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report gives an exact 0.98.0 RC sequence: acknowledge the Com Surrogate prompt, then setup remains stuck. The author supplied all available bootstrapper/MSI logs and confirmed no additional MSI execution log existed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Windows build is 10.0.28020.1685 and PowerToys version is 0.98.0 RC.",
+      "Steps: run installer, acknowledge Com Surrogate upgrade prompt, installer hangs.",
+      "Reporter supplied bootstrapper, elevated bootstrapper, and MSI logs and confirmed no additional PowerToys temp log existed."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Inspect the supplied logs around the prompt and reproduce the transition; do not request the missing MSI log again.",
+    "evaluated_at": "2026-11-14T05:38:15Z",
     "source_updated_at": "2026-04-26T13:12:09Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Burn continuation or files-in-use transition may remain pending after the prompt; supplied logs need correlation before identifying the phase.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "PowerToys 0.98.0 RC setup remains stuck after the Com Surrogate upgrade prompt; all available logs are already attached.",
+    "known_information": [
+      "The issue specifies Windows build 10.0.28020.1685 and 0.98.0 RC.",
+      "The author provided three setup logs and confirmed no additional MSI execution log was generated.",
+      "Steps and prompt are shown in screenshots."
+    ],
+    "inferences": [
+      "The stall may be in Burn continuation or MSI/files-in-use transition, but the issue does not localize it."
+    ],
+    "analysis": "Use the already supplied logs and exact repro; repeating a log request is redundant. Localize the wait around the prompt before changing installer behavior.",
+    "initial_investigation": [
+      "Inspected installer/PowerToysSetupVNext/PowerToys.wxs and its files-in-use/process-termination components.",
+      "Related installation issues do not establish this prompt as a shared cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Resume setup reliably after the Com Surrogate prompt"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The report provides a focused sequence that can be verified without asking the reporter to repeat supplied evidence.",
+      "reproduce": {
+        "title": "Reproduce setup stall after Com Surrogate prompt",
+        "module": "Installer",
+        "version_requirement": "PowerToys 0.98.0 RC on comparable Windows build",
+        "prerequisites": [
+          "Test machine or snapshot with an existing PowerToys installation."
+        ],
+        "setup": [
+          "Use the 0.98.0 RC installer and inspect the already supplied setup logs."
+        ],
+        "steps": [
+          "Run the installer.",
+          "When the Com Surrogate upgrade dialog appears, select OK.",
+          "Observe whether the installer advances, remains stuck, or fails."
+        ],
+        "expected_result": "Setup should complete or report a bounded actionable failure and must not remain indefinitely stuck."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Resume setup reliably after the Com Surrogate prompt",
+      "plan": [
+        "Correlate the three supplied setup logs around the prompt and identify whether Burn, the custom BA, or MSI is awaiting a transition.",
+        "Correct the identified continuation/timeout path without terminating unrelated COM Surrogate processes.",
+        "Add a regression scenario for acknowledging the prompt and completing or cleanly failing setup."
+      ],
+      "root_cause": "The Burn bundle may not continue or unwind cleanly after acknowledgment of the reported Com Surrogate upgrade dialog.",
+      "verification": [
+        "Repeat the reported sequence and verify setup advances or reports a bounded actionable failure instead of hanging."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "Reproduction and setup logs are specific, but the responsible installer phase is not yet established."
+      }
+    }
+  ]
 }

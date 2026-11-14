@@ -2,32 +2,93 @@
   "number": 36659,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:36:32Z",
+  "evaluated_at": "2026-11-14T05:36:32Z",
   "source_updated_at": "2025-01-06T12:37:23Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report describes a next-day sequence: after moving windows and sleeping, a second workspace launch restores later positions instead of the saved layout. #40218 was closed as duplicate, not fixed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report distinguishes first launch from moving windows, sleeping, then launching the saved taskbar shortcut later.",
+      "A diagnostic ZIP was supplied.",
+      "Issue #40218 was closed as a duplicate of this issue."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the post-sleep/manual-move sequence and trace whether restored positions override saved geometry.",
+    "evaluated_at": "2026-11-14T05:36:32Z",
     "source_updated_at": "2025-01-06T12:37:23Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report describes a next-day sequence: after moving windows and sleeping, a second workspace launch restores later positions instead of the saved layout. #40218 was closed as duplicate, not fixed.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Correct Workspaces identity and saved-placement handling",
+      "root_cause": "Existing-window matching after resume may accept an app-restored position instead of the captured workspace rectangle.",
+      "plan": [
+        "Trace existing-window matching after resume.",
+        "Ensure deliberate workspace launch applies captured bounds despite app-restored positions.",
+        "Add a regression test for capture, move, resume, and second launch."
+      ],
+      "verification": [
+        "Repeat the two-day sequence and verify the second workspace launch restores captured editor positions."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The sequence is concrete and current arranger uses existing placement in matching; exact restore timing needs validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Workspaces restores its layout initially but later uses manually moved window positions after sleep and a subsequent launch.",
+    "known_information": [
+      "The report distinguishes first launch from moving windows, sleeping, then launching the saved taskbar shortcut later.",
+      "A diagnostic ZIP was supplied.",
+      "Issue #40218 was closed as a duplicate of this issue."
+    ],
+    "inferences": [
+      "Existing-window matching after resume may accept an app-restored position instead of the captured workspace rectangle."
+    ],
+    "analysis": "The report describes a next-day sequence: after moving windows and sleeping, a second workspace launch restores later positions instead of the saved layout. #40218 was closed as duplicate, not fixed.",
+    "initial_investigation": [
+      "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp matches existing windows and applies saved rectangles.",
+      "No linked merged fix is identified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Correct Workspaces identity and saved-placement handling"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The report provides a focused sequence that can be verified without asking the reporter to repeat supplied evidence.",
+      "reproduce": {
+        "title": "Reproduce Workspaces behavior",
+        "module": "Workspaces",
+        "version_requirement": "Current PowerToys Workspaces on Windows",
+        "prerequisites": [
+          "A saved workspace with at least two apps and a PC that can sleep/resume."
+        ],
+        "setup": [
+          "Create and save a workspace with applications at known positions."
+        ],
+        "steps": [
+          "Launch the workspace and confirm positions.",
+          "Move windows, close them, and put the PC to sleep.",
+          "Resume and launch the same saved workspace shortcut."
+        ],
+        "expected_result": "Workspace launch should restore saved positions rather than positions from the prior session."
+      }
+    }
+  ]
 }

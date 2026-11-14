@@ -2,32 +2,84 @@
   "number": 43215,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:38:15Z",
+  "evaluated_at": "2026-11-14T05:38:15Z",
   "source_updated_at": "2026-04-26T13:15:06Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue reports an installation success message followed by a Chinese “fast exception detection failed” display; a second Windows 10 user reports it too. The screenshot and external DLSS-Swapper workaround do not establish which process produced the message.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue reports PowerToys 0.95.1 auto-update on Windows 10 22H2, followed by a screenshot after success.",
+      "A second commenter reports Windows 10 LTSC 2021/21H2.",
+      "A later commenter links an external DLSS-Swapper workaround; no PowerToys fix is linked."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Identify the exact displayed failure and whether PowerToys itself launches before tracing the updater exit path.",
+    "evaluated_at": "2026-11-14T05:38:15Z",
     "source_updated_at": "2026-04-26T13:15:06Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A stale or mismatched completion state after the bundle reports success is a low-confidence hypothesis; the screenshot source and post-reboot behavior are not established.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "PowerToys 0.95.1 auto-update on Windows 10 reportedly succeeded and then displayed a “fast exception detection failed” message.",
+    "known_information": [
+      "The original report names Windows 10 22H2 Pro and PowerToys 0.95.1 auto-update.",
+      "A second user reports Windows 10 LTSC 2021/21H2.",
+      "The issue links an external DLSS-Swapper workaround, not a PowerToys fix."
+    ],
+    "inferences": [
+      "The message could reflect stale updater completion state, but it may be produced by another process."
+    ],
+    "analysis": "The success-then-error sequence is unusual, but the image is not enough to attribute the message to PowerToys setup. First establish exact message ownership and whether the installed app starts; do not treat the external workaround as proof.",
+    "initial_investigation": [
+      "Inspected installer/PowerToysSetupVNext/PowerToys.wxs and current update-check paths; no linked fix or failure-source attribution is present."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact message title/body and whether PowerToys launches and remains usable after the update and reboot.",
+        "why_needed": "This distinguishes a PowerToys updater status error from a separate application message after setup succeeds.",
+        "how_to_collect": "Please quote the full message text shown in the screenshot and state whether PowerToys opens normally after reboot; if it is an external window, name the process or app shown in its title."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Keep update completion status consistent with the installer result"
+    },
+    {
+      "type": "request_info",
+      "label": "Request The exact message title/body and whether PowerToys laun",
+      "comment": {
+        "body": "Thanks for the screenshot and for noting the update reported success; another Windows 10 user reported a similar message. The external DLSS-Swapper workaround does not identify which app produced it. Please quote the full dialog title and message, and say whether PowerToys itself opens and works after reboot or whether another app owns the window."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Keep update completion status consistent with the installer result",
+      "plan": [
+        "Trace the 0.95.1 auto-update completion state and identify which component renders the reported message.",
+        "Ensure user-facing completion/failure state is tied to the actual bundle result and does not contradict a successful installation.",
+        "Add a regression test for an update that completes successfully but encounters a post-install detection warning."
+      ],
+      "root_cause": "The auto-update path may show a later exception-detection failure after reporting success if its post-install state is derived from a second check or stale updater result.",
+      "verification": [
+        "Repeat the reported update path and verify a successful install does not subsequently display a contradictory failure, while genuine setup failures remain visible."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The issue gives a success-then-failure sequence, but the screenshot source and error condition are not yet identified."
+      }
+    }
+  ]
 }

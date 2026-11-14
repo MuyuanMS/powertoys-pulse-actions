@@ -2,32 +2,93 @@
   "number": 36688,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:36:32Z",
+  "evaluated_at": "2026-11-14T05:36:32Z",
   "source_updated_at": "2025-01-14T12:09:40Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The supplied log records ONENOTE.EXE launching while the arranger skips POWERPNT.EXE, narrowing this to application identity/matching.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Report says OneNote position does not follow saved workspace geometry.",
+      "Supplied log shows ONENOTE.EXE launch followed by an arranger skip for POWERPNT.EXE.",
+      "Current arranger identifies process paths before placement."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with OneNote and trace why the arranger associates or skips the PowerPoint path for its window.",
+    "evaluated_at": "2026-11-14T05:36:32Z",
     "source_updated_at": "2025-01-14T12:09:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The supplied log records ONENOTE.EXE launching while the arranger skips POWERPNT.EXE, narrowing this to application identity/matching.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Correct Workspaces identity and saved-placement handling",
+      "root_cause": "Workspaces may associate a OneNote launch with a PowerPoint identity and skip it, leaving OneNote remembered placement.",
+      "plan": [
+        "Trace process-path and application metadata matching for ONENOTE.EXE and the POWERPNT.EXE skip.",
+        "Correct identity mapping so OneNote is matched to its own workspace entry.",
+        "Add a regression fixture for OneNote executable/window identity."
+      ],
+      "verification": [
+        "Save a workspace containing OneNote, move it elsewhere, launch the workspace, and confirm OneNote moves to saved bounds."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The log narrows the path but the classifier/matcher source of the mismatch needs tracing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "OneNote does not use its saved Workspaces position; the issue log shows OneNote launching while the arranger skips PowerPoint.",
+    "known_information": [
+      "Report says OneNote position does not follow saved workspace geometry.",
+      "Supplied log shows ONENOTE.EXE launch followed by an arranger skip for POWERPNT.EXE.",
+      "Current arranger identifies process paths before placement."
+    ],
+    "inferences": [
+      "Workspaces may associate a OneNote launch with a PowerPoint identity and skip it, leaving OneNote remembered placement."
+    ],
+    "analysis": "The supplied log records ONENOTE.EXE launching while the arranger skips POWERPNT.EXE, narrowing this to application identity/matching.",
+    "initial_investigation": [
+      "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp identifies process paths before placement.",
+      "No linked fix is identified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Correct Workspaces identity and saved-placement handling"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The report provides a focused sequence that can be verified without asking the reporter to repeat supplied evidence.",
+      "reproduce": {
+        "title": "Reproduce Workspaces behavior",
+        "module": "Workspaces",
+        "version_requirement": "Current Workspaces build with desktop OneNote",
+        "prerequisites": [
+          "A saved workspace containing desktop OneNote."
+        ],
+        "setup": [
+          "Set the workspace OneNote rectangle to a known size and position."
+        ],
+        "steps": [
+          "Manually launch OneNote and move it to a different position.",
+          "Close OneNote.",
+          "Launch the workspace and inspect placement and arranger identity handling."
+        ],
+        "expected_result": "Workspaces should identify OneNote correctly and apply its saved rectangle."
+      }
+    }
+  ]
 }

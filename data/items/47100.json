@@ -2,32 +2,91 @@
   "number": 47100,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:38:15Z",
+  "evaluated_at": "2026-11-14T05:38:15Z",
   "source_updated_at": "2026-04-26T13:10:57Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "confidence": "Medium",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report identifies Quick Accent on Windows 11 25H2 from the Store and says the character chart fails to appear during key-plus-arrow input.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue names Quick Accent, Windows 11 25H2, and Store installation.",
+      "Symptom is the missing character chart when using activation key plus arrow."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the key/arrow sequence and check whether input is handled before the overlay appears.",
+    "evaluated_at": "2026-11-14T05:38:15Z",
     "source_updated_at": "2026-04-26T13:10:57Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "PowerAccent handles keyboard events separately from delayed toolbar display; visibility/input mismatch is plausible.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "Quick Accent’s character chart sometimes does not appear during the key-plus-arrow activation sequence on Windows 11 25H2.",
+    "known_information": [
+      "The report names Windows 11 25H2 and Store installation.",
+      "No discussion comments or additional reproduction details are present."
+    ],
+    "inferences": [
+      "A timing issue between keyboard hook and delayed overlay display is plausible."
+    ],
+    "analysis": "PowerAccent receives show-toolbar and next-character events separately from delayed UI display. Reproduction can test whether input is handled before the overlay appears.",
+    "initial_investigation": [
+      "Inspected src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs for keyboard events and delayed display state.",
+      "No linked fix is identified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Keep Quick Accent navigation and toolbar visibility in sync"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The report provides a focused sequence that can be verified without asking the reporter to repeat supplied evidence.",
+      "reproduce": {
+        "title": "Verify Quick Accent chart with key-plus-arrow input",
+        "module": "Quick Accent",
+        "version_requirement": "Windows 11 25H2 and reported Store build or current equivalent",
+        "prerequisites": [
+          "Quick Accent enabled with its usual activation key and supported input language."
+        ],
+        "setup": [
+          "Open a text field where Quick Accent input is accepted."
+        ],
+        "steps": [
+          "Press and hold a letter that has accent choices.",
+          "Use the arrow-key navigation sequence while the toolbar is opening.",
+          "Repeat if a longer display delay is configured and note whether the chart appears before the arrow is handled."
+        ],
+        "expected_result": "The chart should be visible before arrow navigation changes selection; if not displayed, input should not be silently consumed."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Keep Quick Accent navigation and toolbar visibility in sync",
+      "plan": [
+        "Trace key-plus-arrow events through PowerAccentKeyboardService and the delayed display state.",
+        "Avoid consuming navigation before a valid toolbar is shown, or cancel the pending gesture if display fails.",
+        "Add a regression test for input while the toolbar is opening."
+      ],
+      "root_cause": "The keyboard hook may consume arrow navigation while the accent toolbar has not become visible.",
+      "verification": [
+        "Repeat the key-plus-arrow sequence and confirm the chart appears before navigation is consumed."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "Current code separates keyboard events and delayed display; the report fits a timing mismatch but lacks trigger/timing detail."
+      }
+    }
+  ]
 }

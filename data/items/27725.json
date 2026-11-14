@@ -2,32 +2,93 @@
   "number": 27725,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-14T05:36:32Z",
+  "evaluated_at": "2026-11-14T05:36:32Z",
   "source_updated_at": "2026-04-19T10:27:34Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The exact renamed-installer reproduction is documented and a maintainer confirmed the cause; current source still terminates by image name.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Issue renames PowerToysSetup-0.72.0-x64.exe to PowerToys.exe before running.",
+      "Maintainer reproduced the collision; current terminate_powertoys.cmd uses taskkill /IM PowerToys.exe.",
+      "PR #33153 is closed and unmerged."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Make process selection distinguish the installed app from setup and verify the rename repro.",
+    "evaluated_at": "2026-11-14T05:36:32Z",
     "source_updated_at": "2026-04-19T10:27:34Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The exact renamed-installer reproduction is documented and a maintainer confirmed the cause; current source still terminates by image name.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid terminating a setup process named PowerToys.exe",
+      "root_cause": "PowerToysSetup-0.72.0-x64 renamed to PowerToys.exe can be targeted by image-name-only termination.",
+      "plan": [
+        "Replace image-name-only termination with executable identity/path checks.",
+        "Apply the check to each setup termination mechanism identified by the maintainer.",
+        "Add an installer regression test for a renamed bootstrapper."
+      ],
+      "verification": [
+        "Rename the installer to PowerToys.exe, launch it, accept the license, and verify setup proceeds without cancellation or self-termination."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "Maintainer reproduced the exact issue and current source retains image-name-only termination; the related PR is not merged."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Installer termination can mistake its own renamed bootstrapper for the installed PowerToys process.",
+    "known_information": [
+      "Issue renames PowerToysSetup-0.72.0-x64.exe to PowerToys.exe before running.",
+      "Maintainer reproduced the collision; current terminate_powertoys.cmd uses taskkill /IM PowerToys.exe.",
+      "PR #33153 is closed and unmerged."
+    ],
+    "inferences": [
+      "PowerToysSetup-0.72.0-x64 renamed to PowerToys.exe can be targeted by image-name-only termination."
+    ],
+    "analysis": "The exact renamed-installer reproduction is documented and a maintainer confirmed the cause; current source still terminates by image name.",
+    "initial_investigation": [
+      "installer/PowerToysSetupVNext/terminate_powertoys.cmd uses taskkill /IM PowerToys.exe.",
+      "installer/PowerToysSetupVNext/Product.wxs declares close-process behavior."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Avoid terminating a setup process named PowerToys.exe"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The report provides a focused sequence that can be verified without asking the reporter to repeat supplied evidence.",
+      "reproduce": {
+        "title": "Reproduce Installer behavior",
+        "module": "Installer",
+        "version_requirement": "Reported 0.72.0 x64 or a current build with the same termination command",
+        "prerequisites": [
+          "A disposable Windows test environment."
+        ],
+        "setup": [
+          "Prepare the x64 installer and rename it to PowerToys.exe."
+        ],
+        "steps": [
+          "Launch PowerToys.exe.",
+          "Accept the license and choose Install.",
+          "Observe whether prompts repeat or setup terminates itself."
+        ],
+        "expected_result": "Setup should proceed normally and must not identify its bootstrapper as the installed app."
+      }
+    }
+  ]
 }
