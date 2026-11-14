@@ -1,33 +1,106 @@
 {
   "number": 36168,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "FancyZones can only snap the windows of apps that run as admin, by holding down mouse's secondary key.",
+  "url": "https://github.com/microsoft/PowerToys/issues/36168",
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Dragging&UI",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-14T01:11:11Z",
+  "generated_at": "2026-11-14T01:11:11Z",
   "source_updated_at": "2024-12-19T20:12:27Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Confirm elevated-window drag state on current release",
+    "detail": "FancyZones reportedly cannot snap a non-elevated window while PowerToys is elevated unless the secondary mouse button is held."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "❓",
+    "label": "Confirm current-release behavior and exact modifier/mouse path before proposing changes beyond the existing refresh.",
+    "reason": "The report is old and current source refreshes one relevant state; current version and input path prevent duplicating a fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report is old and current source refreshes one relevant state; current version and input path prevent duplicating a fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/36168",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/fancyzones/FancyZonesLib/DraggingState.cpp",
+      "https://github.com/microsoft/PowerToys/issues/23282"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Confirm current-release behavior and exact modifier/mouse path before proposing changes beyond the existing refresh.",
+    "evaluated_at": "2026-11-14T01:11:11Z",
     "source_updated_at": "2024-12-19T20:12:27Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A remaining stale input-state transition across integrity levels is plausible but requires current-release confirmation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep FancyZones drag state synchronized across elevation boundaries",
+      "root_cause": "Shift or secondary-button state may become stale across integrity-level transitions; existing refresh covers Shift but not necessarily every path.",
+      "plan": [
+        "Reproduce with elevated PowerToys and non-elevated target, then reverse elevation.",
+        "Compare Shift-drag, secondary-button drag, and ordinary drag while tracing activation state.",
+        "Correct only the stale transition and add a mixed-integrity regression test."
+      ],
+      "verification": [
+        "Confirm zones activate in both elevation directions.",
+        "Confirm ordinary drag and both input modes remain unchanged."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "Source documents an elevated-input-state hazard, but exact mouse/modifier sequence and current behavior are missing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones reportedly cannot snap a non-elevated window while PowerToys is elevated unless the secondary mouse button is held.",
+    "known_information": [
+      "Report is PowerToys 0.86.0 and says PowerToys runs as administrator.",
+      "It concerns snapping a window at a different privilege level.",
+      "Current DraggingState re-seeds Shift at drag start because raw input can miss transitions while an elevated window owns input."
+    ],
+    "inferences": [
+      "If still reproducible, the remaining gap may be the secondary-button path or another integrity-level transition; the report does not establish this."
+    ],
+    "analysis": "Current source refreshes one relevant state, but that is not proof of a shipped fix. Confirm current-release behavior and the exact input path.",
+    "initial_investigation": [
+      "DraggingState::Enable re-seeds Shift; UpdateDraggingState combines Shift and secondary-button state: src/modules/fancyzones/FancyZonesLib/DraggingState.cpp.",
+      "Related issue #23282 does not establish equivalence."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Whether the issue persists on current PowerToys and exact target elevation plus keys/buttons used.",
+        "why_needed": "Current source refreshes Shift at drag start; knowing whether failure is Shift or secondary-button drag isolates a remaining path.",
+        "how_to_collect": "Try elevated and non-elevated windows with PowerToys elevated; report target privilege and exact key/mouse sequence."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Request mixed-elevation drag sequence",
+      "comment": {
+        "body": "Thanks for reporting the mixed-elevation case on 0.86.0. Current FancyZones source refreshes Shift when a drag starts because elevated foreground windows can hide raw-input transitions, but that does not establish whether the released build fixes your exact path. Please confirm whether it still happens on the current PowerToys version and specify the target app’s elevation plus the exact keys/buttons used (Shift-drag or secondary-button drag). That will show whether another input-state path remains."
+      }
+    }
+  ]
 }

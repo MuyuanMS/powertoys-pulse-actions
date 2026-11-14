@@ -1,33 +1,109 @@
 {
   "number": 35212,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "pow(x,y) `Failed to calculate the input` if x isn't a float",
+  "url": "https://github.com/microsoft/PowerToys/issues/35212",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Status-Reproducible"
+  ],
+  "assignees": [],
+  "comments": 3,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-14T01:11:11Z",
+  "generated_at": "2026-11-14T01:11:11Z",
   "source_updated_at": "2024-12-18T18:47:53Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Confirm decimal locale and exact pow expression",
+    "detail": "Calculator reports Failed to calculate the input for pow(x,y) when x is an integer."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "❓",
+    "label": "Request locale/decimal separator and exact integer-only expression on current build.",
+    "reason": "The locale observation narrows the issue, but no exact locale/expression pair confirms whether integer parsing or translation fails."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The locale observation narrows the issue, but no exact locale/expression pair confirms whether integer parsing or translation fails.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/35212",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request locale/decimal separator and exact integer-only expression on current build.",
+    "evaluated_at": "2026-11-14T01:11:11Z",
     "source_updated_at": "2024-12-18T18:47:53Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Culture translation precedes evaluation; a scoped correction is plausible if the locale-specific failure remains reproducible.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve integer operands in power expressions across locales",
+      "root_cause": "Culture translation may transform a comma-decimal or integer argument into syntax the expression engine rejects; verify against the exact locale.",
+      "plan": [
+        "Reproduce integer and decimal operands under reporter locale and en-US.",
+        "Trace normalized expression passed to CalculateEngine.Interpret.",
+        "Correct the failing translation boundary and add locale-parametrized regression tests."
+      ],
+      "verification": [
+        "Verify pow(2,3) and pow(2.5,3) under comma- and dot-decimal locales.",
+        "Verify other function calls and ordinary decimal arithmetic remain unchanged."
+      ],
+      "confidence": {
+        "score": 59,
+        "level": "yellow",
+        "rationale": "The culture-translation boundary and decimal-separator clue fit, but the failing locale and exact input are missing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Calculator reports Failed to calculate the input for pow(x,y) when x is an integer.",
+    "known_information": [
+      "Report is PowerToys Run 0.84.1 and says it also occurred on 0.85.0.",
+      "A commenter said the expression worked with decimal separator dot and could not reproduce it.",
+      "Calculator translates input culture before calling CalculateEngine.Interpret."
+    ],
+    "inferences": [
+      "The mismatch may be in culture-aware translation or integer argument parsing; the discussion makes locale a useful discriminator."
+    ],
+    "analysis": "The decimal-separator follow-up is unresolved. Request exact locale and expression under current version before changing expression normalization.",
+    "initial_investigation": [
+      "Calculator.Query translates and validates input before CalculateEngine.Interpret: src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "Windows number-format locale and decimal separator in effect when the failure occurs.",
+        "why_needed": "The follow-up says the result changes with a dot separator; locale is needed to reproduce translation.",
+        "how_to_collect": "Share Windows Region format and the decimal separator shown by entering a decimal in Calculator."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "Exact pow expression with integer x, and whether it succeeds on current PowerToys.",
+        "why_needed": "This separates integer parsing from locale translation and stale-version behavior.",
+        "how_to_collect": "In PowerToys Run enter the exact expression, such as =pow(2,3), and report result/error and current version."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Request locale and integer-expression reproduction",
+      "comment": {
+        "body": "Thanks for checking both 0.84.1 and 0.85.0, and for noting that the expression worked with a dot separator. Calculator translates input according to the active number culture. Please confirm:\n1. The Windows number-format locale/decimal separator.\n2. The exact integer pow expression and whether it fails on the current PowerToys version.\nThis distinguishes locale conversion from integer argument parsing."
+      }
+    }
+  ]
 }

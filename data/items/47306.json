@@ -1,33 +1,103 @@
 {
   "number": 47306,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "[BUG]: The Power Display popup window is not placed correctly for auto-hide",
+  "url": "https://github.com/microsoft/PowerToys/issues/47306",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 0,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-14T01:11:11Z",
+  "generated_at": "2026-11-14T01:11:11Z",
   "source_updated_at": "2026-04-29T07:20:45Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Confirm taskbar edge and monitor geometry",
+    "detail": "Power Display popup overlaps an auto-hidden taskbar instead of appearing above it."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "❓",
+    "label": "Request taskbar edge and monitor topology to reproduce without repeating the screenshot request.",
+    "reason": "Work-area placement fits the overlap, but taskbar edge and monitor geometry are missing and determine the needed offset."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Work-area placement fits the overlap, but taskbar edge and monitor geometry are missing and determine the needed offset.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/47306",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/powerdisplay/PowerDisplay/PowerDisplayXAML/MainWindow.xaml.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request taskbar edge and monitor topology to reproduce without repeating the screenshot request.",
+    "evaluated_at": "2026-11-14T01:11:11Z",
     "source_updated_at": "2026-04-29T07:20:45Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If the current work area includes the auto-hidden taskbar strip, a narrow edge-aware offset is appropriate.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Place Power Display popup above an auto-hidden taskbar",
+      "root_cause": "The OS work area may not reserve the hidden auto-hide strip, allowing bottom-right placement to overlap the taskbar; confirm against reported geometry.",
+      "plan": [
+        "Reproduce auto-hide on each taskbar edge and record the active display/work area.",
+        "Determine the taskbar edge/reserved rectangle for the active monitor.",
+        "Offset popup above the taskbar and add mixed-DPI/multi-monitor regression coverage."
+      ],
+      "verification": [
+        "Confirm popup remains visible above auto-hidden taskbar on supported edges.",
+        "Confirm normal taskbar and multi-monitor placement remain unchanged."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "Screenshot and work-area placement fit, but edge and monitor topology are unrecorded."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Power Display popup overlaps an auto-hidden taskbar instead of appearing above it.",
+    "known_information": [
+      "Report is PowerToys 0.99.0 and reproduces by enabling auto-hide and opening popup.",
+      "A screenshot is already attached.",
+      "Current Power Display positions at display work-area bottom-right."
+    ],
+    "inferences": [
+      "Auto-hide may leave work area extending behind the hidden taskbar; display/taskbar topology may affect placement."
+    ],
+    "analysis": "The screenshot and trigger are supplied. Ask for taskbar edge and active monitor so the edge-aware placement can be investigated; do not ask for another screenshot.",
+    "initial_investigation": [
+      "MainWindow uses FlyoutWindowHelper.PositionWindowBottomRight and displayArea.WorkArea: src/modules/powerdisplay/PowerDisplay/PowerDisplayXAML/MainWindow.xaml.cs."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Which screen edge hosts the auto-hidden taskbar and, with multiple displays, which display contains the pointer when the popup opens.",
+        "why_needed": "The popup is positioned against the active display; edge and monitor determine the correct offset.",
+        "how_to_collect": "Report taskbar edge, display count, and pointer display; no new screenshot is needed."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "request_info",
+      "label": "Request taskbar edge and active display",
+      "comment": {
+        "body": "Thanks for the screenshot and clear auto-hide reproduction. Power Display positions against the active display work area, so the missing detail is taskbar geometry: please tell us which edge the auto-hidden taskbar is on and, if you use multiple displays, which display the pointer is on when opening the popup. This distinguishes an edge-offset issue from monitor selection; the existing screenshot is sufficient."
+      }
+    }
+  ]
 }

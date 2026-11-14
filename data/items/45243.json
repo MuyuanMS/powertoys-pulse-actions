@@ -1,33 +1,114 @@
 {
   "number": 45243,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Advanced Paste: As of v0.96.0, doesn't work, at all, unless clipboard history is turned on",
+  "url": "https://github.com/microsoft/PowerToys/issues/45243",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "comments": 1,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-14T01:11:11Z",
+  "generated_at": "2026-11-14T01:11:11Z",
   "source_updated_at": "2026-04-29T07:20:37Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Guard clipboard-history availability check",
+    "detail": "Advanced Paste fails when Windows Clipboard History is disabled; the reporter supplied exact steps, an access-denied stack trace, and a still-broken confirmation."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Approve a narrow guard around history availability and reproduce with Clipboard History disabled.",
+    "reason": "The stack trace identifies the unguarded call present in current source; supplied steps already establish the environment and no additional reporter diagnostics are needed."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The stack trace identifies the unguarded call present in current source; supplied steps already establish the environment and no additional reporter diagnostics are needed.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/45243",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/AdvancedPaste/AdvancedPaste/ViewModels/OptionsViewModel.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Approve a narrow guard around history availability and reproduce with Clipboard History disabled.",
+    "evaluated_at": "2026-11-14T01:11:11Z",
     "source_updated_at": "2026-04-29T07:20:37Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported access-denied exception originates at an unchecked optional history probe; make that probe non-fatal and retain current-clipboard behavior.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Treat clipboard-history availability failures as optional",
+      "root_cause": "Clipboard.IsHistoryEnabled() is outside local exception handling although the reported UnauthorizedAccessException originates at that probe when history is disabled.",
+      "plan": [
+        "Put the availability probe in a narrowly scoped exception-handling path.",
+        "On unavailable/denied history, continue using clipboard sequence/format changes and current clipboard data.",
+        "Add tests for a throwing availability probe and normal history timestamps."
+      ],
+      "verification": [
+        "With history disabled, Advanced Paste opens and uses current clipboard without an unhandled exception.",
+        "With history enabled, history-backed timestamps and previews remain unchanged."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The supplied stack identifies the API and pinned source calls it outside the local catch; the change is narrowly scoped to making history optional."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste fails when Windows Clipboard History is disabled; the reporter supplied exact steps, an access-denied stack trace, and a still-broken confirmation.",
+    "known_information": [
+      "Report is PowerToys 0.97.1 and supplies the exact Clipboard History disable sequence.",
+      "UnauthorizedAccessException stack trace ends at Clipboard.IsHistoryEnabled() in OptionsViewModel.UpdateClipboardTimestampAsync.",
+      "Author later says it is still broken.",
+      "Current source calls Clipboard.IsHistoryEnabled() before the local try/catch around history enumeration."
+    ],
+    "inferences": [
+      "The unchecked availability probe can throw when history service is unavailable, interrupting a path that should still support current clipboard data."
+    ],
+    "analysis": "The supplied trace names the same API call present in current source outside the local history-enumeration catch. Treat history as optional and preserve sequence-number-based preview when the probe fails.",
+    "initial_investigation": [
+      "UpdateClipboardTimestampAsync calls Clipboard.IsHistoryEnabled() before its local try/catch: src/modules/AdvancedPaste/AdvancedPaste/ViewModels/OptionsViewModel.cs."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review and approve scoped fix"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce with Clipboard History disabled",
+      "note": "The issue contains enough detail for a focused maintainer reproduction; do not request duplicate diagnostics.",
+      "reproduce": {
+        "title": "Verify Advanced Paste without Clipboard History",
+        "module": "Advanced Paste",
+        "version_requirement": "Current PowerToys build; original report 0.97.1",
+        "prerequisites": [
+          "Windows user profile with Advanced Paste enabled",
+          "A reversible test profile or Windows Clipboard History setting"
+        ],
+        "setup": [
+          "Disable Clipboard History using Windows Settings; do not alter clipboard service startup type.",
+          "Copy a small text value."
+        ],
+        "steps": [
+          "Open Advanced Paste with its configured shortcut.",
+          "Observe whether the UI opens and can use current clipboard content.",
+          "Repeat with Clipboard History enabled as a control."
+        ],
+        "expected_result": "With history disabled, the availability check must not crash the view model; current clipboard functionality remains usable while history-only features may be unavailable."
+      }
+    }
+  ]
 }
