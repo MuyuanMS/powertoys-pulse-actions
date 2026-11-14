@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 5,
+  "number": 52122,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[Advanced Paste] Fix Foundry Local service discovery and enhance model loading",
+  "url": "https://github.com/microsoft/PowerToys/pull/52122",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "waiting_since": null,
+  "generated_at": "2026-11-14T09:32:09.0140367+08:00",
+  "evaluated_at": "2026-11-14T09:32:09.0140367+08:00",
+  "source_updated_at": "2026-11-14T00:13:09Z",
+  "head_sha": "3b5ee98242b1edac9aff0017493c28f3aabe9e29",
+  "proposed_comments": [
+    {
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "The pinned source explicitly applies timeout cancellation and catches/returns without process termination; a local .NET probe confirms disposing Process does not stop the child. No Foundry-specific runtime reproduction was performed."
+      },
+      "line": 374,
+      "kind": "inline",
+      "body": "### Timed-out Foundry CLI commands can outlive their timeout\n\n**Severity:** `medium`\n\n**Affected code:** `src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs` — `RunFoundryJsonAsync` and `StartDaemonAsync`.\n\n**Problem:** Both methods start a `foundry` process and await it with a cancellation timeout. When the read/exit wait is cancelled, the exception path returns after disposing the `Process` wrapper, but does not stop the native CLI process. A CLI command that stalls beyond the configured 10- or 30-second limit can therefore continue running after the provider reports failure.\n\n**Why it matters:** Repeated availability, daemon-discovery, or cache lookups can start further CLI commands while an earlier timed-out command remains alive, defeating the intended time bounds and potentially accumulating background processes.\n\n**Suggested change:** Give each launched CLI process explicit timeout cleanup: on cancellation, check whether it has exited and terminate/reap the CLI process before returning, handling the exit race. Preserve normal completion behavior, and avoid killing a daemon that `foundry server start` has already detached.\n\n**Verification:** On the pinned head, both timeout awaits flow to catch-and-return paths with no process termination. A local .NET `Process.Dispose()` probe confirmed the child process remained alive until explicitly stopped. No PowerToys build or Foundry integration run was performed; verify timeout and normal-exit paths for both commands, including that a successful server start leaves its daemon running.",
+      "id": "cli-timeout-process-lifetime",
+      "side": "RIGHT",
+      "path": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+      "disposition": "proposed",
+      "title": "Stop timed-out Foundry CLI processes",
+      "severity": "medium"
+    }
+  ],
+  "actions": [
+    {
+      "primary": true,
+      "label": "Post selected timeout cleanup finding",
+      "type": "post_review",
+      "confirm": true,
+      "review": {
+        "pr": 52122,
+        "event": "COMMENT"
+      },
+      "id": "review-52122-timeout"
+    }
+  ]
+}

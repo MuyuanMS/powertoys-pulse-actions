@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-14T01:27:30.6331701+00:00",
+  "generated_at": "2026-11-14T01:32:15.4752121+00:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 240,
     "open_issues": 11203,
     "community": 10324,
-    "artifacts": 2144
+    "artifacts": 2145
   },
   "impact": {
     "as_of": "2026-11-14T08:54:25.3212411+08:00",
@@ -2241,7 +2241,8 @@ window.BOARD_INDEX = {
     47292,
     47307,
     47316,
-    47481
+    47481,
+    52122
   ],
   "items": [
     {
@@ -2394,16 +2395,26 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
+      "has_artifact": true,
       "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "primary": true,
+        "label": "Post selected timeout cleanup finding",
+        "type": "post_review",
+        "confirm": true,
+        "review": {
+          "pr": 52122,
+          "event": "COMMENT"
+        },
+        "id": "review-52122-timeout"
+      },
       "labels": [
         "Product-General",
         "Ready for review"
