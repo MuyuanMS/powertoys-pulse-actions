@@ -1,33 +1,97 @@
 {
-  "number": 33512,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "confidence": "low",
   "source_updated_at": "2026-04-19T10:26:51Z",
+  "number": 33512,
+  "stage": "triage",
+  "proposed_fixes": [
+    {
+      "title": "Refresh Run settings after external file changes",
+      "plan": [
+        "Reproduce an external plugin configuration change while the page is open.",
+        "Trace watcher notifications and the IPC-write suppression window.",
+        "Schedule a UI-thread reload for external changes without racing an IPC write.",
+        "Add regression coverage for external replacement and self-originated writes."
+      ],
+      "confidence": {
+        "rationale": "The symptom makes this a plausible investigation, but the causal mechanism has not been isolated.",
+        "score": 68,
+        "level": "yellow"
+      },
+      "verification": [
+        "External plugin-setting edits appear without navigating away; self-writes do not cause duplicate reloads."
+      ],
+      "root_cause": "A watcher callback may miss or suppress an external settings-file update, leaving the view model stale; the failing event path is unknown."
+    }
+  ],
+  "schemaVersion": 5,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Approve refresh run settings after external file changes triage",
+    "detail": "Confirm the stale settings behavior on latest stable before changing watcher semantics."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "fix",
+  "evaluated_at": "2026-11-14T05:30:55.814Z",
+  "pending_author": false,
+  "kind": "issue",
+  "summary": "[Settings > PowerToys Run page] Settings not updating instantly if PT Run process updates the plugin config (#33512): The 2024 reporter suspected the PowerLauncherPage.xaml.cs FileWatcher but could not isolate the failure. Current code watches settings and suppresses refresh shortly after IPC writes; current-stable behavior is unconfirmed.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "evaluated_at": "2026-11-14T05:30:55.814Z",
+    "recommended_action": "Confirm the stale settings behavior on latest stable before changing watcher semantics.",
+    "source_updated_at": "2026-04-19T10:26:51Z",
+    "status": "needs_information",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/33512",
+      "Covered issue.updatedAt 2026-04-19T10:26:51.000Z"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-19T10:26:51Z"
+    "rationale": "The 2024 reporter suspected the PowerLauncherPage.xaml.cs FileWatcher but could not isolate the failure. Current code watches settings and suppresses refresh shortly after IPC writes; current-stable behavior is unconfirmed."
+  },
+  "issue_context": {
+    "summary": "[Settings > PowerToys Run page] Settings not updating instantly if PT Run process updates the plugin config (#33512): The 2024 reporter suspected the PowerLauncherPage.xaml.cs FileWatcher but could not isolate the failure. Current code watches settings and suppresses refresh shortly after IPC writes; current-stable behavior is unconfirmed.",
+    "analysis": "The 2024 reporter suspected the PowerLauncherPage.xaml.cs FileWatcher but could not isolate the failure. Current code watches settings and suppresses refresh shortly after IPC writes; current-stable behavior is unconfirmed.",
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether an external plugin settings change still leaves the Run Settings page stale on latest stable",
+        "how_to_collect": "Change one plugin setting from PowerToys Run, observe the page, and report latest version and whether navigating away/back refreshes it.",
+        "why_needed": "The existing watcher has an IPC-write guard, so current confirmation is needed before altering refresh behavior."
+      }
+    ],
+    "initial_investigation": [
+      "Read full issue body, collected discussion, labels, assignees and linked timeline.",
+      "Checked relevant pinned-source path or current ownership; no build or runtime reproduction performed."
+    ],
+    "known_information": [
+      "Issue: ### Microsoft PowerToys version 0.81.1 ### Installation method GitHub ### Running as admin None ### Area(s) with issue? Settings ### Steps to reproduce 1. Open Settings for PT Run. 2. Disable PT Run. 3. Set enabled GPO for a plugin. 4. Enable PT Run in settings. ### ✔️ Expected Behavior The changed GPO is reflected by settings ui. ### ❌ Actual Behavior I have to reopen the settings window. ### Other Software _No response_",
+      "Comment by github-actions: Hi I'm an AI powered bot that finds similar issues based off the issue title. Please view the issues below to see if they solve your problem, and if the issue describes your problem please consider closing this one and thumbs upping the other issue to help us prioritize it. Thank you! ### Closed similar issues: - [[PowerToys Run] Enabling PT Run from settings takes a few seconds to reflect in the json file (#6676)](https://github.com/microsoft/PowerToys/issues/6676), similarity score: 0.79 - [[Run][Plugin-Manager] Additional options are not displayed in the settings (#12483)](https://github.com/microsoft/PowerToys/issues/12483), similarity score: 0.75 > Note: You can give me feedback by thumbs upping or thumbs downing this comment.",
+      "Comment by htcfreek: I tried to fix it. But I don't find the exact error. It seems that the FileWatcher in the code of the Page is not working correctly and mostly gets not triggered. https://github.com/microsoft/PowerToys/blob/8b8c75b9a54a342660ce8475989ef283fe39e8fe/src/settings-ui/Settings.UI/SettingsXAML/Views/PowerLauncherPage.xaml.cs#L42-L68",
+      "Linked item: [Settings > PowerToys > Plugin Manager] Indicator for Plugins that failed to initialized https://github.com/microsoft/PowerToys/issues/33515 (OPEN)",
+      "Linked item: Add Delete functionality for Peek https://github.com/microsoft/PowerToys/pull/35418 (MERGED)"
+    ],
+    "inferences": [
+      "Cause statements beyond issue evidence or inspected source are hypotheses."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve refresh run settings after external file changes triage"
+    },
+    {
+      "comment": {
+        "body": "Thanks for narrowing the suspected path to the PowerToys Run Settings page watcher. Current code suppresses refresh shortly after an IPC write. Could you confirm whether an external plugin-setting change still leaves the page stale on latest stable, and whether navigating away/back refreshes it?"
+      },
+      "label": "Confirm current behavior",
+      "type": "request_info"
+    }
+  ],
+  "next_action": {
+    "glyph": "➡️",
+    "label": "Approve refresh run settings after external file changes triage",
+    "reason": "Confirm the stale settings behavior on latest stable before changing watcher semantics."
+  },
+  "generated_at": "2026-11-14T05:30:55.814Z",
+  "fix_assessment": {
+    "rationale": "Lightweight triage hypothesis only; no linked merged fix covers this issue.",
+    "status": "proposed"
   }
 }

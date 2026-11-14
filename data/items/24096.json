@@ -1,33 +1,112 @@
 {
-  "number": 24096,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "confidence": "low",
   "source_updated_at": "2026-04-18T16:20:49Z",
+  "number": 24096,
+  "stage": "triage",
+  "proposed_fixes": [
+    {
+      "title": "Synchronize crosshairs with touchpad movement",
+      "plan": [
+        "Reproduce rapid flicks with a Precision Touchpad.",
+        "Trace low-level mouse-hook callbacks through the dispatcher update path.",
+        "Correct any confirmed dropped/coalesced updates while preserving mouse behavior.",
+        "Add focused regression coverage or a manual test."
+      ],
+      "confidence": {
+        "rationale": "The symptom makes this a plausible investigation, but the causal mechanism has not been isolated.",
+        "score": 46,
+        "level": "red"
+      },
+      "verification": [
+        "Crosshairs track rapid touchpad flicks as closely as ordinary mouse movement."
+      ],
+      "root_cause": "Fast touchpad flicks may produce updates the crosshair hook/dispatcher does not render promptly; the video establishes the symptom, not event loss."
+    }
+  ],
+  "schemaVersion": 5,
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔎",
+    "label": "Approve synchronize crosshairs with touchpad movement triage",
+    "detail": "Reproduce on a Precision Touchpad and compare updates with a mouse."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "track": "fix",
+  "evaluated_at": "2026-11-14T05:30:55.814Z",
+  "pending_author": false,
+  "kind": "issue",
+  "summary": "Mouse Utilities - Mouse Pointer Crosshairs doesn't update its position as much when using a trackpad pointing device (#24096): The reporter supplied a video and described rapid touchpad flicks that leave crosshairs behind; another user reproduced it and the author confirmed persistence on 0.85.1. Current code uses a low-level mouse hook, but cause is unproven.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "evaluated_at": "2026-11-14T05:30:55.814Z",
+    "recommended_action": "Reproduce on a Precision Touchpad and compare updates with a mouse.",
+    "source_updated_at": "2026-04-18T16:20:49Z",
+    "status": "reproducible",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/24096",
+      "Covered issue.updatedAt 2026-04-18T16:20:49.000Z"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T16:20:49Z"
+    "rationale": "The reporter supplied a video and described rapid touchpad flicks that leave crosshairs behind; another user reproduced it and the author confirmed persistence on 0.85.1. Current code uses a low-level mouse hook, but cause is unproven."
+  },
+  "issue_context": {
+    "summary": "Mouse Utilities - Mouse Pointer Crosshairs doesn't update its position as much when using a trackpad pointing device (#24096): The reporter supplied a video and described rapid touchpad flicks that leave crosshairs behind; another user reproduced it and the author confirmed persistence on 0.85.1. Current code uses a low-level mouse hook, but cause is unproven.",
+    "analysis": "The reporter supplied a video and described rapid touchpad flicks that leave crosshairs behind; another user reproduced it and the author confirmed persistence on 0.85.1. Current code uses a low-level mouse hook, but cause is unproven.",
+    "information_gaps": [],
+    "initial_investigation": [
+      "Read full issue body, collected discussion, labels, assignees and linked timeline.",
+      "Checked relevant pinned-source path or current ownership; no build or runtime reproduction performed."
+    ],
+    "known_information": [
+      "Issue: ### Microsoft PowerToys version 0.67.1 ### Installation method PowerToys auto-update ### Running as admin Yes ### Area(s) with issue? Mouse Utilities ### Steps to reproduce The issue only affects trackpad usage, other forms of cursor input like mouse movement gets tracked just fine. Possibly related to #16634, not #16650. Shaking the cursor using a mouse gets tracked normally, exclusively only trackpad in my case. 1. Enable `Mouse Pointer Crosshairs` in Mouse Utilities, doesn't matter how one activates it. 2. Move the mouse using a trackpad with increased sensitivity, the \"enhance pointer precision\" option doesn't affect the issue. ### ✔️ Expected Behavior The bullseye of the crosshair to stay aligned with the cursor position. I can't get a proper screenshot which includes the mouse and the crosshairs ### ❌ Actual Behavior The pointer gets ahead of the crosshair, and the crosshair not updating its position ### Other Software _No response_",
+      "Comment by jaimecbernardo: Unfortunately I've not been able to replicate this behavior (no touch device available). How bad is this, perhaps a screen grab would help in understanding. We're using a lowlevel mouse hook to capture movement, so it's pretty weird we're not getting messages for touch devices. /needinfo",
+      "Comment by headquarter8302: https://user-images.githubusercontent.com/65797058/219573857-48e17bd1-2942-44f6-8230-37e2b4df1c52.mp4 As can be seen from the videocapture above, in the first few mouse movement, I'm using my laptop's touchpad to quickly flick the cursor off-course a couple of times, and the crosshairs doesn't catch up. Then I used my mouse to smoothly move the cursor and hence the crosshairs as a baseline, then I flicked the cursor multiple times again with my touchpad. I should also include that the driver used to connect the touchpad to Windows is an \"ASUS Precision Touchpad\" version 16.0.0.11, not sure how much that helps but more information is better I guess",
+      "Comment by ParadoxV5: > Unfortunately I've not been able to replicate this behavior (no touch device available). Well, I’m able to replicate this behavior (I have a trackpad).",
+      "Comment by headquarter8302: This is still occurring even in [v0.73.0](https://github.com/microsoft/PowerToys/releases/tag/v0.73.0), probably related to #27731",
+      "Comment by headquarter8302: Still happening in the latest release as of this date, and still can't debug it",
+      "Comment by headquarter8302: 0.77, still happening",
+      "Comment by cinnamon-msft: I'm not able to repro this with v0.85.1, are you still seeing this? /needinfo",
+      "Comment by headquarter8302: > I'm not able to repro this with v0.85.1, are you still seeing this? /needinfo It's still happening, v0.85.1 https://github.com/user-attachments/assets/67bcfb3b-d32d-4ca8-80d7-0ed03fb80832",
+      "Linked item: Mouse crosshair lags one update behind the actual position https://github.com/microsoft/PowerToys/issues/27731 (CLOSED)",
+      "Linked item: Mouse pointer Crosshairs move error https://github.com/microsoft/PowerToys/issues/42297 (CLOSED)"
+    ],
+    "inferences": [
+      "Cause statements beyond issue evidence or inspected source are hypotheses."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve synchronize crosshairs with touchpad movement triage"
+    },
+    {
+      "reproduce": {
+        "module": "Mouse Pointer Crosshairs",
+        "steps": [
+          "Use a Windows laptop with Precision Touchpad and enable Mouse Pointer Crosshairs.",
+          "Make rapid short touchpad flicks as in the supplied clip.",
+          "Repeat the trajectory with a mouse.",
+          "Compare cursor and crosshair lag."
+        ],
+        "expected_result": "Crosshairs follow rapid touchpad movement without the lag shown in the supplied clip.",
+        "version_requirement": "Reported version or latest stable",
+        "setup": [
+          "Use a disposable test window/configuration."
+        ],
+        "prerequisites": [
+          "Windows with the named module enabled"
+        ],
+        "title": "Mouse Utilities - Mouse Pointer Crosshairs doesn't update its position as much when using a trackpad pointing device"
+      },
+      "label": "Reproduce Mouse Pointer Crosshairs behavior",
+      "type": "reproduce",
+      "note": "The issue has enough detail for a maintainer check; no reporter diagnostics are needed first."
+    }
+  ],
+  "next_action": {
+    "glyph": "➡️",
+    "label": "Approve synchronize crosshairs with touchpad movement triage",
+    "reason": "Reproduce on a Precision Touchpad and compare updates with a mouse."
+  },
+  "generated_at": "2026-11-14T05:30:55.814Z",
+  "fix_assessment": {
+    "rationale": "Lightweight triage hypothesis only; no linked merged fix covers this issue.",
+    "status": "proposed"
   }
 }
