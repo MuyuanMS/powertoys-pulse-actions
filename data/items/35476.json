@@ -1,33 +1,103 @@
 {
   "number": 35476,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "track": "triage",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "title": "Powertoys Run Not Responding",
+  "url": "https://github.com/microsoft/PowerToys/issues/35476",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comments": 6,
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "evaluated_at": "2026-11-14T05:36:39Z",
+  "generated_at": "2026-11-14T05:36:39Z",
   "source_updated_at": "2024-12-22T20:18:57Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "The issue continued across 0.86 and 0.87; existing trace already identifies the timeout.",
+    "detail": "A supplied diagnostic records Windows Search Indexer timeout 0x80041607 after 29,993 ms; pinned Indexer code calls search synchronously inside Query."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "❓",
+    "label": "The issue continued across 0.86 and 0.87; existing trace already identifies the timeout.",
+    "reason": "Ask for the exact Run query and whether its target was local or indexed network storage; do not request generic logs again."
   },
-  "actions": [],
-  "confidence": "High",
+  "summary": "A supplied diagnostic records Windows Search Indexer timeout 0x80041607 after 29,993 ms; pinned Indexer code calls search synchronously inside Query.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "Ask for the exact Run query and whether its target was local or indexed network storage; do not request generic logs again.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "https://github.com/microsoft/PowerToys/issues/35476",
+      "https://github.com/microsoft/PowerToys/blob/9993e892403995734fcea7e530716b34fed2d258/src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/Main.cs"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "The issue continued across 0.86 and 0.87; existing trace already identifies the timeout.",
+    "evaluated_at": "2026-11-14T05:36:39Z",
     "source_updated_at": "2024-12-22T20:18:57Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Trace identifies a roughly 30-second timeout on a synchronous Windows Search call, but exact query/location remains absent.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "A supplied diagnostic records Windows Search Indexer timeout 0x80041607 after 29,993 ms; pinned Indexer code calls search synchronously inside Query.",
+    "known_information": [
+      "Maintainer points to the supplied bugreport with 29,993 ms timeout.",
+      "Main.cs calls _api.Search synchronously in Query and catches exceptions."
+    ],
+    "inferences": [
+      "Synchronous Indexer query may delay Run’s result pipeline when Windows Search times out."
+    ],
+    "analysis": "Exact query/location enables targeted correlation; the supplied trace is enough to avoid another generic report request.",
+    "initial_investigation": [
+      "Pinned source: Microsoft.Plugin.Indexer/Main.cs; supplied trace already contains code and duration."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Exact Run query that triggered timeout and whether target was an indexed local or network location.",
+        "why_needed": "Correlates 0x80041607 with the synchronous plugin call without repeating diagnostics.",
+        "how_to_collect": "Provide query text (redact personal paths) and say local or network drive; otherwise state unknown."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Review the proposed fix direction"
+    },
+    {
+      "type": "request_info",
+      "label": "The issue continued across 0.86 and 0.87; existing trace already identif",
+      "comment": {
+        "body": "Thanks for the existing bugreport and the follow-up identifying Windows Indexer error 0x80041607 after a 29,993 ms query. The pinned Indexer plugin calls Windows Search synchronously, so the exact query/location is the next useful discriminator. Could you provide the search text (redact personal paths) and say whether its target was local or on an indexed network drive? No additional logs are needed."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Prevent a timed-out Indexer query from stalling Run",
+      "root_cause": "The Indexer plugin performs synchronous Windows Search and the supplied trace records a roughly 30-second timeout.",
+      "plan": [
+        "Reproduce the affected query and confirm plugin scheduling.",
+        "Bound or isolate a slow query so Windows Search timeouts do not block Run’s responsive result pipeline.",
+        "Add a timeout regression test."
+      ],
+      "verification": [
+        "A timed-out query does not freeze Run for about 30 seconds; normal indexed results still appear."
+      ],
+      "confidence": {
+        "score": 77,
+        "level": "yellow",
+        "rationale": "Trace names the slow synchronous call and timeout; query and location for targeted reproduction are absent."
+      }
+    }
+  ]
 }
