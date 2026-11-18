@@ -1,65 +1,70 @@
 {
+  "schemaVersion": 5,
   "number": 42306,
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "schemaVersion": 5,
-  "generated_at": "2026-11-14T05:40:29Z",
-  "evaluated_at": "2026-11-14T05:40:29Z",
-  "source_updated_at": "2026-04-21T23:34:22Z",
-  "confidence": "Medium",
+  "title": "CmdPal: Applications are launched with an outdated PATH",
+  "url": "https://github.com/microsoft/PowerToys/issues/42306",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T00:22:00Z",
+  "evaluated_at": "2026-11-18T00:22:00Z",
+  "source_updated_at": "2026-11-17T22:06:30Z",
   "judgment": {
     "status": "reproducible",
-    "rationale": "The report gives a concrete PATH-update sequence and a maintainer said work would start, but no linked implementation is present. Child processes inherit the launcher environment by default.",
+    "rationale": "The original report describes an outdated PATH after a change. A second reporter supplied a controlled transcript on 0.102.3101 showing a general user environment variable remaining stale in CmdPal-launched Zed, while Start and a PowerToys restart pick up the change. The precise shell-launch propagation and safe refresh strategy remain to be tested.",
     "evidence": [
-      "PowerToys 0.94.2 starts before Swift is installed and PATH updated.",
-      "VS Code launched through CmdPal cannot resolve swift until restart; Start/PowerShell can.",
-      "A maintainer agreed PATH should refresh; no fixing PR is linked."
+      "The 0.102.3101 transcript compares the same variable before and after the Windows environment settings change and tests both elevated and non-elevated PowerToys: https://github.com/microsoft/PowerToys/issues/42306#issuecomment-6960037591.",
+      "A contributor recently said they had investigated but not implemented a fix, and described WM_SETTINGCHANGE and Explorer-mediated launch as alternatives: https://github.com/microsoft/PowerToys/issues/42306#issuecomment-6961010605.",
+      "The current All Apps desktop launch uses Process.Start with UseShellExecute=true, while packaged apps use a separate activation path: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/AppCommand.cs.",
+      "The discussion notes the shell execution path may affect propagation and points to PowerToys Run's environment-refresh precedent: https://github.com/microsoft/PowerToys/issues/42306#issuecomment-6962356772."
     ],
-    "recommended_action": "The report supports stale environment as likely cause; current launch path should be confirmed.",
-    "evaluated_at": "2026-11-14T05:40:29Z",
-    "source_updated_at": "2026-04-21T23:34:22Z"
+    "recommended_action": "Reproduce the controlled environment change and test the actual All Apps shell-launch behavior before choosing a refresh mechanism.",
+    "evaluated_at": "2026-11-18T00:22:00Z",
+    "source_updated_at": "2026-11-17T22:06:30Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The report supports stale environment as likely cause; current launch path should be confirmed.",
+    "rationale": "No covering implementation was found in linked or fork-side work. The contributor identified alternatives but explicitly had not implemented them; coordination with that contributor is appropriate.",
     "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Refresh the environment used for CmdPal-launched processes",
-      "root_cause": "CmdPal may retain the PATH snapshot inherited at startup and pass it to newly launched applications.",
+      "title": "Refresh the environment used for newly launched desktop apps",
+      "root_cause": "A long-lived CmdPal launch path may propagate its startup environment after Windows user or machine variables change; shell delegation still needs confirmation.",
       "plan": [
-        "Trace CmdPal Run launch and environment inheritance.",
-        "Refresh user/system environment on change or before child launch while preserving intentional overrides.",
-        "Test a PATH update after startup followed by a child launch."
+        "Trace the All Apps desktop launch and verify whether its shell execution uses CmdPal's environment after a settings-change notification.",
+        "Choose an environment refresh or shell-mediated launch approach based on that result, preserving process-specific values, user and machine PATH merging, expansion, and deletions.",
+        "Add regression coverage for changes after startup and check packaged activation separately rather than assuming it follows the same path."
       ],
       "verification": [
-        "Change PATH after PowerToys starts, launch a test command from CmdPal, and verify it resolves without restart."
+        "Change a test user variable and PATH after CmdPal starts, launch a fully closed desktop app, and verify it receives the updated values without restarting PowerToys.",
+        "Test deleted variables, user and machine PATH, protected process-specific values, and elevated and non-elevated launch behavior."
       ],
       "confidence": {
-        "score": 72,
+        "score": 76,
         "level": "yellow",
-        "rationale": "The report supports stale environment as likely cause; current launch path should be confirmed."
+        "rationale": "The controlled report and launch source support a stale environment, but the shell propagation and refresh approach have not been tested."
       }
     }
   ],
   "issue_context": {
-    "summary": "CmdPal-launched applications use stale PATH after the user changes PATH, until PowerToys restarts.",
+    "summary": "Applications launched from CmdPal retain stale environment values after Windows environment settings change.",
     "known_information": [
-      "PowerToys 0.94.2 starts before Swift is installed and PATH updated.",
-      "VS Code launched through CmdPal cannot resolve swift until restart; Start/PowerShell can.",
-      "A maintainer agreed PATH should refresh; no fixing PR is linked."
+      "The original 0.94.2 report says an added PATH entry is unavailable in VS Code launched through CmdPal until PowerToys restarts.",
+      "A 0.102.3101 comparison shows a user variable remains at its old value in CmdPal-launched Zed while Start and restarting PowerToys use the new value.",
+      "The contributor who suggested a fix said the two candidate approaches had not been implemented."
     ],
     "inferences": [
-      "CmdPal may retain the PATH snapshot inherited at startup and pass it to newly launched applications."
+      "The long-lived launch path may carry stale process environment to a new desktop app, but UseShellExecute can delegate to the shell and must be checked."
     ],
-    "analysis": "The report gives a concrete PATH-update sequence and a maintainer said work would start, but no linked implementation is present. Child processes inherit the launcher environment by default.",
+    "analysis": "The newer transcript shows the issue is not limited to PATH or elevation. PowerToys Run has a refresh helper, but copying its approach without testing shell propagation and protected overrides would be premature.",
     "initial_investigation": [
-      "Inspected CmdPal launch helper: ProcessStartInfo inherits parent environment unless replaced.",
-      "Linked #42926 is a distinct startup PATH report, not a confirmed post-start fix."
+      "The current All Apps desktop AppCommand uses Process.Start with UseShellExecute=true; packaged activation uses IApplicationActivationManager.",
+      "PowerToys Run's EnvironmentHelper merges user and machine variables and handles protected values, deletion and expansion.",
+      "Issue https://github.com/microsoft/PowerToys/issues/46577 was closed as a duplicate; no linked upstream or fork implementation was found."
     ],
     "information_gaps": []
   },
@@ -70,24 +75,27 @@
     },
     {
       "type": "reproduce",
-      "label": "Reproduce locally",
-      "note": "The issue provides a focused sequence for maintainer verification.",
+      "label": "Reproduce environment refresh after startup",
       "reproduce": {
-        "title": "Verify PATH refresh for CmdPal-launched apps",
+        "title": "Compare CmdPal and Start environment after a user-variable change",
         "module": "Command Palette",
-        "version_requirement": "Current PowerToys/CmdPal on Windows",
+        "version_requirement": "Current PowerToys on Windows",
         "prerequisites": [
-          "A test executable available only through a newly added PATH directory."
+          "A desktop app with a shell or environment viewer that can be fully exited between launches.",
+          "A test executable available only through the new user PATH directory."
         ],
         "setup": [
-          "Start PowerToys before adding the test directory to PATH."
+          "Create a harmless user variable CMDPAL_ENV_PROBE=before in Windows environment settings, then fully exit and restart PowerToys and the test app."
         ],
         "steps": [
-          "Add directory to user PATH without restarting PowerToys.",
-          "Launch VS Code or another app from CmdPal.",
-          "From that child, run the new command and compare with launching the same app from Start."
+          "Launch the app from CmdPal and confirm CMDPAL_ENV_PROBE is before; exit the app fully.",
+          "Change the variable to after in Windows environment settings, then launch the app from CmdPal and inspect the process value.",
+          "Exit it fully, launch it from Start, and compare; restart PowerToys and repeat the CmdPal launch. Remove the test variable afterward.",
+          "Add a harmless directory to the user PATH while PowerToys remains running; launch VS Code (or the reported app) from CmdPal and from Start, then compare the child-process PATH.",
+          "From both child processes, run the test executable by name and compare command resolution.",
+          "Restart PowerToys and repeat the CmdPal launch to distinguish stale inherited state from launch-time propagation."
         ],
-        "expected_result": "The child resolves the new command without restarting PowerToys."
+        "expected_result": "A newly launched app receives the updated user variable without restarting PowerToys, matching Start. Both launches also resolve the test executable by name."
       }
     }
   ]
