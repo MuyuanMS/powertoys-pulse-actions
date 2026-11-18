@@ -26018,13 +26018,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
-      "stage": "triage_revalidated",
+      "track": "fix",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -26038,8 +26038,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-02T19:08:16Z",
-      "updated_at": "2026-11-03T01:09:52Z",
-      "comments": 0,
+      "updated_at": "2026-11-14T08:04:28Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -36594,13 +36594,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": "triage_revalidated",
-      "owes": "us",
+      "track": "fix",
+      "stage": "awaiting_design_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -36614,8 +36614,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-22T06:17:48Z",
-      "updated_at": "2026-10-23T12:25:16Z",
-      "comments": 0,
+      "updated_at": "2026-11-14T11:38:17Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -40821,13 +40821,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -40841,8 +40841,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-15T08:40:20Z",
-      "updated_at": "2026-10-15T08:45:41Z",
-      "comments": 1,
+      "updated_at": "2026-11-16T09:50:17Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -52704,8 +52704,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-29T01:45:07Z",
-      "updated_at": "2026-09-29T02:25:22Z",
-      "comments": 2,
+      "updated_at": "2026-11-15T15:33:14Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -82265,7 +82265,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
+      "stage": "triage",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -82284,8 +82284,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-10T08:56:32Z",
-      "updated_at": "2026-08-10T18:05:05Z",
-      "comments": 0,
+      "updated_at": "2026-11-17T13:06:54Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -197313,8 +197313,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-07-24T17:16:42Z",
-      "updated_at": "2026-10-16T11:11:25Z",
-      "comments": 3,
+      "updated_at": "2026-11-17T00:17:16Z",
+      "comments": 4,
       "priority": null
     },
     {

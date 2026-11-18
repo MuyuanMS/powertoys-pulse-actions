@@ -1,27 +1,94 @@
 {
-  "track": "triage",
+  "schemaVersion": 5,
+  "number": 51858,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-11-18T09:27:48Z",
+  "evaluated_at": "2026-11-18T09:27:48Z",
+  "source_updated_at": "2026-11-14T08:04:28Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/51858",
+  "title": "CursorHide make mouse lag when holding keyboard button.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-CursorHide"
+  ],
+  "assignees": [],
+  "comments": 1,
   "judgment": {
-    "rationale": "The report has enough reproduction detail and configuration to move to maintainer testing, not another generic log request. Alternating hide/restore is a supported candidate mechanism; profiling is needed to distinguish cursor reload cost, queued work and other software. If unfixed, simultaneous typing/movement can make input visibly stutter.",
-    "source_updated_at": "2026-11-03T01:09:52Z",
-    "recommended_action": "Reproduce with typing-only versus idle-only settings and trace transitions before deciding whether coalescing or a different visibility strategy is necessary.",
+    "status": "reproducible",
+    "rationale": "The key-hold/mouse-movement stutter now has independent corroboration and matching game report #52141; existing settings/source evidence supports transition churn investigation, not a proven performance cause.",
     "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/51858",
       "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
       "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
       "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
       "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation.",
-      "Re-read the full current report and empty comments/timeline cross-reference set; the supplied sequence remains holding a key while moving the pointer.",
       "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit.",
-      "Inspected current main 99537d3f: State::OnKeyboardInput hides, intentional movement shows, and hook callbacks queue actions outside the callbacks. SystemCursorHider::Hide replaces 13 system cursors; Restore uses SPI_SETCURSORS and bounded cursor refresh messages. This supports investigating transition churn, not a claim that the hook directly performs those mutations."
+      "The latest commenter confirms the issue in games and says it grows with the number of held keys: https://github.com/microsoft/PowerToys/issues/51858#issuecomment-6874268989",
+      "Related #52141 supplies Skyrim and Arma 3 cases and a CursorHide-disabled control.",
+      "Read complete issue and supplied archive settings; checked immutable State, Worker and SystemCursorHider code.",
+      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed.",
+      "Current main AutoHideCursorState still hides on keydown and shows on intentional mouse movement; worker posts actions for later processing, and SystemCursorHider performs system-cursor replacement/restoration.",
+      "Reviewed PR #51547: it addresses missed-input/unavailable-position recovery, not a measured resolution of repeated simultaneous-input churn.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp",
+      "Live recheck on 2026-11-18: issue remains open with updated_at 2026-11-14T08:04:28Z, exactly matching the candidate source_updated_at. The current dashboard item was last sourced at 2026-11-03T01:09:52Z with judgment reproducible and action types ['reproduce', 'approve_design']; it was reviewed but left untouched. This is a separate current-source candidate, not a dashboard replacement."
     ],
-    "status": "reproducible",
-    "evaluated_at": "2026-11-04T09:47:43.8759828+08:00"
+    "recommended_action": "Use the existing maintainer reproduction to measure hide/show frequency and latency during simultaneous held-key/mouse movement, including the game controls.",
+    "evaluated_at": "2026-11-18T09:27:48Z",
+    "source_updated_at": "2026-11-14T08:04:28Z"
   },
-  "title": "CursorHide make mouse lag when holding keyboard button.",
-  "assignees": [
-    null
+  "issue_context": {
+    "summary": "The key-hold/mouse-movement stutter now has independent corroboration and matching game report #52141; existing settings/source evidence supports transition churn investigation, not a proven performance cause.",
+    "known_information": [
+      "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
+      "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
+      "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
+      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation.",
+      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit.",
+      "The latest commenter confirms the issue in games and says it grows with the number of held keys: https://github.com/microsoft/PowerToys/issues/51858#issuecomment-6874268989",
+      "Related #52141 supplies Skyrim and Arma 3 cases and a CursorHide-disabled control."
+    ],
+    "inferences": [],
+    "analysis": "Use the existing maintainer reproduction to measure hide/show frequency and latency during simultaneous held-key/mouse movement, including the game controls.",
+    "initial_investigation": [
+      "Read complete issue and supplied archive settings; checked immutable State, Worker and SystemCursorHider code.",
+      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed.",
+      "Current main AutoHideCursorState still hides on keydown and shows on intentional mouse movement; worker posts actions for later processing, and SystemCursorHider performs system-cursor replacement/restoration.",
+      "Reviewed PR #51547: it addresses missed-input/unavailable-position recovery, not a measured resolution of repeated simultaneous-input churn.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The key-hold/mouse-movement stutter now has independent corroboration and matching game report #52141; existing settings/source evidence supports transition churn investigation, not a proven performance cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound cursor-hide work during simultaneous keyboard and mouse input",
+      "root_cause": "Key repeat and intentional movement can alternate Hide/Show requests. Repeated system-cursor replacement/restoration may cause the observed lag; no timing proof exists yet.",
+      "verification": [
+        "Exercise held-key movement, isolated typing, clicks, wheel, modifier-only input, idle expiry and module shutdown.",
+        "Compare transition counts and pointer latency before/after on the same machine; confirm all user cursors restore after disable, crash recovery and failed cursor operations."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The configured input sequence matches a real state transition path, but no profiler measurement or reproduced latency establishes the expensive operation."
+      },
+      "plan": [
+        "Reproduce typing-only, idle-only and combined configurations with single key presses versus held-key repeat while continuously moving.",
+        "Measure queued action count, Hide/Show duration and pointer latency; distinguish transition churn from injected-input or third-party interference.",
+        "If churn is confirmed, coalesce obsolete pending visibility work or reduce repeated system-cursor mutation while preserving immediate pointer restoration, idle behavior and original cursor schemes."
+      ]
+    }
   ],
-  "pending_author": false,
-  "source_updated_at": "2026-11-03T01:09:52Z",
   "actions": [
     {
       "label": "Profile held-key cursor transitions",
@@ -50,64 +117,14 @@
       "primary": false
     }
   ],
-  "fix_assessment": {
-    "rationale": "The transition path supplies a focused investigation, but latency and the safe corrective policy are not proven.",
-    "status": "proposed"
+  "status": {
+    "glyph": "?",
+    "label": "Use the existing maintainer reproduction to measure hide/show frequency and latency during simultane",
+    "detail": "The key-hold/mouse-movement stutter now has independent corroboration and matching game report #52141; existing settings/source evidence supports transition churn investigation, not a proven performance cause."
   },
-  "url": "https://github.com/microsoft/PowerToys/issues/51858",
-  "schemaVersion": 5,
-  "number": 51858,
-  "comments": 0,
-  "evaluated_at": "2026-11-04T09:47:43.8759828+08:00",
-  "proposed_fixes": [
-    {
-      "title": "Bound cursor-hide work during simultaneous keyboard and mouse input",
-      "root_cause": "Key repeat and intentional movement can alternate Hide/Show requests. Repeated system-cursor replacement/restoration may cause the observed lag; no timing proof exists yet.",
-      "verification": [
-        "Exercise held-key movement, isolated typing, clicks, wheel, modifier-only input, idle expiry and module shutdown.",
-        "Compare transition counts and pointer latency before/after on the same machine; confirm all user cursors restore after disable, crash recovery and failed cursor operations."
-      ],
-      "confidence": {
-        "score": 69,
-        "level": "yellow",
-        "rationale": "The configured input sequence matches a real state transition path, but no profiler measurement or reproduced latency establishes the expensive operation."
-      },
-      "plan": [
-        "Reproduce typing-only, idle-only and combined configurations with single key presses versus held-key repeat while continuously moving.",
-        "Measure queued action count, Hide/Show duration and pointer latency; distinguish transition churn from injected-input or third-party interference.",
-        "If churn is confirmed, coalesce obsolete pending visibility work or reduce repeated system-cursor mutation while preserving immediate pointer restoration, idle behavior and original cursor schemes."
-      ]
-    }
-  ],
-  "stage": "triage_revalidated",
-  "generated_at": "2026-11-04T09:47:43.8759828+08:00",
-  "kind": "issue",
-  "issue_context": {
-    "known_information": [
-      "The reporter describes stuttering while holding a keyboard key and moving the pointer, and supplies a diagnostic archive.",
-      "Archive settings enable hide_on_typing and hide_on_idle with a5000ms idle delay.",
-      "Current-main AutoHideCursorState hides after nonmodifier keyboard input and shows after intentional mouse movement; repeated alternating input can therefore request repeated transitions.",
-      "Worker queues cursor actions outside hook callbacks; SystemCursorHider changes system cursors and restores them using SPI_SETCURSORS/refresh. This does not establish measured hook latency or prove a synchronous hook implementation.",
-      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit."
-    ],
-    "summary": "The archive confirms typing and idle hiding were enabled; alternating key-repeat and pointer movement is a concrete maintainer reproduction, not yet a profiled root cause.",
-    "information_gaps": [],
-    "analysis": "The report has enough reproduction detail and configuration to move to maintainer testing, not another generic log request. Alternating hide/restore is a supported candidate mechanism; profiling is needed to distinguish cursor reload cost, queued work and other software. If unfixed, simultaneous typing/movement can make input visibly stutter.",
-    "inferences": [
-      "Alternating key-repeat/movement may produce avoidable system-cursor churn; this remains a hypothesis."
-    ],
-    "initial_investigation": [
-      "Read complete issue and supplied archive settings; checked immutable State, Worker and SystemCursorHider code.",
-      "Confirmed hook callbacks queue actions instead of asserting they execute cursor replacement inline. No runtime/performance result is claimed.",
-      "Re-read the full current report and empty comments/timeline cross-reference set; the supplied sequence remains holding a key while moving the pointer.",
-      "Independently re-read the archive: typing hiding and idle hiding are enabled with a 5000-ms idle delay. Module logs contain worker-exit warnings on several days, but they do not measure key-repeat/movement latency or attribute that symptom to a particular exit.",
-      "Inspected current main 99537d3f: State::OnKeyboardInput hides, intentional movement shows, and hook callbacks queue actions outside the callbacks. SystemCursorHider::Hide replaces 13 system cursors; Restore uses SPI_SETCURSORS and bounded cursor refresh messages. This supports investigating transition churn, not a claim that the hook directly performs those mutations."
-    ]
-  },
-  "owes": "maintainer",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-CursorHide"
-  ]
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Bound cursor-hide work during simultaneous keyboard and mouse input",
+    "reason": "Use the existing maintainer reproduction to measure hide/show frequency and latency during simultaneous held-key/mouse movement, including the game controls."
+  }
 }

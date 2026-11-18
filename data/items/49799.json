@@ -2,70 +2,107 @@
   "number": 49799,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-11-18T09:34:01Z",
   "status": {
-    "glyph": "💬",
-    "label": "Needs boundary and OS-snap evidence",
-    "detail": "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing."
+    "label": "Compare native Snap at matched bounds",
+    "detail": "First reproduce the same lower-edge click at matched bounds with PowerToys exited and Windows Snap on; the ZIP request is conditional on a PowerToys-only difference."
   },
-  "next_action": null,
+  "next_action": {
+    "label": "Compare native Snap at matched bounds",
+    "reason": "First reproduce the same lower-edge click at matched bounds with PowerToys exited and Windows Snap on; the ZIP request is conditional on a PowerToys-only difference."
+  },
   "actions": [
     {
       "id": "request-info-49799",
       "type": "request_info",
-      "label": "Request diagnostic ZIP",
+      "label": "Request diagnostic ZIP if the control isolates PowerToys",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49799,
-        "body": "Thank you for reporting this issue with PowerToys. To help us investigate and reproduce the problem accurately, could you please reproduce the issue and then run /bugreport in a comment to attach a fresh diagnostic ZIP? This will provide the exact module logs and system environment details needed to confirm the root cause."
+        "body": "Thanks for mapping the 1 px and 5 px cases. A follow-up also reports the border snap with FancyZones disabled. Please compare the same window and bounds after fully exiting PowerToys, with Windows Snap still enabled. If it only occurs while PowerToys is running, could you reproduce that case, comment /bugreport, and attach the fresh ZIP? If it also occurs with PowerToys exited, please confirm that result; no ZIP is needed for that control."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce reported scenario",
+      "reproduce": {
+        "title": "Verify FancyZones report",
+        "module": "FancyZones",
+        "version_requirement": "Reported 0.100.2; also current stable",
+        "prerequisites": [
+          "FancyZones enabled where applicable"
+        ],
+        "setup": [
+          "Windows 11 25H2, ultrawide monitor, File Explorer and Opera; save current layout."
+        ],
+        "steps": [
+          "1. With Windows Snap enabled, place a window at the top edge in a 1 px-spaced zone and single-click its lower resize border.",
+          "2. Repeat with 5 px spacing in Opera.",
+          "3. Exit PowerToys and manually reproduce the same window bounds, then repeat the same click.",
+          "4. Repeat the control with Windows Snap disabled and record which cases maximize."
+        ],
+        "expected_result": "A single click does not vertically maximize; any failure with PowerToys exited establishes that a FancyZones-only fix is insufficient."
+      }
     }
   ],
   "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T18:05:05Z",
+  "evaluated_at": "2026-11-18T09:34:01Z",
+  "source_updated_at": "2026-11-17T13:06:54Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing.",
+    "status": "reproducible",
+    "rationale": "First reproduce the same lower-edge click at matched bounds with PowerToys exited and Windows Snap on; the ZIP request is conditional on a PowerToys-only difference.",
     "evidence": [
-      "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The original report distinguishes 1 px padding across apps from 5 px padding in Opera and says disabling Windows Snap stops the symptom.",
+      "A second reporter sees the same problem with FancyZones disabled. That is not equivalent to fully exiting PowerToys or matching window bounds."
     ],
-    "recommended_action": "Hold for maintainer review.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T18:05:05Z"
+    "recommended_action": "First reproduce the same lower-edge click at matched bounds with PowerToys exited and Windows Snap on; the ZIP request is conditional on a PowerToys-only difference.",
+    "source_updated_at": "2026-11-17T13:06:54Z",
+    "evaluated_at": "2026-11-18T09:34:01Z"
   },
   "schemaVersion": 5,
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "Fix proposal not applicable for issue in stage 'needs_reply' / judgment 'needs_information'."
+    "rationale": "A FancyZones change is not justified until the native Snap control rules out the same behavior outside PowerToys.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [],
   "issue_context": {
     "summary": "Bug Report: Unintended Vertical Snap on Single Click with Custom-Framed Apps and FancyZones Padding Thresholds",
-    "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+    "known_information": [
+      "The original report distinguishes 1 px padding across apps from 5 px padding in Opera and says disabling Windows Snap stops the symptom.",
+      "A second reporter sees the same problem with FancyZones disabled. That is not equivalent to fully exiting PowerToys or matching window bounds."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
+      "Native Windows Snap can explain the symptom; whether FancyZones placement or a custom frame changes the threshold is unproven."
     ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+    "analysis": "First reproduce the same lower-edge click at matched bounds with PowerToys exited and Windows Snap on; the ZIP request is conditional on a PowerToys-only difference.",
+    "initial_investigation": [
+      "Inspected upstream issue title and report metadata.",
+      "Compared the independent follow-up with the original control. FancyZones placement code is the product-side comparison, not proof it caused the border event: https://github.com/microsoft/PowerToys/blob/d2fb4784a2169ec4664112d994e6979eec8802e1/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp"
     ],
     "information_gaps": [
       {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
+        "information": "Matched-bounds comparison and a fresh ZIP only if the behavior depends on PowerToys",
+        "why_needed": "Separates native Snap behavior from a PowerToys-dependent difference.",
+        "how_to_collect": "Repeat the same click at matched bounds with PowerToys exited. If it only occurs while PowerToys runs, reproduce and comment /bugreport to attach the fresh ZIP.",
         "evidence_type": "bugreport_zip"
       }
-    ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
-  }
+    ]
+  },
+  "title": "Bug Report: Unintended Vertical Snap on Single Click with Custom-Framed Apps and FancyZones Padding Thresholds",
+  "url": "https://github.com/microsoft/PowerToys/issues/49799",
+  "author": "oldhandben",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1
 }
