@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 5,
+  "number": 52214,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[CommandNotFound] Update winget module minimum dependency version",
+  "url": "https://github.com/microsoft/PowerToys/pull/52214",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-18T23:07:10Z",
+  "evaluated_at": "2026-11-18T23:07:10Z",
+  "source_updated_at": "2026-11-18T18:58:53Z",
+  "head_sha": "7d368246f7b7cf0e3196923290ea55e38931754a",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "52214-verify-minimum-after-install",
+      "kind": "companion",
+      "in_diff": false,
+      "out_of_diff_reason": "The missing minimum check is in the unchanged fresh-install branch, and its result is consumed by the Settings view model.",
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Check the minimum WinGet Client version after a fresh install",
+      "body": "### Check the minimum WinGet Client version after a fresh install\n**Severity:** `medium`\n\n**Affected code:** `InstallWinGetClientModule.ps1` after `Install-Module`, and `CmdNotFoundViewModel.InstallWinGetClientModule`.\n\n**Problem:** The fresh-install branch reports `WinGet Client module detected.` when any version is discoverable. With a mocked initially empty inventory that returns `1.29.379` after installation, the current script emits that success message. Settings then marks the module detected even though it fails this PR's `1.29.380` requirement.\n\n**Why it matters:** Settings can mark an unsupported dependency usable after installation, while the subsequent requirements check rejects it.\n\n**Suggested change:**\n1. Apply the same typed minimum-version check to the post-install and post-update inventories.\n2. Report an outdated result when modules exist but none meets the minimum, and an absent result when no module is found.\n3. Emit a single stable status for Settings to consume, separate from user-facing text, so both paths interpret the outcomes consistently.\n\n**Verification:** Mock the initial empty inventory, then return no module, only `1.29.379`, `1.29.380`, and a mix of old and supported versions. Assert both the script status and the Settings detected state; only the last two cases should report a usable module.",
+      "confidence": {
+        "score": 93,
+        "rationale": "A mocked run of the exact PR script reproduced the post-install false success, and the pinned Settings consumer maps that message to detected. No live gallery installation was performed."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-52214-winGet-client-minimum",
+      "type": "post_review",
+      "label": "Post one general PR comment about the WinGet Client minimum version",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 52214,
+        "pullRequest": 52214,
+        "head_sha": "7d368246f7b7cf0e3196923290ea55e38931754a",
+        "event": "COMMENT"
+      }
+    }
+  ]
+}
