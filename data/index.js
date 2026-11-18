@@ -18762,8 +18762,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Review and approve scoped fix"
       },
       "labels": [
         "Issue-Bug",
@@ -18771,8 +18771,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-13T19:55:15Z",
-      "updated_at": "2026-11-13T19:55:15Z",
-      "comments": 0,
+      "updated_at": "2026-11-17T22:19:05Z",
+      "comments": 10,
       "priority": null
     },
     {
