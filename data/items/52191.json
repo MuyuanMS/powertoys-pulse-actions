@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "number": 52191,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "[FancyZones CLI] Help examples use a payload name that is not exposed on PATH",
+  "url": "https://github.com/microsoft/PowerToys/issues/52191",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T22:54:45Z",
+  "evaluated_at": "2026-11-18T22:54:45Z",
+  "source_updated_at": "2026-11-17T11:38:33Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "FancyZones help advertises the internal payload name, not the public CLI shim that the installer puts on PATH.",
+  "next_action": "Verify the command-name mismatch in an installed build and update root help, subcommand help, and examples to use the public shim.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The source confirms the naming mismatch, and the reporter observed it on extracted stable and preview installers. Installed-product PATH behavior still needs verification.",
+    "recommended_action": "Verify the installed public command and keep the internal payload directory off PATH.",
+    "evaluated_at": "2026-11-18T22:54:45Z",
+    "source_updated_at": "2026-11-17T11:38:33Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix surfaced. The mismatch is in the help text rather than in command dispatch.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use the public FancyZones CLI name in help and examples",
+      "root_cause": "FancyZonesCliUsage prints FancyZonesCLI, while the installer exposes PowerToys.FancyZones.CLI.exe via its bin directory.",
+      "plan": [
+        "Use the installed public executable name consistently in root and subcommand usage and examples.",
+        "Leave the shim mapping and installer PATH behavior unchanged.",
+        "Add coverage that checks displayed usage and examples reference the public shim."
+      ],
+      "verification": [
+        "From a fresh terminal outside the install directory, copy a help example and verify that it reaches FancyZones after both per-user and machine installs."
+      ],
+      "confidence": {
+        "score": 81,
+        "level": "yellow",
+        "rationale": "The source and extracted installers agree; real installation and PATH propagation have not been independently verified."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify the FancyZones help commands in an installed build",
+      "reproduce": {
+        "title": "Compare advertised FancyZones command names with installed command lookup",
+        "module": "FancyZones",
+        "version_requirement": "Stable 0.102.3101.0 or preview 0.103.3151.0 plus a candidate build",
+        "prerequisites": [
+          "Disposable Windows environment for per-user and machine installations."
+        ],
+        "setup": [
+          "Enable the installer CLI PATH option, then start a fresh terminal in an unrelated directory; do not edit global PATH for the test."
+        ],
+        "steps": [
+          "Check command lookup for PowerToys.FancyZones.CLI.exe and FancyZonesCLI.exe.",
+          "Run the public shim with --help and inspect usage and examples for the root and a subcommand.",
+          "On the candidate build, copy the displayed get-monitors example into the same terminal and check that it invokes FancyZones."
+        ],
+        "expected_result": "The baseline help advertises the internal name; the candidate uses the public shim in help and examples without adding the installation root to PATH."
+      }
+    },
+    {
+      "id": "issue-52191-design-cli-help-name",
+      "type": "approve_design",
+      "label": "Align FancyZones help with the installed command name",
+      "primary": false
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones CLI help describes a command name not exposed by the installer.",
+    "known_information": [
+      "The reporter confirmed the mismatch in extracted signed stable and preview payloads; this was not installed-product validation."
+    ],
+    "inferences": [
+      "Changing the help text should address the mismatch without changing what the shim launches."
+    ],
+    "analysis": "The CLI shim manifest maps the public executable to the internal payload. This differs from #52186, where the reporter reached the CLI using the correct shim and received a missing-layout-file error.",
+    "initial_investigation": [
+      "Root and subcommand examples use the internal executable name in FancyZonesCliUsage.cs: https://github.com/microsoft/PowerToys/blob/084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e/src/modules/fancyzones/FancyZonesCLI/CommandLine/FancyZonesCliUsage.cs",
+      "The public entry point and relative target are defined in the shim manifest: https://github.com/microsoft/PowerToys/blob/084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e/tools/CliShim/CliShimManifest.props"
+    ],
+    "information_gaps": [
+      "Confirm installed PATH behavior separately for per-user and machine installations."
+    ]
+  },
+  "status": {
+    "label": "Needs Repro",
+    "detail": "Help-name mismatch confirmed in source; installed-product verification remains."
+  }
+}

@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 240,
-    "open_issues": 11208,
+    "open_issues": 11209,
     "community": 10324,
-    "artifacts": 2228
+    "artifacts": 2229
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -105,6 +105,7 @@ window.BOARD_INDEX = {
     52209,
     52208,
     52199,
+    52191,
     52186,
     52122,
     52108,
@@ -11174,6 +11175,41 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52191",
+      "kind": "issue",
+      "number": 52191,
+      "url": "https://github.com/microsoft/PowerToys/issues/52191",
+      "title": "[FancyZones CLI] Help examples use a payload name that is not exposed on PATH",
+      "author": "niels9001",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Verify the FancyZones help commands in an installed build"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-17T11:38:33Z",
+      "updated_at": "2026-11-17T11:38:33Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52199",
