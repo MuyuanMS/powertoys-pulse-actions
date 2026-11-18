@@ -72669,7 +72669,10 @@ window.BOARD_INDEX = {
       "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Compare Win-key shortcuts and dragging across Shortcut Guide modes"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Shortcut Guide",
@@ -72681,8 +72684,8 @@ window.BOARD_INDEX = {
         "noraa-junker"
       ],
       "created_at": "2026-08-26T18:48:02Z",
-      "updated_at": "2026-09-20T05:52:01Z",
-      "comments": 7,
+      "updated_at": "2026-11-18T21:53:49Z",
+      "comments": 8,
       "priority": null,
       "mirror": {
         "kind": "issue",
