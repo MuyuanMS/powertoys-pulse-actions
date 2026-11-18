@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 240,
-    "open_issues": 11207,
-    "community": 10323,
-    "artifacts": 2227
+    "open_issues": 11208,
+    "community": 10324,
+    "artifacts": 2228
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -104,6 +104,7 @@ window.BOARD_INDEX = {
     52210,
     52209,
     52208,
+    52199,
     52186,
     52122,
     52108,
@@ -11173,6 +11174,41 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52199",
+      "kind": "issue",
+      "number": 52199,
+      "url": "https://github.com/microsoft/PowerToys/issues/52199",
+      "title": "\"File Search\" in Command Palette: Doesn't filter results to folders when the \"Folders\" filter is selected",
+      "author": "Wordie-1",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Compare indexed folder results across File Search filters"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-18T01:40:01Z",
+      "updated_at": "2026-11-18T05:16:51Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52186",
