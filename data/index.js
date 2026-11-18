@@ -33367,18 +33367,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": "needs_information",
-      "owes": "us",
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "reproduce",
+        "label": "Verify elevated PowerShell exit after the WinGet Client update"
       },
       "labels": [
         "Issue-Bug",
@@ -33387,8 +33387,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-26T11:01:52Z",
-      "updated_at": "2026-10-26T11:06:54Z",
-      "comments": 1,
+      "updated_at": "2026-11-18T19:02:03Z",
+      "comments": 2,
       "priority": null
     },
     {
