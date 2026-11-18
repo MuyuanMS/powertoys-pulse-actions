@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 240,
-    "open_issues": 11205,
-    "community": 10322,
-    "artifacts": 2225
+    "open_issues": 11206,
+    "community": 10323,
+    "artifacts": 2226
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52217,
     52213,
     52211,
     52210,
@@ -11171,6 +11172,41 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52217",
+      "kind": "issue",
+      "number": 52217,
+      "url": "https://github.com/microsoft/PowerToys/issues/52217",
+      "title": "CmdPal window completely empty",
+      "author": "MrBisquit",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Trace CmdPal provider loading after installation"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-18T20:52:32Z",
+      "updated_at": "2026-11-18T20:52:32Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52213",
