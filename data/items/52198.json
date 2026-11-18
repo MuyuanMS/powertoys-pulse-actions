@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 5,
+  "number": 52198,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "Error on update & open config",
+  "url": "https://github.com/microsoft/PowerToys/issues/52198",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T22:57:30Z",
+  "evaluated_at": "2026-11-18T22:57:30Z",
+  "source_updated_at": "2026-11-18T08:13:43Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "Opening Settings and starting an update from the tray do not show a window, but Exit still works. The supplied diagnostics show Settings crashes.",
+  "next_action": "Compare the process and first startup error for the normal Settings and tray Update paths before assigning the failure to the updater.",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report identifies multiple specific tray actions and supplies crash evidence. It does not show whether the update path fails for the same reason as normal Settings launch.",
+    "recommended_action": "Correlate the existing diagnostics with each tray entry point in a disposable Windows profile.",
+    "evaluated_at": "2026-11-18T22:57:30Z",
+    "source_updated_at": "2026-11-18T08:13:43Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Several crash signatures are present; none identifies a single failed dependency or resource to change.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Separate Settings startup failure from tray update failure",
+      "reproduce": {
+        "title": "Trace the Settings and Update tray commands independently",
+        "module": "Settings",
+        "version_requirement": "PowerToys 0.102.3001.0; compare with the latest supported stable release",
+        "prerequisites": [
+          "Disposable Windows environment and the reporter-provided diagnostics."
+        ],
+        "setup": [
+          "Match the reported OS build where practical. Run each tray action in a separate attempt and record its timestamp."
+        ],
+        "steps": [
+          "Open Settings via the tray menu and correlate its process launch and any exit with the Settings log.",
+          "Repeat for the tray Update command; note whether it reaches Settings startup, begins an update, or fails earlier.",
+          "Compare clean-profile and update-install results; correlate any failures with the existing Windows error summary."
+        ],
+        "expected_result": "Settings opens from each supported entry point. If an entry point fails, its first failing operation and whether it shares the normal startup failure are identified."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Settings and Update fail from the tray while Exit still works.",
+    "known_information": [
+      "PowerToys 0.102.3001.0 was reported after an auto-update. A maintainer summarized Settings fault events naming Microsoft.UI.Xaml.dll and combase.dll."
+    ],
+    "inferences": [
+      "Settings startup is a plausible shared boundary, but the tray Update command has not been traced independently."
+    ],
+    "analysis": "The existing diagnostics support distinguishing a Settings process crash from a silent updater failure. The reported signatures do not establish which initialization operation is failing.",
+    "initial_investigation": [
+      "Read the issue and the maintainer's crash summary; no installed runtime test was performed."
+    ],
+    "information_gaps": [
+      "Need timestamps and first-failure evidence matched to each launch command and to a clean-profile comparison."
+    ]
+  },
+  "status": {
+    "label": "Needs Maintainer Verification",
+    "detail": "Correlate both tray paths with the existing Settings crash evidence before selecting a fix."
+  }
+}
