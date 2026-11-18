@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 240,
-    "open_issues": 11206,
+    "open_issues": 11207,
     "community": 10323,
-    "artifacts": 2226
+    "artifacts": 2227
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -104,6 +104,7 @@ window.BOARD_INDEX = {
     52210,
     52209,
     52208,
+    52186,
     52122,
     52108,
     52107,
@@ -11172,6 +11173,43 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52186",
+      "kind": "issue",
+      "number": 52186,
+      "url": "https://github.com/microsoft/PowerToys/issues/52186",
+      "title": "FancyZones CLI: ls fails on first use with missing layout-templates.json",
+      "author": "LegendaryBlair",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triage",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Verify #52187 first-use and saved-layout behavior"
+      },
+      "labels": [
+        "Issue-Bug",
+        "FancyZones-Layouts",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-17T05:58:33Z",
+      "updated_at": "2026-11-17T05:58:33Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52217",
