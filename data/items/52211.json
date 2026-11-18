@@ -1,0 +1,97 @@
+{
+  "number": 52211,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-18T18:30:31.464Z",
+  "pending_author": false,
+  "summary": "Existing PowerRename Uppercase/Lowercase transforms fail supplementary-plane and context-sensitive Unicode case mappings.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue isolates two Unicode failures in existing case transforms. The current source applies locale wide-character mappings independently, whereas the referenced PR adds an ICU full-string helper but confines it to the new SentenceCase mode. A focused extension of the helper to existing modes matches the observed symptoms without requiring more reporter diagnostics.",
+    "evidence": [
+      "The live report gives two specific PowerRename 0.103 reproductions: U+10428 remains lowercase under Uppercase, and final Greek sigma becomes ordinary sigma under Lowercase.",
+      "At PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e, Helpers.cpp GetTransformedFileName uses std::transform with towupper/towlower in the existing case branches.",
+      "PR #51982 is open with changes requested; its current diff adds ChangeUnicodeCase and Unicode tests only for the new SentenceCase branch, not the existing Uppercase/Lowercase paths.",
+      "The upstream issue is open, has no comments, and has no separate linked fix; a search of MuyuanMS/PowerToys for 52211 found no fork issue or PR mirror.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "recommended_action": "Approve or revise the focused design before implementation.",
+    "evaluated_at": "2026-11-18T18:30:31.464Z",
+    "source_updated_at": "2026-11-18T14:44:08Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The open linked PR #51982 does not cover this existing PowerRename path; no separate upstream fix or fork mirror was found.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply Unicode-aware casing to existing Uppercase and Lowercase modes",
+      "root_cause": "The existing Uppercase and Lowercase branches map individual wchar_t values with towupper/towlower. On Windows wchar_t is a UTF-16 code unit, so supplementary characters such as U+10428 are not mapped as one scalar value, and per-character lowercase mapping cannot apply context-sensitive Greek final sigma. The ICU helper added by PR #51982 is used only by the new SentenceCase branch.",
+      "plan": [
+        "Use the Unicode case-mapping helper for the selected stem or complete name in Uppercase and Lowercase, preserving the existing folder, filename-only, extension-only, and extension-preservation rules.",
+        "Map the full casing segment so context-sensitive mappings see their surrounding text and supplementary code points are decoded as complete characters.",
+        "Add focused native regression tests for Deseret U+10428 uppercase, Greek ΦΩΣ lowercase, existing ASCII behavior, and extension-only behavior."
+      ],
+      "verification": [
+        "Run the focused PowerRename native tests in PowerRenameManagerTests.cpp.",
+        "Verify the issue repro: U+10428 becomes U+10400 under Uppercase and ΦΩΣ becomes φως under Lowercase; the existing extension behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "Both failures have explicit public repros and the current source path directly matches the reported limitations; the helper needed for Unicode mapping already exists in the referenced PR."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Existing PowerRename Uppercase/Lowercase transforms fail supplementary-plane and context-sensitive Unicode case mappings.",
+    "known_information": [
+      "The reporter supplied concrete reproductions for U+10428 and Greek final sigma using a PowerToys 0.103 development build.",
+      "The issue is currently open, assigned to daverayment, last updated 2026-11-18T14:44:08Z, and has no comments.",
+      "The current upstream main source uses towupper/towlower for existing case transformations; PR #51982 applies its Unicode helper only to SentenceCase.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "inferences": [
+      "Applying the existing ICU-backed helper to the full selected casing segment should correct both the surrogate-pair and context-sensitive mapping failures, subject to preserving current filename/extension mode semantics."
+    ],
+    "analysis": "The issue isolates two Unicode failures in existing case transforms. The current source applies locale wide-character mappings independently, whereas the referenced PR adds an ICU full-string helper but confines it to the new SentenceCase mode. A focused extension of the helper to existing modes matches the observed symptoms without requiring more reporter diagnostics.",
+    "initial_investigation": [
+      "Inspected Helpers.cpp GetTransformedFileName at PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e and confirmed per-wchar_t towupper/towlower transforms.",
+      "Inspected PR #51982 head 893d3837beff88c73e8160f6011c2a92b76448ea and its diff; it remains open/changes-requested and does not change the existing Uppercase/Lowercase branches.",
+      "Checked upstream and fork issue/PR references; no separate covering fix was found.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Unicode-aware case mapping",
+      "note": "Start the separate PowerRename design workflow only after maintainer approval.",
+      "id": "issue-52211-design",
+      "primary": true
+    }
+  ],
+  "evaluated_at": "2026-11-18T18:30:31.464Z",
+  "source_updated_at": "2026-11-18T14:44:08Z",
+  "title": "[PowerRename] Case-formatting mishandles supplementary Unicode letters and context-sensitive casing",
+  "url": "https://github.com/microsoft/PowerToys/issues/52211",
+  "author": "daverayment",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "status": {
+    "glyph": "🛠",
+    "label": "Fix design proposed",
+    "detail": "Existing Uppercase and Lowercase modes map individual UTF-16 code units; the Unicode helper used by PR #51982 is scoped to SentenceCase."
+  },
+  "next_action": "Review the proposed fix design and approve it for detailed design."
+}

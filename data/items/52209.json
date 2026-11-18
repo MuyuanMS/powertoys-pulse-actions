@@ -1,0 +1,97 @@
+{
+  "number": 52209,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-18T18:30:31.464Z",
+  "pending_author": false,
+  "summary": "Filename-only Title Case changes extension casing when removing the entire stem of a .TXT filename.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The mode boundary is lost before formatting: Renaming.cpp builds the full filename first, then Helpers.cpp interprets it as a filesystem path. An empty stem turns .TXT into a dotfile-shaped input with no extension, so Title Case can alter those characters. Preserve the extension separately through the transform.",
+    "evidence": [
+      "The live report reproduces the scope leak with foo.TXT, Filename only, Search=foo, empty Replace, and Title Case; preview/apply changes the extension to .Txt.",
+      "At PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e, Renaming.cpp reattaches the original extension before calling GetTransformedFileName; Helpers.cpp then parses the combined string using filesystem stem/extension rules.",
+      "PR #51982 remains open/changes-requested and does not change the NameOnly extension ordering for existing Title Case/Capitalize modes.",
+      "The upstream issue is open with no comments; no fork issue or PR mirror for 52209 was found by repository search.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "recommended_action": "Approve or revise the focused design before implementation.",
+    "evaluated_at": "2026-11-18T18:30:31.464Z",
+    "source_updated_at": "2026-11-18T14:16:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The open linked PR #51982 does not cover this existing PowerRename path; no separate upstream fix or fork mirror was found.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Filename only formatting scoped to the stem",
+      "root_cause": "For NameOnly, DoRename reattaches the original extension to the replacement before calling GetTransformedFileName. When the replacement stem is empty, the resulting .TXT is parsed as a dotfile with no extension, so Title Case transforms the extension as part of the stem and changes it to .Txt.",
+      "plan": [
+        "Keep the original extension as a separate value throughout NameOnly formatting rather than reattaching it before generic path parsing.",
+        "Apply the requested text transformation only to the replacement stem, then append the original extension verbatim after the transform.",
+        "Add regression tests for an empty replacement stem with an uppercase extension under Title Case and Capitalize Each Word, plus non-empty stems and extension-only controls."
+      ],
+      "verification": [
+        "Run focused PowerRename native tests for NameOnly and GetTransformedFileName.",
+        "Verify foo.TXT with Filename only, Search=foo, empty Replace, and Title Case previews .TXT unchanged in extension casing and Apply preserves that extension exactly."
+      ],
+      "confidence": {
+        "score": 88,
+        "level": "green",
+        "rationale": "The issue has an exact reproducible sequence and the current source ordering accounts for the dotfile edge case; a focused stem/extension separation has limited scope."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Filename-only Title Case changes extension casing when removing the entire stem of a .TXT filename.",
+    "known_information": [
+      "The report supplies a concrete empty-replacement repro and confirms the extension is altered after preview and Apply.",
+      "The issue is currently open, assigned to daverayment, last updated 2026-11-18T14:16:21Z, and has no comments.",
+      "Current source reattaches the original extension before calling the generic text transform for NameOnly.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "inferences": [
+      "Keeping the extension out of the generic transform input should prevent dotfile parsing from changing a component that the user excluded from the selected operation."
+    ],
+    "analysis": "The mode boundary is lost before formatting: Renaming.cpp builds the full filename first, then Helpers.cpp interprets it as a filesystem path. An empty stem turns .TXT into a dotfile-shaped input with no extension, so Title Case can alter those characters. Preserve the extension separately through the transform.",
+    "initial_investigation": [
+      "Inspected Renaming.cpp NameOnly handling and the later GetTransformedFileName call, plus Helpers.cpp path splitting, at PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e.",
+      "Reviewed PR #51982 diff; it is scoped to the new SentenceCase feature and does not change this existing path.",
+      "Checked linked upstream work and the fork search; no covering fix or fork mirror was found.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve filename-scope fix",
+      "note": "Start the separate PowerRename design workflow only after maintainer approval.",
+      "id": "issue-52209-design",
+      "primary": true
+    }
+  ],
+  "evaluated_at": "2026-11-18T18:30:31.464Z",
+  "source_updated_at": "2026-11-18T14:16:21Z",
+  "title": "[PowerRename] Filename-only formatting changes the original extension",
+  "url": "https://github.com/microsoft/PowerToys/issues/52209",
+  "author": "daverayment",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "status": {
+    "glyph": "🛠",
+    "label": "Fix design proposed",
+    "detail": "NameOnly reattaches the extension before generic path parsing, so an empty stem makes .TXT a dotfile and exposes extension letters to Title Case."
+  },
+  "next_action": "Review the proposed fix design and approve it for detailed design."
+}
