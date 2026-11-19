@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 231,
     "open_issues": 11229,
     "community": 10349,
-    "artifacts": 2273
+    "artifacts": 2272
   },
   "impact": {
     "as_of": "2026-11-19T19:39:01.254796+08:00",
@@ -137,7 +137,6 @@ window.BOARD_INDEX = {
     51946,
     51941,
     51939,
-    51928,
     51925,
     51920,
     51918,
