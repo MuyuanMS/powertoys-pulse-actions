@@ -1,20 +1,50 @@
 {
+  "schemaVersion": 5,
   "number": 51475,
   "kind": "pr",
   "title": "feat(textexpander): add Text Expander utility",
   "url": "https://github.com/microsoft/PowerToys/pull/51475",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-19T09:04:28.5256400Z",
-  "evaluated_at": "2026-11-19T09:04:28.5256400Z",
+  "generated_at": "2026-11-19T13:57:07.4803535Z",
+  "evaluated_at": "2026-11-19T13:57:07.4803535Z",
   "source_updated_at": "2026-11-13T23:24:23Z",
   "head_sha": "225ccf97a50c28e9e6975e6e661d6d2cdc846777",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-11-19T09:04:28.5256400Z",
-    "checkpoint_at": "2026-11-19T09:04:28.5256400Z"
-  }
+  "proposed_comments": [
+    {
+      "id": "surface-incomplete-typed-expansions",
+      "kind": "inline",
+      "title": "Surface incomplete typed expansions",
+      "severity": "medium",
+      "body": "### [P2] Surface incomplete typed expansions\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `Injector.TypeText`, `Injector.ReplaceCore` and `Program.ExpansionLoop`.\r\n\r\n**Problem:** With Always type, or a one-line snippet in Windows Terminal using Automatic, typing another key during a replacement longer than two seconds causes the guard to return that key at the cap. The resulting input-generation change stops the remaining replacement, but the caller discards the failure and only a diagnostic counter records it. For example, a 100-character `x` replacement with a held `u` leaves 80 `x` characters followed by `u`, with no expansion undo record.\r\n\r\n**Why it matters:** The trigger has already been erased, so the user gets an incomplete snippet without an indication that text was omitted. This is especially easy to miss when continuing to type after a trigger, and can leave an incomplete command in Terminal.\r\n\r\n**Suggested change:** Preserve the bounded hold and stop-on-input safeguards, but make an interrupted partial expansion visible and provide a safe way to recover the omitted text rather than silently treating it like an ordinary completed insertion. Avoid inserting the remainder at a potentially moved caret.\r\n\r\n**Verification:** Exercise a long typed replacement with queued text at the two-second cap, and separately with navigation or editing keys. Confirm the incomplete result is reported or recoverable without redirecting the remainder; also retain the no-input case in which typing continues. The current headless regression tests demonstrate the partial result and the caret-safety behavior.",
+      "path": "src/modules/textexpander/TextExpander/Injector.cs",
+      "start_line": 615,
+      "line": 615,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "rationale": "Exact-head hook and injector headless regression tests exercise held-key replay and partial output; the caller discards failure. The cap and stop safeguard are intentional and should remain.",
+        "score": 90
+      }
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "head_sha": "225ccf97a50c28e9e6975e6e661d6d2cdc846777",
+        "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 51475
+      },
+      "id": "post-review-51475",
+      "label": "Post one inline review comment",
+      "confirm": true,
+      "primary": true,
+      "requiresApproval": true,
+      "type": "post_review"
+    }
+  ]
 }
