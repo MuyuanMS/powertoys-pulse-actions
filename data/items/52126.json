@@ -1,20 +1,50 @@
 {
+  "schemaVersion": 5,
   "number": 52126,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "CmdPal: Use the shell to launch things for us",
   "url": "https://github.com/microsoft/PowerToys/pull/52126",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-19T09:04:27.6112840Z",
-  "evaluated_at": "2026-11-19T09:04:27.6112840Z",
+  "generated_at": "2026-11-19T10:11:01.732223+00:00",
+  "evaluated_at": "2026-11-19T10:11:01.732223+00:00",
   "source_updated_at": "2026-11-19T08:04:46Z",
   "head_sha": "70612dd4d04509b11c11cea9f36bfb19ad896f22",
-  "proposed_comments": [],
-  "actions": [],
-  "freshness": {
-    "queued_at": "2026-11-19T09:04:27.6112840Z",
-    "checkpoint_at": "2026-11-19T09:04:27.6112840Z"
-  }
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "52126-worker-thread-ui-callers",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Keep Explorer launches off the UI thread",
+      "severity": "low",
+      "confidence": {
+        "score": 83,
+        "rationale": "Exact source shows synchronous COM launch and XAML-bound RelayCommands bypassing the worker command host. Actual Explorer latency and a UI freeze were not reproduced."
+      },
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ShellHelpers.cs",
+      "line": 93,
+      "side": "RIGHT",
+      "body": "### Keep Explorer launches off the UI thread\n\n**Severity:** `low`\n\n`OpenInShell` now calls the desktop Explorer synchronously and says to call it from a worker thread. However, the details-link `NavigateCommand` and gallery `OpenAuthorPageCommand` are bound directly to UI controls and call this helper synchronously, rather than going through the command host's worker dispatch. If the Explorer call takes time, these callbacks can block the UI for its duration.\n\nCould these UI-bound commands dispatch the launch to a worker, with any UI updates kept on the UI dispatcher?"
+    }
+  ],
+  "actions": [
+    {
+      "id": "52126-post-worker-thread-finding",
+      "type": "post_review",
+      "label": "Post UI-thread launch finding",
+      "head_sha": "70612dd4d04509b11c11cea9f36bfb19ad896f22",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "52126-worker-thread-ui-callers"
+        ],
+        "commit_id": "70612dd4d04509b11c11cea9f36bfb19ad896f22",
+        "head_sha": "70612dd4d04509b11c11cea9f36bfb19ad896f22"
+      }
+    }
+  ]
 }
