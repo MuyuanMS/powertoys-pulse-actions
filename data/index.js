@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 241,
     "open_issues": 11234,
     "community": 10348,
-    "artifacts": 2296
+    "artifacts": 2297
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -2393,7 +2393,8 @@ window.BOARD_INDEX = {
     51889,
     52129,
     52088,
-    52094
+    52094,
+    52195
   ],
   "items": [
     {
@@ -388134,6 +388135,41 @@ window.BOARD_INDEX = {
       "review_decision": null,
       "ci_state": null,
       "merge_state": "UNKNOWN",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "proposed_open": 0,
+      "primary_action": null,
+      "agent_status": "review"
+    },
+    {
+      "id": "pr-52195",
+      "kind": "pr",
+      "number": 52195,
+      "url": "https://github.com/microsoft/PowerToys/pull/52195",
+      "title": "CmdPal: Show GPU temperature on the Performance Monitor GPU card",
+      "author": "pratnala",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "issue_type": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-17T15:14:52Z",
+      "updated_at": "2026-11-18T14:30:29Z",
+      "comments": 2,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": "BLOCKED",
       "track": "review",
       "stage": "review_in_progress",
       "owes": "us",
