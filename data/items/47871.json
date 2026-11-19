@@ -1,22 +1,64 @@
 {
-  "schema_version": 4,
+  "schemaVersion": 5,
   "number": 47871,
   "kind": "pr",
   "repository": "microsoft/PowerToys",
+  "title": "[Runner] Make tray icon context menu theme aware",
   "url": "https://github.com/microsoft/PowerToys/pull/47871",
-  "stage": "review_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-10T10:10:41.1277013Z",
-  "evaluated_at": "2026-10-10T09:05:05.82Z",
+  "track": "review",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-07-23T09:09:16Z",
+  "generated_at": "2026-11-19T14:01:45.7501344Z",
+  "evaluated_at": "2026-11-19T14:01:45.7501344Z",
   "source_updated_at": "2026-08-10T14:40:03Z",
   "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
-  "proposed_comments": [],
+  "proposed_comments": [
+    {
+      "id": "system-vs-app-theme-existing-3636887446",
+      "path": "src/common/Themes/dark_mode.cpp",
+      "in_diff": true,
+      "confidence": {
+        "score": 95,
+        "rationale": "Pinned source shows the menu helper can follow the app theme while the tray icon and theme-change handler follow the system theme. The PR thread remains unresolved and not outdated at the current head."
+      },
+      "severity": "medium",
+      "start_line": 86,
+      "line": 93,
+      "body": "**Consistency fix:** `IsDarkModeEnabled()` prefers `ShouldAppsUseDarkMode()` (the *app* theme) when the ordinal is available, but the tray icon and the `handle_theme_change` handler follow the *system* theme (`ThemeHelpers::GetSystemTheme()`). Under a custom Windows mode where app and system themes differ, the menu would theme differently from the icon. Following the system theme keeps them in sync:\r\n\r\n```suggestion\r\n{\r\n    // Follow the *system* theme — the same signal the tray icon and the theme-change handler use —\r\n    // rather than uxtheme's ShouldAppsUseDarkMode() (app theme). Otherwise, when Windows is set to a\r\n    // custom mode where app and system themes differ, the menu would theme differently from the icon.\r\n    return ThemeHelpers::GetSystemTheme() == Theme::Dark;\r\n}\r\n```\r\n\r\nWith this change, the `ShouldAppsUseDarkMode` ordinal is no longer used — you can also remove its `using fnShouldAppsUseDarkMode = ...;` typedef, the `pShouldAppsUseDarkMode` pointer, and its `GetProcAddress(hUxTheme, MAKEINTRESOURCEA(132))` load in `LoadOrdinals()`, and drop it from the header comment. I verified all of this builds clean (`Themes.vcxproj`, Debug|x64).\r\n",
+      "side": "RIGHT",
+      "disposition": "posted",
+      "title": "Consistency fix: follow the system theme for the tray menu",
+      "kind": "inline",
+      "posted_at": "07/23/2026 09:09:16",
+      "url": "https://github.com/microsoft/PowerToys/pull/47871#discussion_r3636887446",
+      "github_comment_id": 3636887446,
+      "github_review_id": 4762525310,
+      "body_sha256": "95731f218d21826a58dcd26c71b10fb3547cfc05ad32fda685d46c58402bdd8c",
+      "posted_body": "**Consistency fix:** `IsDarkModeEnabled()` prefers `ShouldAppsUseDarkMode()` (the *app* theme) when the ordinal is available, but the tray icon and the `handle_theme_change` handler follow the *system* theme (`ThemeHelpers::GetSystemTheme()`). Under a custom Windows mode where app and system themes differ, the menu would theme differently from the icon. Following the system theme keeps them in sync:\r\n\r\n```suggestion\r\n{\r\n    // Follow the *system* theme — the same signal the tray icon and the theme-change handler use —\r\n    // rather than uxtheme's ShouldAppsUseDarkMode() (app theme). Otherwise, when Windows is set to a\r\n    // custom mode where app and system themes differ, the menu would theme differently from the icon.\r\n    return ThemeHelpers::GetSystemTheme() == Theme::Dark;\r\n}\r\n```\r\n\r\nWith this change, the `ShouldAppsUseDarkMode` ordinal is no longer used — you can also remove its `using fnShouldAppsUseDarkMode = ...;` typedef, the `pShouldAppsUseDarkMode` pointer, and its `GetProcAddress(hUxTheme, MAKEINTRESOURCEA(132))` load in `LoadOrdinals()`, and drop it from the header comment. I verified all of this builds clean (`Themes.vcxproj`, Debug|x64).\r\n",
+      "posted_body_sha256": "95731f218d21826a58dcd26c71b10fb3547cfc05ad32fda685d46c58402bdd8c",
+      "source_head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+      "is_outdated": false,
+      "is_resolved": false
+    }
+  ],
   "actions": [],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
-      "result": "failed"
+  "author_wait_evidence": {
+    "waiting_since": "2026-07-23T09:09:16Z",
+    "last_us_response": "2026-08-10T14:38:43Z",
+    "latest_author_activity": {
+      "comment_id": 5241786174,
+      "created_at": "2026-08-10T14:40:02Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/47871#issuecomment-5241786174",
+      "assessment": "General objection to AI reviews; it does not address or fix the supported theme mismatch."
+    },
+    "active_posted_change": {
+      "comment_id": 3636887446,
+      "thread_id": "PRRT_kwDOCv6UO86TMbLf",
+      "unresolved": true,
+      "outdated": false,
+      "reply_count": 0
     }
   }
 }
