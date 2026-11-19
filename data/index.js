@@ -2981,15 +2981,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post two nonblocking Indexer review comments"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"

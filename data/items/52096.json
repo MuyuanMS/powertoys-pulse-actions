@@ -1,20 +1,95 @@
 {
-  "number": 52096,
-  "kind": "pr",
-  "title": "CmdPal: Use fallback v2 results for Indexer search",
-  "url": "https://github.com/microsoft/PowerToys/pull/52096",
-  "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-11-19T09:04:27.8221814Z",
-  "evaluated_at": "2026-11-19T09:04:27.8221814Z",
-  "source_updated_at": "2026-11-16T16:49:22Z",
+  "generated_at": "2026-11-19T10:26:02.2808463+00:00",
   "head_sha": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3",
-  "proposed_comments": [],
-  "actions": [],
+  "url": "https://github.com/microsoft/PowerToys/pull/52096",
+  "actions": [
+    {
+      "id": "52096-post-indexer-review",
+      "review": {
+        "comment_ids": [
+          "52096-cursor-relative-offset",
+          "52096-skip-unused-start-notice"
+        ],
+        "commit_id": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3",
+        "head_sha": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3",
+        "event": "COMMENT"
+      },
+      "type": "post_review",
+      "label": "Post two nonblocking Indexer review comments",
+      "head_sha": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3"
+    }
+  ],
+  "number": 52096,
+  "title": "CmdPal: Use fallback v2 results for Indexer search",
+  "pending_author": false,
+  "track": "review",
+  "proposed_comments": [
+    {
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/SearchEngine.cs",
+      "id": "52096-cursor-relative-offset",
+      "line": 87,
+      "side": "RIGHT",
+      "in_diff": true,
+      "severity": "low",
+      "body": "### Explain the cursor-relative offset\n\n**Severity:** `low` (documentation)\n\nPlease document why this passes zero. `IRowset::GetNextRows` remembers the cursor between calls; zero skips no rows from the current position. This is not a paging bug, but without the comment it is easy to mistake zero for the first page and add a cumulative offset that skips valid results.\n\n```suggestion\n        // The rowset keeps its cursor between calls; zero skips no rows from that position.\n        return FetchItems(0, limit, queryCookie, out hasMore, out notice);\n```\n\n**Verification:** The [OLE DB cursor contract](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ms709827%28v=vs.85%29) and the existing call path agree. The suggestion changes only a comment.",
+      "title": "Explain the cursor-relative offset",
+      "kind": "inline",
+      "confidence": {
+        "score": 99,
+        "rationale": "OLE DB documents the cursor-relative offset, and the same rowset is reused. The literal suggestion applies as a single comment addition."
+      }
+    },
+    {
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/IndexerFallbackSearchSession.cs",
+      "id": "52096-skip-unused-start-notice",
+      "line": 60,
+      "side": "RIGHT",
+      "in_diff": true,
+      "severity": "low",
+      "body": "### Skip the unused notice when starting a fallback query\n\n**Severity:** `low`\n\nThe fallback session discards the notice returned by `Query`, but building it can still call into the Windows Search catalog before the session fetches any results. `FetchNextItems` builds the notice again after fetching, when the query may have retried with wildcard matching. Please make the fallback interface start the query without building a notice, keep the post-fetch notice, and preserve the query-time notice used by `IndexerPage`. A shared query-start method with an explicit implementation of the fallback interface would let both callers keep their existing behavior without doing the unused catalog read.\n\n**Verification:** Run `NoticeCommandPreservesSearchQuery` to check the fallback still displays a post-fetch notice, and check that `IndexerPage` still consumes its initial notice.",
+      "title": "Skip the unused notice when starting a fallback query",
+      "kind": "inline",
+      "confidence": {
+        "score": 95,
+        "rationale": "The discarded return and potential catalog call are directly visible. This avoids unused work; no latency improvement is quantified."
+      }
+    }
+  ],
+  "needs_revalidation": false,
+  "owes": "maintainer",
+  "source_updated_at": "2026-11-16T16:49:22Z",
+  "kind": "pr",
   "freshness": {
-    "queued_at": "2026-11-19T09:04:27.8221814Z",
-    "checkpoint_at": "2026-11-19T09:04:27.8221814Z"
-  }
+    "checkpoint_at": "2026-11-19T10:26:02.2808463+00:00"
+  },
+  "validation": {
+    "suggestion_patch": {
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "head_sha": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3",
+      "applied_comment_ids": [
+        "52096-cursor-relative-offset"
+      ]
+    },
+    "line_ending_safety": {
+      "result": "passed",
+      "checked_comment_ids": [
+        "52096-cursor-relative-offset"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/SearchEngine.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 105,
+          "cr_only_count": 0
+        }
+      ],
+      "head_sha": "42fe40a1844912cb3e607644f8ffbc9b9366c3f3"
+    }
+  },
+  "evaluated_at": "2026-11-19T10:26:02.2808463+00:00",
+  "stage": "awaiting_review_approval"
 }
