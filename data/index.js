@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 241,
     "open_issues": 11234,
     "community": 10348,
-    "artifacts": 2293
+    "artifacts": 2294
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -2390,7 +2390,8 @@ window.BOARD_INDEX = {
     52090,
     52064,
     51928,
-    51889
+    51889,
+    52129
   ],
   "items": [
     {
@@ -2477,16 +2478,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post timing-dependent test finding"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
