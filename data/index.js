@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 241,
     "open_issues": 11234,
     "community": 10348,
-    "artifacts": 2294
+    "artifacts": 2295
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -2391,7 +2391,8 @@ window.BOARD_INDEX = {
     52064,
     51928,
     51889,
-    52129
+    52129,
+    52088
   ],
   "items": [
     {
@@ -3148,16 +3149,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Settings",
         "Ready for review"
