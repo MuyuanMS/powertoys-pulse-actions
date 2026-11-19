@@ -1,0 +1,73 @@
+{
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The missing options are specific and the editor filters digits by the mapped layout ID. Verify whether slots remain occupied by a different or deleted layout before changing that filter.",
+    "evidence": [
+      "The report identifies slots 1 and 2, PowerToys v0.102.3101, and Windows 10 LTSC IoT.",
+      "The layout editor shows a digit when it is unassigned or mapped to the layout currently being edited."
+    ],
+    "recommended_action": "Compare the dropdown before and after releasing a shortcut through the editor, then after deleting its owner and reopening the editor.",
+    "evaluated_at": "2026-11-19T02:54:02Z",
+    "source_updated_at": "2026-11-16T23:50:27Z"
+  },
+  "issue_context": {
+    "summary": "FancyZones no longer lists shortcut slots 1 or 2 in a custom layout editor, even though the reporter sees no layout using them.",
+    "known_information": [
+      "The report says the slots worked previously and provides a screenshot and a diagnostic attachment."
+    ],
+    "inferences": [
+      "A stored mapping to a layout that is no longer visible could explain the missing choices; no such mapping was confirmed on the reporter's profile."
+    ],
+    "analysis": "Inspect mapping ownership at editor load in a disposable profile. Compare normal assignment, unassignment, and layout deletion; do not make all digits visible regardless of ownership.",
+    "initial_investigation": [
+      "Checked the issue timeline and searched for matching FancyZones shortcut PRs; no covering PR was found.",
+      "Read LayoutModel and LayoutHotkeysModel at upstream 084281ef. No runtime test or diagnostic archive inspection was performed."
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The filter intentionally hides digits assigned to another layout. A code fix to it is not justified unless the test demonstrates that a deleted or unassigned layout retains a mapping."
+  },
+  "actions": [
+    {
+      "id": "issue-52182-verify-layout-shortcut-ownership",
+      "type": "reproduce",
+      "label": "Check when FancyZones releases layout shortcut slots",
+      "primary": true,
+      "reproduce": {
+        "module": "FancyZones",
+        "version_requirement": "v0.102.3101 and current stable",
+        "prerequisites": [
+          "Disposable Windows profile with two custom layouts; keep the reporter's existing settings untouched."
+        ],
+        "steps": [
+          "Assign slot 1 to the first layout and confirm it is unavailable in the second layout.",
+          "Clear the first layout's shortcut through the editor, reopen the second layout, and check whether slot 1 returns.",
+          "Assign slot 2 to the first layout, delete that layout, restart the editor, and check whether slot 2 returns in the remaining layout. If either slot is missing, inspect its mapped layout ID in the test profile without modifying the data."
+        ],
+        "expected_result": "Assigned slots remain exclusive. Released slots and slots belonging to a deleted layout are available after the editor reloads."
+      }
+    }
+  ],
+  "stage": "triage_revalidated",
+  "track": "triage",
+  "pending_author": false,
+  "assignees": [],
+  "kind": "issue",
+  "generated_at": "2026-11-19T02:54:02Z",
+  "repository": "microsoft/PowerToys",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "owes": "maintainer",
+  "schemaVersion": 5,
+  "comments": 0,
+  "number": 52182,
+  "author": "reymost",
+  "source_updated_at": "2026-11-16T23:50:27Z",
+  "title": "Can't use Layout Shortcuts 1 or 2",
+  "evaluated_at": "2026-11-19T02:54:02Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52182"
+}
