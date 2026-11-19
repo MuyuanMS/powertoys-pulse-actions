@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 37167,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-19T19:32:39.019519+08:00",
+  "evaluated_at": "2026-11-19T19:32:39.019519+08:00",
   "source_updated_at": "2025-02-07T19:44:20Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "(ZoomIt) right-clicking while drawing in live-zoom does strange things",
+  "url": "https://github.com/microsoft/PowerToys/issues/37167",
+  "summary": "Right-click in ZoomIt live-zoom drawing mode can leave the display zoomed, non-interactive, and the pointer hidden; the report also notes an occasional recovery to normal desktop with the pointer still missing.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue gives a concrete ZoomIt transition to reproduce and reports a safety-relevant pointer/input recovery failure; the exact current exit path remains unverified.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report specifies live zoom -> drawing-without-zoom hotkey -> right-click on PowerToys 0.88.0.",
+      "A second report describes pointer loss after live zoom but does not confirm the same transition.",
+      "Current ZoomIt UI tests cover Escape from draw-without-zoom, not right-click during live-zoom drawing."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the exact right-click transition and verify pointer restoration before considering a code change.",
+    "evaluated_at": "2026-11-19T19:32:39.019519+08:00",
     "source_updated_at": "2025-02-07T19:44:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The transition-state failure is plausible from the observed hidden pointer and non-interactivity, but requires current reproduction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore cursor and interaction state on live-zoom draw exit",
+      "root_cause": "A right-click transition out of live-zoom drawing may leave cursor hiding or input capture active after the mode change.",
+      "plan": [
+        "Reproduce the exact right-click transition and trace drawing/live-zoom exit handlers plus cursor visibility restoration.",
+        "Make exit and fallback paths restore the pointer and the expected interaction mode even if the transition is interrupted.",
+        "Add a regression test for right-click from live-zoom drawing and verify the desktop remains interactive."
+      ],
+      "verification": [
+        "Repeat the reported sequence on current stable and verify return to live zoom, visible pointer and working desktop input; exercise repeated right-click and other supported exit keys."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The report is concrete, but the current transition handler and the related #38669 symptom are not proven identical."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Right-click in ZoomIt live-zoom drawing mode can leave the display zoomed, non-interactive, and the pointer hidden; the report also notes an occasional recovery to normal desktop with the pointer still missing.",
+    "known_information": [
+      "The report identifies PowerToys 0.88.0 and gives the sequence live zoom, drawing-without-zoom hotkey, then right-click.",
+      "The reported expected behavior is return to live zoom; observed behavior can leave a hidden pointer and non-interactive screen.",
+      "A second user reports a separate invisible-pointer symptom after exiting live zoom; the issue is not confirmed identical."
+    ],
+    "inferences": [
+      "The right-click transition may not restore cursor visibility and the live-zoom interaction mode atomically; the exact current handler is unverified."
+    ],
+    "analysis": "The report is specific enough for a maintainer reproduction, and the pointer/input-loss consequence makes the transition worth checking. Existing ZoomIt UI coverage exercises Escape from draw-without-zoom, not this right-click transition.",
+    "initial_investigation": [
+      "Read the complete issue and sole comment; the original reporter could not reproduce the rare full desktop recovery, while a second user described pointer loss after live zoom.",
+      "Current main at 6b3db15615e3e549b89790e0bd83c82d262c22e0 has a draw-without-zoom Escape UI test, but it does not cover right-click during live-zoom drawing. https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/ZoomIt/Tests/ZoomIt.UITests/ZoomItTests.cs#L187-L208",
+      "Related issue #38669 also reports pointer loss while exiting live-zoom drawing; it is closed, but not a proven fix for this right-click transition. https://github.com/microsoft/PowerToys/issues/38669"
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Restore cursor and interaction state on live-zoom draw exit",
+      "id": "issue-37167-approve-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce right-click exit from live-zoom drawing",
+      "id": "issue-37167-reproduce-1",
+      "primary": true,
+      "reproduce": {
+        "title": "Verify ZoomIt right-click exit and pointer restoration",
+        "module": "ZoomIt",
+        "version_requirement": "Current stable; original report used PowerToys 0.88.0",
+        "prerequisites": [
+          "Windows 10; the original report was through RDP, so compare direct and RDP sessions if available.",
+          "Enable ZoomIt live zoom and configure its drawing-without-zoom hotkey."
+        ],
+        "setup": [
+          "Enable ZoomIt live zoom and drawing-without-zoom shortcut."
+        ],
+        "steps": [
+          "Enter live zoom.",
+          "Use the drawing-without-zoom hotkey to enter drawing mode.",
+          "Right-click once and observe zoom state, pointer visibility, and whether desktop input remains interactive.",
+          "If the pointer disappears, try the reported left-click and second right-click recovery sequence."
+        ],
+        "expected_result": "Right-click should return to live zoom with a visible pointer and interactive desktop; no restart or sign-out should be needed."
+      }
+    }
+  ]
 }

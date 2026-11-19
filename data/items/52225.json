@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "number": 52225,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Grab And Move with Excluded Apps needs to be \"Click, Grab And Move\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/52225",
+  "author": "lukkea",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-11-19T11:31:41Z",
+  "evaluated_at": "2026-11-19T11:31:41Z",
+  "source_updated_at": "2026-11-19T08:53:27Z",
+  "summary": "Grab And Move fails on an unfocused, non-excluded target after an app is added to the modifier-exclusion list. The foreground-app and gesture details are needed to confirm the cause.",
+  "next_action": "Ask which app was foreground and what exact modifier-and-mouse sequence failed; no diagnostic ZIP is needed for this clarification.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report names PowerToys 0.102.3101.0 and says the target is unfocused and absent from both exclusion lists. A related comment describes a similar focus-dependent result, but neither report states which app was foreground when the modifier was pressed or the exact click/drag sequence. Current source has a foreground modifier-exclusion gate before resolving the mouse target, making those details decisive.",
+    "evidence": [
+      "The report gives the version and steps: add an app to \"Excluded apps (for modifier)\" and attempt to move an unfocused target that is not in either exclusion list.",
+      "The same reporter's earlier comment says adding notepad++.exe to the modifier-exclusion list requires clicking the app before using Grab And Move: https://github.com/microsoft/PowerToys/issues/49869#issuecomment-7003808485.",
+      "At the pinned main revision, HandleKeyboardEvent checks IsModifierExcluded(GetForegroundWindow()) before mouse target resolution; HandleActionButtonDown later resolves the target and checks IsExcluded(window): https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/GrabAndMove/GrabAndMove/main.cpp#L2496-L2499 and https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/GrabAndMove/GrabAndMove/main.cpp#L2605-L2615."
+    ],
+    "recommended_action": "Ask which app was foreground when the modifier was pressed, whether it is the configured modifier-excluded app, and the exact modifier/mouse-button sequence. Then reproduce with a non-excluded target before approving a behavior change.",
+    "evaluated_at": "2026-11-19T11:31:41Z",
+    "source_updated_at": "2026-11-19T08:53:27Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A target-scoped modifier-exclusion check is a plausible correction if the intended behavior is to allow interaction with a non-excluded window beneath the pointer while a modifier-excluded app is foreground. The reported focus and gesture details are not yet sufficient to establish that this is the failing path or to confirm that target-scoped behavior is intended.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply modifier exclusions to the intended Grab And Move target",
+      "root_cause": "Qualified hypothesis: modifier activation is rejected using the current foreground window before the later mouse-target eligibility check. If an excluded app is foreground while the pointer is over a non-excluded target, the early gate can prevent the target from being considered.",
+      "plan": [
+        "Confirm the foreground application, target HWND, modifier, and mouse gesture in the reported scenario.",
+        "If exclusions are intended to apply to the interaction target, evaluate modifier-exclusion eligibility against the normalized action target while preserving the existing exclusion check for the target itself.",
+        "Keep input passthrough for genuinely excluded targets and verify keyboard-only modifier behavior is unchanged."
+      ],
+      "verification": [
+        "With an excluded app foreground and a non-excluded window under the pointer, perform the exact reported modifier and mouse sequence and verify the target can be moved without first focusing it.",
+        "Repeat with the excluded app itself as the target and with a non-excluded foreground app to verify exclusions and ordinary activation remain correct."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The source ordering and the related focus-dependent report support a concrete hypothesis, but the foreground app and intended exclusion scope have not been confirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab And Move does not activate on an unfocused, non-excluded window after an app is added to the modifier-exclusion list.",
+    "known_information": [
+      "The report identifies PowerToys 0.102.3101.0 and says the target window is absent from both exclusion lists.",
+      "A related comment from the same reporter describes needing to click an app before using Grab And Move after adding notepad++.exe to the modifier-exclusion list."
+    ],
+    "inferences": [
+      "If the modifier-excluded app is foreground, the current foreground check may bypass mouse-target selection; the issue has not yet established that this was the foreground app."
+    ],
+    "analysis": "The hook path checks modifier exclusion against GetForegroundWindow before resolving the window under the pointer. The target is subsequently checked against the ordinary excluded-app list. Distinguishing the foreground app from the target app will show whether this ordering explains the report and whether the exclusion is meant to follow the foreground window or the action target.",
+    "initial_investigation": [
+      "Read the current issue body and confirmed it has no comments or attached diagnostic ZIP.",
+      "Searched related Grab And Move reports. Issue #49869 is a separate modifier-override feature request; its author's comment records a similar click-before-grab symptom, so it is related evidence rather than a duplicate.",
+      "Inspected HandleKeyboardEvent, IsModifierExcluded, ResolveActionTarget, and IsExcluded in the pinned main source revision linked above."
+    ],
+    "information_gaps": [
+      {
+        "information": "The foreground app at modifier keydown, whether it matches the modifier-exclusion entry, the target app, and the exact modifier/button/drag sequence",
+        "why_needed": "These details distinguish an early foreground exclusion from target-window exclusion or a different activation gesture.",
+        "how_to_collect": "Repeat the reported sequence and report the foreground and target app names, whether the foreground app is the configured modifier exclusion, and whether activation uses a click, click-drag, or another button. No files are needed for this clarification.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-52225-clarify-exclusion-target",
+      "type": "request_info",
+      "label": "Clarify the foreground app and Grab And Move gesture",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 52225,
+        "body": "Thanks for the specific sequence and for noting that the target is not in either exclusion list. A related comment on #49869 describes a similar click-before-grab difference. To confirm whether the excluded app is blocking modifier activation before the target is checked, could you share which app was foreground when you pressed the configured modifier, whether that app is the entry under “Excluded apps (for modifier),” the target app's name, and the exact modifier and mouse click/drag sequence? No files are needed for this clarification."
+      }
+    },
+    {
+      "id": "issue-52225-approve-target-scope-design",
+      "type": "approve_design",
+      "label": "Approve target-scoped modifier exclusions if confirmed"
+    }
+  ]
+}
