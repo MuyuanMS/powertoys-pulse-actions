@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 241,
-    "open_issues": 11232,
-    "community": 10346,
-    "artifacts": 2266
+    "open_issues": 11233,
+    "community": 10347,
+    "artifacts": 2267
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -98,6 +98,7 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52223,
     52222,
     52221,
     52217,
@@ -11250,6 +11251,41 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52223",
+      "kind": "issue",
+      "number": 52223,
+      "url": "https://github.com/microsoft/PowerToys/issues/52223",
+      "title": "更新2026-11 预览更新 (KB5132057) (26300.10066)后cpu/gpu 占用显示异常",
+      "author": "yukixsp",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triage",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Request the affected display and Task Manager comparison"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-19T05:37:35Z",
+      "updated_at": "2026-11-19T05:37:35Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52178",
@@ -226757,18 +226793,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
+      "track": "fix",
       "stage": "triage",
-      "owes": "maintainer",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
         "type": "request_info",
-        "label": "Reply with suggested comments"
+        "label": "Request what happens to the Mouse Jump preview"
       },
       "labels": [
         "Issue-Bug",
@@ -226776,8 +226812,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-13T17:02:14Z",
-      "updated_at": "2026-11-13T17:02:14Z",
-      "comments": 0,
+      "updated_at": "2026-11-14T23:48:41Z",
+      "comments": 1,
       "priority": null
     },
     {
