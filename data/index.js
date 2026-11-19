@@ -67351,16 +67351,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "duplicate_or_handled",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Compare Settings launch before and after restarting Explorer"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Settings",
@@ -67368,8 +67371,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T15:30:00Z",
-      "updated_at": "2026-10-14T07:44:22Z",
-      "comments": 6,
+      "updated_at": "2026-11-17T07:33:17Z",
+      "comments": 7,
       "priority": null
     },
     {
