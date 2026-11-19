@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 15285,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-19T03:00:28.847Z",
+  "evaluated_at": "2026-11-19T03:00:28.847Z",
   "source_updated_at": "2025-01-16T08:31:07Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "pending_author": false,
+  "owes": "us",
+  "confidence": "medium",
+  "summary": "The historically confirmed FancyZones snap-back behavior is mixed with a newer per-monitor layout-loss symptom.",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Confirm current FancyZones behavior",
+    "reason": "The latest symptom may differ from the original snap-back."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The original two-desktop snap-back was confirmed by maintainers on build 22533 and reporters on 0.53.x, but the latest 0.87.1 comment describes per-monitor layouts missing on desktops 3, 5, and 6. Confirm current behavior before choosing one fix path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report gives a numbered move-out-of-zone and desktop-switch sequence.",
+      "A maintainer reproduced it on build 22533; reporters confirmed it on 0.53.1 and 0.53.3.",
+      "The latest comment (2025-01-16) instead reports missing per-monitor layouts on desktops 3, 5, and 6.",
+      "The live issue is open and unassigned. Related #23003/#28943 concerns per-app last-known-zone settings, not a direct fix."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask which behavior still reproduces on current stable; split the newer layout-loss case if it is distinct.",
+    "evaluated_at": "2026-11-19T03:00:28.847Z",
     "source_updated_at": "2025-01-16T08:31:07Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys restore-state fix may apply to the original behavior, but the newest report may be a separate issue; this proposal is a hypothesis pending current confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid reapplying a stale FancyZone after a virtual-desktop switch",
+      "root_cause": "A window moved out of a zone may retain last-zone state that is reapplied when its desktop becomes active; the 2025 monitor-layout symptom may be separate.",
+      "plan": [
+        "Confirm which symptom reproduces on current stable.",
+        "For the original case, trace last-zone state across user moves and desktop activation.",
+        "If stale state is restored, honor the user's later unzoned position and add a focused regression test."
+      ],
+      "verification": [
+        "Repeat the original two-desktop sequence and verify the window stays at its user-chosen position.",
+        "Separately test any confirmed multi-monitor layout-loss sequence."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "Historical repros are strong, but the issue now combines distinct symptoms and lacks current-build confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A window moved out of a FancyZone may return to its old zone after switching virtual desktops; the newest comment instead describes layouts missing on some desktops.",
+    "known_information": [
+      "The original sequence was reproduced by a maintainer on build 22533.",
+      "The latest comment reports PowerToys 0.87.1 and layouts missing on desktops 3, 5, and 6.",
+      "The live issue is open and unassigned.",
+      "Related #28943 is a per-app last-known-zone feature request, not a direct covering fix."
+    ],
+    "inferences": [
+      "The original behavior may involve stale zone state during desktop activation.",
+      "The newer layout-loss report may need separate tracking."
+    ],
+    "analysis": "The issue history establishes the old behavior, but the newest comment changes the symptom. Confirm current behavior before conflating restore-state and per-monitor layout persistence.",
+    "initial_investigation": [
+      "Read the live issue body, comments, labels, and timeline; it remains open and was last updated 2025-01-16.",
+      "Checked cross-reference #23003 and duplicate target #28943; neither is a direct fix. No linked fix or matching fork trace was found. No current reproduction or diagnostic inspection was performed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which of the original snap-back and newer per-monitor layout-loss behaviors reproduces on current stable, with minimal steps for the current symptom.",
+        "why_needed": "The behaviors may involve different restore paths, so the proposed fix must not conflate them.",
+        "how_to_collect": "Repeat the original steps on latest stable; if only layout loss remains, give short steps naming the affected monitor/layout and desktop.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-15285-approve-zone-design",
+      "type": "approve_design",
+      "label": "Approve a focused FancyZones restore-state design",
+      "note": "Tentative proposal; first distinguish the original snap-back from the newer layout-loss symptom.",
+      "primary": false
+    },
+    {
+      "id": "issue-15285-confirm-current",
+      "type": "request_info",
+      "label": "Confirm current FancyZones behavior",
+      "comment": {
+        "target": "issue",
+        "number": 15285,
+        "body": "Thanks for the earlier confirmed snap-back reproductions on 0.53.1/0.53.3 and the maintainer's 2022 repro. The January 2025 note on 0.87.1 describes layouts missing on desktops 3, 5, and 6, which may differ from the original window snapping back to its previous zone. On the latest stable PowerToys, could you confirm which symptom still occurs? If the layout-loss symptom remains, please share a short numbered sequence identifying the affected monitor/layout and whether the original snap-back sequence still reproduces. This will tell us whether the old behavior remains or the current symptom needs separate tracking."
+      },
+      "primary": true,
+      "confirm": true
+    }
+  ],
+  "comments": 13,
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Dragging&UI",
+    "Product-FancyZones",
+    "Priority-1",
+    "FancyZones-VirtualDesktop"
+  ],
+  "assignees": [],
+  "author": "Seabmoby"
 }
