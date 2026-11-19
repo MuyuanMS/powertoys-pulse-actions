@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 52143,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:39.256512Z",
+  "evaluated_at": "2026-11-17T14:44:39.256512Z",
+  "source_updated_at": "2026-11-14T17:57:24Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52143",
+  "title": "[Crop And Lock] T mode thumbnail turns black/blank when another application enters fullscreen mode",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report isolates black content to the cropped browser video while the thumbnail window stays visible; DWM video-surface availability is a stronger investigation boundary than window topmost placement.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52143",
+      "PowerToys 0.102.3101 on Windows build 26300, non-elevated per-machine installation, with screenshots and an existing diagnostic ZIP.",
+      "Edge video crops become black when another app enters fullscreen; audio continues and Alt+Tab restores the thumbnail.",
+      "Cropping the browser address bar works under the same conditions; the report also mentions Chrome 157.",
+      "Current ThumbnailCropAndLockWindow.cpp registers a DWM thumbnail with DwmRegisterThumbnail and sets its source crop/visibility with DwmUpdateThumbnailProperties.",
+      "No direct #52143 PR was found. The video-versus-address-bar control suggests a browser/compositor surface interaction, not proof of a Crop and Lock repaint defect.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/CropAndLock/CropAndLock/ThumbnailCropAndLockWindow.cpp"
+    ],
+    "recommended_action": "Reproduce video versus nonvideo crops with browser acceleration and fullscreen modes varied before deciding whether a capture fallback is needed.",
+    "evaluated_at": "2026-11-17T14:44:39.256512Z",
+    "source_updated_at": "2026-11-14T17:57:24Z"
+  },
+  "issue_context": {
+    "summary": "The report isolates black content to the cropped browser video while the thumbnail window stays visible; DWM video-surface availability is a stronger investigation boundary than window topmost placement.",
+    "known_information": [
+      "PowerToys 0.102.3101 on Windows build 26300, non-elevated per-machine installation, with screenshots and an existing diagnostic ZIP.",
+      "Edge video crops become black when another app enters fullscreen; audio continues and Alt+Tab restores the thumbnail.",
+      "Cropping the browser address bar works under the same conditions; the report also mentions Chrome 157."
+    ],
+    "inferences": [],
+    "analysis": "Reproduce video versus nonvideo crops with browser acceleration and fullscreen modes varied before deciding whether a capture fallback is needed.",
+    "initial_investigation": [
+      "Current ThumbnailCropAndLockWindow.cpp registers a DWM thumbnail with DwmRegisterThumbnail and sets its source crop/visibility with DwmUpdateThumbnailProperties.",
+      "No direct #52143 PR was found. The video-versus-address-bar control suggests a browser/compositor surface interaction, not proof of a Crop and Lock repaint defect.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/CropAndLock/CropAndLock/ThumbnailCropAndLockWindow.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report isolates black content to the cropped browser video while the thumbnail window stays visible; DWM video-surface availability is a stronger investigation boundary than window topmost placement."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle unavailable video surfaces in thumbnail capture",
+      "root_cause": "DWM thumbnails may lose a hardware video surface under fullscreen occlusion; the working address-bar crop and Alt+Tab recovery fit this hypothesis but do not prove the responsible layer.",
+      "plan": [
+        "Run the supplied crop/control matrix and determine whether DWM loses only hardware video planes.",
+        "If the surface is unavailable to DWM, evaluate a scoped supported capture fallback or an actionable limitation message rather than repeated thumbnail recreation.",
+        "Retain source-window crop, scaling and lifecycle behavior and avoid promising capture of protected video."
+      ],
+      "verification": [
+        "Check hardware-accelerated/nonaccelerated browser video, fullscreen transitions and address-bar controls; verify no hidden/minimized-source regression."
+      ],
+      "confidence": {
+        "score": 53,
+        "level": "yellow",
+        "rationale": "The source boundary and controls are specific, but GPU/browser/compositor behavior and fallback feasibility are unmeasured."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Handle unavailable video surfaces in thumbnail capture",
+      "id": "issue-52143-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Crop and Lock behavior",
+      "reproduce": {
+        "title": "Verify reported Crop and Lock behavior",
+        "module": "Crop and Lock",
+        "version_requirement": "0.102.3101; compare current main",
+        "prerequisites": [
+          "A browser with a public nonprotected test video and a second application supporting fullscreen."
+        ],
+        "setup": [],
+        "steps": [
+          "In Edge play a nonprotected public test video, then crop its player using Win+Ctrl+Shift+T.",
+          "Keep Edge unminimized and enter fullscreen in another application; observe thumbnail content and audio.",
+          "Alt+Tab back and repeat with a crop of the address bar.",
+          "Repeat with browser hardware acceleration disabled after restarting the browser, and compare borderless versus exclusive fullscreen where available."
+        ],
+        "expected_result": "The thumbnail continues to show capturable source content; any compositor/video-surface limitation is isolated and documented."
+      },
+      "id": "issue-52143-reproduce-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Reproduce video versus nonvideo crops with browser acceleration and fullscreen modes varied before d",
+    "detail": "The report isolates black content to the cropped browser video while the thumbnail window stays visible; DWM video-surface availability is a stronger investigation boundary than window topmost placement."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Handle unavailable video surfaces in thumbnail capture",
+    "reason": "Reproduce video versus nonvideo crops with browser acceleration and fullscreen modes varied before deciding whether a capture fallback is needed."
+  },
+  "author": "Midnightziye"
+}
