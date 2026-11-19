@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 241,
-    "open_issues": 11216,
-    "community": 10330,
-    "artifacts": 2243
+    "open_issues": 11217,
+    "community": 10331,
+    "artifacts": 2244
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -110,6 +110,7 @@ window.BOARD_INDEX = {
     52204,
     52199,
     52198,
+    52197,
     52191,
     52186,
     52182,
@@ -11227,6 +11228,41 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52197",
+      "kind": "issue",
+      "number": 52197,
+      "url": "https://github.com/microsoft/PowerToys/issues/52197",
+      "title": "Plugged in power on after use during battery power",
+      "author": "hbrof",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Identify the error shown after waking and docking"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-17T18:03:59Z",
+      "updated_at": "2026-11-17T18:03:59Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52182",
