@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 5,
+  "number": 52213,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "Settings window does not apply RTL layout",
+  "url": "https://github.com/microsoft/PowerToys/issues/52213",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "labels": ["Issue-Bug", "Area-Localization", "Area-User Interface", "Needs-Triage"],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-11-18T22:27:00Z",
+  "evaluated_at": "2026-11-18T22:27:00Z",
+  "source_updated_at": "2026-11-18T18:51:57Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report names an RTL Windows display language and one affected window. A controlled comparison can separate resource selection from shell layout direction without asking the reporter to repeat the setup.",
+    "evidence": ["The report identifies Hebrew as the Windows display language, PowerToys 0.101, and Settings as the affected window.", "Settings applies an application language override before XAML initialization when configured; this does not establish what direction the window's layout root resolves at runtime."],
+    "recommended_action": "Compare the Settings shell under Hebrew and an English control, recording resource language and root/navigation FlowDirection separately.",
+    "evaluated_at": "2026-11-18T22:27:00Z",
+    "source_updated_at": "2026-11-18T18:51:57Z"
+  },
+  "issue_context": {
+    "summary": "The reporter expects the PowerToys Settings window to mirror its layout when Windows uses Hebrew.",
+    "known_information": ["The report gives PowerToys 0.101 installed from GitHub and supplies a screenshot.", "The exact 0.101 build and any explicit PowerToys language override are not specified."],
+    "inferences": ["The window may resolve the correct resource language without propagating RTL flow to the navigation shell; this has not been measured."],
+    "analysis": "Record effective application language and the root and navigation element FlowDirection in the same run. If language resolution is wrong, diagnose that before changing layout; if only the direction is wrong, trace the first element that fails to inherit it.",
+    "initial_investigation": ["Checked the issue discussion and timeline and searched for matching Settings RTL fixes in upstream and the configured fork; no covering work was found.", "Inspected Settings application initialization and MainWindow construction; no UI runtime test was performed."],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A narrow correction is plausible once the controlled comparison identifies whether the first divergence is in application language or layout inheritance."
+  },
+  "proposed_fixes": [{
+    "title": "Correct the first Settings locale or layout-direction divergence",
+    "root_cause": "Hypothesis: Settings may resolve Hebrew resources without applying the corresponding flow direction to its visual shell. The first failing boundary has not been established.",
+    "plan": ["Record Windows display language, PowerToys language override, effective resource language, and the root and navigation control FlowDirection.", "Correct only the first demonstrated mismatch and keep normal WinUI direction inheritance for child controls."],
+    "verification": ["Compare Hebrew and English on a fresh Settings launch, including navigation placement, directional icons, and text.", "Verify that an explicit language override and the default system-language path both use the appropriate direction."],
+    "confidence": {"score": 62, "level": "yellow", "rationale": "The reported setup and initialization path support a focused hypothesis, but no current runtime divergence has been measured."}
+  }],
+  "actions": [{
+    "id": "issue-52213-reproduce-settings-rtl",
+    "type": "reproduce",
+    "label": "Compare Settings layout in Hebrew and English",
+    "primary": true,
+    "reproduce": {
+      "module": "PowerToys Settings",
+      "version_requirement": "Reporter series 0.101 if available, plus the current stable release",
+      "prerequisites": ["Use a disposable Windows profile or VM with Hebrew and English display language packs."],
+      "steps": ["Set Windows display language to Hebrew, complete the sign-out/sign-in Windows requests, and launch PowerToys Settings with its app language set to the system default.", "Record the displayed language, navigation pane placement, icon direction, and the resolved root and navigation FlowDirection where diagnostics are available.", "Repeat in English and, separately, with an explicit PowerToys language override."],
+      "expected_result": "The Settings shell mirrors its layout when using Hebrew and retains normal left-to-right layout when using English."
+    }
+  }, {
+    "id": "issue-52213-design-settings-rtl",
+    "type": "approve_design",
+    "label": "Investigate the Settings layout direction boundary",
+    "primary": false
+  }]
+}

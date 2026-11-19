@@ -1,97 +1,142 @@
 {
   "schemaVersion": 5,
-  "issue_number": 51328,
+  "number": 51328,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
   "title": "[Mouse Without Borders] Input events arrive out of order: two concurrent MainTCPRoutine threads inject via SendInput without ordering guarantees",
   "url": "https://github.com/microsoft/PowerToys/issues/51328",
-  "state": "OPEN",
-  "evaluated_at": "2026-10-19T07:35:49Z",
-  "source_updated_at": "2026-10-15T08:45:41Z",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T09:27:28Z",
+  "evaluated_at": "2026-11-18T09:27:28Z",
+  "source_updated_at": "2026-11-16T09:50:17Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "Preserve the ordered-input and injection-failure-containment directions, but incorporate the new selective mitigation: the receiver's 50-ID duplicate history can forget a delayed copy. Two-stream ordering and duplicate retention are related but distinct; enlarging the array or adding a lock alone is not a complete reliability fix.",
+  "next_action": {
+    "label": "Test delayed duplicate packets and input recovery",
+    "reason": "No duplicate input, reordered transitions or connection teardown from an isolated recoverable injection failure."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 2,
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The reporter supplies a detailed two-machine reproduction and an on/off test in which reducing the peer to one socket stops the reported transpositions. Current upstream code confirms that socket receive paths can dispatch input on their caller threads, and that an exception in packet processing can end a receive loop. Treat the ordering defect and injection-failure containment as separate changes.",
+    "rationale": "Preserve the ordered-input and injection-failure-containment directions, but incorporate the new selective mitigation: the receiver's 50-ID duplicate history can forget a delayed copy. Two-stream ordering and duplicate retention are related but distinct; enlarging the array or adding a lock alone is not a complete reliability fix.",
     "evidence": [
-      "The issue reports identical PowerToys 0.101.2362.0 builds on two machines, repeated character and space transpositions, and a firewall control test: one remaining connection still carries input and the observed transpositions stop.",
-      "The issue also reports SendInputEx failures followed by reconnects; no diagnostic archive was attached, and raw diagnostic contents are not reproduced here.",
-      "In current upstream main, MouseWithoutBorders SocketStuff.MainTCPRoutine receives packages and calls Receiver.ProcessPackage; Receiver dispatches keyboard and mouse input, including to InputSimulation.SendMouse.",
-      "Current Common.DoSomethingInTheInputSimulationThread documentation says execution remains on the caller thread, which is the socket receiver thread; this does not serialize calls from separate receive threads.",
-      "Current SocketStuff.MainTCPRoutine catches processing exceptions and exits its receive loop, consistent with the reported connection loss when an injection exception escapes."
+      "Original 0.101.2362 two-machine report supplies typing transpositions and a one-socket diagnostic control, not a recommendation to change the firewall permanently.",
+      "The November 16 0.102.3101 test reproduces extra injected mouse buttons with service mode off and one elevated interactive MWB process.",
+      "Changing only the receiver history from 50 to 8192 removed extra clicks in the follow-up capture, but one earlier click was absent; packet IDs were not captured.",
+      "The original report separately supplies SendInputEx 0x8007007A exceptions followed by reconnection.",
+      "Current Common.SkSend assigns one packet ID then sends it through each eligible peer connection: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Core/Common.cs",
+      "Receiver.PreProcess retains only 50 IDs under a lock; ProcessPackage dispatches after that dedup boundary: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Core/Receiver.cs",
+      "MainTCPRoutine closes the current socket when packet-processing exceptions escape: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "New capture/mutation result and its explicit limitations: https://github.com/microsoft/PowerToys/issues/51328#issuecomment-6913043163"
     ],
-    "recommended_action": "Approve a focused design for one ordered input path and separate packet-level injection-failure containment. Preserve the existing evidence and avoid treating related clipboard, service-process, or UIPI issues as the cause of the ordering defect.",
-    "evaluated_at": "2026-10-19T07:35:49Z",
-    "source_updated_at": "2026-10-15T08:45:41Z"
+    "recommended_action": "No duplicate input, reordered transitions or connection teardown from an isolated recoverable injection failure.",
+    "evaluated_at": "2026-11-18T09:27:28Z",
+    "source_updated_at": "2026-11-16T09:50:17Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No matching upstream or MuyuanMS/PowerToys fix PR or issue trace was found for #51328. The linked issues #49147, #44177, and #33346 are open but describe separate concerns; no PR coverage for them was found."
+    "rationale": "Conditional lightweight direction; Preserve the ordered-input and injection-failure-containment directions, but incorporate the new selective mitigation: the receiver's 50-ID duplicate history can forget a delayed copy. Two-stream ordering and duplicate retention are related but distinct; enlarging the array or adding a lock alone is not a complete reliability fix.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Route injectable MWB input through one ordered receive path",
-      "root_cause": "Likely input-order race: separate per-socket receive paths can dispatch keyboard and mouse packets on their own caller threads without a shared ordering boundary. The issue's one-socket control test supports this explanation.",
+      "title": "Define one peer/session-scoped input sequencing and duplicate-acceptance boundary rather than a global tiny recent-ID list.",
+      "root_cause": "Source proves a finite arrival-count duplicate window and multi-connection dispatch; delayed-copy acceptance fits the selective result, but exact in-flight ID timing and the original keyboard-order mechanism remain inferred.",
       "plan": [
-        "Trace the peer connection setup and identify which socket paths can carry keyboard or mouse input.",
-        "Route injectable input through one designated bidirectional socket, or establish an equivalent shared sequencing boundary before Receiver.ProcessPackage; keep unrelated control or clipboard traffic separate where needed.",
-        "Add coverage showing that concurrent socket activity cannot reorder input and that reconnects preserve the selected input path."
+        "Define one peer/session-scoped input sequencing and duplicate-acceptance boundary rather than a global tiny recent-ID list.",
+        "Align sequence assignment with send order and serialize ordered receiver injection; explicitly handle delayed copies, session reset, wrap and gaps without silently discarding required key/button releases.",
+        "Keep a larger bounded history only as a measured mitigation, not proof of ordering or losslessness.",
+        "Preserve the separate packet-level injection-exception containment change and regression tests."
       ],
       "verification": [
-        "On two physical computers, reproduce the reported normal-speed typing scenario with both connections active and verify received text order.",
-        "Repeat with the single designated input path and across reconnects; verify input remains functional in both directions and no transpositions occur."
+        "After more than 50 intervening packets, replaying an old packet through the second connection does not inject it twice.",
+        "Interleaved two-stream key/button down/move/up order, reconnects and session resets leave no stuck input.",
+        "Two-machine capture compares physical versus injected events without typed content and does not infer network latency from unsynchronized clocks."
       ],
       "confidence": {
-        "score": 87,
-        "level": "green",
-        "rationale": "The reported one-socket on/off experiment is strong evidence, and the current code confirms that receive-thread input dispatch lacks a shared ordering boundary. A two-machine test remains necessary to validate the implementation."
+        "score": 72,
+        "level": "yellow",
+        "rationale": "Source proves a finite arrival-count duplicate window and multi-connection dispatch; delayed-copy acceptance fits the selective result, but exact in-flight ID timing and the original keyboard-order mechanism remain inferred."
       }
     },
     {
-      "title": "Contain an individual input-injection exception at the packet boundary",
-      "root_cause": "A reported SendInputEx exception can escape input processing into MainTCPRoutine; current receive-loop error handling exits that loop, so one failed injection can terminate the connection.",
+      "title": "Contain individual injection failures without silently losing held-input state",
+      "root_cause": "The reported SendInputEx exception can escape into MainTCPRoutine's socket-closing catch; this containment issue does not explain or fix the underlying insufficient-buffer error.",
       "plan": [
-        "Handle injection exceptions at the input packet boundary so a failed injection does not escape and terminate the socket receive loop.",
-        "Define safe recovery for partially applied key or mouse state, and retain diagnostic visibility without flooding logs.",
-        "Add focused coverage proving a failed injection does not prevent subsequent packets from being received; investigate the underlying SendInput failure independently."
+        "Catch injection errors at the input-packet boundary with bounded diagnostics.",
+        "Recover any partially applied modifier/button state safely, and keep subsequent packet reception active.",
+        "Investigate the originating SendInput failure independently of transport lifetime."
       ],
       "verification": [
-        "Exercise the reported injection-failure path and verify the receive loop remains active for subsequent packets.",
-        "Confirm recovery does not leave a key or mouse button stuck; separately investigate the reported insufficient-buffer failure."
+        "An injected failure does not close the socket or prevent the next valid packet.",
+        "Partial-input recovery leaves no stuck key/button and does not mask persistent transport failure."
       ],
       "confidence": {
-        "score": 87,
-        "level": "green",
-        "rationale": "The issue provides a failure sequence, and current receive-loop code confirms that an escaping processing exception ends the loop. Containment would not itself fix the underlying SendInput failure."
+        "score": 75,
+        "level": "yellow",
+        "rationale": "The supplied stack/reconnect evidence matches the current enclosing receive-loop catch; containment remains distinct from the original injection defect."
       }
     }
   ],
-  "issue_context": {
-    "summary": "The reporter describes persistent input transpositions between two same-version MWB peers and a separate injection-error/reconnect symptom. The reported single-connection control stops the transpositions while input remains functional.",
-    "known_information": [
-      "The issue reports two Windows machines on the same PowerToys build, with the receiver running UseService, and supplies detailed reproduction conditions.",
-      "The reporter says transpositions affect characters and spaces, and reports that reducing the active peer connection count from two to one stops them.",
-      "The issue includes a module-log excerpt and a failure/reconnect timeline; this artifact summarizes that evidence without copying diagnostic contents or machine-specific paths.",
-      "The issue has one automated triage comment and no substantive follow-up. No bug-report ZIP or other attachment was present.",
-      "Linked issues #49147, #44177, and #33346 remain open and concern clipboard-channel failure, UseService duplicate processes, and elevated-window input behavior respectively."
-    ],
-    "inferences": [
-      "The one-socket control and current per-socket dispatch design make concurrent receive-thread input ordering the likely cause of the transpositions; this is not proven solely by source inspection.",
-      "The reported injection exception likely terminates a receive loop because the current receive loop exits after an exception escapes packet processing.",
-      "The ordering defect and exception-containment defect are separable and should not be collapsed into one speculative fix."
-    ],
-    "analysis": "Focused source review supports both reported paths: SocketStuff.MainTCPRoutine dispatches received packages to Receiver.ProcessPackage, and current input dispatch stays on the socket caller thread rather than a shared injection thread. A single designated input path is more defensible than merely adding a lock, which would serialize calls but would not establish their original cross-socket order. The exception path should be contained without claiming that it fixes the underlying SendInput error.",
-    "initial_investigation": [
-      "Reviewed current upstream main: src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs (MainTCPRoutine), src/modules/MouseWithoutBorders/App/Core/Receiver.cs (ProcessPackage), src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs (SendMouse and SendInputEx), and src/modules/MouseWithoutBorders/App/Core/Common.cs (input-thread dispatch).",
-      "Confirmed in current code that input dispatch remains on the caller/socket-receiver thread; separate receive paths therefore have no shared ordering boundary at that point.",
-      "Confirmed the receive loop's exception handling exits after a packet-processing exception.",
-      "Checked upstream and fork issue/PR searches for #51328 and for PR coverage of the three linked issues; no matching fix trace was found."
-    ],
-    "information_gaps": []
-  },
   "actions": [
     {
       "type": "approve_design",
       "label": "Approve MWB ordering and injection-recovery design"
+    },
+    {
+      "type": "reproduce",
+      "label": "Test delayed duplicate packets and input recovery",
+      "reproduce": {
+        "title": "Verify Mouse Without Borders report",
+        "module": "Mouse Without Borders",
+        "version_requirement": "0.102.3101; compare original 0.101.2362",
+        "prerequisites": [
+          "Mouse Without Borders enabled where applicable"
+        ],
+        "setup": [
+          "Two owned PCs with ordinary firewall configuration and both eligible peer connections retained.",
+          "Use synthetic input/packet fixtures; any physical capture records only button/modifier metadata, not typed content."
+        ],
+        "steps": [
+          "1. Send an input packet, process over 50 distinct subsequent IDs, then deliver its delayed duplicate on the second connection.",
+          "2. Interleave key/button release sequences and verify dedup plus injection order.",
+          "3. Force one SendInput failure and verify later packets remain receivable without stale held state.",
+          "4. Repeat reconnect/session-reset and sequence-wrap fixtures."
+        ],
+        "expected_result": "No duplicate input, reordered transitions or connection teardown from an isolated recoverable injection failure."
+      }
     }
   ],
-  "number": 51328,
-  "kind": "issue",
-  "generated_at": "2026-10-19T08:14:15.452658Z"
+  "issue_context": {
+    "summary": "[Mouse Without Borders] Input events arrive out of order: two concurrent MainTCPRoutine threads inject via SendInput without ordering guarantees",
+    "known_information": [
+      "Original 0.101.2362 two-machine report supplies typing transpositions and a one-socket diagnostic control, not a recommendation to change the firewall permanently.",
+      "The November 16 0.102.3101 test reproduces extra injected mouse buttons with service mode off and one elevated interactive MWB process.",
+      "Changing only the receiver history from 50 to 8192 removed extra clicks in the follow-up capture, but one earlier click was absent; packet IDs were not captured.",
+      "The original report separately supplies SendInputEx 0x8007007A exceptions followed by reconnection."
+    ],
+    "inferences": [
+      "Source proves a finite arrival-count duplicate window and multi-connection dispatch; delayed-copy acceptance fits the selective result, but exact in-flight ID timing and the original keyboard-order mechanism remain inferred."
+    ],
+    "analysis": "Preserve the ordered-input and injection-failure-containment directions, but incorporate the new selective mitigation: the receiver's 50-ID duplicate history can forget a delayed copy. Two-stream ordering and duplicate retention are related but distinct; enlarging the array or adding a lock alone is not a complete reliability fix.",
+    "initial_investigation": [
+      "Current Common.SkSend assigns one packet ID then sends it through each eligible peer connection: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Core/Common.cs",
+      "Receiver.PreProcess retains only 50 IDs under a lock; ProcessPackage dispatches after that dedup boundary: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Core/Receiver.cs",
+      "MainTCPRoutine closes the current socket when packet-processing exceptions escape: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "New capture/mutation result and its explicit limitations: https://github.com/microsoft/PowerToys/issues/51328#issuecomment-6913043163"
+    ],
+    "information_gaps": []
+  },
+  "status": {
+    "label": "Actionable Design",
+    "detail": "Preserve the ordered-input and injection-failure-containment directions, but incorporate the new selective mitigation: the receiver's 50-ID duplicate history can forget a delayed copy. Two-stream ordering and duplicate retention are related but distinct; enlarging the array or adding a lock alone is not a complete reliability fix."
+  }
 }

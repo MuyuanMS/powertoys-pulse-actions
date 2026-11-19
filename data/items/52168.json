@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 52168,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "needs_reply",
+  "title": "Always On Top transparency doesn't work properly with Crop & Lock",
+  "url": "https://github.com/microsoft/PowerToys/issues/52168",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-17T14:48:19.257519Z",
+  "evaluated_at": "2026-11-17T14:48:19.257519Z",
+  "source_updated_at": "2026-11-16T12:21:24Z",
+  "pending_author": false,
+  "owes": "us",
+  "summary": "The screenshots describe effects targeting the source instead of the visible Crop and Lock host. Reparent and thumbnail modes have different HWND ownership, so confirm the mode before changing Always On Top target resolution.",
+  "next_action": {
+    "label": "Compare Crop and Lock modes",
+    "reason": "Thanks for the comparison screenshots and the Link to Windows app details. Which Crop and Lock mode was used: Thumbnail (Win+Ctrl+Shift+T) or Reparent (Win+Ctrl+Shift+R)? Does the same sequence affect a simple Notepad window, and does switching the crop mode change the result? Please also confirm the exact PowerToys version shown in Settings. This identifies whether the source-child versus visible-host window is being selected, rather than assuming all crop modes share the same target."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The screenshots describe effects targeting the source instead of the visible Crop and Lock host. Reparent and thumbnail modes have different HWND ownership, so confirm the mode before changing Always On Top target resolution.",
+    "evidence": [
+      "Reported version text is 0.102.31011, on Windows 11 Insider build 28020.2731; exact build spelling needs care.",
+      "Crop and Lock plus Always On Top border/transparency affects the hidden/cropped source rather than the visible host.",
+      "The app is SmartBot via Link to Windows; screenshot evidence is supplied, not a diagnostic ZIP.",
+      "Always On Top obtains the foreground HWND and applies layered-window alpha: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+      "Crop and Lock reparent mode changes parent/style of the target: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp"
+    ],
+    "recommended_action": "Thanks for the comparison screenshots and the Link to Windows app details. Which Crop and Lock mode was used: Thumbnail (Win+Ctrl+Shift+T) or Reparent (Win+Ctrl+Shift+R)? Does the same sequence affect a simple Notepad window, and does switching the crop mode change the result? Please also confirm the exact PowerToys version shown in Settings. This identifies whether the source-child versus visible-host window is being selected, rather than assuming all crop modes share the same target.",
+    "evaluated_at": "2026-11-17T14:48:19.257519Z",
+    "source_updated_at": "2026-11-16T12:21:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight direction; The screenshots describe effects targeting the source instead of the visible Crop and Lock host. Reparent and thumbnail modes have different HWND ownership, so confirm the mode before changing Always On Top target resolution.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Capture source, foreground and crop-host HWND relationships separately for reparent and thumbnail modes.",
+      "root_cause": "Hypothesis: the foreground/child HWND selected in reparent mode differs from the top-level crop host, leaving border/alpha on the wrong surface.",
+      "plan": [
+        "Capture source, foreground and crop-host HWND relationships separately for reparent and thumbnail modes.",
+        "If wrong-target selection is confirmed, resolve the intended crop host at the module boundary without applying a global GetAncestor rule to unrelated apps.",
+        "Restore prior alpha/styles and pin state when the crop closes."
+      ],
+      "verification": [
+        "Border and transparency affect the visible crop host in the supported mode.",
+        "Uncropping restores the source; ordinary pinned windows and thumbnail crops do not regress."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "Hypothesis: the foreground/child HWND selected in reparent mode differs from the top-level crop host, leaving border/alpha on the wrong surface."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-info-52168",
+      "type": "request_info",
+      "label": "Confirm mode and reproduction control",
+      "comment": {
+        "target": "issue",
+        "number": 52168,
+        "body": "Thanks for the comparison screenshots and the Link to Windows app details. Which Crop and Lock mode was used: Thumbnail (Win+Ctrl+Shift+T) or Reparent (Win+Ctrl+Shift+R)? Does the same sequence affect a simple Notepad window, and does switching the crop mode change the result? Please also confirm the exact PowerToys version shown in Settings. This identifies whether the source-child versus visible-host window is being selected, rather than assuming all crop modes share the same target."
+      },
+      "primary": true
+    },
+    {
+      "type": "approve_design",
+      "label": "Review crop-host targeting direction",
+      "primary": false
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top transparency doesn't work properly with Crop & Lock",
+    "known_information": [
+      "Reported version text is 0.102.31011, on Windows 11 Insider build 28020.2731; exact build spelling needs care.",
+      "Crop and Lock plus Always On Top border/transparency affects the hidden/cropped source rather than the visible host.",
+      "The app is SmartBot via Link to Windows; screenshot evidence is supplied, not a diagnostic ZIP."
+    ],
+    "inferences": [
+      "Hypothesis: the foreground/child HWND selected in reparent mode differs from the top-level crop host, leaving border/alpha on the wrong surface."
+    ],
+    "analysis": "The screenshots describe effects targeting the source instead of the visible Crop and Lock host. Reparent and thumbnail modes have different HWND ownership, so confirm the mode before changing Always On Top target resolution.",
+    "initial_investigation": [
+      "Always On Top obtains the foreground HWND and applies layered-window alpha: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+      "Crop and Lock reparent mode changes parent/style of the target: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp"
+    ],
+    "information_gaps": [
+      {
+        "information": "Crop mode, simple-window comparison and exact displayed version",
+        "why_needed": "Separate reparent child-window targeting from thumbnail rendering or Link to Windows behavior.",
+        "how_to_collect": "Repeat the crop/pin/transparency sequence with Notepad in Thumbnail and Reparent modes; report each result and the exact Settings version.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "status": {
+    "label": "Needs Information",
+    "detail": "The screenshots describe effects targeting the source instead of the visible Crop and Lock host. Reparent and thumbnail modes have different HWND ownership, so confirm the mode before changing Always On Top target resolution."
+  },
+  "author": "KingNeptune67"
+}

@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 5,
+  "number": 52142,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:40.241604Z",
+  "evaluated_at": "2026-11-17T14:44:40.241604Z",
+  "source_updated_at": "2026-11-14T16:01:42Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52142",
+  "title": "Power Display finds no displays",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "Two HDMI-connected Samsung S90 TVs are absent from Power Display even in compatibility mode; another brightness app working does not establish DDC/CI hardware support because it may use software dimming.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52142",
+      "PowerToys 0.102.3101.0 via WinGet, AMD RX 9070 XT, two Samsung S90 TVs on HDMI, Windows 11 build 26300.9974.",
+      "The reporter already tested compatibility mode and names Candle Tray as a working comparison; no diagnostic ZIP is attached.",
+      "Current MonitorManager routes unclaimed displays to DDC/CI; MonitorDiscoveryHelper requires valid physical-monitor handles and stable identity.",
+      "DdcCiController skips monitors with unavailable capabilities and has separate compatibility/probe evidence. The report does not yet show which discovery stage rejects these TVs.",
+      "No direct #52142 PR or same-model covering issue was found in the focused search.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorManager.cs",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/MonitorDiscoveryHelper.cs",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs"
+    ],
+    "recommended_action": "Capture the failed discovery result and distinguish physical backlight control from software dimming before changing DDC discovery or expanding scope.",
+    "evaluated_at": "2026-11-17T14:44:40.241604Z",
+    "source_updated_at": "2026-11-14T16:01:42Z"
+  },
+  "issue_context": {
+    "summary": "Two HDMI-connected Samsung S90 TVs are absent from Power Display even in compatibility mode; another brightness app working does not establish DDC/CI hardware support because it may use software dimming.",
+    "known_information": [
+      "PowerToys 0.102.3101.0 via WinGet, AMD RX 9070 XT, two Samsung S90 TVs on HDMI, Windows 11 build 26300.9974.",
+      "The reporter already tested compatibility mode and names Candle Tray as a working comparison; no diagnostic ZIP is attached."
+    ],
+    "inferences": [],
+    "analysis": "Capture the failed discovery result and distinguish physical backlight control from software dimming before changing DDC discovery or expanding scope.",
+    "initial_investigation": [
+      "Current MonitorManager routes unclaimed displays to DDC/CI; MonitorDiscoveryHelper requires valid physical-monitor handles and stable identity.",
+      "DdcCiController skips monitors with unavailable capabilities and has separate compatibility/probe evidence. The report does not yet show which discovery stage rejects these TVs.",
+      "No direct #52142 PR or same-model covering issue was found in the focused search.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorManager.cs",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/MonitorDiscoveryHelper.cs",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs"
+    ],
+    "information_gaps": [
+      {
+        "information": "Fresh Power Display discovery diagnostics",
+        "why_needed": "Identifies whether the TVs fail enumeration, physical handle lookup, capabilities or feature probing",
+        "how_to_collect": "Reproduce the empty monitor list and immediately add a comment containing /bugreport.",
+        "evidence_type": "bugreport_zip"
+      },
+      {
+        "information": "Whether Candle Tray changes the TV hardware brightness or only darkens Windows output",
+        "why_needed": "A software dimmer succeeding does not prove DDC/CI is available",
+        "how_to_collect": "Compare the TV's own on-screen brightness/backlight value before and after the other app changes brightness.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Two HDMI-connected Samsung S90 TVs are absent from Power Display even in compatibility mode; another brightness app working does not establish DDC/CI hardware support because it may use software dimming."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Identify and correct Samsung TV discovery rejection",
+      "root_cause": "The TVs may fail physical-handle/capability discovery, or may expose no compatible hardware control; the current evidence does not choose between these cases.",
+      "plan": [
+        "Use the diagnostic discovery records to locate identity, physical-handle and capability/probe outcomes for each TV.",
+        "If a supported VCP control is rejected, fix the narrow discovery/evidence gate with a regression fixture; if hardware control is unavailable, explain that limitation instead of exposing nonfunctional sliders.",
+        "Ensure compatibility mode does not bypass unsupported or unsafe monitor operations."
+      ],
+      "verification": [
+        "Verify both HDMI TVs and a known DDC/CI monitor; compare discovery and actual hardware setting changes with software dimming controls."
+      ],
+      "confidence": {
+        "score": 41,
+        "level": "red",
+        "rationale": "Hardware/driver discovery evidence is absent and the comparison application's control mechanism is unknown."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Identify and correct Samsung TV discovery rejection",
+      "id": "issue-52142-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "request_info",
+      "label": "Request display discovery report and dimming comparison",
+      "comment": {
+        "body": "Thanks for confirming both Samsung S90 TVs use HDMI and that compatibility mode makes no difference. Could you provide these two checks?\n\n1. Reproduce the empty Power Display list, then add a comment containing `/bugreport` immediately afterward.\n2. When Candle Tray changes brightness, does the TV's own brightness/backlight setting change, or does only the Windows image become darker?\n\nThis separates missing DDC/CI discovery from software dimming, which uses a different mechanism."
+      },
+      "id": "issue-52142-request_info-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Capture the failed discovery result and distinguish physical backlight control from software dimming",
+    "detail": "Two HDMI-connected Samsung S90 TVs are absent from Power Display even in compatibility mode; another brightness app working does not establish DDC/CI hardware support because it may use software dimming."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Identify and correct Samsung TV discovery rejection",
+    "reason": "Capture the failed discovery result and distinguish physical backlight control from software dimming before changing DDC discovery or expanding scope."
+  },
+  "author": "mjb09"
+}

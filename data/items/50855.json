@@ -3,14 +3,15 @@
   "number": 50855,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-30T03:23:54Z",
-  "evaluated_at": "2026-09-30T03:23:54Z",
-  "source_updated_at": "2026-09-29T02:25:22Z",
+  "generated_at": "2026-11-19T11:41:21Z",
+  "evaluated_at": "2026-11-19T11:41:21Z",
+  "source_updated_at": "2026-11-15T15:33:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50855",
   "title": "[Shortcut Guide] Running the application can send the taskbar behind other windows",
+  "summary": "Investigate the reported taskbar z-order demotion when Shortcut Guide runs.",
   "labels": [
     "Issue-Bug",
     "Product-Shortcut Guide",
@@ -18,22 +19,50 @@
     "Needs-Team-Response"
   ],
   "assignees": [],
-  "comments": 2,
+  "comments": 6,
   "judgment": {
     "status": "reproducible",
-    "rationale": "The report and author follow-up give a direct launch repro and an observable taskbar z-order failure. The overlay's topmost behavior is a plausible code-owned trigger, but the shell ordering mechanism still needs maintainer verification.",
+    "rationale": "The original reporter has now retested after a later PR merged and confirms the taskbar z-order bug remains; a contributor's proposed fullscreen explanation is not a verified fix.",
     "evidence": [
-      "The author reports PowerToys 0.102/current-main and says launching Shortcut Guide can demote the taskbar even though its WS_EX_TOPMOST style remains set.",
-      "The issue says running Shortcut Guide independently of Runner also reproduces the behavior.",
-      "After an automated triage comment asked for steps already present in the report, the author restated: run PowerToys with Shortcut Guide enabled."
+      "https://github.com/microsoft/PowerToys/issues/50855",
+      "The report identifies PowerToys 0.102/current main and the Shortcut Guide area.",
+      "The author says the taskbar retains WS_EX_TOPMOST while its shell ranking is demoted relative to application windows.",
+      "The author tried setting the overlay HWND's NonRudeHWND property and says it did not change the behavior.",
+      "The author confirmed that launching PowerToys with Shortcut Guide enabled is the reproduction sequence.",
+      "On November 15 the original reporter confirmed that a subsequently merged PR did not fix the issue: https://github.com/microsoft/PowerToys/issues/50855#issuecomment-6896922449",
+      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs: the window is a transparent host, calls SetIsAlwaysOnTop(true) outside DEBUG, and repositions to the cursor monitor.",
+      "The taskbar indicators are rendered as a pseudo-window within the host; the issue's taskbar ranking symptom is not resolved by the observed source alone.",
+      "The issue's prior bot request for generic repro steps was answered by the author; no duplicate request is drafted.",
+      "Current main OverlayWindow.xaml.cs still calls SetIsAlwaysOnTop(true) outside DEBUG; current source includes later DPI/layout changes but the reporter's November 15 retest prevents treating them as a fix.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs"
     ],
-    "recommended_action": "Reproduce the taskbar z-order change while recording the Shortcut Guide overlay and Shell_TrayWnd bounds/styles; only then approve a focused overlay z-order change.",
-    "evaluated_at": "2026-09-30T03:23:54Z",
-    "source_updated_at": "2026-09-29T02:25:22Z"
+    "recommended_action": "Run the existing taskbar z-order reproduction and identify the activation/bounds transition before changing overlay policy.",
+    "evaluated_at": "2026-11-19T11:41:21Z",
+    "source_updated_at": "2026-11-15T15:33:14Z"
+  },
+  "issue_context": {
+    "summary": "The original reporter has now retested after a later PR merged and confirms the taskbar z-order bug remains; a contributor's proposed fullscreen explanation is not a verified fix.",
+    "known_information": [
+      "The report identifies PowerToys 0.102/current main and the Shortcut Guide area.",
+      "The author says the taskbar retains WS_EX_TOPMOST while its shell ranking is demoted relative to application windows.",
+      "The author tried setting the overlay HWND's NonRudeHWND property and says it did not change the behavior.",
+      "The author confirmed that launching PowerToys with Shortcut Guide enabled is the reproduction sequence.",
+      "On November 15 the original reporter confirmed that a subsequently merged PR did not fix the issue: https://github.com/microsoft/PowerToys/issues/50855#issuecomment-6896922449"
+    ],
+    "inferences": [],
+    "analysis": "Run the existing taskbar z-order reproduction and identify the activation/bounds transition before changing overlay policy.",
+    "initial_investigation": [
+      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs: the window is a transparent host, calls SetIsAlwaysOnTop(true) outside DEBUG, and repositions to the cursor monitor.",
+      "The taskbar indicators are rendered as a pseudo-window within the host; the issue's taskbar ranking symptom is not resolved by the observed source alone.",
+      "The issue's prior bot request for generic repro steps was answered by the author; no duplicate request is drafted.",
+      "Current main OverlayWindow.xaml.cs still calls SetIsAlwaysOnTop(true) outside DEBUG; current source includes later DPI/layout changes but the reporter's November 15 retest prevents treating them as a fix.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs"
+    ],
+    "information_gaps": []
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The release OverlayWindow is made always-on-top; this is a plausible trigger, not a confirmed root cause. A maintainer-side z-order reproduction should precede implementation."
+    "rationale": "The original reporter has now retested after a later PR merged and confirms the taskbar z-order bug remains; a contributor's proposed fullscreen explanation is not a verified fix."
   },
   "proposed_fixes": [
     {
@@ -54,26 +83,6 @@
       }
     }
   ],
-  "issue_context": {
-    "summary": "Shortcut Guide is reported to demote the Windows taskbar in shell z-order, including when Shortcut Guide runs without Runner; the direct launch sequence is now confirmed in the discussion.",
-    "known_information": [
-      "The report identifies PowerToys 0.102/current main and the Shortcut Guide area.",
-      "The author says the taskbar retains WS_EX_TOPMOST while its shell ranking is demoted relative to application windows.",
-      "The author tried setting the overlay HWND's NonRudeHWND property and says it did not change the behavior.",
-      "The author confirmed that launching PowerToys with Shortcut Guide enabled is the reproduction sequence."
-    ],
-    "inferences": [
-      "The release overlay's always-on-top activation may affect shell taskbar ordering, but no causal trace has been supplied.",
-      "Because the report says standalone Shortcut Guide reproduces it, Runner's module-loader lifecycle is less likely to be the sole cause."
-    ],
-    "analysis": "The report is specific enough for maintainers to reproduce without another reporter request. Current Shortcut Guide source sets the release OverlayWindow always-on-top and repositions it to the cursor monitor; a bounded HWND/z-order trace is needed before selecting a safe fix.",
-    "initial_investigation": [
-      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs: the window is a transparent host, calls SetIsAlwaysOnTop(true) outside DEBUG, and repositions to the cursor monitor.",
-      "The taskbar indicators are rendered as a pseudo-window within the host; the issue's taskbar ranking symptom is not resolved by the observed source alone.",
-      "The issue's prior bot request for generic repro steps was answered by the author; no duplicate request is drafted."
-    ],
-    "information_gaps": []
-  },
   "actions": [
     {
       "id": "approve-shortcut-guide-taskbar-design-50855",
@@ -106,12 +115,12 @@
   ],
   "status": {
     "glyph": "?",
-    "label": "Reproduce taskbar z-order demotion",
-    "detail": "The public repro is clear; maintainer-side z-order evidence is needed before a code fix is justified."
+    "label": "Investigate taskbar z-order",
+    "detail": "The original reporter has now retested after a later PR merged and confirms the taskbar z-order bug remains; a contributor's proposed fullscreen explanation is not a verified fix."
   },
   "next_action": {
     "glyph": "?",
-    "label": "Reproduce taskbar z-order demotion",
-    "reason": "Measure the overlay and taskbar z-order before choosing a safe topmost/bounds change."
+    "label": "Approve Keep the Shortcut Guide overlay from demoting the shell taskbar",
+    "reason": "Run the existing taskbar z-order reproduction and identify the activation/bounds transition before changing overlay policy."
   }
 }

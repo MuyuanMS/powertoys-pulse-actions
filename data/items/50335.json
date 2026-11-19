@@ -1,65 +1,93 @@
 {
-  "schemaVersion": 5,
-  "number": 50335,
-  "kind": "issue",
-  "track": "fix",
-  "stage": "duplicate_or_handled",
-  "owes": "maintainer",
-  "pending_author": false,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The original reporter later described an immediate CoreCLR 0x80131506 crash; a separate Windows 10 report describes multiple managed modules crashing. Explorer restart helped another commenter, but a common cause is not established.",
+    "evidence": [
+      "The initial report identifies Windows 10 and PowerToysUserSetup 0.101.2432.0 x64.",
+      "The original reporter observed an immediate CoreCLR 0x80131506 crash and hypothesized CET.",
+      "A second report identifies multiple managed module crashes on 0.101.2712.0 and Windows 10 21H2 on hardware described as lacking CET.",
+      "A later commenter says restarting Explorer recovered launch in their case; that does not establish a fix for the crashes."
+    ],
+    "recommended_action": "Separate shell launch failure from managed-runtime crashes and compare affected Windows 10 environments.",
+    "evaluated_at": "2026-11-19T11:41:21Z",
+    "source_updated_at": "2026-11-17T07:33:17Z"
+  },
+  "issue_context": {
+    "summary": "PowerToys Settings does not open by double-clicking its icon on Windows 10; a later commenter reports recovery after restarting Explorer.",
+    "known_information": [
+      "The original reporter could open Settings on a separate Windows 11 machine.",
+      "The original reporter's subsequent event details include CoreCLR 0x80131506; another report describes multiple managed modules crashing on Windows 10 21H2.",
+      "Open #49011 also tracks Windows 10 Settings launch failure; the issues are not confirmed to share a cause."
+    ],
+    "inferences": [
+      "An Explorer or shell activation problem could explain the recovery in one report. It does not account for the crash in every reported configuration.",
+      "A runtime or OS compatibility issue is possible, but CET is not established as a common cause."
+    ],
+    "analysis": "Separate failure to start the Settings process from a process that starts and exits. Compare tray versus Explorer launch before restarting Explorer, then repeat both methods afterward.",
+    "initial_investigation": [
+      "Reviewed the report, all comments, cross-machine runtime-crash details and latest Explorer workaround. Verified that #49011 remains open; no runtime reproduction was performed.",
+      "Runner launches the Settings executable through its settings-window path: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/runner/settings_window.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys launch or managed-runtime compatibility fix may be applicable after distinguishing the reported failure modes."
+  },
+  "proposed_fixes": [{
+    "title": "Correct the isolated Windows 10 Settings launch failure",
+    "root_cause": "At least one report includes a CoreCLR crash, while another responds to Explorer restart; a shared cause is unconfirmed.",
+    "plan": [
+      "Separate a Settings process that never starts from one that starts and crashes; compare OS, architecture, installer scope and managed module behavior.",
+      "If a PowerToys launch or bundled-runtime incompatibility is isolated, correct that specific path without weakening operating-system exploit protection.",
+      "Add a regression check for the identified failure mode."
+    ],
+    "verification": ["Settings launches on the affected Windows 10 configuration and other managed modules continue to start."],
+    "confidence": {"score": 35, "level": "red", "rationale": "Several reports may represent distinct shell and managed-runtime failures."}
+  }],
+  "actions": [
+    {
+      "id": "issue-50335-compare-windows-10-settings-launch",
+      "type": "reproduce",
+      "label": "Compare Settings launch before and after restarting Explorer",
+      "primary": true,
+      "reproduce": {
+        "module": "PowerToys Settings",
+        "version_requirement": "Reported 0.101 builds and current stable if compatible",
+        "prerequisites": [
+          "Disposable Windows 10 test profile; record the Windows build and PowerToys install scope."
+        ],
+        "steps": [
+          "Start PowerToys and try launching Settings from the tray, then through the same Explorer entry point used to reproduce the failure.",
+          "For each attempt, record whether the Settings process appears and exits or never starts.",
+          "Restart Explorer in the test profile and repeat both launch methods; compare with the conditions reported in #49011.",
+          "For a process exit, compare the event signature and whether other managed modules start. Immediately after the failure, follow the issue's /bugreport instructions; if Settings and tray are inaccessible, run BugReportTool.exe."
+        ],
+        "expected_result": "Both launch methods open Settings regardless of Explorer restart. A launch-method-only failure and a process crash should be recorded separately."
+      }
+    },
+    {"type": "approve_design", "label": "Review conditional Windows 10 Settings launch fix"}
+  ],
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-19T11:41:21Z",
+  "track": "triage",
+  "summary": "Distinguish Windows 10 Settings shell-launch failures from reported CoreCLR crashes.",
+  "evaluated_at": "2026-11-19T11:41:21Z",
+  "assignees": [],
+  "source_updated_at": "2026-11-17T07:33:17Z",
+  "stage": "triage_revalidated",
   "author": "Septemberlemon",
-  "generated_at": "2026-10-20T16:47:17Z",
-  "evaluated_at": "2026-10-20T16:47:17Z",
-  "source_updated_at": "2026-10-14T07:44:22Z",
   "title": "I can't open powertoys settings by double clicking",
-  "url": "https://github.com/microsoft/PowerToys/issues/50335",
+  "number": 50335,
   "labels": [
     "Issue-Bug",
     "Product-Settings",
     "Needs-Triage"
   ],
-  "assignees": [],
-  "comments": 6,
-  "status": {
-    "label": "Related investigation",
-    "detail": "This report and open issue #49011 describe the Windows 10 PowerToys Settings launch failure. The current issue adds a newer affected build and crash-signature evidence, so preserve it as linked investigation evidence rather than proposing a separate fix.",
-    "glyph": "🔗"
-  },
-  "next_action": "Keep the newer 0.101.2712 crash-signature evidence linked to the open #49011 Windows 10 Settings investigation.",
-  "judgment": {
-    "evidence": [
-      "Original report says Settings does not open on Windows 10 after installation.",
-      "A 2026-10-14 reporter adds another affected machine on PowerToys 0.101.2712 with a matching crash signature.",
-      "Open issue #49011 tracks the Windows 10 PowerToys Settings launch failure."
-    ],
-    "source_updated_at": "2026-10-14T07:44:22Z",
-    "evaluated_at": "2026-10-20T16:47:17Z",
-    "status": "duplicate_or_handled",
-    "recommended_action": "Keep the newer 0.101.2712 crash-signature evidence linked to the open #49011 Windows 10 Settings investigation.",
-    "rationale": "This report and open issue #49011 describe the Windows 10 PowerToys Settings launch failure. The current issue adds a newer affected build and crash-signature evidence, so preserve it as linked investigation evidence rather than proposing a separate fix."
-  },
-  "fix_assessment": {
-    "rationale": "This report and open issue #49011 describe the Windows 10 PowerToys Settings launch failure. The current issue adds a newer affected build and crash-signature evidence, so preserve it as linked investigation evidence rather than proposing a separate fix.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/49011"
-    ],
-    "status": "not_applicable"
-  },
-  "issue_context": {
-    "summary": "The Settings launch failure on Windows 10 is already tracked in open issue #49011; this report adds a newer affected build and crash signature.",
-    "information_gaps": [],
-    "known_information": [
-      "Original report says Settings does not open on Windows 10 after installation.",
-      "A 2026-10-14 reporter adds another affected machine on PowerToys 0.101.2712 with a matching crash signature.",
-      "Open issue #49011 tracks the Windows 10 PowerToys Settings launch failure."
-    ],
-    "analysis": "The issue's evidence belongs to the existing shared #49011 investigation; duplicate implementation work would fragment the diagnosis.",
-    "inferences": [
-      "The newer crash evidence appears relevant to the shared Settings launch failure, but no PowerToys fix is established."
-    ],
-    "initial_investigation": [
-      "Reviewed latest live issue activity and verified #49011 remains open; no linked fix PR was found."
-    ]
-  },
-  "actions": [],
-  "proposed_fixes": []
+  "owes": "maintainer",
+  "comments": 7,
+  "pending_author": false,
+  "url": "https://github.com/microsoft/PowerToys/issues/50335",
+  "schemaVersion": 5,
+  "kind": "issue"
 }

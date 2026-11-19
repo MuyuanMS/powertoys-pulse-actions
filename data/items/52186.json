@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 5,
+  "number": 52186,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "FancyZones CLI: ls fails on first use with missing layout-templates.json",
+  "url": "https://github.com/microsoft/PowerToys/issues/52186",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T00:35:34.9753732Z",
+  "evaluated_at": "2026-11-18T14:03:46.3235949Z",
+  "source_updated_at": "2026-11-17T05:58:33Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "FancyZones CLI ls fails on first use with missing layout-templates.json; open non-draft PR #52187 now includes the missing-file fallback and reported tests but is not merged.",
+  "next_action": "Review the current #52187 head and verify first-run/saved-layout behavior before treating the issue as shipped.",
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Layouts",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Open non-draft PR #52187 directly covers the first-run listing failure with default templates, empty custom layouts and focused regression tests. The PR is still open and not shipped; review that exact implementation rather than proposing competing work.",
+    "evidence": [
+      "The report shows ls failing with File not found: layout-templates.json and succeeding after the first editor save.",
+      "Affected release/install method are not supplied; source inspection is not claimed as runtime validation.",
+      "No comments or assignees are present.",
+      "Current GetLayoutsCommand.Execute reads templates and custom layouts unconditionally: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/fancyzones/FancyZonesCLI/CommandLine/Commands/GetLayoutsCommand.cs",
+      "Current FancyZonesDataIO.ReadData throws when either file is absent: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/fancyzones/FancyZonesEditorCommon/Utils/FancyZonesDataIO.cs",
+      "Read the live #52187 body and all three changed files. Its shared-reader fallback covers both files independently, preserves saved and malformed-file behavior, and adds focused tests: https://github.com/microsoft/PowerToys/pull/52187",
+      "Related #52191 distinguishes the correct public shim from an unrelated help-name issue; this report reached the CLI and failed on configuration, not command resolution: https://github.com/microsoft/PowerToys/issues/52191"
+    ],
+    "recommended_action": "Review and validate open PR #52187 against the fresh-state and saved-value matrix; do not propose a competing fix or describe it as shipped.",
+    "evaluated_at": "2026-11-18T00:35:34.9753732Z",
+    "source_updated_at": "2026-11-17T05:58:33Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #52187 is an open, non-draft implementation that directly covers missing first-run layout files. The PR description reports the focused regression suite and CLI smoke checks passing; it has not merged, so no shipped resolution is claimed.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/52187"
+    ]
+  },
+  "proposed_fixes": [],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify #52187 first-use and saved-layout behavior",
+      "reproduce": {
+        "title": "Check current PR #52187 against first-use FancyZones CLI cases",
+        "module": "FancyZones",
+        "version_requirement": "Installed build containing the reported CLI; record exact version",
+        "prerequisites": [
+          "A disposable Windows user profile and a baseline build plus a build from PR #52187 exact head 045a81bcf27711dc776e1eaa928acbf9a6ba7fc7; record version/channel. FancyZones enabled. Resolve the installer-provided bin shim PowerToys.FancyZones.CLI.exe or invoke that shim by full path; do not change global PATH."
+        ],
+        "setup": [
+          "Use a fresh disposable user profile with FancyZones enabled, not an existing user's layouts."
+        ],
+        "steps": [
+          "1. On the baseline build, before opening or saving the editor in the disposable profile, run PowerToys.FancyZones.CLI.exe ls and get-layouts; record output, exit code and whether either command creates a layout file.",
+          "2. On the PR #52187 head, repeat both commands in an equally fresh disposable profile; confirm built-in templates appear and no custom layouts are listed or written.",
+          "3. Save a layout in the editor on the PR build and repeat both aliases; confirm saved custom layouts and template overrides remain authoritative.",
+          "4. In disposable fixtures for the shared readers, test each independent present/absent file combination and malformed existing JSON; absence should use defaults, malformed files should still report errors."
+        ],
+        "expected_result": "The baseline reproduces the missing-file failure; PR #52187 returns built-in templates and no custom layouts without creating files, preserves saved values, and still reports malformed-file errors."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones CLI: ls fails on first use with missing layout-templates.json",
+    "known_information": [
+      "The report shows ls failing with File not found: layout-templates.json and succeeding after the first editor save.",
+      "Affected release/install method are not supplied; source inspection is not claimed as runtime validation.",
+      "No comments or assignees are present.",
+      "PR #52187 is open and non-draft at head 045a81bcf27711dc776e1eaa928acbf9a6ba7fc7; its description reports the focused test suite and CLI smoke checks passed, but the fix has not merged."
+    ],
+    "inferences": [
+      "The CLI treats editor-generated optional first-run files as mandatory, so listing fails before built-in layouts can be returned."
+    ],
+    "analysis": "The reported missing-file path is directly covered by the current open PR #52187. The PR is non-draft and its description reports regression tests for absent files, saved-value preservation and malformed-file errors plus CLI smoke checks; it remains unmerged and requires review. This artifact therefore retains verification of the exact PR head instead of proposing parallel fix work.",
+    "initial_investigation": [
+      "Current GetLayoutsCommand.Execute reads templates and custom layouts unconditionally: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/fancyzones/FancyZonesCLI/CommandLine/Commands/GetLayoutsCommand.cs",
+      "Current FancyZonesDataIO.ReadData throws when either file is absent: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/fancyzones/FancyZonesEditorCommon/Utils/FancyZonesDataIO.cs",
+      "Read the live #52187 body and all three changed files. Its shared-reader fallback covers both files independently, preserves saved and malformed-file behavior, and adds focused tests: https://github.com/microsoft/PowerToys/pull/52187",
+      "Related #52191 distinguishes the correct public shim from an unrelated help-name issue; this report reached the CLI and failed on configuration, not command resolution: https://github.com/microsoft/PowerToys/issues/52191",
+      "Rechecked PR #52187 at head 045a81bcf27711dc776e1eaa928acbf9a6ba7fc7: OPEN, non-draft, review required, updated 11/18/2026 05:46:54. Its body marks tests complete and reports 22 passing unit tests and CLI smoke checks; not independently reproduced here."
+    ],
+    "information_gaps": []
+  },
+  "status": {
+    "label": "Duplicate Or Handled",
+    "detail": "Open non-draft PR #52187 covers the issue but is unmerged. Verify its current head and first-run behavior; do not treat the reported PR validation as shipped."
+  }
+}

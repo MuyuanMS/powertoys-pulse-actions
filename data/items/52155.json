@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 52155,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "summary": "Compare the oversized Color Picker editor against display scaling and monitor work area.",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:33.258322Z",
+  "evaluated_at": "2026-11-17T14:44:33.258322Z",
+  "source_updated_at": "2026-11-15T09:38:47Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52155",
+  "title": "Color picker with oversized results window",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The reported Color Picker editor is much larger than its declared 440-by-380 logical size; display scaling and window sizing need a maintainer reproduction before choosing a resize policy.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52155",
+      "PowerToys 0.102.3101.0 on Windows 10 22H2 build 19045.7807 reportedly opens a 1750-by-1100 result window.",
+      "The issue supplies a screenshot and says dragging the corners cannot resize it.",
+      "Current main src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml declares Width=440 and Height=380. This does not by itself explain the reported pixel dimensions or establish the monitor scale.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml.cs"
+    ],
+    "recommended_action": "Compare editor physical bounds against logical size at several display scales before modifying initial size and minimum bounds.",
+    "evaluated_at": "2026-11-17T14:44:33.258322Z",
+    "source_updated_at": "2026-11-15T09:38:47Z"
+  },
+  "issue_context": {
+    "summary": "The reported Color Picker editor is much larger than its declared 440-by-380 logical size; display scaling and window sizing need a maintainer reproduction before choosing a resize policy.",
+    "known_information": [
+      "PowerToys 0.102.3101.0 on Windows 10 22H2 build 19045.7807 reportedly opens a 1750-by-1100 result window.",
+      "The issue supplies a screenshot and says dragging the corners cannot resize it."
+    ],
+    "inferences": [],
+    "analysis": "Compare editor physical bounds against logical size at several display scales before modifying initial size and minimum bounds.",
+    "initial_investigation": [
+      "Current main src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml declares Width=440 and Height=380. This does not by itself explain the reported pixel dimensions or establish the monitor scale.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/colorPicker/ColorPickerUI/ColorPickerXAML/ColorEditorWindow.xaml.cs"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The reported Color Picker editor is much larger than its declared 440-by-380 logical size; display scaling and window sizing need a maintainer reproduction before choosing a resize policy."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Constrain Color Picker editor sizing to display work area",
+      "root_cause": "A DPI conversion or minimum-size interaction may enlarge the editor beyond the intended logical size; the screenshot alone does not distinguish it from expected scaling.",
+      "plan": [
+        "Trace ColorEditorWindow startup sizing and scale conversions, comparing physical bounds to the 440-by-380 XAML size.",
+        "Correct a duplicate scale conversion if reproduced; constrain startup/minimum bounds to the current monitor work area without hiding editor controls.",
+        "Test reopening and moving the editor across mixed-DPI displays before deciding whether user-resizable persistence is needed."
+      ],
+      "verification": [
+        "Compare Windows 10 at multiple scaling factors and mixed-DPI monitors; verify visible controls and usable editor bounds."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "A concrete size mismatch and source sizing boundary exist, but the reporter's DPI/topology and failing conversion are not yet established."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Constrain Color Picker editor sizing to display work area",
+      "id": "issue-52155-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Compare Color Picker editor bounds across display scales",
+      "reproduce": {
+        "title": "Verify reported Color Picker behavior",
+        "module": "Color Picker",
+        "version_requirement": "0.102.3101.0 on Windows 10 22H2; compare current main",
+        "prerequisites": [
+          "Use a Windows system supported by the tested PowerToys version."
+        ],
+        "setup": [],
+        "steps": [
+          "Open Color Picker, select a screen color and record the result editor's physical dimensions.",
+          "Repeat at 100%, 150% and 200% Windows display scaling, then after moving between differently scaled monitors.",
+          "Try corner resizing and record usable work area and actual editor bounds."
+        ],
+        "expected_result": "The result editor fits the available work area with readable content and no double-applied scaling."
+      },
+      "id": "issue-52155-reproduce-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Compare editor physical bounds against logical size at several display scales before modifying initi",
+    "detail": "The reported Color Picker editor is much larger than its declared 440-by-380 logical size; display scaling and window sizing need a maintainer reproduction before choosing a resize policy."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Constrain Color Picker editor sizing to display work area",
+    "reason": "Compare editor physical bounds against logical size at several display scales before modifying initial size and minimum bounds."
+  },
+  "author": "drissoun"
+}

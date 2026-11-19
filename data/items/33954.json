@@ -1,33 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 33954,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-19T03:00:28.847Z",
+  "evaluated_at": "2026-11-19T03:00:28.847Z",
   "source_updated_at": "2025-01-21T00:08:11Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "pending_author": false,
+  "owes": "us",
+  "confidence": "medium",
+  "summary": "Server 2025 clipboard-history availability appears to gate Advanced Paste history; item promotion may explain the reported duplicate.",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Confirm Server clipboard-history behavior",
+    "reason": "A current comparison separates OS capability availability from selection semantics."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reporter says enabling Windows clipboard-history capability made Advanced Paste work, while selecting a non-top item allegedly duplicates it. Related #33042 clarified that Advanced Paste promotes an item for transformation rather than pasting like Win+V; current behavior must be distinguished before choosing a code change.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports PowerToys 0.82.1 on Windows Server 2025; Windows Settings did not enable clipboard history, but enabling an OS capability flag made the Advanced Paste history box work.",
+      "The report also says selecting a non-top item duplicates it.",
+      "Related #33042 was closed after a maintainer clarified that Advanced Paste selection promotes an item for transformation rather than pasting like Win+V.",
+      "The live issue is open and unassigned, with no linked fixing PR or matching fork trace."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for a current Server 2025 comparison of Win+V and Advanced Paste and clarify whether selecting a non-top item creates a duplicate or promotes it.",
+    "evaluated_at": "2026-11-19T03:00:28.847Z",
     "source_updated_at": "2025-01-21T00:08:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "If Windows clipboard history is unavailable, Advanced Paste should distinguish that state from an ordinary empty list. Do not silently change OS registry state."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Explain when Windows clipboard history is unavailable",
+      "root_cause": "The report ties an empty Advanced Paste history pane to an OS clipboard-history capability flag. The UI may not distinguish unavailable OS history from a valid empty history; the duplicate-selection report may be expected promotion behavior.",
+      "plan": [
+        "Compare Win+V and Advanced Paste with the reported Server 2025 capability disabled and enabled; verify intended item-selection behavior.",
+        "If OS history is unavailable, present an explicit prerequisite/recovery explanation rather than a misleading empty list; do not write a machine-wide registry flag automatically.",
+        "Add focused coverage for unavailable versus available history and selection of a non-top item."
+      ],
+      "verification": [
+        "On Server 2025, compare Win+V and Advanced Paste before and after enabling the capability and verify the UI reflects availability.",
+        "Verify selecting a non-top entry follows the documented promote-for-transformation behavior without creating an unintended duplicate."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The before/after workaround is evidence of an OS capability dependency, but current behavior and the alleged duplicate are unconfirmed; #33042 documents relevant selection semantics."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste history is reported empty on Windows Server 2025 until Windows clipboard-history capability is enabled; selecting a non-top entry was also described as duplicating it.",
+    "known_information": [
+      "The reporter used PowerToys 0.82.1 on Windows Server 2025 and tried enabling Clipboard History in Windows Settings.",
+      "The reporter says enabling an OS clipboard-history capability flag made the Advanced Paste history box work.",
+      "Related #33042 clarified that Advanced Paste selection promotes an item for transformation rather than pasting it like Win+V.",
+      "The live issue remains open and unassigned."
+    ],
+    "inferences": [
+      "The empty pane may reflect Windows reporting history as unavailable rather than an Advanced Paste-only history defect.",
+      "The reported duplicate may be expected promotion or a separate defect if a second entry is created."
+    ],
+    "analysis": "A current OS/Advanced Paste A/B comparison is needed. If Windows itself has no history before the capability flag is enabled, the safest product response may be an explicit unavailable state, not an automatic global registry change.",
+    "initial_investigation": [
+      "Read the live report and comments; latest activity was 2025-01-21 and the issue remains open/unassigned.",
+      "Checked related #33042 and its maintainer clarification. No linked fixing PR or matching fork trace was found. No registry export or diagnostic attachment was inspected."
+    ],
+    "information_gaps": [
+      {
+        "information": "On current stable PowerToys and Server 2025, whether Win+V and Advanced Paste show items before and after enabling the OS capability.",
+        "why_needed": "This distinguishes an OS-level unavailable feature from an Advanced Paste-specific history failure.",
+        "how_to_collect": "On the same Server 2025 machine, compare Win+V and Advanced Paste before and after enabling the capability; reply with Windows edition/build and PowerToys version.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Whether selecting a non-top Advanced Paste item creates an extra entry or moves/promotes the existing entry to the top.",
+        "why_needed": "Related #33042 describes promotion for transformation, which may explain the reported duplicate.",
+        "how_to_collect": "Use a short non-sensitive test entry and compare the list before and after selecting a non-top item.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-33954-approve-unavailable-state",
+      "type": "approve_design",
+      "label": "Approve an unavailable-history state design",
+      "note": "The proposal avoids automatic registry changes; confirm OS and selection behavior first.",
+      "primary": false
+    },
+    {
+      "id": "issue-33954-confirm-server-history",
+      "type": "request_info",
+      "label": "Confirm Server clipboard-history behavior",
+      "comment": {
+        "target": "issue",
+        "number": 33954,
+        "body": "Thanks for documenting that Advanced Paste started showing history after enabling Windows' clipboard-history capability. The closed related issue #33042 clarifies that selecting an Advanced Paste history item promotes it for transformation rather than pasting it like Win+V, so the reported duplication needs a current comparison. Could you test the latest stable PowerToys on Windows Server 2025 and confirm:\n- Before and after enabling Windows clipboard history, does Win+V show items, and does Advanced Paste show items?\n- When selecting a non-top item, does it create an extra entry or move/promote the existing one to the top?\nA short reply with the Server edition/build and PowerToys version is enough. Please do not send registry exports; this will distinguish an OS capability state from the selection behavior."
+      },
+      "primary": true,
+      "confirm": true
+    }
+  ],
+  "comments": 3,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "author": "nunix"
 }

@@ -1,116 +1,149 @@
 {
+  "schemaVersion": 5,
   "number": 27612,
   "kind": "issue",
   "track": "fix",
   "stage": "design_queued",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-10-20T16:45:28Z",
-  "evaluated_at": "2026-10-20T16:45:28Z",
-  "source_updated_at": "2026-10-16T11:11:25Z",
-  "status": {
-    "detail": "The newest report documents two episodes and captures LWin/LAlt logically down after direct Advanced Paste Alt+Win+V plain-text paste, followed later by all modifiers up. It also identifies a possible restore-input race in AdvancedPasteModuleInterface/dllmain.cpp, but the ordering was not captured and Keyboard Manager interaction was not isolated. Treat this as a red hypothesis, not a confirmed cause.",
-    "glyph": "🎯",
-    "label": "Design candidate"
-  },
-  "next_action": "Instrument modifier restore decisions and reproduce physical release timing around Advanced Paste injection; compare Keyboard Manager enabled and disabled.",
-  "actions": [
-    {
-      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
-      "confirm": true,
-      "primary": true,
-      "label": "Review Advanced Paste modifier restoration fix",
-      "type": "approve_design"
-    },
-    {
-      "reproduce": {
-        "steps": [
-          "Trigger direct paste and vary when physical Alt/Win are released relative to restore sampling and SendInput.",
-          "Record only restore decisions, requested/sent input counts, and eight modifier-state snapshots.",
-          "Repeat with Keyboard Manager disabled, then with reported LWin+V remap enabled.",
-          "Confirm modifiers return to their pre-activation state."
-        ],
-        "version_requirements": "PowerToys 0.101.2362 or current supported build",
-        "expected_result": "Synthetic restore input does not leave LWin/LAlt down after physical release; no sensitive text or clipboard content is collected.",
-        "module": "Advanced Paste",
-        "prerequisites": [
-          "Use a test environment and direct Paste as plain text Alt+Win+V.",
-          "Compare Keyboard Manager enabled/disabled; do not change security software or collect typed text or clipboard contents."
-        ]
-      },
-      "label": "Trace Advanced Paste modifier restore timing",
-      "type": "reproduce"
-    }
-  ],
-  "confidence": "High",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The newest report documents two episodes and captures LWin/LAlt logically down after direct Advanced Paste Alt+Win+V plain-text paste, followed later by all modifiers up. It also identifies a possible restore-input race in AdvancedPasteModuleInterface/dllmain.cpp, but the ordering was not captured and Keyboard Manager interaction was not isolated. Treat this as a red hypothesis, not a confirmed cause.",
-    "evidence": [
-      "On PowerToys 0.101.2362, one snapshot after direct Alt+Win+V paste recorded LWin and LAlt down while other modifiers were up; a later snapshot showed all eight up.",
-      "The detailed report identifies try_inject_modifier_key_restore and later SendInput in AdvancedPasteModuleInterface/dllmain.cpp as a possible ordering race.",
-      "The critical ordering was not captured; Keyboard Manager was enabled and not isolated.",
-      "The report cites related #43220, #42471, and #50127 but does not establish this incident is handled."
-    ],
-    "evaluated_at": "2026-10-20T16:45:28Z",
-    "source_updated_at": "2026-10-16T11:11:25Z",
-    "recommended_action": "Instrument modifier restore decisions and reproduce physical release timing around Advanced Paste injection; compare Keyboard Manager enabled and disabled."
-  },
-  "schemaVersion": 5,
-  "url": "https://github.com/microsoft/PowerToys/issues/27612",
   "title": "Paste As Plain Text Does Not Play Well With Sticky Keys",
+  "url": "https://github.com/microsoft/PowerToys/issues/27612",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-18T00:35:34.9753732Z",
+  "evaluated_at": "2026-11-18T00:35:34.9753732Z",
+  "source_updated_at": "2026-11-17T00:17:16Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "Investigate the low-confidence modifier-restore ordering hypothesis with controlled maintainer reproduction. Both accessibility Sticky Keys-enabled and disabled cases are reported; the supplied snapshots do not establish physical release timing or Keyboard Manager causality.",
+  "next_action": {
+    "reason": "The code permits a plausible stale-restore ordering, but it has not been captured in an incident.",
+    "label": "Reproduce modifier restoration timing"
+  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Advanced Paste"
   ],
   "assignees": [],
-  "comments": 3,
+  "comments": 4,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Investigate the low-confidence modifier-restore ordering hypothesis with controlled maintainer reproduction. Both accessibility Sticky Keys-enabled and disabled cases are reported; the supplied snapshots do not establish physical release timing or Keyboard Manager causality.",
+    "evidence": [
+      "Original 0.71 report uses sequential Win, Ctrl, Alt, V with Windows Sticky Keys enabled.",
+      "The detailed 0.101.2362 report records LWin/LAlt logically down after direct Alt+Win+V paste, later all up; the required physical-release ordering was not captured.",
+      "Keyboard Manager with LWin+V to LCtrl+V was enabled and not isolated in that report.",
+      "November 17 commenter says Sticky Keys are not enabled in their case.",
+      "Read the restore helper and complete direct-paste input batch, plus the detached action dispatch: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "Read the original Sticky Keys screenshot: enabled, lock modifiers when pressed twice, and do not turn off when two keys are pressed simultaneously.",
+      "Read related #43220, #42471 and #50127. They corroborate modifier latching, but do not establish this timing mechanism or a covering implementation.",
+      "Read the closure discussion: #25678 was redirected to #33773, whose final comment redirects to this issue. These are duplicate-routing closures, not a shipped fix.",
+      "Bounded issue-number and symptom searches found no issue-specific upstream/fork implementation; unrelated Advanced Paste feature mirrors are not treated as coverage."
+    ],
+    "recommended_action": "Run the bounded release-timing and Keyboard Manager/Sticky Keys matrix before approving any corrective modifier-restoration change.",
+    "evaluated_at": "2026-11-18T00:35:34.9753732Z",
+    "source_updated_at": "2026-11-17T00:17:16Z"
+  },
   "fix_assessment": {
-    "rationale": "A source-specific correction is plausible, but the key timing and Keyboard Manager interaction remain unverified.",
-    "status": "proposed"
+    "status": "proposed",
+    "rationale": "A conditional restore-order direction is applicable, but no incident proves the race. Existing duplicate closures do not identify a fixing implementation. Retain the red-confidence hypothesis and a concrete maintainer reproduction action instead of asking the reporter to instrument native code.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
+      "title": "Conditionally correct modifier restoration after release-timing investigation",
+      "root_cause": "Hypothesis: synthetic modifier key-down restoration can be queued before physical release and submitted afterwards; the incident ordering and Keyboard Manager contribution remain unproven.",
+      "plan": [
+        "Instrument modifier-only restore decisions and requested/sent input counts, without reading typed text or clipboard content.",
+        "Force release timing around restore sampling/submission; compare Keyboard Manager off/on and Sticky Keys off/on independently.",
+        "If stale restoration is proven, correct modifier ownership/release ordering without releasing genuinely held keys.",
+        "Add focused release-before-submit and sequential-Sticky-Keys tests."
+      ],
       "verification": [
-        "Repeat direct Alt+Win+V plain-text paste with varied release timing and confirm modifiers return to prior state.",
-        "Repeat with the reported LWin+V Keyboard Manager mapping enabled and disabled.",
-        "Confirm ordinary modifier-held paste behavior remains unchanged."
+        "All released modifiers return up after plain-text paste across controlled timing cases.",
+        "Genuinely held modifiers and existing remaps retain their behavior."
       ],
       "confidence": {
         "score": 39,
         "level": "red",
-        "rationale": "Snapshot and code ordering support a testable hypothesis, but the key ordering was not observed and Keyboard Manager was not isolated."
-      },
-      "title": "Prevent stale modifier restoration after Advanced Paste",
-      "root_cause": "Red hypothesis: the worker may sample Win/Alt as held, queue synthetic restore key-down input, then submit it after physical key-up, leaving logical modifiers down. The ordering is not captured.",
-      "plan": [
-        "Instrument modifier restore decisions and requested/sent SendInput events for direct plain-text paste without collecting typed text or clipboard content.",
-        "Reproduce physical key release at different points between state sampling and SendInput; compare Keyboard Manager enabled and disabled.",
-        "If stale restore input is confirmed, avoid reasserting a modifier released before injection or verify release state at the established boundary.",
-        "Add focused tests for release-before-submit and normal held-modifier behavior."
-      ]
+        "rationale": "Hypothesis: synthetic modifier key-down restoration can be queued before physical release and submitted afterwards; the incident ordering and Keyboard Manager contribution remain unproven."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce modifier restoration timing",
+      "reproduce": {
+        "title": "Verify Advanced Paste report",
+        "module": "Advanced Paste",
+        "version_requirement": "0.101.2362 and current supported build; compare original Sticky Keys sequence",
+        "prerequisites": [
+          "Disposable Windows test session, Advanced Paste enabled, harmless sample text and Notepad.",
+          "Record the PowerToys/Windows build; compare reported 0.101.2362 with a current supported build.",
+          "Maintainer-native diagnostics limited to modifier states, timestamps and requested/sent input counts; no typed text or clipboard content."
+        ],
+        "setup": [
+          "Set direct paste to Alt+Win+V and compare Keyboard Manager disabled against the supplied LWin+V remap.",
+          "Use an isolated test session; do not disable endpoint protection or collect typed text/clipboard contents.",
+          "Compare Keyboard Manager disabled/enabled as a controlled variable, without changing security software.",
+          "Record only restore decisions, requested/sent input counts and modifier-state snapshots; never capture typed text or clipboard content."
+        ],
+        "steps": [
+          "1. Copy harmless text, set direct paste to Alt+Win+V, and with Sticky Keys and Keyboard Manager off vary when physical Alt/Win are released around paste.",
+          "2. Repeat with the reported LWin+V to LCtrl+V remap enabled; record physical release, restore sampling/submission order and logical states separately.",
+          "3. Independently enable Sticky Keys with double-press locking enabled and two-key auto-disable off. Copy with Ctrl+C, then press and release Win, Ctrl, Alt, V one at a time as in the original report.",
+          "4. Compare released versus genuinely held modifiers after paste, and verify any tap-to-clear recovery without treating an absent snapshot as continuous latching."
+        ],
+        "expected_result": "Released modifiers do not remain logically latched, while physically held keys and intentional Sticky Keys behavior are preserved.",
+        "attachments": [
+          {
+            "url": "https://github.com/microsoft/PowerToys/assets/12532256/ba0f6c14-d58d-4301-be1d-e603f5bd52b6",
+            "label": "Original Sticky Keys configuration"
+          },
+          {
+            "url": "https://github.com/microsoft/PowerToys/issues/27612#issuecomment-6214230168",
+            "label": "Detailed incident and hypothesis"
+          }
+        ]
+      }
+    },
+    {
+      "note": "Queues the design workflow for maintainer approval; no upstream write occurs.",
+      "confirm": true,
+      "primary": true,
+      "label": "Review Advanced Paste modifier restoration fix",
+      "type": "approve_design"
     }
   ],
   "issue_context": {
+    "summary": "Direct plain-text paste sometimes leaves shortcut modifiers logically held. The original sequential Sticky Keys report and newer simultaneous-shortcut reports need separate reproduction tracks.",
     "known_information": [
-      "The 2026-10-16 report documents two episodes; one snapshot recorded LWin and LAlt down, and a later snapshot showed all modifiers up.",
-      "Direct Advanced Paste Alt+Win+V activations were logged near the first episode.",
-      "The report identifies a possible modifier-restore then SendInput path in AdvancedPasteModuleInterface/dllmain.cpp.",
-      "Keyboard Manager was enabled with LWin+V mapped to LCtrl+V; disabling it was not tested.",
-      "The commenter states the ordering and continuous duration were not independently captured."
+      "Original 0.71 report uses sequential Win, Ctrl, Alt, V with Windows Sticky Keys enabled.",
+      "The detailed 0.101.2362 report records LWin/LAlt logically down after direct Alt+Win+V paste, later all up; the required physical-release ordering was not captured.",
+      "Keyboard Manager with LWin+V to LCtrl+V was enabled and not isolated in that report.",
+      "November 17 commenter says Sticky Keys are not enabled in their case."
     ],
-    "analysis": "The detailed evidence identifies a testable maintainer-side path. Do not ask for generic logs; instrument timing and separate logical-state observation from physical key state.",
-    "summary": "Advanced Paste plain-text paste may leave logical Win/Alt modifiers down after physical release; snapshots support the symptom but do not prove the proposed restore-input race.",
-    "initial_investigation": [
-      "Reviewed full detailed issue comment, incident timestamps, snapshots, enabled mappings, source hypothesis, and collection limits.",
-      "No causal claim is inferred from clean logs or security software presence.",
-      "Related #43220, #42471, and #50127 are cited but do not prove this exact symptom is handled."
-    ],
-    "information_gaps": [],
     "inferences": [
-      "Synthetic Win/Alt key-down submitted after physical release could match the logical snapshot and tap-to-clear symptom, but this timing is unconfirmed.",
-      "Keyboard Manager may interact, but no conflict is established."
+      "Hypothesis: synthetic modifier key-down restoration can be queued before physical release and submitted afterwards; the incident ordering and Keyboard Manager contribution remain unproven."
+    ],
+    "analysis": "The direct action runs on a detached worker. It samples modifier state while building key-down restore events, then submits the input batch later. Release between sampling and submission could reassert a released modifier, but public snapshots capture only logical state. The original accessibility configuration enables Sticky Keys and double-press locking; the October follow-up and latest commenter report Sticky Keys disabled. Neither Keyboard Manager nor security software is established as the cause.",
+    "initial_investigation": [
+      "Read the restore helper and complete direct-paste input batch, plus the detached action dispatch: https://github.com/microsoft/PowerToys/blob/00d85a4c73c2ec33da7a9c25d1a3581b3d4c4359/src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "Read the original Sticky Keys screenshot: enabled, lock modifiers when pressed twice, and do not turn off when two keys are pressed simultaneously.",
+      "Read related #43220, #42471 and #50127. They corroborate modifier latching, but do not establish this timing mechanism or a covering implementation.",
+      "Read the closure discussion: #25678 was redirected to #33773, whose final comment redirects to this issue. These are duplicate-routing closures, not a shipped fix.",
+      "Bounded issue-number and symptom searches found no issue-specific upstream/fork implementation; unrelated Advanced Paste feature mirrors are not treated as coverage."
+    ],
+    "information_gaps": [
+      {
+        "how_to_collect": "Maintainer reproduction with modifier-only native diagnostics and controlled release timing; do not ask reporters to install input hooks, disable protection, or expose clipboard/text content.",
+        "information": "The ordering of physical modifier release, restore-state sampling and SendInput submission",
+        "why_needed": "Distinguish a stale synthetic key-down from intended held/Sticky Keys state and remapping interaction.",
+        "evidence_type": "module_trace"
+      }
     ]
+  },
+  "status": {
+    "label": "Actionable Design",
+    "detail": "Investigate the low-confidence modifier-restore ordering hypothesis with controlled maintainer reproduction. Both accessibility Sticky Keys-enabled and disabled cases are reported; the supplied snapshots do not establish physical release timing or Keyboard Manager causality."
   }
 }

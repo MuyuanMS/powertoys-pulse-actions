@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 52163,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "Fancy Zones Frees my Computer",
+  "url": "https://github.com/microsoft/PowerToys/issues/52163",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-19T11:41:21Z",
+  "evaluated_at": "2026-11-19T11:41:21Z",
+  "source_updated_at": "2026-11-15T23:41:56Z",
+  "pending_author": false,
+  "owes": "us",
+  "summary": "The supplied archive establishes a two-display configuration, startup work-area initialization and window-repositioning settings, but not the scope or blocked thread of the reported freeze. Clarify whether the desktop or only FancyZones stops responding before changing topology or overlay lifetime logic.",
+  "next_action": {
+    "label": "Clarify startup freeze and recovery",
+    "reason": "Thanks for the attached report; it already records two active displays and the FancyZones positioning/overlay settings. Please clarify whether the pointer, taskbar and other applications also stop responding, or only the zones/drag operation. Which exact process do you force quit and reopen to recover? Does waiting until the desktop and both displays have settled before the first Shift-drag avoid it, and does toggling only FancyZones off/on recover it? These controls separate a desktop-wide freeze from startup module state; no replacement report is needed yet."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The supplied archive establishes a two-display configuration, startup work-area initialization and window-repositioning settings, but not the scope or blocked thread of the reported freeze. Clarify whether the desktop or only FancyZones stops responding before changing topology or overlay lifetime logic.",
+    "evidence": [
+      "0.102.3101 after auto-update; after startup windows reopen in unexpected places and Shift-drag overlay is absent or freezes.",
+      "Restarting the process described as 'PowerPlay' restores behavior until the next startup; the exact restarted executable is not identified.",
+      "The archive enumerates two active displays, Shift-drag and show-on-all-monitors enabled, spanning disabled, and move-on-display-change/last-zone/open-on-active-monitor enabled.",
+      "The November 16 FancyZones log records initialization and subsequent window-history queries; its exported WER fragment is an older November 5 APPCRASH and does not identify this startup freeze.",
+      "Inspected supplied settings, monitor report, latest FancyZones log and exported FancyZones WER fragment: https://github.com/user-attachments/files/34888950/PowerToysReport_2026-11-16-08-36-35.zip",
+      "Initialization/display changes rebuild work areas; current code already aborts active drags before clearing work-area ownership: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
+      "Existing abort-before-clear safeguards must be retained, not reproposed as though absent."
+    ],
+    "recommended_action": "Thanks for the attached report; it already records two active displays and the FancyZones positioning/overlay settings. Please clarify whether the pointer, taskbar and other applications also stop responding, or only the zones/drag operation. Which exact process do you force quit and reopen to recover? Does waiting until the desktop and both displays have settled before the first Shift-drag avoid it, and does toggling only FancyZones off/on recover it? These controls separate a desktop-wide freeze from startup module state; no replacement report is needed yet.",
+    "evaluated_at": "2026-11-19T11:41:21Z",
+    "source_updated_at": "2026-11-15T23:41:56Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight direction; The supplied archive establishes a two-display configuration, startup work-area initialization and window-repositioning settings, but not the scope or blocked thread of the reported freeze. Clarify whether the desktop or only FancyZones stops responding before changing topology or overlay lifetime logic.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reproduce cold-start versus delayed module startup with the archive's two-monitor settings and identify the first nonresponsive component.",
+      "root_cause": "Hypothesis: startup topology/overlay readiness differs from the later restarted state, but no observed hang stack establishes a lock, dangling pointer or corrupt configuration.",
+      "plan": [
+        "Reproduce cold-start versus delayed module startup with the archive's two-monitor settings and identify the first nonresponsive component.",
+        "If startup publishes an incomplete topology generation, atomically publish usable work areas before accepting overlay/drag requests, preserving existing drag cancellation.",
+        "Keep startup positioning and overlay rendering tests separate; avoid fixed startup sleeps as a substitute for a confirmed readiness boundary."
+      ],
+      "verification": [
+        "Both monitors accept Shift-drag after cold startup without a process restart.",
+        "Display reconnect and saved-window restoration remain correct, with no active-drag access to replaced work areas."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "Hypothesis: startup topology/overlay readiness differs from the later restarted state, but no observed hang stack establishes a lock, dangling pointer or corrupt configuration."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-info-52163",
+      "type": "request_info",
+      "label": "Confirm recovery and control behavior",
+      "comment": {
+        "target": "issue",
+        "number": 52163,
+        "body": "Thanks for the attached report; it already records two active displays and the FancyZones positioning/overlay settings. Please clarify whether the pointer, taskbar and other applications also stop responding, or only the zones/drag operation. Which exact process do you force quit and reopen to recover? Does waiting until the desktop and both displays have settled before the first Shift-drag avoid it, and does toggling only FancyZones off/on recover it? These controls separate a desktop-wide freeze from startup module state; no replacement report is needed yet."
+      },
+      "primary": true
+    },
+    {
+      "type": "approve_design",
+      "label": "Review conditional two-monitor startup fix",
+      "primary": false
+    }
+  ],
+  "issue_context": {
+    "summary": "Fancy Zones Frees my Computer",
+    "known_information": [
+      "0.102.3101 after auto-update; after startup windows reopen in unexpected places and Shift-drag overlay is absent or freezes.",
+      "Restarting the process described as 'PowerPlay' restores behavior until the next startup; the exact restarted executable is not identified.",
+      "The archive enumerates two active displays, Shift-drag and show-on-all-monitors enabled, spanning disabled, and move-on-display-change/last-zone/open-on-active-monitor enabled.",
+      "The November 16 FancyZones log records initialization and subsequent window-history queries; its exported WER fragment is an older November 5 APPCRASH and does not identify this startup freeze."
+    ],
+    "inferences": [
+      "Hypothesis: startup topology/overlay readiness differs from the later restarted state, but no observed hang stack establishes a lock, dangling pointer or corrupt configuration."
+    ],
+    "analysis": "The supplied archive establishes a two-display configuration, startup work-area initialization and window-repositioning settings, but not the scope or blocked thread of the reported freeze. Clarify whether the desktop or only FancyZones stops responding before changing topology or overlay lifetime logic.",
+    "initial_investigation": [
+      "Inspected supplied settings, monitor report, latest FancyZones log and exported FancyZones WER fragment: https://github.com/user-attachments/files/34888950/PowerToysReport_2026-11-16-08-36-35.zip",
+      "Initialization/display changes rebuild work areas; current code already aborts active drags before clearing work-area ownership: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
+      "Existing abort-before-clear safeguards must be retained, not reproposed as though absent."
+    ],
+    "information_gaps": [
+      {
+        "information": "Freeze scope, exact restarted process, delayed-first-drag and module-toggle recovery",
+        "why_needed": "Distinguish desktop-wide failure from stale FancyZones startup/overlay state using facts not present in the archive.",
+        "how_to_collect": "After the next startup, compare an immediate versus delayed first Shift-drag; note whether other desktop UI responds and whether FancyZones toggle alone recovers before restarting the recorded executable.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "status": {
+    "label": "Needs Information",
+    "detail": "The supplied archive establishes a two-display configuration, startup work-area initialization and window-repositioning settings, but not the scope or blocked thread of the reported freeze. Clarify whether the desktop or only FancyZones stops responding before changing topology or overlay lifetime logic."
+  },
+  "author": "stan88Ra"
+}

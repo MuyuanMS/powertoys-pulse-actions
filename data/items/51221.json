@@ -9,25 +9,25 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-03T14:06:52.5392308+08:00",
-  "evaluated_at": "2026-11-03T14:06:52.5392587+08:00",
-  "source_updated_at": "2026-10-28T19:22:50Z",
-  "head_sha": "7adc838fdd8517e511ff9abca58b27c918b39206",
+  "generated_at": "2026-11-19T16:35:44.9858531+08:00",
+  "evaluated_at": "2026-11-19T16:35:44.9858531+08:00",
+  "source_updated_at": "2026-11-18T16:54:16Z",
+  "head_sha": "2838b5be77cf6b57803123fae6261dc293a371a5",
   "needs_revalidation": false,
   "proposed_comments": [
     {
+      "id": "51221-resolve-pinned-overview",
+      "title": "Resolve saved Overview pins through the provider",
+      "kind": "companion",
+      "severity": "medium",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs`, `PerformanceWidgetsPage.cs`, and `SystemOverviewWidgetPage.cs`.\n\n**Problem:** The Overview list entry is a `ListItem` whose page ID is `com.microsoft.cmdpal.overview_widget`. The provider inherits `CommandProvider` but has no `GetCommandItem` override; the base method returns `null`. CmdPal offers pin commands for this item, then restores saved home pins via `GetCommandItem` and keeps only non-null results, so the saved Overview item is omitted. Dock restoration first searches top-level commands and then calls `GetCommandItem`; the registered Overview dock band has a different ID (`com.microsoft.cmdpal.performanceWidget.overview`), and the list item does not specify a `DockCommandId` mapping.\n\n**Why it matters:** A user can select Pin for the Overview, but its saved item cannot be reconstructed on the home page or as a pinned dock item after reload. Registering the separate band does not resolve the content-page ID.\n\n**Suggested change:** Resolve the existing Overview item by its saved ID.\n\n1. Override `GetCommandItem` in `PerformanceMonitorCommandsProvider` and return the existing Overview list item for `com.microsoft.cmdpal.overview_widget`. Reuse the item rather than creating a second set of metric pages.\n2. Return `null` for IDs the provider does not recognize.\n3. Add a provider lookup test for both IDs and verify that home and dock pins restore after reload.\n\n**Verification:** Confirmed the null-returning inherited lookup and both restore paths against upstream head `2838b5be77cf6b57803123fae6261dc293a371a`; the Overview entry, band, and page IDs differ as described. No build or interactive pin test was run.",
+      "out_of_diff_reason": "The missing GetCommandItem resolver is outside the changed ranges; the finding is grounded by the new Overview ID and unchanged provider/host lookup paths.",
       "confidence": {
         "rationale": "Exact upstream inherited null-returning method and explicit saved-pin consumers establish failed resolution. UI execution is not claimed.",
         "score": 92
-      },
-      "disposition": "proposed",
-      "id": "51221-resolve-pinned-overview",
-      "body": "**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs` (`GetCommandItem`), `PerformanceWidgetsPage.cs` (`_overviewItem`), and `SystemOverviewWidgetPage.cs` (`Id`).\r\n\r\n**Problem:** The new Overview list item has command ID `com.microsoft.cmdpal.overview_widget`, but the provider does not override `GetCommandItem`; the toolkit implementation returns `null`. CmdPal detects `ICommandProvider4` and offers the item's pin commands, then calls `GetCommandItem` when loading saved home pins. Dock pin loading also falls back to that method because this ID is neither the provider's top-level command nor its separately registered `com.microsoft.cmdpal.performanceWidget.overview` band. The saved Overview item therefore cannot be resolved. This source path exists on this PR's head, independently of the mega-merge branch.\r\n\r\n**Why it matters:** A user can pin Overview but cannot have that saved item restored on the home page or dock. Registering the separate Overview band alone does not resolve the Overview content-page ID.\r\n\r\n**Suggested change:**\r\n1. Override `GetCommandItem` in the Performance Monitor provider to resolve `com.microsoft.cmdpal.overview_widget` to its existing Overview command item, using the provider's current state lock and ownership. Do not create another metric-page set during lookup.\r\n2. Keep the returned command ID equal to the requested ID, return `null` for unknown IDs, and preserve the separate Overview band's ID and idle-sampling behavior.\r\n3. Add provider lookup coverage for the Overview ID and an unknown ID, then verify pinning Overview to home and dock survives a command reload and app restart.\r\n\r\n**Verification:** Exact-head source tracing confirms the inherited null lookup, the two different IDs, and the saved-pin consumers. The existing Overview list/band tests do not exercise this lookup. The pinning interaction and replacement implementation have not been executed; the new tests and UI checks above are acceptance criteria.",
-      "title": "Resolve saved Overview pins through the provider",
-      "in_diff": false,
-      "out_of_diff_reason": "The correction adds the missing provider lookup override outside the changed ranges; proof spans the unchanged toolkit and host pin-resolution consumers. No apply-ready replacement is claimed.",
-      "kind": "companion",
-      "severity": "medium"
+      }
     }
   ],
   "actions": [
@@ -36,10 +36,13 @@
       "type": "post_review",
       "review": {
         "pr": 51221,
-        "head_sha": "7adc838fdd8517e511ff9abca58b27c918b39206",
+        "head_sha": "2838b5be77cf6b57803123fae6261dc293a371a5",
         "pullRequest": 51221,
         "event": "COMMENT",
-        "repository": "microsoft/PowerToys"
+        "repository": "microsoft/PowerToys",
+        "comment_ids": [
+          "51221-resolve-pinned-overview"
+        ]
       },
       "label": "Post separate general PR comment about Overview pin resolution",
       "primary": true,

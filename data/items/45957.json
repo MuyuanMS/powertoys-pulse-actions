@@ -1,33 +1,116 @@
 {
+  "schemaVersion": 5,
   "number": 45957,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage",
+  "summary": "Investigate the visible Command Palette resize when summoned on a monitor with a different scale.",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-03-06T19:33:26Z",
+  "generated_at": "2026-11-17T14:44:35.040231Z",
+  "evaluated_at": "2026-11-17T14:44:35.040231Z",
+  "source_updated_at": "2026-11-15T04:22:04Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45957",
+  "title": "CmdPal: window briefly resizes when shown on a monitor with different DPI",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The mixed-DPI summon sequence is explicit, a maintainer already identified asynchronous settling as a possibility, and a November 15 follow-up says the glitch persists.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/45957",
+      "The original report uses PowerToys 0.98 dev build and two monitors with different DPI settings.",
+      "Maintainer jiripolasek says positioning already occurs while cloaked; waiting for settling might cost 200–300 ms and icon refresh may compete on the UI thread.",
+      "A later commenter reports continued occurrence: https://github.com/microsoft/PowerToys/issues/45957#issuecomment-6889104063",
+      "Current main MainWindow.xaml.cs: ShowHwndCore invokes positionWindow, shows the HWND, then calls Uncloak without an explicit layout-settled barrier; MoveAndResizeDpiAware suppresses default DPI resizing during the move.",
+      "Related #46289 covers a similar cross-monitor glitch; issue-number PR search found no direct implementation.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs"
+    ],
+    "recommended_action": "Reproduce on mixed-DPI monitors and measure layout completion versus uncloaking before considering a bounded first-frame readiness change.",
+    "evaluated_at": "2026-11-17T14:44:35.040231Z",
+    "source_updated_at": "2026-11-15T04:22:04Z"
+  },
+  "issue_context": {
+    "summary": "The mixed-DPI summon sequence is explicit, a maintainer already identified asynchronous settling as a possibility, and a November 15 follow-up says the glitch persists.",
+    "known_information": [
+      "The original report uses PowerToys 0.98 dev build and two monitors with different DPI settings.",
+      "Maintainer jiripolasek says positioning already occurs while cloaked; waiting for settling might cost 200–300 ms and icon refresh may compete on the UI thread.",
+      "A later commenter reports continued occurrence: https://github.com/microsoft/PowerToys/issues/45957#issuecomment-6889104063"
+    ],
+    "inferences": [],
+    "analysis": "Reproduce on mixed-DPI monitors and measure layout completion versus uncloaking before considering a bounded first-frame readiness change.",
+    "initial_investigation": [
+      "Current main MainWindow.xaml.cs: ShowHwndCore invokes positionWindow, shows the HWND, then calls Uncloak without an explicit layout-settled barrier; MoveAndResizeDpiAware suppresses default DPI resizing during the move.",
+      "Related #46289 covers a similar cross-monitor glitch; issue-number PR search found no direct implementation.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The mixed-DPI summon sequence is explicit, a maintainer already identified asynchronous settling as a possibility, and a November 15 follow-up says the glitch persists."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Gate mixed-DPI reveal on target layout readiness",
+      "root_cause": "DPI-triggered layout or icon work may not settle before Uncloak, although bounds are moved while hidden; this is not yet a measured causal ordering.",
+      "plan": [
+        "Measure the DPI/layout/paint sequence around positionWindow and Uncloak on the public repro.",
+        "If confirmed, defer reveal until target-size layout is ready using a bounded completion condition rather than an unconditional 300-ms delay.",
+        "Keep same-DPI warm activation fast and add mixed-DPI reveal regression coverage."
+      ],
+      "verification": [
+        "Check first-frame bounds at 100%/150% and 100%/200%, both directions, without adding fixed warm-show delay."
+      ],
+      "confidence": {
+        "score": 65,
+        "level": "yellow",
+        "rationale": "The report, maintainer explanation and reveal ordering agree on the investigation boundary; no first-frame trace proves the root cause."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Gate mixed-DPI reveal on target layout readiness",
+      "id": "issue-45957-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Check first-frame bounds on mixed-DPI monitors",
+      "reproduce": {
+        "title": "Verify reported Command Palette behavior",
+        "module": "Command Palette",
+        "version_requirement": "0.98 dev build from report; verify 0.102/current main",
+        "prerequisites": [
+          "Two monitors with different scaling factors; Command Palette configured to appear on the active monitor."
+        ],
+        "setup": [],
+        "steps": [
+          "Configure two displays at different DPI scales and leave Command Palette cloaked on one.",
+          "Move focus to the other monitor and summon Command Palette with its hotkey.",
+          "Capture the first visible frame and repeat in both directions, warm and cold, with icon-heavy results."
+        ],
+        "expected_result": "The first visible frame has the final size and scale without a visible post-show resize."
+      },
+      "id": "issue-45957-reproduce-2",
+      "primary": true
+    }
+  ],
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "?",
+    "label": "Reproduce on mixed-DPI monitors and measure layout completion versus uncloaking before considering a",
+    "detail": "The mixed-DPI summon sequence is explicit, a maintainer already identified asynchronous settling as a possibility, and a November 15 follow-up says the glitch persists."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Approve Gate mixed-DPI reveal on target layout readiness",
+    "reason": "Reproduce on mixed-DPI monitors and measure layout completion versus uncloaking before considering a bounded first-frame readiness change."
   },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-03-06T19:33:26Z"
-  }
+  "author": "jiripolasek"
 }

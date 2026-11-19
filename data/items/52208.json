@@ -1,0 +1,97 @@
+{
+  "number": 52208,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-18T18:30:31.464Z",
+  "pending_author": false,
+  "summary": "Title Case can discard an invalid slash-containing replacement prefix before validation, resulting in a lossy valid-looking rename.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The transformation path can erase the invalid separator before validation: Title Case treats the replacement as a filesystem path and emits only its stem, then DoRename checks the shortened result. Validate the original replacement first and keep invalid status independent of transformed display text.",
+    "evidence": [
+      "The live report gives a concrete invalid-name repro: replacement draft/report should be rejected, but Title Case previews Report.txt and Apply uses the shortened name.",
+      "At PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e, Renaming.cpp calls GetTransformedFileName before checking forbidden filename characters; Helpers.cpp splits transformed names with std::filesystem::path stem/extension.",
+      "PR #51982 remains open/changes-requested and does not change the validation order for existing text transformations.",
+      "The upstream issue is open with no comments; no fork issue or PR mirror for 52208 was found by repository search.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "recommended_action": "Approve or revise the focused design before implementation.",
+    "evaluated_at": "2026-11-18T18:30:31.464Z",
+    "source_updated_at": "2026-11-18T14:07:23Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The open linked PR #51982 does not cover this existing PowerRename path; no separate upstream fix or fork mirror was found.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate replacement characters before case formatting",
+      "root_cause": "DoRename applies GetTransformedFileName before checking for invalid filename characters. The Title Case transform parses the replacement with std::filesystem::path and uses stem/extension, which drops the directory portion of draft/report; the subsequent invalid-character check therefore sees only Report and cannot reject the original slash.",
+      "plan": [
+        "Validate the raw replacement component for forbidden filename characters before any case transform or filesystem stem/extension parsing can discard characters.",
+        "Keep the invalid-name status and preview behavior tied to the original replacement while preserving existing filename/extension scope rules for valid input.",
+        "Add regression tests for both slash directions in a Title Case replacement and confirm preview marks the item invalid and Apply skips it."
+      ],
+      "verification": [
+        "Run focused PowerRename native tests for invalid replacement validation and Title Case.",
+        "Repeat foo.txt with Filename + extension, Search=foo, Replace=draft/report, Title Case; the preview must flag the invalid character and Apply must not create Report.txt."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The public repro and current source ordering align directly: path parsing removes the separator before the later validator checks it. The proposed validation-before-transform change is narrow and directly testable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Title Case can discard an invalid slash-containing replacement prefix before validation, resulting in a lossy valid-looking rename.",
+    "known_information": [
+      "The issue supplies a reproducible slash-containing replacement and expected invalid-name behavior.",
+      "The issue is currently open, assigned to daverayment, last updated 2026-11-18T14:07:23Z, and has no comments.",
+      "Current source checks forbidden characters after GetTransformedFileName has run.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "inferences": [
+      "Validating before path-component extraction should preserve the invalid-character signal and prevent a lossy transformed preview from being applied."
+    ],
+    "analysis": "The transformation path can erase the invalid separator before validation: Title Case treats the replacement as a filesystem path and emits only its stem, then DoRename checks the shortened result. Validate the original replacement first and keep invalid status independent of transformed display text.",
+    "initial_investigation": [
+      "Inspected Renaming.cpp ordering for trimming, GetTransformedFileName, and invalid-character checks, plus Helpers.cpp path-component extraction, at PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e.",
+      "Reviewed PR #51982 current head and diff; it does not modify this existing validation ordering.",
+      "Checked linked upstream work; no covering fix was found.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve invalid-name validation fix",
+      "note": "Start the separate PowerRename design workflow only after maintainer approval.",
+      "id": "issue-52208-design",
+      "primary": true
+    }
+  ],
+  "evaluated_at": "2026-11-18T18:30:31.464Z",
+  "source_updated_at": "2026-11-18T14:07:23Z",
+  "title": "[PowerRename] Case formatting silently discards invalid path prefixes",
+  "url": "https://github.com/microsoft/PowerToys/issues/52208",
+  "author": "daverayment",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "status": {
+    "glyph": "🛠",
+    "label": "Fix design proposed",
+    "detail": "Title Case path parsing can remove the invalid draft/ prefix before DoRename checks for forbidden filename characters."
+  },
+  "next_action": "Review the proposed fix design and approve it for detailed design."
+}

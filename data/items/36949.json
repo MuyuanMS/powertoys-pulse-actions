@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 36949,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "triage",
+  "generated_at": "2026-11-19T03:00:28.847Z",
+  "evaluated_at": "2026-11-19T03:00:28.847Z",
   "source_updated_at": "2025-01-28T15:25:02Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "pending_author": false,
+  "owes": "us",
+  "confidence": "low",
+  "summary": "Text Extractor reportedly fails on one page portion while copying other content; source surface and clipboard output are unspecified.",
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "?",
+    "label": "Request a focused Text Extractor example",
+    "reason": "A current-version example can distinguish OCR recognition from clipboard transfer."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report includes an image and says most of the page copied, but it does not identify the source app/content or whether the clipboard was unchanged or contained incorrect text. A maintainer's earlier version question was not answered with those details; a focused, non-sensitive example is needed before isolating OCR versus clipboard behavior.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter states PowerToys 0.87.1 Text Extractor failed on particular information while copying the rest of the page.",
+      "The report names COMODO Internet Security 12.2.2.7036 and includes an image.",
+      "A maintainer asked for Windows and Snipping Tool versions; the reporter clarified the desired output is clipboard text but did not provide the requested versions or exact source/result.",
+      "The live issue is open and unassigned; no linked fixing PR or matching fork trace was found."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a current-version reproduction with source surface and redacted expected-versus-actual text, without asking for more diagnostics.",
+    "evaluated_at": "2026-11-19T03:00:28.847Z",
     "source_updated_at": "2025-01-28T15:25:02Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A fix may apply if recognized text is not transferred or a source type is mishandled. The current report does not distinguish these mechanisms, so the proposal remains low-confidence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Handle the confirmed Text Extractor failure path",
+      "root_cause": "The failure may arise because OCR does not recognize the selected content or because recognized text is not transferred to the clipboard. The report lacks the source surface and resulting clipboard contents, so neither cause is confirmed.",
+      "plan": [
+        "Use a current non-sensitive reproducer to determine whether OCR produces no text, incorrect text, or correct text that is not copied.",
+        "Trace only the corresponding OCR-selection or clipboard-transfer path after the failure mode is established.",
+        "Correct the identified path and add a focused regression case for the source/content type that fails."
+      ],
+      "verification": [
+        "Repeat the same selection on latest stable and compare expected text with actual clipboard text.",
+        "Verify a known-good selection still copies and the confirmed failing source type no longer fails."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "A partial failure is reported, but the source and actual clipboard result are missing, leaving materially different causes possible."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor reportedly fails to copy a particular part of a page even though other information on the page copied successfully.",
+    "known_information": [
+      "The reporter used PowerToys 0.87.1 and Text Extractor and says other content copied successfully.",
+      "The report mentions COMODO Internet Security 12.2.2.7036 and includes an image.",
+      "A maintainer asked for Windows and Snipping Tool versions; the reply only clarifies that the desired output is text on the clipboard.",
+      "The live issue remains open and unassigned."
+    ],
+    "inferences": [
+      "The failure may be OCR recognition, selection/source-surface behavior, or clipboard transfer; current evidence does not distinguish them.",
+      "The earlier OCR-accuracy issue #23842 is not a confirmed duplicate or covering fix for this case."
+    ],
+    "analysis": "Avoid another generic diagnostic request. One minimal current-version example identifying the source surface and expected versus actual clipboard result will show whether OCR or clipboard transfer is implicated.",
+    "initial_investigation": [
+      "Read the live issue and comments; latest author activity was 2025-01-28 and the maintainer's platform-version question remains unanswered.",
+      "Checked #23842; it is an older OCR-accuracy report, not a confirmed duplicate or fix. No linked fixing PR or matching fork trace was found. The issue image was not inspected and no diagnostic archive was opened."
+    ],
+    "information_gaps": [
+      {
+        "information": "A current-version reproduction naming the source app/content type, short selection steps, and redacted expected-versus-actual clipboard text.",
+        "why_needed": "This distinguishes OCR recognition/selection failure from clipboard transfer and clarifies whether the named security software is relevant without asking to disable it.",
+        "how_to_collect": "Repeat the selection once on latest stable PowerToys; name the source surface and provide a short text example with sensitive content removed, plus the About version.",
+        "evidence_type": "repro_steps"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "issue-36949-approve-text-extractor-investigation",
+      "type": "approve_design",
+      "label": "Approve a focused Text Extractor investigation",
+      "note": "Low-confidence proposal; first identify whether the failure is OCR output or clipboard transfer.",
+      "primary": false
+    },
+    {
+      "id": "issue-36949-request-failing-example",
+      "type": "request_info",
+      "label": "Request a focused Text Extractor example",
+      "comment": {
+        "target": "issue",
+        "number": 36949,
+        "body": "Thanks for confirming that Text Extractor copied most of the page but failed on one particular area, and for sharing an image. The report names PowerToys 0.87.1 and COMODO, but not the source surface or what ended up on the clipboard, so we cannot distinguish an OCR recognition failure from a clipboard-transfer failure. Could you repeat once on the latest stable PowerToys and reply with the source app/content type, short steps, and a redacted expected-versus-actual text example? Please omit sensitive text; no new image is needed."
+      },
+      "primary": true,
+      "confirm": true
+    }
+  ],
+  "comments": 4,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
+  "author": "jo99jo"
 }

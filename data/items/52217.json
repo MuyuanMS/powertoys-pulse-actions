@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 5,
+  "number": 52217,
+  "kind": "issue",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal window completely empty",
+  "url": "https://github.com/microsoft/PowerToys/issues/52217",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "labels": ["Issue-Bug", "Needs-Triage"],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-11-18T22:30:00Z",
+  "evaluated_at": "2026-11-18T22:30:00Z",
+  "source_updated_at": "2026-11-18T20:52:32Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The supplied log gives maintainers a concrete provider-load failure to investigate. It does not establish that the driver update caused the blank window or that a specific provider is responsible.",
+    "evidence": ["The report describes a blank window after installing 0.103.3151.", "The attached log shows InvalidCastException with HRESULT 0x80004002 in the TopLevelCommands ABI call from LoadTopLevelCommands."],
+    "recommended_action": "Compare provider load and visible command population on a clean profile and an in-place update using the reported build.",
+    "evaluated_at": "2026-11-18T22:30:00Z",
+    "source_updated_at": "2026-11-18T20:52:32Z"
+  },
+  "issue_context": {
+    "summary": "CmdPal opens with no visible commands after installation. The log shows a provider interop failure during top-level command enumeration.",
+    "known_information": ["The reported build is 0.103.3151 installed from GitHub.", "The screenshot and CmdPal log were supplied; a full Bug Report ZIP was not attached."],
+    "inferences": ["A provider activation or interface compatibility failure may contribute to the empty command list. The observed exception does not prove that it affects all providers."],
+    "analysis": "Separate host-wide command population from a failure in one provider. Check which provider fails, whether other providers still load, and whether the same behavior occurs on a clean profile before changing interop handling.",
+    "initial_investigation": ["Checked the issue timeline and searched for matching reports and linked PRs; no covering work was found.", "Read the provider-load stack in the supplied log and traced the top-level command request in CommandProviderWrapper. No runtime reproduction or driver attribution was made."],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The failure points to command-provider enumeration, but the contributing provider and the relationship between the exception and empty UI must be established before choosing a compatibility or recovery change."
+  },
+  "proposed_fixes": [{
+    "title": "Correct the demonstrated CmdPal provider-load failure",
+    "root_cause": "Hypothesis: a provider does not expose the expected interface at load time, and the resulting failure may leave command population incomplete.",
+    "plan": ["Identify the failing provider and its interface version using the failed command enumeration in a test profile.", "Trace whether successful providers still populate the UI. Correct the demonstrated compatibility or recovery boundary without suppressing the provider failure diagnostic."],
+    "verification": ["Compare clean-install and in-place update behavior.", "Verify that healthy providers remain visible if one provider cannot load."],
+    "confidence": {"score": 57, "level": "yellow", "rationale": "The log identifies an interop boundary but does not establish the provider or prove that this exception causes the entire window to be empty."}
+  }],
+  "actions": [{
+    "id": "issue-52217-reproduce-provider-load",
+    "type": "reproduce",
+    "label": "Trace CmdPal provider loading after installation",
+    "primary": true,
+    "reproduce": {
+      "module": "Command Palette",
+      "version_requirement": "PowerToys 0.103.3151 and the current stable release",
+      "prerequisites": ["Use a disposable Windows profile or VM; keep the reporter's existing profile and settings untouched."],
+      "steps": ["Install 0.103.3151 on a clean test profile, launch CmdPal, and record whether built-in commands appear.", "Repeat with an in-place update on a separate test profile and record per-provider load outcomes and the visible command count.", "If command enumeration produces HRESULT 0x80004002, identify the provider and check whether other providers still populate the window after relaunch."],
+      "expected_result": "CmdPal displays commands from healthy providers after install or update; an unavailable provider does not leave the entire window blank."
+    }
+  }, {
+    "id": "issue-52217-design-provider-load",
+    "type": "approve_design",
+    "label": "Investigate the provider command-loading failure",
+    "primary": false
+  }]
+}

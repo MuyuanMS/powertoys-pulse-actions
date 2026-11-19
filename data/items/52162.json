@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 5,
+  "number": 52162,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_queued",
+  "summary": "Light Switch may discard the Start and taskbar accent preference during a light-to-dark cycle.",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:30.349913Z",
+  "evaluated_at": "2026-11-17T14:44:30.349913Z",
+  "source_updated_at": "2026-11-15T23:40:17Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52162",
+  "title": "Light Switch - changing to Dark Mode unselects \"Show Accent Color\" in Personalization",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Light Switch explicitly clears the Start/taskbar accent preference on entry to light mode; the inspected helper does not restore it on return to dark mode.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52162",
+      "The reporter uses Store PowerToys 0.102.3101 and supplies a screenshot plus a dark-to-light-to-dark sequence.",
+      "The Windows setting is unavailable in light mode, and is off again after the next dark transition.",
+      "Current main src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp: WritePersonalizationTheme writes ColorPrevalence=0 when system && isLight, while the dark-mode branch only updates SystemUsesLightTheme. https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp"
+    ],
+    "recommended_action": "Verify and preserve the user's dark-mode accent preference across Light Switch transitions.",
+    "evaluated_at": "2026-11-17T14:44:30.349913Z",
+    "source_updated_at": "2026-11-15T23:40:17Z"
+  },
+  "issue_context": {
+    "summary": "Light Switch explicitly clears the Start/taskbar accent preference on entry to light mode; the inspected helper does not restore it on return to dark mode.",
+    "known_information": [
+      "The reporter uses Store PowerToys 0.102.3101 and supplies a screenshot plus a dark-to-light-to-dark sequence.",
+      "The Windows setting is unavailable in light mode, and is off again after the next dark transition."
+    ],
+    "inferences": [],
+    "analysis": "Verify and preserve the user's dark-mode accent preference across Light Switch transitions.",
+    "initial_investigation": [
+      "Current main src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp: WritePersonalizationTheme writes ColorPrevalence=0 when system && isLight, while the dark-mode branch only updates SystemUsesLightTheme. https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/LightSwitch/LightSwitchLib/ThemeHelper.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Light Switch explicitly clears the Start/taskbar accent preference on entry to light mode; the inspected helper does not restore it on return to dark mode."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve dark-mode taskbar accent preference",
+      "root_cause": "The explicit ColorPrevalence reset discards the user's enabled preference unless another layer saves and restores it.",
+      "plan": [
+        "Audit the theme coordinator for any existing preference ownership before changing the helper.",
+        "Capture the existing accent preference before Light Switch clears it for light mode, and restore only the preference owned by that transition on return to dark mode.",
+        "Handle restart and user changes deliberately; add dark/light cycle tests for initially on and off values."
+      ],
+      "verification": [
+        "Check manual and scheduled cycles, restart between transitions, and direct user changes while dark."
+      ],
+      "confidence": {
+        "score": 83,
+        "level": "yellow",
+        "rationale": "The exact destructive registry write is present; restoration ownership and persistence policy still require a coordinator-level check."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Preserve dark-mode taskbar accent preference",
+      "id": "issue-52162-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Check the taskbar accent across light and dark transitions",
+      "reproduce": {
+        "title": "Verify reported Light Switch behavior",
+        "module": "Light Switch",
+        "version_requirement": "0.102.3101; compare current main",
+        "prerequisites": [
+          "Use a Windows system supported by the tested PowerToys version."
+        ],
+        "setup": [],
+        "steps": [
+          "In dark mode enable Show accent color on Start and taskbar.",
+          "Use Light Switch to enter light mode, then return to dark mode.",
+          "Repeat through a scheduled transition and after restarting PowerToys."
+        ],
+        "expected_result": "The previous dark-mode accent setting is restored without enabling unsupported light-mode accents."
+      },
+      "id": "issue-52162-reproduce-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Verify and preserve the user's dark-mode accent preference across Light Switch transitions",
+    "detail": "Light Switch explicitly clears the Start/taskbar accent preference on entry to light mode; the inspected helper does not restore it on return to dark mode."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Preserve dark-mode taskbar accent preference",
+    "reason": "Verify and preserve the user's dark-mode accent preference across Light Switch transitions."
+  },
+  "author": "lefty1117"
+}

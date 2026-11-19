@@ -1,0 +1,97 @@
+{
+  "number": 52210,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "schemaVersion": 5,
+  "generated_at": "2026-11-18T18:30:31.464Z",
+  "pending_author": false,
+  "summary": "An empty-search formatting operation removes leading U+3000 whitespace before applying casing.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "This is a candidate-generation regression rather than a failure to format letters: the input is copied for an empty-search operation, then stripped before the text transform. The Unicode whitespace classification explains why U+3000 disappears; preserving original input on a no-op path addresses both formatting cases without asking for more diagnostics.",
+    "evidence": [
+      "The live report provides a precise U+3000 repro: an empty-search formatting operation proposes 123.txt after removing the leading ideographic space, including in Extension only mode.",
+      "At PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e, Helpers.cpp GetTrimmedFileName strips leading iswspace characters; Renaming.cpp calls it before GetTransformedFileName.",
+      "PR #51982 remains open/changes-requested and does not modify GetTrimmedFileName or the existing Title Case/Capitalize paths.",
+      "The upstream issue is open with no comments; no fork issue or PR mirror for 52210 was found by repository search.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "recommended_action": "Approve or revise the focused design before implementation.",
+    "evaluated_at": "2026-11-18T18:30:31.464Z",
+    "source_updated_at": "2026-11-18T14:28:52Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The open linked PR #51982 does not cover this existing PowerRename path; no separate upstream fix or fork mirror was found.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve existing whitespace in formatting-only renames",
+      "root_cause": "DoRename sends the empty-search fallback through GetTrimmedFileName before applying the selected text transform. GetTrimmedFileName removes leading characters classified by iswspace, so a valid leading U+3000 IDEOGRAPHIC SPACE is lost even when the transform is a no-op; the same path affects Extension only.",
+      "plan": [
+        "Separate formatting-only candidates from user-edited rename output so an unchanged source name is not normalized before case formatting.",
+        "Preserve leading whitespace from the original name; retain only the platform-required handling of invalid trailing characters, and do not treat arbitrary Unicode whitespace as removable filename padding.",
+        "Add regression tests for a leading U+3000 name with empty search in Title Case, Capitalize Each Word, and Extension only; assert no rename candidate is produced when formatting is a no-op."
+      ],
+      "verification": [
+        "Run focused PowerRename native tests for empty-search formatting and GetTrimmedFileName.",
+        "Verify a filename beginning with U+3000 remains unchanged in the preview for Title Case and Extension only when no letters are changed."
+      ],
+      "confidence": {
+        "score": 88,
+        "level": "green",
+        "rationale": "The report specifies a reproducible Unicode filename and the current trim-before-transform code directly explains the lost prefix; the fix can be constrained to preserving existing input on a no-op formatting path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "An empty-search formatting operation removes leading U+3000 whitespace before applying casing.",
+    "known_information": [
+      "The report includes a PowerShell setup for a filename beginning with U+3000 and reproduces the change with empty Search and Replace.",
+      "The issue is currently open, assigned to daverayment, last updated 2026-11-18T14:28:52Z, and has no comments.",
+      "Current source trims leading iswspace characters in GetTrimmedFileName and invokes that helper before text formatting.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "inferences": [
+      "The formatting-only fallback is the narrowest place to preserve the existing leading code points while retaining cleanup for an actual user-edited replacement."
+    ],
+    "analysis": "This is a candidate-generation regression rather than a failure to format letters: the input is copied for an empty-search operation, then stripped before the text transform. The Unicode whitespace classification explains why U+3000 disappears; preserving original input on a no-op path addresses both formatting cases without asking for more diagnostics.",
+    "initial_investigation": [
+      "Inspected Helpers.cpp GetTrimmedFileName and Renaming.cpp DoRename at PowerToys main commit 084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e; the trim call precedes the transformation call.",
+      "Reviewed PR #51982 diff and current state; it does not touch trimming or existing formatting modes.",
+      "Checked upstream issue references; no separate covering fix was found.",
+      "PR #51982 author comment on 2026-11-18 says the new Unicode helper is available for other casing paths in separate fixes; the current diff still scopes its use to SentenceCase."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve whitespace-preserving rename design",
+      "note": "Start the separate PowerRename design workflow only after maintainer approval.",
+      "id": "issue-52210-design",
+      "primary": true
+    }
+  ],
+  "evaluated_at": "2026-11-18T18:30:31.464Z",
+  "source_updated_at": "2026-11-18T14:28:52Z",
+  "title": "[PowerRename] Formatting-only operations remove existing whitespace",
+  "url": "https://github.com/microsoft/PowerToys/issues/52210",
+  "author": "daverayment",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "owes": "maintainer",
+  "repository": "microsoft/PowerToys",
+  "status": {
+    "glyph": "🛠",
+    "label": "Fix design proposed",
+    "detail": "The empty-search fallback trims leading iswspace characters before formatting, removing the reported U+3000 prefix."
+  },
+  "next_action": "Review the proposed fix design and approve it for detailed design."
+}

@@ -1,33 +1,91 @@
 {
+  "schemaVersion": 5,
   "number": 41198,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage",
+  "title": "Precision mouse cannot return to tactile scrolling over Bluetooth",
+  "url": "https://github.com/microsoft/PowerToys/issues/41198",
+  "repository": "microsoft/PowerToys",
+  "source_updated_at": "2026-11-16T05:55:19Z",
+  "generated_at": "2026-11-19T11:36:28Z",
+  "evaluated_at": "2026-11-19T11:36:28Z",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T14:51:37Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
+  "owes": "us",
+  "summary": "A second mouse shows the symptom across Windows and Linux and recovers with external power; the original mouse still needs a PowerToys-exit and power control.",
+  "labels": ["Issue-Bug", "Needs-Triage", "Needs-Team-Response", "Product-General"],
+  "assignees": [],
+  "comments": 5,
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "label": "Compare the original mouse with PowerToys exited and external power",
+    "reason": "The cross-OS power result concerns another unit and does not establish whether the original report depends on PowerToys."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The cross-OS and external-power control favors a device-side cause for the later reporter's unit, but cannot establish the cause of the original report. The original reporter disabled Command Palette, not all of PowerToys.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "On 0.93.0 the original reporter's Precision mouse fails to return to tactile mode over Bluetooth; wired connection and power cycling restore it.",
+      "Disabling Command Palette and rebooting did not resolve the original report, and the requested diagnostic ZIP was supplied.",
+      "Another owner reports the same behavior on Windows and Linux, while Bluetooth plus external USB power restores both modes: https://github.com/microsoft/PowerToys/issues/41198#issuecomment-6908609113",
+      "FancyZones installs a low-level mouse hook and chains button events, but no evidence connects it to this hardware toggle: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/fancyzones/FancyZonesLib/MouseButtonsHook.cpp"
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T14:51:37Z"
-  }
+    "recommended_action": "Ask for the original unit's PowerToys-exit and external-power controls before deciding whether a PowerToys change is relevant.",
+    "evaluated_at": "2026-11-19T11:36:28Z",
+    "source_updated_at": "2026-11-16T05:55:19Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys change is conditional on the original unit failing only while PowerToys runs; the other unit's cross-OS result does not establish that.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [{
+    "title": "Investigate the responsible input path only if PowerToys controls isolate it",
+    "root_cause": "The cause of the original unit's failure is unknown; device power and a PowerToys-dependent input path are distinct possibilities.",
+    "plan": [
+      "Compare the original mouse with PowerToys running and fully exited, then compare Bluetooth with and without external USB power.",
+      "If the issue depends on PowerToys, isolate the responsible enabled module and its event handling before making a narrowly scoped correction.",
+      "If it persists with PowerToys exited and changes with external power, route the unit to device support rather than modifying unrelated hooks."
+    ],
+    "verification": [
+      "Both scroll modes switch reliably without disrupting normal mouse buttons and gestures.",
+      "A hardware-dependent failure is not misrepresented as a verified PowerToys fix."
+    ],
+    "confidence": {"score": 25, "level": "red", "rationale": "The original mouse has not been tested with PowerToys fully exited or with external power while retaining Bluetooth."}
+  }],
+  "actions": [
+    {
+      "id": "request-info-41198",
+      "type": "request_info",
+      "label": "Compare PowerToys exit and external power on the original mouse",
+      "comment": {
+        "target": "issue",
+        "number": 41198,
+        "body": "Thanks for testing Command Palette and providing the report. If the original mouse still shows this behavior, what PowerToys version are you using now? Please try switching from smooth back to tactile with PowerToys fully exited, then repeat over Bluetooth while the mouse is connected to external USB power. Does either control change the result? Another owner's cross-OS test suggests a possible device-power issue, but it does not establish the cause on your unit."
+      },
+      "primary": true
+    },
+    {"type": "approve_design", "label": "Review a conditional input-path investigation", "primary": false}
+  ],
+  "issue_context": {
+    "summary": "The original Precision mouse cannot return from smooth to tactile scrolling on Bluetooth.",
+    "known_information": [
+      "The original report names PowerToys 0.93.0 and Windows 11 24H2; a wired connection and power cycle recover tactile mode.",
+      "Disabling Command Palette and rebooting did not resolve the original report; a diagnostic ZIP was attached.",
+      "A later reporter observed the behavior on both Windows and Linux and restored switching using external USB power while on Bluetooth."
+    ],
+    "inferences": ["Device power is plausible for the second unit; the original unit's cause remains unconfirmed."],
+    "analysis": "The two reports may have the same symptom without the same cause. A complete PowerToys-exit test and power control distinguish a software-dependent path from the reported device-side pattern.",
+    "initial_investigation": [
+      "The later reporter's cross-OS and power control is documented at https://github.com/microsoft/PowerToys/issues/41198#issuecomment-6908609113.",
+      "FancyZones chains its low-level mouse callback rather than establishing that the toggle is intercepted: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/fancyzones/FancyZonesLib/MouseButtonsHook.cpp"
+    ],
+    "information_gaps": [{
+      "information": "Current version and behavior of the original mouse with PowerToys fully exited and with external USB power while on Bluetooth",
+      "why_needed": "Distinguish a PowerToys-dependent input path from the device-power pattern observed on another unit.",
+      "how_to_collect": "Repeat the smooth-to-tactile switch after fully exiting PowerToys and while retaining Bluetooth with external USB power.",
+      "evidence_type": "behavior_confirmation"
+    }]
+  },
+  "status": {"label": "Needs Information", "detail": "The original mouse needs PowerToys-exit and external-power controls."},
+  "author": "QbicCrafter"
 }

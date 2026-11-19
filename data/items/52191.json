@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 52191,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "[FancyZones CLI] Help examples use a payload name that is not exposed on PATH",
+  "url": "https://github.com/microsoft/PowerToys/issues/52191",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-19T11:41:16Z",
+  "evaluated_at": "2026-11-19T11:41:16Z",
+  "source_updated_at": "2026-11-17T11:38:33Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "FancyZones help advertises the internal payload name, not the public CLI shim that the installer puts on PATH.",
+  "next_action": "Align both resource-backed and hard-coded help, recovery guidance, and examples with PowerToys.FancyZones.CLI.exe; check executable output and installed command resolution separately.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Source confirms the mismatch in both FancyZonesCliUsage and resource-backed root syntax and recovery guidance. Installer authoring names PowerToys.FancyZones.CLI.exe for both scopes. The reporter examined extracted packages; installed-product command resolution and candidate output have not been independently run.",
+    "evidence": [
+      "FancyZonesCliUsage.PrintUsage reads Resources.usage_syntax and prints hard-coded examples; PrintCommandUsage reads Resources.usage_run_help for an unknown command: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/fancyzones/FancyZonesCLI/CommandLine/FancyZonesCliUsage.cs.",
+      "Resources.resx advertises FancyZonesCLI in usage_syntax, usage_run_help, get_layouts_usage and the two PowerShell error examples: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/fancyzones/FancyZonesCLI/Properties/Resources.resx.",
+      "Installer authoring defines the installed filename PowerToys.FancyZones.CLI.exe and separate user/machine PATH entries: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/installer/PowerToysSetupVNext/CliShims.wxs#L13-L18."
+    ],
+    "recommended_action": "Verify the installed public command and keep the internal payload directory off PATH.",
+    "evaluated_at": "2026-11-19T11:41:16Z",
+    "source_updated_at": "2026-11-17T11:38:33Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix surfaced. The mismatch is in the help text rather than in command dispatch.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use the public FancyZones CLI name in help and examples",
+      "root_cause": "FancyZonesCliUsage hard-coded examples and Resources.resx usage_syntax, usage_run_help, get_layouts_usage and PowerShell recovery examples advertise the internal FancyZonesCLI payload name instead of the installed PowerToys.FancyZones.CLI.exe shim.",
+      "plan": [
+        "Use PowerToys.FancyZones.CLI.exe in FancyZonesCliUsage root examples, subcommand usage and command examples.",
+        "Correct Resources.resx keys usage_syntax, usage_run_help, get_layouts_usage, error_powershell_scriptblock_option1_example and error_powershell_scriptblock_option2_example without renaming keys or internal identifiers.",
+        "Leave the shim mapping and installer PATH behavior unchanged.",
+        "Check executable output for root help, every subcommand and alias, unknown-command-with-help recovery, and PowerShell scriptblock recovery. No dedicated CLI help test project was found; do not claim automated coverage already exists."
+      ],
+      "verification": [
+        "Capture --help and an unknown-command --help invocation; assert root syntax and recovery guidance name the public shim, and check every subcommand/alias help example.",
+        "From a fresh terminal outside the install directory, resolve PowerToys.FancyZones.CLI.exe and run --help after both per-user and machine installs. Test get-monitors separately: configuration errors do not imply command lookup failed."
+      ],
+      "confidence": {
+        "score": 84,
+        "level": "yellow",
+        "rationale": "The output consumers, five resource keys and installed filename are confirmed in pinned source. Candidate executable output and real per-user/machine command resolution remain untested."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify the FancyZones help commands in an installed build",
+      "reproduce": {
+        "title": "Compare advertised FancyZones command names with installed command lookup",
+        "module": "FancyZones",
+        "version_requirement": "Stable 0.102.3101.0 or preview 0.103.3151.0 plus a candidate build",
+        "prerequisites": [
+          "Disposable Windows environment for per-user and machine installations."
+        ],
+        "setup": [
+          "Enable the installer CLI PATH option, then start a fresh terminal in an unrelated directory; do not edit global PATH for the test."
+        ],
+        "steps": [
+          "Resolve PowerToys.FancyZones.CLI.exe in the fresh terminal and record its full path; compare command lookup for the internal FancyZonesCLI.exe without changing PATH.",
+          "Run the public shim with --help, get-monitors --help and a deliberately unknown subcommand followed by --help; inspect resource-backed syntax, subcommand usage, examples and recovery guidance.",
+          "On the candidate build, repeat the output checks for all command names and aliases and the PowerShell scriptblock recovery examples.",
+          "Separately run the displayed get-monitors example. Record launch success independently from any FancyZones configuration or runtime error."
+        ],
+        "expected_result": "Root syntax, subcommand usage, examples and recovery guidance advertise PowerToys.FancyZones.CLI.exe. The installed public shim resolves without adding the payload directory to PATH; any later command/configuration failure is reported separately."
+      }
+    },
+    {
+      "id": "issue-52191-design-cli-help-name",
+      "type": "approve_design",
+      "label": "Align FancyZones help with the installed command name",
+      "primary": false
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones CLI help describes a command name not exposed by the installer.",
+    "known_information": [
+      "The reporter confirmed the mismatch in extracted signed stable and preview payloads; this was not installed-product validation."
+    ],
+    "inferences": [
+      "Changing the help text should address the mismatch without changing what the shim launches."
+    ],
+    "analysis": "Changing FancyZonesCliUsage alone would leave root syntax and unknown-command recovery incorrect because they come from Resources.resx. The same resource also supplies a get-layouts hint and two PowerShell recovery examples. Correct these user-facing invocations without changing internal identifiers or packaging. This differs from #52186, where the reporter reached the CLI using the correct shim and received a missing-layout-file error.",
+    "initial_investigation": [
+      "Root and subcommand examples use the internal executable name in FancyZonesCliUsage.cs: https://github.com/microsoft/PowerToys/blob/084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e/src/modules/fancyzones/FancyZonesCLI/CommandLine/FancyZonesCliUsage.cs",
+      "The public entry point and relative target are defined in the shim manifest: https://github.com/microsoft/PowerToys/blob/084281ef6b137aa47a1e6a8e1e7bf79b0fe0378e/tools/CliShim/CliShimManifest.props",
+      "Pinned current source confirms resource-backed root syntax, unknown-command guidance, get-layouts hint and PowerShell error examples also need correction.",
+      "The installed .exe suffix and user/machine PATH authoring are confirmed in CliShims.wxs at the pinned revision; no build, installation or executable-output test was performed."
+    ],
+    "information_gaps": [
+      "Confirm installed PATH behavior separately for per-user and machine installations."
+    ]
+  },
+  "status": {
+    "label": "Needs Repro",
+    "detail": "Help-name mismatch confirmed in source; installed-product verification remains."
+  }
+}

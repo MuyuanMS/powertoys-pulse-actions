@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 52136,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:44.670621Z",
+  "evaluated_at": "2026-11-17T14:44:44.670621Z",
+  "source_updated_at": "2026-11-14T10:20:42Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52136",
+  "title": "disabling alt+tab fails when holding an additional key",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The disabled-shortcut handler explicitly skips matching when another key is held, even outside the configurable exact-match check; this directly fits the reported Alt+Tab bypass.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52136",
+      "PowerToys 0.102.3101 from the Store; left Alt+Tab mapped to Disabled.",
+      "Alt+Tab is blocked alone but executes when a letter or digit is held; a diagnostic ZIP is already supplied.",
+      "The author reports Windows 25H2/English US and asks whether this is intended behavior.",
+      "Current KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp lines 730–734: !IsKeyboardStateClearExceptShortcut skips both shortcut-to-shortcut and VK_DISABLED mappings; the separate exactMatch condition is earlier in the handler.",
+      "No direct #52136 PR was found. The guard makes the bypass source-supported, but policy for intentionally disabled shortcuts still needs maintainer agreement.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp"
+    ],
+    "recommended_action": "Verify the disabled-shortcut guard and decide whether explicit disable should suppress the target chord independently of unrelated held nonmodifier keys.",
+    "evaluated_at": "2026-11-17T14:44:44.670621Z",
+    "source_updated_at": "2026-11-14T10:20:42Z"
+  },
+  "issue_context": {
+    "summary": "The disabled-shortcut handler explicitly skips matching when another key is held, even outside the configurable exact-match check; this directly fits the reported Alt+Tab bypass.",
+    "known_information": [
+      "PowerToys 0.102.3101 from the Store; left Alt+Tab mapped to Disabled.",
+      "Alt+Tab is blocked alone but executes when a letter or digit is held; a diagnostic ZIP is already supplied.",
+      "The author reports Windows 25H2/English US and asks whether this is intended behavior."
+    ],
+    "inferences": [],
+    "analysis": "Verify the disabled-shortcut guard and decide whether explicit disable should suppress the target chord independently of unrelated held nonmodifier keys.",
+    "initial_investigation": [
+      "Current KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp lines 730–734: !IsKeyboardStateClearExceptShortcut skips both shortcut-to-shortcut and VK_DISABLED mappings; the separate exactMatch condition is earlier in the handler.",
+      "No direct #52136 PR was found. The guard makes the bypass source-supported, but policy for intentionally disabled shortcuts still needs maintainer agreement.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The disabled-shortcut handler explicitly skips matching when another key is held, even outside the configurable exact-match check; this directly fits the reported Alt+Tab bypass."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Separate disabled-shortcut matching from remap safety guards",
+      "root_cause": "The unconditional clear-keyboard-state guard includes VK_DISABLED, allowing the original OS chord through whenever another nonmodifier key is held.",
+      "plan": [
+        "Confirm intended Disabled versus exact-match semantics with a focused repro and existing remap tests.",
+        "If disable is intended to be inclusive, separate VK_DISABLED handling from shortcut-to-shortcut guard logic while preserving extra keys and modifier release state.",
+        "Add tests for held letter/digit, key order, key repeat, left/right Alt and exact-match policy."
+      ],
+      "verification": [
+        "Alt+Tab remains blocked for the approved matching policy with unrelated keys held; ordinary shortcut remaps and modifier cleanup remain unchanged."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The exact guard matches the symptom; the unresolved part is the product's desired inclusive-versus-exact disabled-shortcut policy."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Separate disabled-shortcut matching from remap safety guards",
+      "id": "issue-52136-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager behavior",
+      "reproduce": {
+        "title": "Verify reported Keyboard Manager behavior",
+        "module": "Keyboard Manager",
+        "version_requirement": "0.102.3101; compare current main",
+        "prerequisites": [
+          "Use a Windows system supported by the tested PowerToys version."
+        ],
+        "setup": [],
+        "steps": [
+          "Map left Alt+Tab to Disabled and verify ordinary Alt+Tab is blocked.",
+          "Hold A, then press left Alt+Tab; repeat with a digit.",
+          "Repeat with different press/release orders and with exact-match enabled and disabled if exposed.",
+          "Confirm unrelated held keys are neither swallowed nor left logically pressed."
+        ],
+        "expected_result": "An explicitly disabled chord follows its documented matching policy and cannot unexpectedly activate merely because an unrelated key is held."
+      },
+      "id": "issue-52136-reproduce-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Verify the disabled-shortcut guard and decide whether explicit disable should suppress the target ch",
+    "detail": "The disabled-shortcut handler explicitly skips matching when another key is held, even outside the configurable exact-match check; this directly fits the reported Alt+Tab bypass."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Separate disabled-shortcut matching from remap safety guards",
+    "reason": "Verify the disabled-shortcut guard and decide whether explicit disable should suppress the target chord independently of unrelated held nonmodifier keys."
+  },
+  "author": "SpinkyDog"
+}

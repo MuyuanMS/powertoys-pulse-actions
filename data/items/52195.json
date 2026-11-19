@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "number": 52195,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: Show GPU temperature on the Performance Monitor GPU card",
+  "url": "https://github.com/microsoft/PowerToys/pull/52195",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-11-19T11:02:34.5675647+00:00",
+  "evaluated_at": "2026-11-19T11:02:34.5675647+00:00",
+  "source_updated_at": "2026-11-18T14:30:29Z",
+  "head_sha": "9d07d111948307b164fe62edd238f8fbd8ce7c2c",
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "gpu-temperature-per-adapter-catch",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "start_line": 500,
+      "line": 511,
+      "side": "RIGHT",
+      "body": "### (1/2) Keep temperature polling resilient per adapter\n\n**Severity:** `medium`\n\nA driver/API exception for one LUID currently aborts the whole cycle before any values are committed, so the failing GPU and all later adapters retain stale readings. Catch failures inside the loop, mark that adapter unavailable, and continue so the remaining sampled GPUs refresh. Apply this together with (2/2), which adds the regression test.\n\n```suggestion\n        foreach (var luid in luids)\n        {\n            try\n            {\n                temperatures[luid] = _readTemperature(luid);\n            }\n            catch (Exception ex)\n            {\n                LogFailureOnce(ref _temperatureReadFailureLogged, \"Failed while reading GPU temperatures.\", ex);\n                temperatures[luid] = 0;\n            }\n        }\n```",
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The pinned method returns before committing any values when an injected per-adapter read throws; the replacement preserves per-adapter isolation and updates the failing GPU to unavailable."
+      },
+      "selection_group": {
+        "id": "gpu-temperature-read-exception",
+        "title": "Recover from a per-adapter temperature read failure",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "severity": "medium",
+      "title": "(1/2) Keep temperature polling resilient per adapter"
+    },
+    {
+      "id": "gpu-temperature-read-failure-test",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests/GPUStatsTests.cs",
+      "start_line": 266,
+      "line": 266,
+      "side": "RIGHT",
+      "body": "### (2/2) Cover an isolated adapter read failure\n\n**Severity:** `medium`\n\nThe existing tests cover successful readings and unavailable adapters, but not a thrown read after values were already displayed. This two-adapter test verifies that the failing GPU becomes unavailable and a later adapter still refreshes; apply it together with (1/2).\n\n```suggestion\n\n    [TestMethod]\n    public void GetGPUTemperature_ReadFailureDoesNotLeaveStaleTemperatureOrSkipLaterAdapters()\n    {\n        var failFirstRead = false;\n        using var stats = new GPUStats(\n            new()\n            {\n                [1] = new(\"NVIDIA GeForce RTX 4090\", IsSoftware: false),\n                [2] = new(\"AMD Radeon(TM) Graphics\", IsSoftware: false),\n            },\n            [1, 2],\n            luid =>\n            {\n                if (luid == 1 && failFirstRead)\n                {\n                    throw new System.InvalidOperationException();\n                }\n\n                return luid == 1 ? 44.4f : (failFirstRead ? 57f : 56f);\n            });\n\n        stats.RequestDetails(true);\n        stats.UpdateTemperatures();\n\n        Assert.AreEqual(\"44 °C\", stats.GetGPUTemperature(0));\n        Assert.AreEqual(\"56 °C\", stats.GetGPUTemperature(1));\n\n        failFirstRead = true;\n        stats.UpdateTemperatures();\n\n        Assert.AreEqual(\"--\", stats.GetGPUTemperature(0));\n        Assert.AreEqual(\"57 °C\", stats.GetGPUTemperature(1));\n    }\n}\n```",
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The existing tests cover successful sampling and unavailable values but omit thrown reads; the proposed test directly exercises the missed multi-adapter failure path."
+      },
+      "selection_group": {
+        "id": "gpu-temperature-read-exception",
+        "title": "Recover from a per-adapter temperature read failure",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "severity": "medium",
+      "title": "(2/2) Cover an isolated adapter read failure"
+    },
+    {
+      "id": "gpu-detail-request-debug-assert",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs",
+      "start_line": 456,
+      "line": 459,
+      "side": "RIGHT",
+      "body": "### Detect mismatched detail requests during development\n\n**Severity:** `low`\n\nThe production clamp protects the counter from remaining negative, but silently hides an unmatched `RequestDetails(false)` and makes lifecycle-pairing regressions harder to diagnose. Capture the decrement and assert in Debug while retaining the existing production clamp.\n\n```suggestion\n        else\n        {\n            var requestCount = Interlocked.Decrement(ref _detailRequests);\n            Debug.Assert(requestCount >= 0, \"GPU detail request count must not go below zero.\");\n            if (requestCount < 0)\n            {\n                Interlocked.Exchange(ref _detailRequests, 0);\n            }\n        }\n```",
+      "confidence": {
+        "score": 84,
+        "level": "yellow",
+        "rationale": "The underflow clamp is explicit and currently has no demonstrated unmatched caller; a Debug assertion is a useful diagnostic while retaining release resilience."
+      },
+      "severity": "low",
+      "title": "Detect mismatched detail requests during development"
+    },
+    {
+      "id": "gpu-detail-release-before-unload",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs",
+      "start_line": 1584,
+      "line": 1585,
+      "side": "RIGHT",
+      "body": "### Release detail polling before deactivation\n\n**Severity:** `low`\n\n`base.Unloaded()` decrements the shared page's activation count, but the manager remains active while another client is loaded. In that case the detail request stays enabled until the following call, leaving a small window for an unnecessary temperature read after this card begins unloading; release the request first.\n\n```suggestion\n        _dataManager.GetGPUStats().RequestDetails(false);\n        base.Unloaded();\n```",
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The shared activation counter proves the manager can remain active while another client is loaded; the extra poll window is narrow and limited to that shared-active case."
+      },
+      "severity": "low",
+      "title": "Release detail polling before deactivation"
+    }
+  ],
+  "actions": [
+    {
+      "primary": true,
+      "label": "Post GPU sampling review suggestions",
+      "review": {
+        "event": "COMMENT"
+      },
+      "id": "52195-post-gpu-review",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "line_ending_safety": {
+      "checked_comment_ids": [
+        "gpu-temperature-per-adapter-catch",
+        "gpu-temperature-read-failure-test",
+        "gpu-detail-request-debug-assert",
+        "gpu-detail-release-before-unload"
+      ],
+      "files": [
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs"
+        },
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs"
+        },
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests/GPUStatsTests.cs"
+        }
+      ],
+      "result": "passed",
+      "head_sha": "9d07d111948307b164fe62edd238f8fbd8ce7c2c"
+    },
+    "suggestion_patch": {
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "gpu-temperature-per-adapter-catch",
+        "gpu-temperature-read-failure-test",
+        "gpu-detail-request-debug-assert",
+        "gpu-detail-release-before-unload"
+      ],
+      "result": "passed",
+      "head_sha": "9d07d111948307b164fe62edd238f8fbd8ce7c2c"
+    }
+  }
+}

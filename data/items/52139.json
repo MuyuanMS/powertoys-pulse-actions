@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 52139,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:42.969111Z",
+  "evaluated_at": "2026-11-17T14:44:42.969111Z",
+  "source_updated_at": "2026-11-14T11:27:39Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52139",
+  "title": "Zoomit: Zoom is jittery",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "Unlike ordinary zoom jitter, this report gives a recording-dependent loss of both zoom and annotation that recovers only when recording stops; keep it distinct from #51481 until reproduced.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52139",
+      "PowerToys 0.102.3101 on Windows 11 build 26300, running elevated; a diagnostic ZIP is already attached.",
+      "Start recording with Ctrl+5, repeatedly use Ctrl+1 or Ctrl+2, and eventually both operations stop responding until recording is stopped.",
+      "Current Zoomit.cpp has separate ZOOM_HOTKEY, DRAW_HOTKEY and RECORD_HOTKEY registrations and global recording/session state; VideoRecordingSession owns asynchronous capture lifecycle.",
+      "No PR directly referencing #52139 was found. The supplied sequence is enough for maintainer testing; the exact stuck state or timer/hotkey conflict is not established.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/ZoomIt/ZoomIt/Zoomit.cpp"
+    ],
+    "recommended_action": "Exercise repeated zoom/draw transitions during an active recording and inspect the first state transition that stops accepting those hotkeys.",
+    "evaluated_at": "2026-11-17T14:44:42.969111Z",
+    "source_updated_at": "2026-11-14T11:27:39Z"
+  },
+  "issue_context": {
+    "summary": "Unlike ordinary zoom jitter, this report gives a recording-dependent loss of both zoom and annotation that recovers only when recording stops; keep it distinct from #51481 until reproduced.",
+    "known_information": [
+      "PowerToys 0.102.3101 on Windows 11 build 26300, running elevated; a diagnostic ZIP is already attached.",
+      "Start recording with Ctrl+5, repeatedly use Ctrl+1 or Ctrl+2, and eventually both operations stop responding until recording is stopped."
+    ],
+    "inferences": [],
+    "analysis": "Exercise repeated zoom/draw transitions during an active recording and inspect the first state transition that stops accepting those hotkeys.",
+    "initial_investigation": [
+      "Current Zoomit.cpp has separate ZOOM_HOTKEY, DRAW_HOTKEY and RECORD_HOTKEY registrations and global recording/session state; VideoRecordingSession owns asynchronous capture lifecycle.",
+      "No PR directly referencing #52139 was found. The supplied sequence is enough for maintainer testing; the exact stuck state or timer/hotkey conflict is not established.",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/ZoomIt/ZoomIt/Zoomit.cpp"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Unlike ordinary zoom jitter, this report gives a recording-dependent loss of both zoom and annotation that recovers only when recording stops; keep it distinct from #51481 until reproduced."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Repair ZoomIt zoom/draw state transitions during recording",
+      "root_cause": "A recording-specific state, dispatch or resource transition may leave zoom/draw unavailable; shared lifecycle source provides a place to investigate but not a proven faulty condition.",
+      "plan": [
+        "Reproduce the repeated-toggle sequence while recording and trace hotkey receipt, mode flags and capture lifecycle.",
+        "Correct the first measured state/dispatch imbalance rather than treating this as the generic animation jitter issue.",
+        "Add a recording-active repeated zoom/draw regression scenario and verify stop/cancel cleanup."
+      ],
+      "verification": [
+        "Repeat dozens of zoom/draw entries during an ongoing recording, then stop, restart and cancel without losing hotkey responsiveness."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "The dependency on active recording is explicit, but no state trace yet identifies the defect."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Repair ZoomIt zoom/draw state transitions during recording",
+      "id": "issue-52139-approve_design-1",
+      "primary": false
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce ZoomIt behavior",
+      "reproduce": {
+        "title": "Verify reported ZoomIt behavior",
+        "module": "ZoomIt",
+        "version_requirement": "0.102.3101; compare current main",
+        "prerequisites": [
+          "Use a Windows system supported by the tested PowerToys version."
+        ],
+        "setup": [],
+        "steps": [
+          "Start a full-screen recording with Ctrl+5.",
+          "Repeatedly enter and leave zoom using Ctrl+1, then repeat draw entry/exit using Ctrl+2 and Escape.",
+          "If zoom/draw stops responding, keep the recording active long enough to inspect hotkey dispatch and zoom/draw state, then stop recording.",
+          "Confirm whether zoom/draw immediately works again; repeat with a nonrecording control."
+        ],
+        "expected_result": "Zoom and annotation remain usable throughout recording and after it stops."
+      },
+      "id": "issue-52139-reproduce-2",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Exercise repeated zoom/draw transitions during an active recording and inspect the first state trans",
+    "detail": "Unlike ordinary zoom jitter, this report gives a recording-dependent loss of both zoom and annotation that recovers only when recording stops; keep it distinct from #51481 until reproduced."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Approve Repair ZoomIt zoom/draw state transitions during recording",
+    "reason": "Exercise repeated zoom/draw transitions during an active recording and inspect the first state transition that stops accepting those hotkeys."
+  },
+  "author": "ahmadjamalmughal47"
+}

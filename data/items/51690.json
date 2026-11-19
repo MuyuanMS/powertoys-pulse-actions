@@ -9,48 +9,51 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-31T03:51:10.546176+08:00",
-  "evaluated_at": "2026-10-31T03:51:10.5462034+08:00",
-  "source_updated_at": "2026-10-30T18:46:28Z",
-  "head_sha": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596",
+  "generated_at": "2026-11-19T11:21:18.2259086+08:00",
+  "evaluated_at": "2026-11-19T11:21:18.2259086+08:00",
+  "source_updated_at": "2026-11-18T23:54:31Z",
+  "head_sha": "3718bde6bf8cfeb230f3ea8985cecd617a672308",
   "needs_revalidation": false,
   "proposed_comments": [
     {
-      "side": "RIGHT",
-      "line": 20,
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/TrayPaletteSettings.cs",
-      "confidence": {
-        "score": 94,
-        "rationale": "Exact upstream type with JSON-deserialized duplicates reproduces the exception; literal candidate compiles and preserves focused persistence controls."
-      },
       "id": "51690-normalize-saved-tray-pins",
-      "title": "Normalize duplicate persisted tray pins before reorder",
       "kind": "inline",
-      "disposition": "proposed",
-      "body": "**Severity: Medium — saved tray order cannot be updated when persisted pins contain duplicates.**\r\n\r\n`Commands` currently accepts duplicate provider/command pairs from settings, while `RefreshAsync` shows only `pins.Distinct()`. `Reorder` therefore receives fewer visible entries than there are matching saved slots and advances `next` past the end. The focused exact-source JSON regression reproduces this exception. `SaveOrder` catches/logs it and sets `HasLoadError`; it does not crash the process.\r\n\r\n**If left unchanged:** a settings list with duplicate pins can display normally but fail every drag-to-reorder attempt, leaving the order unsaved.\r\n\r\nNormalize persisted pairs at initialization, preserving first-occurrence order and the existing null-to-empty behavior:\r\n\r\n```suggestion\r\n        init => _commands = value?.Distinct().ToImmutableList() ?? [];\r\n```\r\n\r\nAdd a JSON regression containing repeated visible pins separated by an unavailable pin; confirm reorder succeeds and the unavailable pin keeps its position. The literal replacement compiled with the unmodified persistence type and passed 12 focused checks; the original passed 11 controls including reproduction of the duplicate-pin failure. These are isolated persistence checks, not a complete CmdPal build or interactive drag test.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/TrayPaletteSettings.cs",
+      "line": 20,
+      "body": "### Normalize duplicate saved tray pins\n\n**Severity:** `medium`\n\nIf the saved tray pins contain the same provider/command pair twice and that command is available, refresh shows it once, but `Reorder` consumes an entry for each saved occurrence. After a drag, saving the new order throws, so `SaveOrder` sets `HasLoadError` and the reordered pins are not persisted. Could the saved list be deduplicated when it is loaded, keeping the first occurrence?\n\n```suggestion\n        init => _commands = value?.Distinct().ToImmutableList() ?? [];\n```",
+      "confidence": {
+        "score": 78,
+        "rationale": "The product source-generated settings test and mocked viewmodel reproduce the conditional failure, and the literal candidate passes; only externally modified or preexisting duplicate data is established, not normal UI creation."
+      },
+      "title": "Normalize duplicate saved tray pins",
       "severity": "medium",
+      "side": "RIGHT",
+      "disposition": "proposed",
       "in_diff": true
     }
   ],
   "actions": [
     {
       "label": "Post supported inline suggestion",
-      "head_sha": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596",
+      "head_sha": "3718bde6bf8cfeb230f3ea8985cecd617a672308",
       "review": {
-        "head_sha": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596",
+        "head_sha": "3718bde6bf8cfeb230f3ea8985cecd617a672308",
         "comment_ids": [
           "51690-normalize-saved-tray-pins"
         ],
         "event": "COMMENT",
-        "commit_id": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596"
+        "commit_id": "3718bde6bf8cfeb230f3ea8985cecd617a672308"
       },
       "id": "51690-post-current-assessment",
-      "type": "post_review"
+      "type": "post_review",
+      "requiresApproval": true,
+      "confirm": true,
+      "primary": true
     }
   ],
   "validation": {
     "suggestion_patch": {
-      "head_sha": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596",
+      "head_sha": "3718bde6bf8cfeb230f3ea8985cecd617a672308",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
@@ -58,7 +61,7 @@
       ]
     },
     "line_ending_safety": {
-      "head_sha": "a4406f5c8eea03a38c6339afcaeecb2ef44fe596",
+      "head_sha": "3718bde6bf8cfeb230f3ea8985cecd617a672308",
       "result": "passed",
       "checked_comment_ids": [
         "51690-normalize-saved-tray-pins"
@@ -67,7 +70,7 @@
         {
           "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/TrayPaletteSettings.cs",
           "result": "passed",
-          "line_endings": "crlf"
+          "line_endings": "lf"
         }
       ]
     }

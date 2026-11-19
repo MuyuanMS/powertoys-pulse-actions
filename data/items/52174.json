@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 5,
+  "number": 52174,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "title": "UI Crash",
+  "url": "https://github.com/microsoft/PowerToys/issues/52174",
+  "repository": "microsoft/PowerToys",
+  "generated_at": "2026-11-17T14:48:19.176675Z",
+  "evaluated_at": "2026-11-17T14:48:19.176675Z",
+  "source_updated_at": "2026-11-16T18:42:15Z",
+  "pending_author": false,
+  "owes": "us",
+  "summary": "The supplied archive contains a fatal Run NullReferenceException in UWPApplication's activation-task lambda at 13:29:04, distinct from the handled missing-logo warnings. Investigate that asynchronous error boundary; it still does not establish that Run caused every desktop window to go black.",
+  "next_action": {
+    "label": "Test the Run activation error boundary",
+    "reason": "Run reports failed activation without the supplied fatal stack, while successful launches and error visibility remain intact."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The supplied archive contains a fatal Run NullReferenceException in UWPApplication's activation-task lambda at 13:29:04, distinct from the handled missing-logo warnings. Investigate that asynchronous error boundary; it still does not establish that Run caused every desktop window to go black.",
+    "evidence": [
+      "PowerToys 0.102.3001 from Store; reporter says all desktop windows went black without a deliberate action.",
+      "A diagnostic ZIP and 2026-11-16.txt are already attached.",
+      "Archive PowerToys Run/Logs/0.102.3001.0/2026-11-16.txt records a fatal NullReferenceException in UWPApplication.<Launch>b__0, flowing through Task and async-void Launch to the UI exception handler.",
+      "Missing-logo FileNotFoundException records are separately marked recoverable; later hotkey entries continue.",
+      "Inspected the supplied archive's occurrence-date Run log and empty exported launcher Event Viewer file: https://github.com/user-attachments/files/34930395/PowerToysReport_2026-11-16-13-40-23.zip",
+      "Current UWPApplication.Launch awaits Task.Run from async void and performs logging plus api.ShowMsg inside its catch: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs",
+      "Similar PR #47412 was closed for missing evidence, and #47406 for low confidence in its claimed root cause; neither merged: https://github.com/microsoft/PowerToys/pull/47406#issuecomment-4449557757"
+    ],
+    "recommended_action": "Run reports failed activation without the supplied fatal stack, while successful launches and error visibility remain intact.",
+    "evaluated_at": "2026-11-17T14:48:19.176675Z",
+    "source_updated_at": "2026-11-16T18:42:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Conditional lightweight direction; The supplied archive contains a fatal Run NullReferenceException in UWPApplication's activation-task lambda at 13:29:04, distinct from the handled missing-logo warnings. Investigate that asynchronous error boundary; it still does not establish that Run caused every desktop window to go black.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reproduce the supplied lambda stack by forcing activation failure and testing logging/API-reporting paths independently.",
+      "root_cause": "A failure escaping the activation lambda reaches an async-void UI exception boundary. The exact null object is not established; neither JIT/reflection speculation from closed PRs nor benign logo failures prove it.",
+      "plan": [
+        "Reproduce the supplied lambda stack by forcing activation failure and testing logging/API-reporting paths independently.",
+        "Once the failing dereference is identified, guard or correct that dependency and observe activation through a task-returning error boundary rather than letting a secondary exception escape async void.",
+        "Report launch failure through the proper UI dispatcher and retain the original exception; do not blanket-suppress NullReferenceException.",
+        "Treat the all-windows-black symptom as a separate correlation until its timing/recovery confirms a connection."
+      ],
+      "verification": [
+        "An unavailable or broken UWP target produces a bounded error instead of an unhandled activation-lambda exception.",
+        "Successful UWP launches and ordinary logo fallbacks continue working; unrelated failures remain diagnosable."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "A failure escaping the activation lambda reaches an async-void UI exception boundary. The exact null object is not established; neither JIT/reflection speculation from closed PRs nor benign logo failures prove it."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Test Run UWP activation error handling",
+      "reproduce": {
+        "title": "Verify PowerToys Run Programs plugin report",
+        "module": "PowerToys Run Programs plugin",
+        "version_requirement": "0.102.3001 and current source",
+        "prerequisites": [
+          "PowerToys Run Programs plugin enabled where applicable"
+        ],
+        "setup": [
+          "Use isolated UWP activation and reporting test doubles; do not uninstall or corrupt the user's apps.",
+          "Use the supplied fatal stack as the signature, not the separate missing-logo warnings."
+        ],
+        "steps": [
+          "1. Force ApplicationActivationManager.ActivateApplication to fail and observe the logging/error-reporting branch.",
+          "2. Exercise missing API/dependency and reporting failures individually to identify the actual null dereference.",
+          "3. Verify any revised activation Task is observed and that errors are marshalled to the UI without escaping an async-void continuation.",
+          "4. Compare process recovery and the reported desktop-wide black screen without assuming causality."
+        ],
+        "expected_result": "Run reports failed activation without the supplied fatal stack, while successful launches and error visibility remain intact."
+      },
+      "primary": true
+    },
+    {
+      "type": "approve_design",
+      "label": "Review Run activation error-boundary direction",
+      "primary": true
+    }
+  ],
+  "issue_context": {
+    "summary": "UI Crash",
+    "known_information": [
+      "PowerToys 0.102.3001 from Store; reporter says all desktop windows went black without a deliberate action.",
+      "A diagnostic ZIP and 2026-11-16.txt are already attached.",
+      "Archive PowerToys Run/Logs/0.102.3001.0/2026-11-16.txt records a fatal NullReferenceException in UWPApplication.<Launch>b__0, flowing through Task and async-void Launch to the UI exception handler.",
+      "Missing-logo FileNotFoundException records are separately marked recoverable; later hotkey entries continue."
+    ],
+    "inferences": [
+      "A failure escaping the activation lambda reaches an async-void UI exception boundary. The exact null object is not established; neither JIT/reflection speculation from closed PRs nor benign logo failures prove it."
+    ],
+    "analysis": "The supplied archive contains a fatal Run NullReferenceException in UWPApplication's activation-task lambda at 13:29:04, distinct from the handled missing-logo warnings. Investigate that asynchronous error boundary; it still does not establish that Run caused every desktop window to go black.",
+    "initial_investigation": [
+      "Inspected the supplied archive's occurrence-date Run log and empty exported launcher Event Viewer file: https://github.com/user-attachments/files/34930395/PowerToysReport_2026-11-16-13-40-23.zip",
+      "Current UWPApplication.Launch awaits Task.Run from async void and performs logging plus api.ShowMsg inside its catch: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs",
+      "Similar PR #47412 was closed for missing evidence, and #47406 for low confidence in its claimed root cause; neither merged: https://github.com/microsoft/PowerToys/pull/47406#issuecomment-4449557757"
+    ],
+    "information_gaps": []
+  },
+  "status": {
+    "label": "Reproducible",
+    "detail": "The supplied archive contains a fatal Run NullReferenceException in UWPApplication's activation-task lambda at 13:29:04, distinct from the handled missing-logo warnings. Investigate that asynchronous error boundary; it still does not establish that Run caused every desktop window to go black."
+  },
+  "author": "jasass"
+}

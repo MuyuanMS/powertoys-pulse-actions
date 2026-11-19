@@ -1,33 +1,109 @@
 {
   "number": 31205,
   "kind": "issue",
+  "schemaVersion": 5,
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triage",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-11-19T07:14:26Z",
+  "evaluated_at": "2026-11-19T07:14:26Z",
   "source_updated_at": "2025-02-04T20:58:10Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "High contrast compatibility",
+  "author": "Kihara777",
+  "comments": 10,
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Status-Reproducible"
+  ],
+  "assignees": [],
+  "state": "OPEN",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "A maintainer confirmed the reported contrast-theme failure on PowerToys 0.78, and the issue includes a concrete sequence. The current Image Resizer uses WinUI theme resources, but its implementation differs from the original 0.77 report and has not been verified on a current release; treat theme propagation as a likely, not confirmed, fix direction.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter described a custom Windows contrast-theme sequence and said Image Resizer remained light while other PowerToys surfaces changed.",
+      "A maintainer confirmed reproduction on PowerToys 0.78.",
+      "The current App.xaml loads XamlControlsResources and MainWindow.xaml uses ThemeResource; MainWindow.xaml.cs calls TitleBarHelper.SetPreferredTheme for the title bar, with no explicit Image Resizer high-contrast synchronization found in the inspected app/window path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Repeat the documented contrast-theme sequence on a current stable release before selecting a fix.",
+    "evaluated_at": "2026-11-19T07:14:26Z",
     "source_updated_at": "2025-02-04T20:58:10Z"
-  }
+  },
+  "fix_assessment": {
+    "rationale": "No code change is justified until the historical contrast-theme failure is verified on the current release.",
+    "status": "not_applicable"
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter says a customized Windows contrast theme applies to other PowerToys surfaces but Image Resizer remains light; a maintainer reproduced it on PowerToys 0.78.",
+    "known_information": [
+      "The original report was filed against PowerToys 0.77.0 and includes steps for customizing a Windows contrast theme and switching to it.",
+      "The reporter later supplied a more detailed sequence, and a maintainer confirmed the issue on 0.78.",
+      "The issue is currently open, unassigned, and labeled Status-Reproducible."
+    ],
+    "inferences": [
+      "The symptom may be caused by Image Resizer content not following the active contrast palette, but current WinUI resource behavior has not been verified on the current release."
+    ],
+    "analysis": "The issue has enough history to avoid a generic log request. The best next step is to establish whether it persists in the current release; if so, inspect the app/window theme-resource transition rather than assuming the title-bar helper controls all content.",
+    "initial_investigation": [
+      "Inspected the Image Resizer app and window theme setup and the historical discussion. No current-release reproduction was performed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the supplied sequence still reproduces, and the PowerToys version used for that confirmation.",
+        "why_needed": "The current app implementation may differ from the version where the maintainer reproduced the issue.",
+        "how_to_collect": "Repeat the supplied contrast-theme sequence on the current stable release and include the About PowerToys version.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "The Windows version and build used for the current or most recent reproduction.",
+        "why_needed": "Contrast-theme behavior and WinUI system integration can vary by Windows build.",
+        "how_to_collect": "Include the Windows edition, version, and OS build from Settings > System > About.",
+        "evidence_type": "windows_version"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm current-version contrast-theme behavior",
+      "comment": {
+        "body": "Thanks for the detailed reproduction steps and for confirming this on PowerToys 0.78. Could you please:\n- confirm whether the same sequence still reproduces on a current PowerToys release and include the PowerToys version you tested;\n- share the Windows edition, version, and OS build from Settings > System > About.\nThat will tell us whether the current Image Resizer theme path remains affected or whether the reported behavior was specific to the earlier implementation.",
+        "target": "issue",
+        "number": 31205
+      },
+      "primary": false,
+      "confirm": true,
+      "id": "issue-31205-request_info"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce current Image Resizer contrast behavior",
+      "note": "The report includes a concrete sequence and maintainer confirmation on 0.78; verify whether the current implementation still fails before finalizing a fix.",
+      "reproduce": {
+        "title": "Verify Image Resizer with a customized Windows contrast theme",
+        "module": "Image Resizer",
+        "version_requirement": "Current stable PowerToys release; compare with the reported 0.77 and maintainer-confirmed 0.78 behavior if available",
+        "prerequisites": [
+          "Use an isolated Windows test environment with Contrast themes available.",
+          "Enable Image Resizer and use a test image."
+        ],
+        "setup": [
+          "Enable a built-in contrast theme, then customize its cursor style and wallpaper and save it as a custom theme, following the reporter's sequence."
+        ],
+        "steps": [
+          "Switch to the saved custom contrast theme using Shift+Alt+PrintScreen.",
+          "Open an image in PowerToys Image Resizer and compare the content and title bar with other Windows and PowerToys surfaces.",
+          "Switch to another contrast theme and back while Image Resizer is open; then close and reopen Image Resizer.",
+          "Record whether the Image Resizer content follows the selected contrast palette at each step."
+        ],
+        "expected_result": "Image Resizer content and title bar use the active customized contrast palette and update when the selected contrast theme changes or the app is reopened."
+      },
+      "primary": true,
+      "confirm": true,
+      "id": "issue-31205-reproduce"
+    }
+  ]
 }

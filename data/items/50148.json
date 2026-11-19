@@ -5,9 +5,9 @@
   "kind": "issue",
   "track": "triage",
   "stage": "maintainer_owned",
-  "generated_at": "2026-09-20T07:08:00Z",
-  "evaluated_at": "2026-09-20T07:08:00Z",
-  "source_updated_at": "2026-09-20T05:52:01Z",
+  "generated_at": "2026-11-19T02:49:21Z",
+  "evaluated_at": "2026-11-19T02:49:21Z",
+  "source_updated_at": "2026-11-18T23:02:38Z",
   "title": "[Shortcut Guide] Default \"Hold Windows key\" behavior interferes with Win+V and Win+H",
   "url": "https://github.com/microsoft/PowerToys/issues/50148",
   "summary": "The reporter confirmed the existing Shortcut Guide settings are a practical workaround for their case, while noting the hold-key default can still be finicky for accessibility-sensitive workflows.",
@@ -20,24 +20,25 @@
   "next_action": {
     "glyph": "👀",
     "label": "Team response needed",
-    "reason": "Do not ask the reporter to repeat the confirmation. A maintainer should decide whether to close as handled-by-settings, document the workaround, or keep the issue open for defaults/discoverability/accessibility follow-up."
+    "reason": "Verify the behavior with a configured Hold Windows key profile and use a fresh current-stable profile as the baseline. Existing workaround guidance does not establish that the hold behavior is fixed."
   },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The latest reporter response confirms the existing controls are usable enough for the reporter by turning Hold Windows key off and using the activation shortcut, while preserving an accessibility/discoverability concern for maintainer judgment. Because the public thread already contains maintainer guidance and the issue carries Needs-Team-Response, a dashboard request-info action would be duplicative.",
+    "status": "reproducible",
+    "rationale": "The original reporter identified a practical workaround. A separate report that the guide interrupts Win-key window dragging warrants a focused compatibility check rather than closing as handled by settings.",
     "evidence": [
       "The original report describes Win+V and Win+H being disrupted by the default Hold Windows key behavior.",
       "A maintainer explained the existing controls: disable close-on-release, increase hold duration, or turn Hold Windows key off and use the activation shortcut.",
-      "The reporter replied on 2026-09-20 that turning Hold Windows key off and using the activation shortcut is probably the practical option for their use, especially with dexterity issues.",
-      "Current labels include Needs-Team-Response and Status-Reproducible, not Needs-Author-Feedback."
+      "The reporter replied on 2026-09-20 that turning Hold Windows key off and using the activation shortcut is likely the more practical option.",
+      "A later commenter reports that AltSnap Win-key movement and resizing stop when the guide opens. This is report evidence, not independent runtime confirmation.",
+      "A maintainer later clarified that newer PowerToys versions disable Shortcut Guide by default and that users can separately disable Hold Windows key."
     ],
-    "recommended_action": "Let the PowerToys team decide whether the current settings guidance is sufficient, whether discoverability/defaults need product follow-up, or whether to close as handled by existing configuration.",
-    "evaluated_at": "2026-09-20T07:08:00Z",
-    "source_updated_at": "2026-09-20T05:52:01Z"
+    "recommended_action": "Compare the existing workaround with the default Hold Windows key mode for both built-in shortcuts and Win-key dragging before deciding on defaults or documentation.",
+    "evaluated_at": "2026-11-19T02:49:21Z",
+    "source_updated_at": "2026-11-18T23:02:38Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A code fix is not currently selected by the lightweight pass because the latest public discussion points to existing configuration options and a team/product decision rather than missing reporter evidence."
+    "rationale": "No code change is selected before isolating whether overlay activation or key release interrupts each interaction."
   },
   "proposed_fixes": [],
   "issue_context": {
@@ -47,21 +48,43 @@
       "The issue affects Shortcut Guide Hold Windows key behavior with Win+V Clipboard History and Win+H Voice typing.",
       "Disabling Hold Windows key avoids the interference.",
       "A maintainer identified existing controls: close-on-release, hold duration, and using the activation shortcut instead.",
-      "The reporter replied that Hold Windows key Off plus the activation shortcut is probably the practical option for their use, but users with different dexterity needs may see different tradeoffs."
+      "The reporter identified Hold Windows key Off plus the activation shortcut as their preferred workaround.",
+      "A maintainer states that newer versions disable Shortcut Guide by default; existing configurations still need to be considered when checking the reported behavior."
     ],
     "inferences": [
       "The immediate reporter-actionable question has been answered.",
       "Remaining work is a maintainer/product decision about whether settings guidance is enough or whether defaults/discoverability/accessibility should be improved."
     ],
-    "analysis": "The latest upstream activity changed the state from waiting on the reporter to waiting on team follow-up. Reposting a request would duplicate the maintainer thread; a dashboard action is intentionally omitted until the team chooses close/handled, documentation, or a design direction.",
+    "analysis": "Keep the existing workaround and compare the hold-key interaction in a configured profile; use a fresh profile on current stable as the baseline. Record the module state and Hold Windows key setting separately. AltSnap is a separate control from Win+V and Win+H.",
     "initial_investigation": [
       "Read the complete issue body and all seven comments through the 2026-09-20 reporter reply.",
       "Compared current labels: Needs-Team-Response and Status-Reproducible are present; Needs-Author-Feedback is not present.",
-      "Re-evaluated the prior waiting-on-author artifact against the latest reporter response."
+      "Read the later AltSnap report and checked for a PR referencing this issue; no covering PR was found."
     ],
     "information_gaps": []
   },
-  "actions": [],
+  "actions": [
+    {
+      "id": "issue-50148-compare-held-win-key",
+      "type": "reproduce",
+      "label": "Compare Win-key shortcuts and dragging across Shortcut Guide modes",
+      "primary": true,
+      "reproduce": {
+        "module": "Shortcut Guide",
+        "version_requirement": "Current stable PowerToys on Windows 11",
+        "prerequisites": [
+          "Use a test profile with Clipboard History and voice typing available; add AltSnap configured for the Win key only for the third-party control."
+        ],
+        "steps": [
+          "With Hold Windows key enabled, try Win+V and Win+H both before and after the guide appears. Record whether key release closes the other interface.",
+          "Hold Win and drag or resize a test window with AltSnap past the guide activation threshold. Record when the drag stops, if it does.",
+          "Repeat with close-on-release disabled, then with Hold Windows key off and the explicit activation shortcut enabled.",
+          "On a fresh current-stable profile, record whether Shortcut Guide is enabled before changing any setting. Keep this default-state observation separate from tests with the module explicitly enabled."
+        ],
+        "expected_result": "The comparison identifies which configuration preserves each interaction and whether interruption correlates with overlay display or key release."
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Product-Shortcut Guide",
@@ -72,11 +95,8 @@
   "assignees": [
     "noraa-junker"
   ],
-  "comments": 7,
+  "comments": 9,
   "author": "MichaelGHUser",
   "authorAssociation": "NONE",
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
-  }
+  "owes": "maintainer"
 }
