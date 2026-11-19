@@ -9,48 +9,100 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-19T09:00:14.4012047+00:00",
-  "evaluated_at": "2026-11-19T09:00:14.4012047+00:00",
-  "source_updated_at": "2026-11-18T09:53:25Z",
-  "head_sha": "babc405b894047f1b7468a55518a6f1ed1a205f3",
+  "generated_at": "2026-11-20T07:11:37.3379793+08:00",
+  "evaluated_at": "2026-11-20T07:11:37.3379793+08:00",
+  "source_updated_at": "2026-11-19T22:35:30Z",
+  "head_sha": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
   "needs_revalidation": false,
   "proposed_comments": [
     {
-      "id": "52129-controlled-heartbeat-test-clock",
-      "kind": "inline",
-      "in_diff": true,
-      "title": "Control the timer in the root-page loading test",
-      "severity": "low",
-      "confidence": {
-        "score": 82,
-        "rationale": "Pinned source uses a real timer and exact event counts. A controlled-time source harness observed an extra Periodic event; the actual test-project build failed in AdaptiveCards dependencies, so the focused tests did not run. Exposure depends on test-host uptime."
-      },
-      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/PowerToysRootPageServiceTests.cs",
-      "line": 32,
       "side": "RIGHT",
-      "body": "### Control the timer in the root-page loading test\r\n\r\n**Severity:** `low`\r\n\r\nThis constructor defaults to `TimeProvider.System`. The first periodic heartbeat is aligned to the next 30-minute process-uptime boundary, so a test host near that boundary can append `Periodic` while this test asserts exact event counts of one and two. This creates a timing-dependent test failure rather than a failure in phase loading.\r\n\r\nPlease inject a controlled `TimeProvider` with a manually fired timer. Extract the existing private `TestTimeProvider` from `HeartbeatTelemetryTests` into a shared test utility, or provide an equivalent test-local provider.\r\n\r\n**Verification:** use fake uptime immediately before a 30-minute boundary and confirm that this test records only the two phase events unless the timer is explicitly fired. Keep periodic callbacks covered separately by `HeartbeatTelemetryTests`."
+      "severity": "low",
+      "start_line": 19,
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/PowerToysRootPageServiceTests.cs",
+      "selection_group": {
+        "id": "heartbeat-loading-provider",
+        "title": "Make the loading test deterministic",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "line": 19,
+      "kind": "inline",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact-head source exposes the default real timer and exact-count assertions; a controlled near-boundary linked-source run reproduces the extra event, and the literal candidate removes it."
+      },
+      "body": "### Keep the loading test deterministic (1/2)\n\n**Severity:** `low`\n\nThis test asserts exact counts for the two loading milestones, but the default provider also schedules an uptime-aligned `Periodic` heartbeat. If that timer fires near the 30-minute process boundary, it can add an unrelated event during these assertions. A test-local non-firing timer keeps periodic scheduling covered by the dedicated heartbeat tests.\n\n```suggestion\n    private sealed class NonFiringTimeProvider : TimeProvider\n    {\n        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period) =>\n            new Timer(callback, state, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);\n    }\n\n    [TestMethod]\n```",
+      "id": "heartbeat-loading-provider",
+      "title": "Keep the loading test deterministic (1/2)"
+    },
+    {
+      "side": "RIGHT",
+      "severity": "low",
+      "start_line": 32,
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/PowerToysRootPageServiceTests.cs",
+      "selection_group": {
+        "id": "heartbeat-loading-provider",
+        "title": "Make the loading test deterministic",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "line": 32,
+      "kind": "inline",
+      "confidence": {
+        "score": 91,
+        "rationale": "This injects the inert timer at the exact constructor that currently falls back to TimeProvider.System; the near-boundary reproduction and literal-candidate run confirm the effect."
+      },
+      "body": "### Inject the non-firing provider (2/2)\n\n**Severity:** `low`\n\nPass the provider from (1/2) to this test's telemetry instance. Without it, `HeartbeatTelemetry` uses `TimeProvider.System`, and the next 30-minute-aligned callback can race the exact-count assertions; periodic timing remains covered by the separate heartbeat tests.\n\n```suggestion\n        using var telemetry = new HeartbeatTelemetry(\n            () => manager.CommandProviders.Count(),\n            events.Add,\n            new NonFiringTimeProvider());\n```",
+      "id": "heartbeat-loading-injection",
+      "title": "Inject the non-firing provider (2/2)"
     }
   ],
   "actions": [
     {
-      "type": "post_review",
+      "label": "Post deterministic heartbeat test suggestions",
       "review": {
         "event": "COMMENT",
+        "commit_id": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
+        "head_sha": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
         "comment_ids": [
-          "52129-controlled-heartbeat-test-clock"
-        ],
-        "commit_id": "babc405b894047f1b7468a55518a6f1ed1a205f3",
-        "head_sha": "babc405b894047f1b7468a55518a6f1ed1a205f3"
+          "heartbeat-loading-provider",
+          "heartbeat-loading-injection"
+        ]
       },
-      "label": "Post timing-dependent test finding",
-      "id": "52129-post-heartbeat-test-finding",
-      "head_sha": "babc405b894047f1b7468a55518a6f1ed1a205f3"
+      "head_sha": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
+      "type": "post_review",
+      "id": "52129-post-heartbeat-test-suggestions"
     }
   ],
   "validation": {
-    "upstream_head": {
-      "head_sha": "babc405b894047f1b7468a55518a6f1ed1a205f3",
-      "result": "failed"
+    "suggestion_patch": {
+      "head_sha": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "heartbeat-loading-provider",
+        "heartbeat-loading-injection"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "4eb0cc2536d9b73c22f3e03966db13ecf7eadb8a",
+      "result": "passed",
+      "checked_comment_ids": [
+        "heartbeat-loading-provider",
+        "heartbeat-loading-injection"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/PowerToysRootPageServiceTests.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   }
 }

@@ -2902,10 +2902,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
+      "proposed_open": 2,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post timing-dependent test finding"
+        "label": "Post deterministic heartbeat test suggestions",
+        "type": "post_review"
       },
       "labels": [
         "Product-Command Palette",
@@ -2913,7 +2913,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-13T20:23:19Z",
-      "updated_at": "2026-11-18T09:53:25Z",
+      "updated_at": "2026-11-19T22:35:30Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
