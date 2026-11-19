@@ -4,30 +4,44 @@
     "rationale": "Both Visual Studio generations fail on the same laptop while other apps work, so compare app eligibility and elevation rather than assuming a Visual Studio 2026 regression.",
     "evidence": [
       "The report names PowerToys 0.102.3101 and Visual Studio 2026 18.11.4 on Windows 11.",
-      "A follow-up reports the same behavior in Visual Studio 2022 17.14.45 on the same installation."
+      "A follow-up reports the same behavior in Visual Studio 2022 17.14.45 on the same installation.",
+      "The reporter runs PowerToys elevated and tried removing exclusions; the attached settings enable Shift-drag and snap-hotkey override."
     ],
     "recommended_action": "Compare both IDE versions and a normal app on one test profile with controlled privilege levels.",
-    "evaluated_at": "2026-11-19T03:07:30Z",
+    "evaluated_at": "2026-11-19T11:41:21Z",
     "source_updated_at": "2026-11-16T19:53:59Z"
   },
   "issue_context": {
     "summary": "FancyZones cannot place either reported Visual Studio version, though other apps still snap on the affected laptop.",
     "known_information": [
-      "The reporter tried drag and hotkeys and saw native Windows Snap instead. Clearing the exclusions list did not help."
+      "The reporter tried drag and hotkeys and saw native Windows Snap instead. Clearing the exclusions list did not help.",
+      "PowerToys runs elevated; the attached settings enable Shift-drag and snap-hotkey override."
     ],
     "inferences": [
       "Different window eligibility or process elevation could explain the app-specific failure. Neither has been established."
     ],
     "analysis": "Keep the layout and input constant. Record whether the drag overlay appears and whether directional shortcuts are configured to override native snapping; test them separately.",
     "initial_investigation": [
-      "Read the report, follow-up, and timeline. No runtime test was performed."
+      "Read the report, follow-up and timeline, and inspected the supplied FancyZones settings. No runtime test was performed.",
+      "Current FancyZones window processing checks exclusions: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp"
     ],
     "information_gaps": []
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A code change is not justified until the matched test identifies which FancyZones path rejects or misses the IDE window."
+    "status": "proposed",
+    "rationale": "A conditional FancyZones eligibility or interaction fix may be needed if the controlled comparison confirms a PowerToys-specific failure."
   },
+  "proposed_fixes": [{
+    "title": "Correct Visual Studio window eligibility if reproduced",
+    "root_cause": "The failure is reported for Visual Studio, but the failing eligibility or interaction condition is unknown.",
+    "plan": [
+      "Compare window eligibility and privilege for Visual Studio and a working application under the same settings.",
+      "If a FancyZones condition incorrectly excludes the affected window, correct it while retaining intended exclusions.",
+      "Add regression coverage for the identified characteristics and deliberately excluded windows."
+    ],
+    "verification": ["Shift-drag and Win+arrow work for eligible test windows without changing deliberate exclusions."],
+    "confidence": {"score": 40, "level": "red", "rationale": "The app-specific failure is reported but has not been reproduced or isolated to FancyZones."}
+  }],
   "actions": [
     {
       "id": "issue-52175-compare-visual-studio-zoning",
@@ -47,23 +61,25 @@
         ],
         "expected_result": "Eligible IDE and Notepad windows move to the same zone via the configured FancyZones gestures."
       }
-    }
+    },
+    {"type": "approve_design", "label": "Review conditional Visual Studio eligibility fix"}
   ],
   "kind": "issue",
   "comments": 1,
   "assignees": [],
   "repository": "microsoft/PowerToys",
-  "generated_at": "2026-11-19T03:07:30Z",
+  "generated_at": "2026-11-19T11:41:21Z",
   "number": 52175,
   "owes": "maintainer",
   "schemaVersion": 5,
   "stage": "triage_revalidated",
   "author": "griffithska",
-  "evaluated_at": "2026-11-19T03:07:30Z",
+  "evaluated_at": "2026-11-19T11:41:21Z",
   "title": "FancyZones not working with Visual Studio 2026",
   "url": "https://github.com/microsoft/PowerToys/issues/52175",
   "source_updated_at": "2026-11-16T19:53:59Z",
   "track": "triage",
+  "summary": "Investigate FancyZones snapping failures specific to Visual Studio 2022 and 2026.",
   "pending_author": false,
   "labels": [
     "Issue-Bug",

@@ -1,34 +1,50 @@
 {
   "judgment": {
     "status": "reproducible",
-    "rationale": "The follow-up suggests Explorer restart changes the behavior in at least one case. Compare Explorer-mediated launch with tray launch before treating it as the same failure as #49011.",
+    "rationale": "The original reporter later described an immediate CoreCLR 0x80131506 crash; a separate Windows 10 report describes multiple managed modules crashing. Explorer restart helped another commenter, but a common cause is not established.",
     "evidence": [
       "The initial report identifies Windows 10 and PowerToysUserSetup 0.101.2432.0 x64.",
-      "A second report identifies a launch crash on 0.101.2712.0 on Windows 10 21H2. A later commenter says restarting Explorer recovered launch in their case."
+      "The original reporter observed an immediate CoreCLR 0x80131506 crash and hypothesized CET.",
+      "A second report identifies multiple managed module crashes on 0.101.2712.0 and Windows 10 21H2 on hardware described as lacking CET.",
+      "A later commenter says restarting Explorer recovered launch in their case; that does not establish a fix for the crashes."
     ],
-    "recommended_action": "Compare launch methods and capture the outcome before and after restarting Explorer in a disposable Windows 10 profile.",
-    "evaluated_at": "2026-11-19T02:57:35Z",
+    "recommended_action": "Separate shell launch failure from managed-runtime crashes and compare affected Windows 10 environments.",
+    "evaluated_at": "2026-11-19T11:41:21Z",
     "source_updated_at": "2026-11-17T07:33:17Z"
   },
   "issue_context": {
     "summary": "PowerToys Settings does not open by double-clicking its icon on Windows 10; a later commenter reports recovery after restarting Explorer.",
     "known_information": [
       "The original reporter could open Settings on a separate Windows 11 machine.",
+      "The original reporter's subsequent event details include CoreCLR 0x80131506; another report describes multiple managed modules crashing on Windows 10 21H2.",
       "Open #49011 also tracks Windows 10 Settings launch failure; the issues are not confirmed to share a cause."
     ],
     "inferences": [
-      "An Explorer or shell activation problem could explain the recovery in one report. It does not account for the crash in every reported configuration."
+      "An Explorer or shell activation problem could explain the recovery in one report. It does not account for the crash in every reported configuration.",
+      "A runtime or OS compatibility issue is possible, but CET is not established as a common cause."
     ],
     "analysis": "Separate failure to start the Settings process from a process that starts and exits. Compare tray versus Explorer launch before restarting Explorer, then repeat both methods afterward.",
     "initial_investigation": [
-      "Reviewed the cross-machine reports and latest Explorer workaround. Verified that #49011 remains open; no runtime reproduction was performed."
+      "Reviewed the report, all comments, cross-machine runtime-crash details and latest Explorer workaround. Verified that #49011 remains open; no runtime reproduction was performed.",
+      "Runner launches the Settings executable through its settings-window path: https://github.com/microsoft/PowerToys/blob/6b3db15615e3e549b89790e0bd83c82d262c22e0/src/runner/settings_window.cpp"
     ],
     "information_gaps": []
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "No separate PowerToys fix applies on present evidence. First distinguish the Explorer recovery case from the startup crash tracked in #49011."
+    "status": "proposed",
+    "rationale": "A PowerToys launch or managed-runtime compatibility fix may be applicable after distinguishing the reported failure modes."
   },
+  "proposed_fixes": [{
+    "title": "Correct the isolated Windows 10 Settings launch failure",
+    "root_cause": "At least one report includes a CoreCLR crash, while another responds to Explorer restart; a shared cause is unconfirmed.",
+    "plan": [
+      "Separate a Settings process that never starts from one that starts and crashes; compare OS, architecture, installer scope and managed module behavior.",
+      "If a PowerToys launch or bundled-runtime incompatibility is isolated, correct that specific path without weakening operating-system exploit protection.",
+      "Add a regression check for the identified failure mode."
+    ],
+    "verification": ["Settings launches on the affected Windows 10 configuration and other managed modules continue to start."],
+    "confidence": {"score": 35, "level": "red", "rationale": "Several reports may represent distinct shell and managed-runtime failures."}
+  }],
   "actions": [
     {
       "id": "issue-50335-compare-windows-10-settings-launch",
@@ -44,16 +60,19 @@
         "steps": [
           "Start PowerToys and try launching Settings from the tray, then through the same Explorer entry point used to reproduce the failure.",
           "For each attempt, record whether the Settings process appears and exits or never starts.",
-          "Restart Explorer in the test profile and repeat both launch methods; compare with the conditions reported in #49011."
+          "Restart Explorer in the test profile and repeat both launch methods; compare with the conditions reported in #49011.",
+          "For a process exit, compare the event signature and whether other managed modules start. Immediately after the failure, follow the issue's /bugreport instructions; if Settings and tray are inaccessible, run BugReportTool.exe."
         ],
         "expected_result": "Both launch methods open Settings regardless of Explorer restart. A launch-method-only failure and a process crash should be recorded separately."
       }
-    }
+    },
+    {"type": "approve_design", "label": "Review conditional Windows 10 Settings launch fix"}
   ],
   "repository": "microsoft/PowerToys",
-  "generated_at": "2026-11-19T02:57:35Z",
+  "generated_at": "2026-11-19T11:41:21Z",
   "track": "triage",
-  "evaluated_at": "2026-11-19T02:57:35Z",
+  "summary": "Distinguish Windows 10 Settings shell-launch failures from reported CoreCLR crashes.",
+  "evaluated_at": "2026-11-19T11:41:21Z",
   "assignees": [],
   "source_updated_at": "2026-11-17T07:33:17Z",
   "stage": "triage_revalidated",
