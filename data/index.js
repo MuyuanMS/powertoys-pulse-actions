@@ -85,10 +85,10 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 231,
+    "open_prs": 230,
     "open_issues": 11229,
     "community": 10349,
-    "artifacts": 2272
+    "artifacts": 2271
   },
   "impact": {
     "as_of": "2026-11-19T19:39:01.254796+08:00",
@@ -137,7 +137,6 @@ window.BOARD_INDEX = {
     51946,
     51941,
     51939,
-    51925,
     51920,
     51918,
     51889,
@@ -4465,46 +4464,6 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "UNKNOWN"
-    },
-    {
-      "id": "pr-51925",
-      "kind": "pr",
-      "number": 51925,
-      "url": "https://github.com/microsoft/PowerToys/pull/51925",
-      "title": "CmdPal: Show the item icon on the primary context menu entry",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post consolidated theme fallback finding"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-11-04T19:39:29Z",
-      "updated_at": "2026-11-16T20:09:19Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "failed",
-      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51920",
