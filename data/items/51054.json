@@ -7,9 +7,9 @@
   "title": "FancyZones cant change press number",
   "url": "https://github.com/microsoft/PowerToys/issues/51054",
   "repository": "microsoft/PowerToys",
-  "generated_at": "2026-11-13T11:44:36.44Z",
-  "evaluated_at": "2026-11-13T11:44:36.44Z",
-  "source_updated_at": "2026-11-10T05:05:37Z",
+  "generated_at": "2026-11-19T02:52:22Z",
+  "evaluated_at": "2026-11-19T02:52:22Z",
+  "source_updated_at": "2026-11-17T11:06:05Z",
   "judgment": {
     "status": "actionable_design",
     "rationale": "The report gives exact steps and a clear expected result. The pinned FancyZones code has a digit-to-layout hotkey path, but the interaction with right-button drag and Shift still needs a maintainer reproduction.",
@@ -17,11 +17,12 @@
       "The issue supplies numbered steps using a custom layout, an assigned quick-layout number, right-button drag, Shift, then the number key.",
       "Zones display during the drag, but the assigned number does not switch the layout.",
       "The report includes a concrete trigger sequence and an expected quick-layout switch.",
-      "The quick-layout keyboard path converts top-row and numpad digit key codes into a layout number. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp"
+      "The quick-layout keyboard path converts top-row and numpad digit key codes into a layout number. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp",
+      "A follow-up reports Shift+number still fails on v0.102.3101, but confirms that Shift+wheel works when wheel switching is enabled."
     ],
     "recommended_action": "Reproduce the issue-specific scenario: Preserve quick-layout number handling during Shift drag",
-    "evaluated_at": "2026-11-13T11:44:36.44Z",
-    "source_updated_at": "2026-11-10T05:05:37Z"
+    "evaluated_at": "2026-11-19T02:52:22Z",
+    "source_updated_at": "2026-11-17T11:06:05Z"
   },
   "fix_assessment": {
     "status": "proposed",
@@ -52,12 +53,13 @@
     "known_information": [
       "The issue supplies numbered steps using a custom layout, an assigned quick-layout number, right-button drag, Shift, then the number key.",
       "Zones display during the drag, but the assigned number does not switch the layout.",
-      "The report includes a concrete trigger sequence and an expected quick-layout switch."
+      "The report includes a concrete trigger sequence and an expected quick-layout switch.",
+      "Shift+wheel was confirmed separately; it uses a different input path and is not evidence that Shift+number works."
     ],
     "inferences": [
       "A keyboard/drag state interaction is plausible but has not been independently reproduced."
     ],
-    "analysis": "The input sequence is specific enough for a maintainer test. Do not change the quick-layout binding until the hook dispatch under this exact modifier/drag state is observed.",
+    "analysis": "Run the original number-shortcut check on v0.102.3101 and current stable. Use Shift+wheel as a comparison only after enabling wheel switching. Compare Shift held and released and top-row versus numpad before changing keyboard handling.",
     "initial_investigation": [
       "The quick-layout keyboard path converts top-row and numpad digit key codes into a layout number. Source at pinned main (237dc893c8c76b1bfa65994afda41ea7315a914c): https://github.com/microsoft/PowerToys/blob/237dc893c8c76b1bfa65994afda41ea7315a914c/src/modules/FancyZones/FancyZonesLib/FancyZones.cpp"
     ],
@@ -77,7 +79,7 @@
       "reproduce": {
         "title": "Preserve quick-layout number handling during Shift drag",
         "module": "FancyZones",
-        "version_requirement": "0.101.2362 or newer",
+        "version_requirement": "v0.102.3101 and current stable",
         "prerequisites": [
           "FancyZones enabled.",
           "A custom layout has a quick-layout number assigned."
@@ -88,10 +90,12 @@
         "steps": [
           "Open the FancyZones layout editor and assign a quick-layout number to a custom layout.",
           "Drag a window with the right mouse button.",
-          "Hold Shift and press the assigned number key."
+          "Hold Shift and press the assigned number key.",
+          "With wheel switching enabled, try Shift+wheel on the same drag as a separate positive control; record it independently of the number shortcut."
         ],
         "expected_result": "FancyZones switches to the assigned layout while the zones are displayed."
-      }
+      },
+      "primary": true
     },
     {
       "type": "request_info",
@@ -115,5 +119,7 @@
   "assignees": [],
   "author": "khoant0801",
   "authorAssociation": "NONE",
-  "comments": 9
+  "comments": 12,
+  "owes": "maintainer",
+  "pending_author": false
 }
