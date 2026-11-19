@@ -86,9 +86,9 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 241,
-    "open_issues": 11213,
-    "community": 10328,
-    "artifacts": 2234
+    "open_issues": 11215,
+    "community": 10329,
+    "artifacts": 2236
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -98,6 +98,8 @@ window.BOARD_INDEX = {
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52222,
+    52221,
     52217,
     52214,
     52213,
@@ -11218,6 +11220,77 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "DIRTY"
+    },
+    {
+      "id": "issue-52222",
+      "kind": "issue",
+      "number": 52222,
+      "url": "https://github.com/microsoft/PowerToys/issues/52222",
+      "title": "有时会导致snipaste的截屏快捷键失效",
+      "author": "lightone92",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Request the shortcut and PowerToys exit comparison"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-19T02:12:16Z",
+      "updated_at": "2026-11-19T02:12:16Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-52221",
+      "kind": "issue",
+      "number": 52221,
+      "url": "https://github.com/microsoft/PowerToys/issues/52221",
+      "title": "CmdPal: Future bug - Tray icon palette can't id the correct previous window",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Verify the tray menu preserves the paste target"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-18T23:54:00Z",
+      "updated_at": "2026-11-18T23:54:00Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-52177",
