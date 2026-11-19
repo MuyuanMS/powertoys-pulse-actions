@@ -5160,18 +5160,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-17T04:31:04Z",
       "has_artifact": true,
-      "agent_status": "review",
+      "agent_status": "waiting",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post non-blocking test coverage comment"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Keyboard Manager",
         "Ready for review"
@@ -5877,18 +5874,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-10-30T11:41:51Z",
       "has_artifact": true,
-      "agent_status": "review",
+      "agent_status": "waiting",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post implementation-ready general PR comment"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
@@ -7522,7 +7516,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": "post_review",
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post separate general PR comment about Overview pin resolution"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -7992,18 +7989,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-17T04:36:41Z",
       "has_artifact": true,
-      "agent_status": "review",
+      "agent_status": "waiting",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post separate general ownership comment"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Keyboard Manager",
         "Ready for review"
