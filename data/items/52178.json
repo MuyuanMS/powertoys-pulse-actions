@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 5,
+  "number": 52178,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "title": "CursorHide hides mouse cursor when going to lock view (control + alt + del).",
+  "url": "https://github.com/microsoft/PowerToys/issues/52178",
+  "repository": "microsoft/PowerToys",
+  "author": "gregongoing",
+  "comments": 0,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "state": "OPEN",
+  "generated_at": "2026-11-19T07:06:41Z",
+  "evaluated_at": "2026-11-19T07:06:41Z",
+  "source_updated_at": "2026-11-16T21:19:40Z",
+  "owes": "maintainer",
+  "pending_author": false,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report specifies CursorHide and the Ctrl+Alt+Del transition; the exact hidden-state trigger and secure-desktop behavior still need verification.",
+    "evidence": [
+      "Reporter uses PowerToys 0.102.3101, describes the Ctrl+Alt+Del screen, and attaches a report ZIP.",
+      "SystemCursorHider::Hide replaces system cursor shapes with transparent cursors; the worker restores them on show or shutdown."
+    ],
+    "recommended_action": "Reproduce the desktop transition and cursor restoration",
+    "evaluated_at": "2026-11-19T07:06:41Z",
+    "source_updated_at": "2026-11-16T21:19:40Z"
+  },
+  "fix_assessment": {
+    "rationale": "The reported desktop transition is concrete, but the behavior has not been isolated to a restoration path. Compare the hidden and visible pre-transition states before proposing a code change.",
+    "status": "not_applicable"
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "CursorHide may leave the cursor invisible on the Ctrl+Alt+Del security screen.",
+    "known_information": [
+      "PowerToys 0.102.3101 installed through auto-update; reporter describes Ctrl+Alt+Del with CursorHide enabled.",
+      "A PowerToys report ZIP is attached."
+    ],
+    "inferences": [
+      "Transparent cursor replacement may remain in effect across the desktop switch; this is not yet demonstrated."
+    ],
+    "analysis": "The issue does not say which hide settings were active or whether the pointer was hidden immediately before entering the security screen.",
+    "initial_investigation": [
+      "SystemCursorHider.h replaces system cursor shapes via SetSystemCursor and restores them using SPI_SETCURSORS; AutoHideCursorWorker.cpp uses low-level input hooks, a timer, and restores on shutdown.",
+      "No covering PR found in a focused search for Auto Hide Cursor desktop work."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Test cursor visibility across Ctrl+Alt+Del",
+      "note": "Compare hidden and visible pre-transition states before choosing a fix.",
+      "reproduce": {
+        "title": "Check CursorHide on the Windows security screen",
+        "module": "Mouse Utilities: CursorHide",
+        "version_requirement": "PowerToys 0.102.3101 or comparable current build",
+        "prerequisites": [
+          "Use a disposable Windows VM or dedicated test device with CursorHide enabled."
+        ],
+        "setup": [
+          "Record the active CursorHide mode and idle delay; keep a keyboard available to return from the security screen."
+        ],
+        "steps": [
+          "Let CursorHide hide the pointer, then press Ctrl+Alt+Del and move the mouse on the security screen.",
+          "Return to the desktop and verify cursor restoration. Repeat after restoring the pointer before Ctrl+Alt+Del."
+        ],
+        "expected_result": "The cursor is visible and usable on the security screen and the configured cursor returns on the normal desktop."
+      },
+      "primary": true
+    }
+  ]
+}
