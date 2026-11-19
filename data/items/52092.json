@@ -4,17 +4,73 @@
   "title": "CmdPal: Show v2 fallbacks in results",
   "url": "https://github.com/microsoft/PowerToys/pull/52092",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-19T20:10:57.2118058Z",
-  "evaluated_at": "2026-11-19T20:10:57.2118058Z",
+  "generated_at": "2026-11-20T05:49:28.0273962+08:00",
+  "evaluated_at": "2026-11-20T05:49:28.0273962+08:00",
   "source_updated_at": "2026-11-19T19:50:23Z",
   "head_sha": "82176d871e25556f268856d1532dd07a933a3d4d",
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned upstream code path is direct, and a controlled blocking-disposal regression failed against upstream and passed with this literal replacement. The remaining caveat is that the safety-net finalizer is intentionally rare."
+      },
+      "severity": "medium",
+      "title": "Keep snapshot disposal off the finalizer thread",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/FallbackResultListItem.cs",
+      "kind": "inline",
+      "in_diff": true,
+      "body": "### Keep snapshot disposal off the finalizer thread\n\n**Severity:** `medium`\n\nWhen this safety-net finalizer releases the wrapper's last snapshot lease, the lease callback can synchronously reach the extension-backed snapshot's Dispose() on the CLR finalizer thread. If extension disposal blocks, finalizer processing can stall even though ordinary disposal suppresses finalization. Queue the lease disposal so the finalizer returns without waiting.\n\n```suggestion\n        var materializationLease = Interlocked.Exchange(ref _materializationLease, null);\n        if (materializationLease is not null)\n        {\n            ThreadPool.QueueUserWorkItem(\n                static state => ((IDisposable)state!).Dispose(),\n                materializationLease);\n        }\n```",
+      "side": "RIGHT",
+      "line": 115,
+      "id": "fallback-snapshot-finalizer-blocking"
+    }
+  ],
+  "actions": [
+    {
+      "head_sha": "82176d871e25556f268856d1532dd07a933a3d4d",
+      "review": {
+        "comment_ids": [
+          "fallback-snapshot-finalizer-blocking"
+        ],
+        "head_sha": "82176d871e25556f268856d1532dd07a933a3d4d",
+        "commit_id": "82176d871e25556f268856d1532dd07a933a3d4d",
+        "event": "COMMENT"
+      },
+      "type": "post_review",
+      "label": "Post finalizer safety suggestion",
+      "id": "52092-post-finalizer-suggestion"
+    }
+  ],
   "freshness": {
     "queued_at": "2026-11-19T20:10:57.2118058Z",
-    "checkpoint_at": "2026-11-19T20:10:57.2118058Z"
+    "checkpoint_at": "2026-11-20T05:49:28.0273962+08:00"
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "82176d871e25556f268856d1532dd07a933a3d4d",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "fallback-snapshot-finalizer-blocking"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "82176d871e25556f268856d1532dd07a933a3d4d",
+      "result": "passed",
+      "checked_comment_ids": [
+        "fallback-snapshot-finalizer-blocking"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/FallbackResultListItem.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
   }
 }
