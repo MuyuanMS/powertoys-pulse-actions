@@ -7,34 +7,31 @@
   "title": "Error on update & open config",
   "url": "https://github.com/microsoft/PowerToys/issues/52198",
   "repository": "microsoft/PowerToys",
-  "generated_at": "2026-11-19T11:29:46Z",
-  "evaluated_at": "2026-11-19T11:29:46Z",
-  "source_updated_at": "2026-11-19T10:05:30Z",
-  "pending_author": true,
-  "owes": "author",
-  "summary": "Settings and tray Update fail to open; supplied diagnostics show Settings crashes. A contributor's current Windows-up-to-date question is unanswered.",
-  "next_action": "Wait for the reporter to answer the existing Windows-up-to-date question; do not repeat it or request another diagnostic ZIP.",
-  "labels": [
-    "Issue-Bug",
-    "Product-Settings",
-    "Needs-Triage"
-  ],
+  "generated_at": "2026-11-19T12:31:24Z",
+  "evaluated_at": "2026-11-19T12:31:24Z",
+  "source_updated_at": "2026-11-19T12:22:13Z",
+  "pending_author": false,
+  "owes": "maintainer",
+  "summary": "The reporter confirmed Windows is up to date and associates onset with its latest update. An external contributor suggested an integrity check, but no qualifying maintainer request establishes an author wait.",
+  "next_action": "Maintainers should correlate the existing Settings crash evidence with both tray entry points and reproduce on the reported OS build. Do not repeat the answered Windows-status question or duplicate the contributor's suggestion.",
+  "labels": ["Issue-Bug", "Product-Settings", "Needs-Triage"],
   "assignees": [],
-  "comments": 2,
+  "comments": 4,
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The latest comment asks the reporter whether Windows is up to date. No reporter response is present. The existing diagnostics identify a Settings crash but do not establish its cause or whether the tray Update path fails independently.",
+    "status": "needs_information",
+    "rationale": "The reporter answered the Windows-update question at 12:18:29 UTC and supplied OS build 26300.9974. MrBisquit subsequently suggested sfc /scannow, but the captured GitHub author_association is CONTRIBUTOR, not maintainer evidence. The only COLLABORATOR comment, from noraa-junker, supplies crash events without requesting a response or endorsing that suggestion. No needs-author-feedback label or posted Pulse request is present in the complete captured discussion. Responsibility therefore remains with maintainers to establish the first failing startup operation; neither corruption nor Windows-update causation is established.",
     "evidence": [
-      "The report describes failures opening Settings and starting an update from the tray while Exit still works; it includes Windows Error Reporting data for PowerToys.Settings.exe on 0.102.3001.0.",
-      "The latest discussion activity is a contributor's unanswered question asking whether Windows is up to date: https://github.com/microsoft/PowerToys/issues/52198#issuecomment-7005946012."
+      "The original report includes a diagnostic archive, and a maintainer pasted Settings fault events naming Microsoft.UI.Xaml.dll and combase.dll: https://github.com/microsoft/PowerToys/issues/52198#issuecomment-6972923357.",
+      "The reporter answered yes to the Windows-up-to-date question and says the problem appeared immediately after the latest Windows update and restart: https://github.com/microsoft/PowerToys/issues/52198#issuecomment-7008879518.",
+      "MrBisquit, whose captured GitHub association is CONTRIBUTOR, suggests sfc /scannow and describes corruption only as a possibility; no maintainer endorsement is present: https://github.com/microsoft/PowerToys/issues/52198#issuecomment-7008966883."
     ],
-    "recommended_action": "Wait for the reporter's answer to the current Windows-up-to-date question, then reassess whether Settings still crashes and whether the Update action fails through the same path.",
-    "evaluated_at": "2026-11-19T11:29:46Z",
-    "source_updated_at": "2026-11-19T10:05:30Z"
+    "recommended_action": "Maintainers should reproduce and correlate Settings startup with the two tray actions using the existing evidence. Any eventual integrity-check result can inform that investigation, but the unendorsed contributor suggestion does not block it or create an author wait.",
+    "evaluated_at": "2026-11-19T12:31:24Z",
+    "source_updated_at": "2026-11-19T12:22:13Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "Several crash signatures are present; none identifies a single failed dependency or resource to change.",
+    "rationale": "This assessment calls for maintainer startup-path reproduction, not a component-integrity implementation change. No PowerToys change is yet justified by the available crash-module names or temporal update association; this does not assert that a product fix is unnecessary. The concrete reproduction below separates the two tray operations before selecting a product change.",
     "existing_fix_urls": []
   },
   "proposed_fixes": [],
@@ -43,43 +40,56 @@
       "type": "reproduce",
       "label": "Separate Settings startup failure from tray update failure",
       "reproduce": {
-        "title": "Trace the Settings and Update tray commands independently",
+        "title": "Correlate the existing Settings crash evidence with both tray entry points",
         "module": "Settings",
-        "version_requirement": "PowerToys 0.102.3001.0; compare with the latest supported stable release",
+        "version_requirement": "Reported PowerToys 0.102.3001.0 on Windows 11 Pro 26H2 build 26300.9974; compare with the current supported stable release",
         "prerequisites": [
-          "Disposable Windows environment and the reporter-provided diagnostics."
+          "A disposable Windows environment and access to the already-supplied diagnostic archive and public crash-event summary.",
+          "The contributor's suggested integrity check is optional evidence, not a prerequisite for maintainer investigation; do not assume it found or repaired corruption."
         ],
         "setup": [
-          "Match the reported OS build where practical. Run each tray action in a separate attempt and record its timestamp."
+          "Match the reported OS build where practical and keep a clean-profile comparison. Record the PowerToys and Windows versions and the timestamp of each separate attempt."
         ],
         "steps": [
-          "Open Settings via the tray menu and correlate its process launch and any exit with the Settings log.",
-          "Repeat for the tray Update command; note whether it reaches Settings startup, begins an update, or fails earlier.",
-          "Compare clean-profile and update-install results; correlate any failures with the existing Windows error summary."
+          "1. Open Settings from the tray and correlate process startup or exit with the existing Settings crash signatures.",
+          "2. In a separate attempt invoke the tray Update command; determine whether it reaches Settings startup, starts an updater, or fails earlier.",
+          "3. Compare a clean profile with an updated installation and distinguish the first failing operation for each entry point. Record whether the scenario persists on the current supported release."
         ],
-        "expected_result": "Settings opens from each supported entry point. If an entry point fails, its first failing operation and whether it shares the normal startup failure are identified."
+        "expected_result": "Settings opens from supported entry points. If either attempt fails, identify its first failure and whether both actions share a Settings startup crash, without inferring corruption from the module names alone."
       }
     }
   ],
   "issue_context": {
-    "summary": "Settings and Update fail from the tray while Exit still works.",
+    "summary": "Windows-version clarification is complete. An unendorsed contributor suggestion does not transfer responsibility to the reporter; maintainer startup investigation remains the next action.",
     "known_information": [
-      "PowerToys 0.102.3001.0 was reported after an auto-update. The supplied Windows Error Reporting excerpt names Microsoft.UI.Xaml.dll and combase.dll in Settings fault events.",
-      "A contributor asked whether Windows is up to date; the reporter has not answered."
+      "The report identifies PowerToys 0.102.3001.0 installed through auto-update. Settings and Update do not open from the tray, while Exit works.",
+      "A diagnostic archive was already supplied. The public maintainer excerpt contains Settings fault events naming Microsoft.UI.Xaml.dll and combase.dll.",
+      "The reporter confirms Windows is up to date, gives Windows 11 Pro 26H2 build 26300.9974, and associates onset with a Windows update and restart.",
+      "MrBisquit suggested sfc /scannow in an Administrator command prompt. The captured author association is CONTRIBUTOR, and the complete discussion contains no maintainer endorsement or result."
     ],
     "inferences": [
-      "Settings startup is a plausible shared boundary, but the diagnostics do not identify the failing initialization operation and the tray Update command has not been traced independently."
+      "Windows-update timing may be relevant, but it does not demonstrate causation.",
+      "System-file corruption is the contributor's unverified hypothesis, not a finding established by the crash signatures.",
+      "Settings initialization could be a shared boundary for the two tray actions, but the Update action has not been independently traced."
     ],
-    "analysis": "The crash evidence does not establish a root cause or prove that the tray Update command shares the Settings failure. The open Windows-version question could materially affect the next diagnostic step.",
+    "analysis": "The author answered the prior question. The subsequent integrity-check suggestion is from a CONTRIBUTOR; association alone does not establish maintainer status. The COLLABORATOR supplied crash evidence but made no outstanding request. With no qualifying feedback label or Pulse request, there is no justified author wait. Maintainers should correlate the supplied archive with the Settings and Update entry points instead of blocking on the suggestion.",
     "initial_investigation": [
-      "Read the issue and the maintainer's crash summary; no installed runtime test was performed."
+      "Re-read the current issue body and all four comments, including the reporter's answer and the subsequent integrity-check request.",
+      "Compared the new discussion with the previous assessment; the body retains the original diagnostic archive and no new attachment was supplied.",
+      "Checked the captured author associations and all current labels: the SFC suggestion is from CONTRIBUTOR MrBisquit, while COLLABORATOR noraa-junker only supplied crash evidence. No qualifying feedback label or posted Pulse request appears.",
+      "This is discussion-based reassessment only. No runtime reproduction or archive re-analysis was performed."
     ],
     "information_gaps": [
-      "Need timestamps and first-failure evidence matched to each launch command and to a clean-profile comparison."
+      {
+        "information": "The first failing operation for Settings and Update tray commands and whether both reach the same Settings startup crash",
+        "why_needed": "Distinguishes a shared Settings initialization failure from a separate updater path before selecting a product change.",
+        "how_to_collect": "Maintainers should follow the concrete reproduction action using the supplied archive and reported build. Incorporate an integrity-check result if volunteered, without making it a prerequisite or repeating the contributor's suggestion.",
+        "evidence_type": "behavior_confirmation"
+      }
     ]
   },
   "status": {
-    "label": "Needs Maintainer Verification",
-    "detail": "Correlate both tray paths with the existing Settings crash evidence before selecting a fix."
+    "label": "Needs Information",
+    "detail": "Maintainer startup-path investigation is needed; the unendorsed contributor suggestion does not establish an author wait."
   }
 }
