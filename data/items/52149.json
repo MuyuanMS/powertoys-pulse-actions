@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 5,
+  "number": 52149,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-17T14:44:35.886865Z",
+  "evaluated_at": "2026-11-19T15:11:48.9323879+08:00",
+  "source_updated_at": "2026-11-15T01:11:49Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/52149",
+  "title": "CursorHide bug",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "CursorHide can leave the pointer invisible at a UAC boundary; open recovery PR #51547 already modifies the same missing-input and unavailable-position recovery path, but UAC coverage is not yet demonstrated.",
+    "evidence": [
+      "https://github.com/microsoft/PowerToys/issues/52149",
+      "The report uses PowerToys 0.102.3101 and gives the direct sequence: enable CursorHide, then trigger a UAC prompt.",
+      "The expected result is a visible pointer during the UAC prompt.",
+      "Current AutoHideCursorWorker queues actions from desktop input hooks; AutoHideCursorState restores on mouse input, while SystemCursorHider globally replaces 13 system cursors.",
+      "Inspected open PR #51547: timer-sampled movement restoration and a fail-safe restoration when cursor position cannot be read; its source comment explicitly mentions secure desktop. Existing PR evidence does not establish a UAC runtime pass. https://github.com/microsoft/PowerToys/pull/51547",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/SystemCursorHider.h"
+    ],
+    "recommended_action": "Compare pointer visibility across the consent prompt with CursorHide disabled, enabled, and with the candidate fix from open PR #51547. Do not assume the candidate covers this case.",
+    "evaluated_at": "2026-11-19T15:11:48.9323879+08:00",
+    "source_updated_at": "2026-11-15T01:11:49Z"
+  },
+  "issue_context": {
+    "summary": "CursorHide can leave the pointer invisible at a UAC boundary; open recovery PR #51547 already modifies the same missing-input and unavailable-position recovery path, but UAC coverage is not yet demonstrated.",
+    "known_information": [
+      "The report uses PowerToys 0.102.3101 and gives the direct sequence: enable CursorHide, then trigger a UAC prompt.",
+      "The expected result is a visible pointer during the UAC prompt."
+    ],
+    "inferences": [],
+    "analysis": "Add the UAC secure-desktop sequence to PR #51547 verification before opening overlapping recovery work.",
+    "initial_investigation": [
+      "Current AutoHideCursorWorker queues actions from desktop input hooks; AutoHideCursorState restores on mouse input, while SystemCursorHider globally replaces 13 system cursors.",
+      "Inspected open PR #51547: timer-sampled movement restoration and a fail-safe restoration when cursor position cannot be read; its source comment explicitly mentions secure desktop. Existing PR evidence does not establish a UAC runtime pass. https://github.com/microsoft/PowerToys/pull/51547",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h",
+      "Inspected source: https://github.com/microsoft/PowerToys/blob/82bd57f5d23ee19a98b0c46f42c304742a7db426/src/modules/MouseUtils/AutoHideCursor/SystemCursorHider.h"
+    ],
+    "information_gaps": []
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #51547 owns the relevant cursor-restoration boundary and should be tested for this related UAC case; it is not claimed to fix all secure-desktop transitions or to be shipped.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/51547"
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce CursorHide behavior",
+      "reproduce": {
+        "title": "Verify reported CursorHide behavior",
+        "module": "CursorHide",
+        "version_requirement": "0.102.3101; compare PR #51547 build",
+        "prerequisites": [
+          "Use an isolated disposable Windows VM with default UAC secure-desktop policy; do not lower UAC settings."
+        ],
+        "setup": [],
+        "steps": [
+          "Enable CursorHide and hide the pointer by typing.",
+          "Launch a trusted Windows administrative task that prompts for UAC consent.",
+          "Observe pointer visibility before, during and after the consent prompt; test both accepting and cancelling.",
+          "Repeat after idle-triggered hiding and compare with CursorHide disabled."
+        ],
+        "expected_result": "The pointer is visible on the consent desktop and is restored safely on return."
+      },
+      "id": "issue-52149-reproduce-1",
+      "primary": true
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Add the UAC secure-desktop sequence to PR #51547 verification before opening overlapping recovery wo",
+    "detail": "CursorHide can leave the pointer invisible at a UAC boundary; open recovery PR #51547 already modifies the same missing-input and unavailable-position recovery path, but UAC coverage is not yet demonstrated."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Reproduce CursorHide behavior",
+    "reason": "Add the UAC secure-desktop sequence to PR #51547 verification before opening overlapping recovery work."
+  },
+  "author": "thegadgetgroup-star",
+  "proposed_fixes": []
+}
