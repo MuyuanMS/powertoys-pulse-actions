@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 241,
     "open_issues": 11216,
     "community": 10330,
-    "artifacts": 2237
+    "artifacts": 2238
   },
   "impact": {
     "as_of": "2026-11-14T13:18:57.3508003+08:00",
@@ -247,6 +247,7 @@ window.BOARD_INDEX = {
     35007,
     34987,
     34949,
+    29831,
     14082,
     34908,
     29367,
@@ -150364,16 +150365,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
+      "track": "triage",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Compare the connection state on both laptops"
+      },
       "labels": [
         "Issue-Bug",
         "Priority-1",
@@ -150381,8 +150385,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-11-13T19:43:45Z",
-      "updated_at": "2025-12-09T11:34:57Z",
-      "comments": 9,
+      "updated_at": "2026-11-18T16:36:45Z",
+      "comments": 11,
       "priority": null
     },
     {
