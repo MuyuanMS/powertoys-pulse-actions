@@ -86,8 +86,8 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 224,
-    "open_issues": 11203,
-    "community": 10328,
+    "open_issues": 11202,
+    "community": 10327,
     "artifacts": 2263
   },
   "impact": {
@@ -385956,37 +385956,6 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2020-05-19T21:25:41Z",
       "updated_at": "2026-10-11T16:40:57Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-",
-      "kind": "issue",
-      "number": 0,
-      "url": null,
-      "title": null,
-      "author": "unknown",
-      "state": null,
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        null
-      ],
-      "assignees": [],
-      "created_at": null,
-      "updated_at": null,
       "comments": 0,
       "priority": null
     }
