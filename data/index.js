@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-11-20T18:20:51.2197589+08:00",
+  "generated_at": "2026-11-20T21:59:44.4078177+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,18 +86,19 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 224,
-    "open_issues": 11202,
-    "community": 10327,
-    "artifacts": 2264
+    "open_issues": 11207,
+    "community": 10332,
+    "artifacts": 2261
   },
   "impact": {
-    "as_of": "2026-11-20T18:20:51.2197589+08:00",
+    "as_of": "2026-11-20T21:59:44.4078177+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    52242,
     52241,
     52220,
     52214,
@@ -262,11 +263,9 @@ window.BOARD_INDEX = {
     34732,
     34728,
     34714,
-    52225,
     52223,
     52222,
     52221,
-    52217,
     52211,
     52210,
     52209,
@@ -686,7 +685,6 @@ window.BOARD_INDEX = {
     50572,
     50566,
     50564,
-    52199,
     50557,
     50555,
     50516,
@@ -2360,8 +2358,7 @@ window.BOARD_INDEX = {
     52039,
     16,
     8,
-    4,
-    52242
+    4
   ],
   "items": [
     {
@@ -2538,7 +2535,7 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-11-18T12:52:58Z",
-      "updated_at": "2026-11-19T07:34:49Z",
+      "updated_at": "2026-11-20T10:14:03Z",
       "comments": 0,
       "priority": null,
       "review_decision": null,
@@ -3381,7 +3378,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-52096",
@@ -3419,7 +3416,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-52095",
@@ -3454,7 +3451,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-52094",
@@ -3565,7 +3562,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-52088",
@@ -3984,7 +3981,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-52015",
@@ -4098,7 +4095,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51995",
@@ -4622,7 +4619,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51889",
@@ -4809,7 +4806,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51851",
@@ -4843,7 +4840,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51850",
@@ -4877,7 +4874,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51849",
@@ -4911,7 +4908,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51847",
@@ -4945,7 +4942,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51846",
@@ -5013,7 +5010,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51807",
@@ -5875,7 +5872,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51735",
@@ -5907,7 +5904,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51734",
@@ -5950,7 +5947,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51713",
@@ -6061,7 +6058,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51687",
@@ -6620,7 +6617,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51501",
@@ -6726,7 +6723,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51475",
@@ -6799,7 +6796,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51447",
@@ -6831,7 +6828,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51438",
@@ -7164,7 +7161,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51365",
@@ -7200,7 +7197,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51361",
@@ -7234,7 +7231,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51358",
@@ -7266,7 +7263,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51350",
@@ -7300,7 +7297,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51292",
@@ -7373,7 +7370,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51198",
@@ -7442,7 +7439,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51163",
@@ -7476,7 +7473,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51162",
@@ -7659,7 +7656,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51128",
@@ -7694,7 +7691,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51109",
@@ -7730,7 +7727,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51106",
@@ -7768,7 +7765,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-51105",
@@ -7883,7 +7880,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51051",
@@ -8030,7 +8027,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-51005",
@@ -8406,7 +8403,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50871",
@@ -8481,7 +8478,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50776",
@@ -8750,7 +8747,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50638",
@@ -8784,7 +8781,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50622",
@@ -8818,7 +8815,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50597",
@@ -8890,7 +8887,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50545",
@@ -9003,7 +9000,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50493",
@@ -9114,7 +9111,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50418",
@@ -9267,7 +9264,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50253",
@@ -9305,7 +9302,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50216",
@@ -9377,7 +9374,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50011",
@@ -9414,7 +9411,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49966",
@@ -9492,7 +9489,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49956",
@@ -9526,7 +9523,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49951",
@@ -9595,7 +9592,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49891",
@@ -9630,7 +9627,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49825",
@@ -9699,7 +9696,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49748",
@@ -9763,7 +9760,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49726",
@@ -9797,7 +9794,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49647",
@@ -9834,7 +9831,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49502",
@@ -9868,7 +9865,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49333",
@@ -9902,7 +9899,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49276",
@@ -10196,7 +10193,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-48904",
@@ -10233,7 +10230,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-48524",
@@ -10273,7 +10270,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-48483",
@@ -10305,7 +10302,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-47888",
@@ -10340,7 +10337,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-47871",
@@ -10355,10 +10352,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "2026-07-23T09:09:16Z",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -10377,7 +10374,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-46786",
@@ -10452,7 +10449,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-45972",
@@ -10489,7 +10486,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-45927",
@@ -10524,7 +10521,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-44624",
@@ -15700,46 +15697,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-33659",
+      "id": "issue-52246",
       "kind": "issue",
-      "number": 33659,
-      "url": "https://github.com/microsoft/PowerToys/issues/33659",
-      "title": "Unable to locate the plugin.json file to get the PluginID's use in my group policy settings.",
-      "author": "thenightmare6666",
+      "number": 52246,
+      "url": "https://github.com/microsoft/PowerToys/issues/52246",
+      "title": "Screen ruler measurements stop at monitor edge in extended desktop",
+      "author": "tlhackque",
       "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-General"
-      ],
-      "assignees": [],
-      "created_at": "2024-07-04T13:11:18Z",
-      "updated_at": "2026-04-18T15:57:05Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-34726",
-      "kind": "issue",
-      "number": 34726,
-      "url": "https://github.com/microsoft/PowerToys/issues/34726",
-      "title": "Missing Russian Localization for Keyboard Shortcuts",
-      "author": "Favorass",
-      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -15756,24 +15720,87 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Product-Shortcut Guide",
-        "Area-Localization",
         "Needs-Triage",
-        "Issue-Translation"
+        "Product-Screen Ruler"
       ],
       "assignees": [],
-      "created_at": "2024-09-09T10:45:05Z",
-      "updated_at": "2026-08-05T07:28:47Z",
-      "comments": 1,
+      "created_at": "2026-11-20T10:50:00Z",
+      "updated_at": "2026-11-20T11:47:11Z",
+      "comments": 0,
       "priority": null
     },
     {
-      "id": "issue-32972",
+      "id": "issue-52245",
       "kind": "issue",
-      "number": 32972,
-      "url": "https://github.com/microsoft/PowerToys/issues/32972",
-      "title": "offline AI",
-      "author": "Hask1pA",
+      "number": 52245,
+      "url": "https://github.com/microsoft/PowerToys/issues/52245",
+      "title": "Fancy Zones does not restore windows position correctly",
+      "author": "DavideFamoso",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-20T10:44:04Z",
+      "updated_at": "2026-11-20T11:47:20Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-52244",
+      "kind": "issue",
+      "number": 52244,
+      "url": "https://github.com/microsoft/PowerToys/issues/52244",
+      "title": "Window Hopper defaults to alt+' not alt+`",
+      "author": "bompstable",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Window Hopper"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-20T10:26:21Z",
+      "updated_at": "2026-11-20T10:29:40Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-52243",
+      "kind": "issue",
+      "number": 52243,
+      "url": "https://github.com/microsoft/PowerToys/issues/52243",
+      "title": "Restrict /control monitors where applications and their sub-windows open",
+      "author": "tlhackque",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -15794,41 +15821,8 @@ window.BOARD_INDEX = {
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-05-22T10:44:50Z",
-      "updated_at": "2026-04-16T16:18:40Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-34724",
-      "kind": "issue",
-      "number": 34724,
-      "url": "https://github.com/microsoft/PowerToys/issues/34724",
-      "title": "Chinese shows abnormality and has existed for a long time",
-      "author": "BraveMomo",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-General"
-      ],
-      "assignees": [],
-      "created_at": "2024-09-09T08:07:12Z",
-      "updated_at": "2026-04-18T15:53:19Z",
+      "created_at": "2026-11-20T10:23:36Z",
+      "updated_at": "2026-11-20T10:30:15Z",
       "comments": 0,
       "priority": null
     },
@@ -15973,7 +15967,7 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -15986,11 +15980,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette",
+        "CmdPal-Keyboard"
       ],
       "assignees": [],
       "created_at": "2026-11-20T07:04:20Z",
-      "updated_at": "2026-11-20T07:11:29Z",
+      "updated_at": "2026-11-20T10:21:52Z",
       "comments": 0,
       "priority": null
     },
@@ -16005,7 +16001,7 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -16017,11 +16013,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette",
+        "CmdPal - Dock"
       ],
       "assignees": [],
       "created_at": "2026-11-20T06:48:38Z",
-      "updated_at": "2026-11-20T06:49:02Z",
+      "updated_at": "2026-11-20T10:22:20Z",
       "comments": 0,
       "priority": null
     },
@@ -16082,11 +16080,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Quick Accent"
       ],
       "assignees": [],
       "created_at": "2026-11-20T02:24:42Z",
-      "updated_at": "2026-11-20T02:26:15Z",
+      "updated_at": "2026-11-20T10:23:02Z",
       "comments": 0,
       "priority": null
     },
@@ -16101,7 +16100,7 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -16113,11 +16112,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette",
+        "CmdPal - Bookmarks"
       ],
       "assignees": [],
       "created_at": "2026-11-19T23:37:34Z",
-      "updated_at": "2026-11-19T23:37:34Z",
+      "updated_at": "2026-11-20T10:22:44Z",
       "comments": 0,
       "priority": null
     },
@@ -16280,11 +16281,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Product-FancyZones",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-11-19T16:47:28Z",
-      "updated_at": "2026-11-20T09:42:25Z",
+      "updated_at": "2026-11-20T10:26:24Z",
       "comments": 1,
       "priority": null
     },
@@ -16312,11 +16314,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-PowerDisplay"
       ],
       "assignees": [],
       "created_at": "2026-11-19T14:54:48Z",
-      "updated_at": "2026-11-19T14:57:15Z",
+      "updated_at": "2026-11-20T10:23:28Z",
       "comments": 0,
       "priority": null
     },
@@ -16402,21 +16405,19 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Grab And Move"
       ],
       "assignees": [],
       "created_at": "2026-11-19T08:53:27Z",
-      "updated_at": "2026-11-19T08:53:27Z",
+      "updated_at": "2026-11-20T10:23:41Z",
       "comments": 0,
       "priority": null
     },
@@ -16578,15 +16579,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage"
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Mouse Utilities"
       ],
       "assignees": [],
       "created_at": "2026-11-18T22:49:17Z",
-      "updated_at": "2026-11-18T22:49:17Z",
+      "updated_at": "2026-11-20T10:24:08Z",
       "comments": 0,
       "priority": null
     },
@@ -16634,27 +16637,26 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": "triage",
       "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette",
+        "CmdPal-HostUX"
       ],
       "assignees": [],
       "created_at": "2026-11-18T20:52:32Z",
-      "updated_at": "2026-11-18T20:52:32Z",
+      "updated_at": "2026-11-20T10:24:23Z",
       "comments": 0,
       "priority": null
     },
@@ -16712,11 +16714,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Product-Always On Top",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-11-18T19:53:15Z",
-      "updated_at": "2026-11-18T19:53:15Z",
+      "updated_at": "2026-11-20T10:27:13Z",
       "comments": 0,
       "priority": null
     },
@@ -16778,13 +16781,12 @@ window.BOARD_INDEX = {
       "labels": [
         "Issue-Bug",
         "Area-Localization",
-        "Area-User Interface",
-        "Needs-Triage"
+        "Area-User Interface"
       ],
       "assignees": [],
       "created_at": "2026-11-18T18:49:16Z",
-      "updated_at": "2026-11-20T10:11:46Z",
-      "comments": 1,
+      "updated_at": "2026-11-20T13:40:49Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -16810,11 +16812,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Idea-New PowerToy",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-11-18T17:38:54Z",
-      "updated_at": "2026-11-18T17:38:54Z",
+      "updated_at": "2026-11-20T10:27:00Z",
       "comments": 0,
       "priority": null
     },
@@ -61856,27 +61859,26 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": "triage",
       "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Compare indexed folder results across File Search filters"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Command Palette",
+        "CmdPal - Indexer"
       ],
       "assignees": [],
       "created_at": "2026-11-18T01:40:01Z",
-      "updated_at": "2026-11-18T05:16:51Z",
+      "updated_at": "2026-11-20T10:32:05Z",
       "comments": 0,
       "priority": null
     },
@@ -153701,6 +153703,43 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-48445",
+      "kind": "issue",
+      "number": 48445,
+      "url": "https://github.com/microsoft/PowerToys/issues/48445",
+      "title": "[CmdPal] Run commands extension crashes on load - IReadOnlyCollection WinRT interop failure",
+      "author": "ThomasDBold",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Hot Fix",
+        "Product-Command Palette",
+        "CmdPal - Shell"
+      ],
+      "assignees": [
+        "zadjii-msft"
+      ],
+      "created_at": "2026-06-10T15:10:41Z",
+      "updated_at": "2026-06-18T17:56:01Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-32771",
       "kind": "issue",
       "number": 32771,
@@ -162210,6 +162249,39 @@ window.BOARD_INDEX = {
       "created_at": "2026-04-07T07:23:53Z",
       "updated_at": "2026-11-08T16:53:59Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-38758",
+      "kind": "issue",
+      "number": 38758,
+      "url": "https://github.com/microsoft/PowerToys/issues/38758",
+      "title": "Fan cyZones layout breaks after screen resolution change",
+      "author": "TechByMmabiaa",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2025-04-11T09:50:51Z",
+      "updated_at": "2026-04-18T15:09:04Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -185026,6 +185098,38 @@ window.BOARD_INDEX = {
       "created_at": "2026-02-21T20:28:19Z",
       "updated_at": "2026-04-16T15:12:21Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-7603",
+      "kind": "issue",
+      "number": 7603,
+      "url": "https://github.com/microsoft/PowerToys/issues/7603",
+      "title": "Support re-mapping of a specific keyboard (macro-keyboard support)",
+      "author": "innobilis",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Resolution-Duplicate",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2020-10-28T10:56:57Z",
+      "updated_at": "2026-10-11T16:28:56Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -222864,6 +222968,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-46693",
+      "kind": "issue",
+      "number": 46693,
+      "url": "https://github.com/microsoft/PowerToys/issues/46693",
+      "title": "[KeyboardManager] Ctrl becomes permanently stuck after pressing AltGr when shortcut remap uses LCtrl",
+      "author": "fluffyspace",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "duplicate",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2026-04-01T05:58:11Z",
+      "updated_at": "2026-10-11T15:32:16Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-7299",
       "kind": "issue",
       "number": 7299,
@@ -258531,20 +258667,20 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-48445",
+      "id": "issue-34724",
       "kind": "issue",
-      "number": 48445,
-      "url": "https://github.com/microsoft/PowerToys/issues/48445",
-      "title": "[CmdPal] Run commands extension crashes on load - IReadOnlyCollection WinRT interop failure",
-      "author": "ThomasDBold",
-      "state": "closed",
+      "number": 34724,
+      "url": "https://github.com/microsoft/PowerToys/issues/34724",
+      "title": "Chinese shows abnormality and has existed for a long time",
+      "author": "BraveMomo",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
@@ -258555,15 +258691,11 @@ window.BOARD_INDEX = {
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
-        "Hot Fix",
-        "Product-Command Palette",
-        "CmdPal - Shell"
+        "Product-General"
       ],
-      "assignees": [
-        "zadjii-msft"
-      ],
-      "created_at": "2026-06-10T15:10:41Z",
-      "updated_at": "2026-06-18T17:56:01Z",
+      "assignees": [],
+      "created_at": "2024-09-09T08:07:12Z",
+      "updated_at": "2026-04-18T15:53:19Z",
       "comments": 0,
       "priority": null
     },
@@ -300980,6 +301112,41 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-34726",
+      "kind": "issue",
+      "number": 34726,
+      "url": "https://github.com/microsoft/PowerToys/issues/34726",
+      "title": "Missing Russian Localization for Keyboard Shortcuts",
+      "author": "Favorass",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Product-Shortcut Guide",
+        "Area-Localization",
+        "Needs-Triage",
+        "Issue-Translation"
+      ],
+      "assignees": [],
+      "created_at": "2024-09-09T10:45:05Z",
+      "updated_at": "2026-08-05T07:28:47Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-39568",
       "kind": "issue",
       "number": 39568,
@@ -315311,36 +315478,34 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-38758",
+      "id": "issue-52247",
       "kind": "issue",
-      "number": 38758,
-      "url": "https://github.com/microsoft/PowerToys/issues/38758",
-      "title": "Fan cyZones layout breaks after screen resolution change",
-      "author": "TechByMmabiaa",
+      "number": 52247,
+      "url": "https://github.com/microsoft/PowerToys/issues/52247",
+      "title": "Who Turned Out the Lights? -- Explain Why Windows Rebooted",
+      "author": "tim-dunn",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-FancyZones",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2025-04-11T09:50:51Z",
-      "updated_at": "2026-04-18T15:09:04Z",
-      "comments": 2,
+      "created_at": "2026-11-20T12:27:21Z",
+      "updated_at": "2026-11-20T12:27:21Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -330607,11 +330772,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-ZoomIt"
       ],
       "assignees": [],
       "created_at": "2026-11-20T07:34:15Z",
-      "updated_at": "2026-11-20T07:34:15Z",
+      "updated_at": "2026-11-20T10:30:35Z",
       "comments": 0,
       "priority": null
     },
@@ -343140,8 +343306,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-11-19T22:11:50Z",
-      "updated_at": "2026-11-19T22:11:50Z",
-      "comments": 0,
+      "updated_at": "2026-11-20T13:29:23Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -352100,34 +352266,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-7603",
+      "id": "issue-33659",
       "kind": "issue",
-      "number": 7603,
-      "url": "https://github.com/microsoft/PowerToys/issues/7603",
-      "title": "Support re-mapping of a specific keyboard (macro-keyboard support)",
-      "author": "innobilis",
-      "state": "closed",
+      "number": 33659,
+      "url": "https://github.com/microsoft/PowerToys/issues/33659",
+      "title": "Unable to locate the plugin.json file to get the PluginID's use in my group policy settings.",
+      "author": "thenightmare6666",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Product-Keyboard Manager"
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2020-10-28T10:56:57Z",
-      "updated_at": "2026-10-11T16:28:56Z",
+      "created_at": "2024-07-04T13:11:18Z",
+      "updated_at": "2026-04-18T15:57:05Z",
       "comments": 2,
       "priority": null
     },
@@ -359442,13 +359609,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-46693",
+      "id": "issue-32972",
       "kind": "issue",
-      "number": 46693,
-      "url": "https://github.com/microsoft/PowerToys/issues/46693",
-      "title": "[KeyboardManager] Ctrl becomes permanently stuck after pressing AltGr when shortcut remap uses LCtrl",
-      "author": "fluffyspace",
-      "state": "closed",
+      "number": 32972,
+      "url": "https://github.com/microsoft/PowerToys/issues/32972",
+      "title": "offline AI",
+      "author": "Hask1pA",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -359464,13 +359631,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "duplicate",
-        "Product-Keyboard Manager"
+        "Idea-New PowerToy",
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-04-01T05:58:11Z",
-      "updated_at": "2026-10-11T15:32:16Z",
-      "comments": 4,
+      "created_at": "2024-05-22T10:44:50Z",
+      "updated_at": "2026-04-16T16:18:40Z",
+      "comments": 0,
       "priority": null
     },
     {
