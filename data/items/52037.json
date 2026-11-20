@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 5,
+  "number": 52037,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "CmdPal: Fix crash from stale image load callbacks",
+  "url": "https://github.com/microsoft/PowerToys/pull/52037",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-11-20T02:22:08.8738302Z",
+  "evaluated_at": "2026-11-20T02:22:08.8738759Z",
+  "source_updated_at": "2026-11-19T20:03:44Z",
+  "head_sha": "8b9c229f084612c3c53f32a2b52ed448a7714a48",
+  "confidence": {
+    "score": 88,
+    "rationale": "Pinned source excerpts directly show the retained surface/stream and the cancellation side effects of the existing cleanup path; the non-cancelling candidate compiles on the exact head."
+  },
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "pr52037-failed-load-resource-retention",
+      "kind": "companion",
+      "in_diff": false,
+      "severity": "medium",
+      "title": "Failed image loads retain resources until replaced or unloaded",
+      "body": "### Failed image loads can retain image-sized resources\n**Severity:** `medium`\n\n**Affected code:** `BlurImageControl.OnLoadedSurfaceOnLoadCompleted` and `BlurImageControl.ClearImageSurface` in `src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/BlurImageControl.cs`.\n\n**Problem:** When the currently attached surface finishes with a non-success status, the callback clears only the URI and file timestamp cache keys. `_lastLoadedSurface` remains attached to `_imageBrush`, and `_lastLoadedStream` remains retained by the control. For local files, that stream is an `InMemoryRandomAccessStream` containing a full copy of the image.\n\n**Why it matters:** A corrupt or unsupported image can leave its native surface and image-sized buffer alive until another source replaces it or the control unloads, despite the load having failed.\n\n**Suggested change:**\n- On the current surface's non-success path, detach and dispose the failed surface and its retained stream.\n- Use a cleanup path that does not clear `_loadingUri` or increment `_imageLoadVersion` during this callback, because a newer source load may already be pending; retain the existing canceling cleanup behavior for clear, unload, and replacement callers.\n\n**Verification:** Force an asynchronous image load to fail after starting a newer source load. Confirm the failed surface and stream are released and the newer load still completes; also confirm clear and unload continue to cancel pending work.",
+      "out_of_diff_reason": "The safe fix spans both the failure callback and the shared cleanup helper; a single inline replacement could cancel a newer pending load by clearing _loadingUri and incrementing _imageLoadVersion.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 88,
+        "rationale": "Pinned source excerpts directly show the retained surface/stream and the cancellation side effects of the existing cleanup path; the non-cancelling candidate compiles on the exact head."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-52037",
+      "type": "post_review",
+      "label": "Post the general review comment",
+      "note": "Posts this finding as a separate general PR comment.",
+      "review": {
+        "event": "COMMENT",
+        "body_prefix": ""
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "8b9c229f084612c3c53f32a2b52ed448a7714a48",
+      "result": "passed"
+    }
+  }
+}
