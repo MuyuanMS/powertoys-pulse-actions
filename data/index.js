@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 224,
     "open_issues": 11202,
     "community": 10327,
-    "artifacts": 2263
+    "artifacts": 2264
   },
   "impact": {
     "as_of": "2026-11-20T18:20:51.2197589+08:00",
@@ -2360,7 +2360,8 @@ window.BOARD_INDEX = {
     52039,
     16,
     8,
-    4
+    4,
+    52242
   ],
   "items": [
     {
@@ -2375,13 +2376,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "track": "review",
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-20T09:44:51Z",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
