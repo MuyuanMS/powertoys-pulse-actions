@@ -2954,7 +2954,8 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN"
+      "merge_state": "CLEAN",
+      "needs_revalidation": true
     },
     {
       "id": "pr-52126",
