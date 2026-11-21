@@ -6,20 +6,76 @@
   "title": "[Dev][Build] .NET 11 Upgrade",
   "url": "https://github.com/microsoft/PowerToys/pull/52054",
   "track": "review",
-  "stage": "review_ready",
-  "owes": "maintainer",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-20T15:39:32.9163132+08:00",
-  "evaluated_at": "2026-11-20T15:39:32.9163132+08:00",
-  "source_updated_at": "2026-11-20T07:28:05Z",
-  "head_sha": "15c3e521dcfbe8abecf63ad1d0ccb8a956ac6625",
+  "generated_at": "2026-11-21T01:42:08.6833922Z",
+  "evaluated_at": "2026-11-21T01:42:08.6833922Z",
+  "source_updated_at": "2026-11-21T00:42:45Z",
+  "head_sha": "f636fbcfe82bf61dc18f775a4af939049c111f0f",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "pr52054-editor-ready-stale-uia",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Preserve transient UIA retries in the editor-ready wait",
+      "body": "### Preserve transient UIA retries in the editor-ready wait\n\n**Severity:** `medium`\n\n**Affected code:** `RegistryPreviewTestBase.cs:511`\n\n**Problem:** `Session.FindAll` retries `stale_element` only while its search deadline is still in the future. With `timeoutMS: 0`, that retry path is disabled; this `WaitForStable` call supplies no `shouldRetryException`, so one stale UIA response escapes and aborts the wait.\n\n**Why it matters:** If the Browser element is invalidated while the editor UI tree is settling, the new 180-second readiness loop can fail on that transient response instead of taking its next sample.\n\n**Suggested change:** Keep each lookup bounded but preserve recovery for the known stale UIA result.\n\n```suggestion\n            () => window.Has(selector, timeoutMS: 2_000),\n```\n\n**Verification:** The RegistryPreview.UITests project and literal suggestion compiled at the prior assessed head; the target and helper source blobs are byte-identical at this head. The UI harness was not run.",
+      "path": "src/modules/registrypreview/Tests/RegistryPreview.UITests/RegistryPreviewTestBase.cs",
+      "line": 511,
+      "start_line": 511,
+      "side": "RIGHT",
+      "severity": "medium",
+      "confidence": {
+        "score": 80,
+        "rationale": "The zero-duration Session.FindAll deadline definitively bypasses its stale_element retry, and WaitForStable propagates exceptions unless a retry predicate accepts them; only runtime incidence is environment-dependent."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-pr52054-grounded-finding",
+      "type": "post_review",
+      "label": "Post the validated inline finding",
+      "note": "Submit the one grounded inline finding as a COMMENT review.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "f636fbcfe82bf61dc18f775a4af939049c111f0f",
+        "comment_ids": [
+          "pr52054-editor-ready-stale-uia"
+        ]
+      }
+    }
+  ],
+  "freshness": {
+    "checkpoint_at": "2026-11-21T01:42:08.6833922Z"
+  },
   "validation": {
     "upstream_head": {
-      "head_sha": "15c3e521dcfbe8abecf63ad1d0ccb8a956ac6625",
+      "head_sha": "f636fbcfe82bf61dc18f775a4af939049c111f0f",
       "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "f636fbcfe82bf61dc18f775a4af939049c111f0f",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "pr52054-editor-ready-stale-uia"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "f636fbcfe82bf61dc18f775a4af939049c111f0f",
+      "result": "passed",
+      "checked_comment_ids": [
+        "pr52054-editor-ready-stale-uia"
+      ],
+      "files": [
+        {
+          "path": "src/modules/registrypreview/Tests/RegistryPreview.UITests/RegistryPreviewTestBase.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   }
 }
