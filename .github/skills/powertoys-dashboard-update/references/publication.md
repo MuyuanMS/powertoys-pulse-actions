@@ -74,7 +74,9 @@ fetching upstream metadata. This is a supported generator, not permission to
 hand-edit the generated index. It requires PowerShell 7.5+ (JSON timestamps must
 remain strings to preserve unrelated row content) and the same canonical `main`
 guard. It supports existing non-CmdPal PR index rows only; new inventory rows and
-issue generation remain the full generator's responsibility.
+issue generation are not artifact publication. If a validated PR lacks an index
+row, use the bounded PR inventory insertion below first; never weaken the scoped
+gate or run a whole-feed refresh merely to insert one PR.
 
 Inputs:
 
@@ -154,6 +156,49 @@ Do not run the full sanitizer or a whole-feed validator afterward in a restricte
 scope: those enumerate unrelated files. The scoped command already runs both
 public gates for the selected artifacts. Continue the canonical commit and Pulse
 delivery steps below, staging only the returned `changed_files`.
+
+#### Bounded PR inventory insertion
+
+`emit.ps1 -PrInventoryOnly` is a separate, offline metadata-only generator. It
+reuses the full generator's live-item conversion, index row factory, counts and
+JSON/JS serialization. It returns before full backlog discovery, overlays,
+per-number reads, sanitization or stale-queue checks. PowerShell 7.5+ and the
+canonical actions `main` guard are required. Keep exclusive publication ownership.
+
+Supply `-Numbers` as distinct positive explicit non-CmdPal open PR numbers and
+`-LiveMetadataPath` as a precise coordinator-pinned GraphQL snapshot: a single
+object or array containing **exactly** those numbers, with no duplicate entries.
+For every PR require actual `number`, `url`, `title`, `state: "OPEN"`,
+`isDraft: false`, full 40-hex `headRefOid`, `author.login`, `authorAssociation`,
+`createdAt`, `updatedAt`, and `comments.totalCount`. Dates must be timezone-qualified
+ISO timestamps and updatedAt must not precede createdAt. `labels.nodes` must
+contain label-name objects; `assignees.nodes` must contain login objects. Both
+connections must include `pageInfo.hasNextPage: false`, even when empty. Do not
+replace incomplete pages, identities or counts with unknown/empty/zero defaults.
+Reviews are not discussion comments and are not added to `comments.totalCount`.
+
+Optional `reviewDecision`, `ci_state`, and `mergeStateStatus` are passed through
+the original row factory; absent readiness stays neutral/null. Do not convert
+`mergeable` into `mergeStateStatus` or infer a CI pass from an unrelated rollup.
+No source retrieval or upstream calls happen inside this mode.
+
+```powershell
+& "$Dashboard\emit.ps1" -PrInventoryOnly -Numbers 52291 `
+  -LiveMetadataPath $PinnedPrInventorySnapshot -ValidateOnly
+# After confirming the pinned snapshot and preflight:
+& "$Dashboard\emit.ps1" -PrInventoryOnly -Numbers 52291 `
+  -LiveMetadataPath $PinnedPrInventorySnapshot
+```
+
+Only missing selected PR rows are appended; existing rows remain unchanged.
+New rows have the original generator's unprocessed metadata state: no artifact,
+no review completion, no proposed action, no author-wait assertion. Only added
+PR/community counts change. Historical inventory timestamps/impact, unrelated
+rows, issue counts, artifact manifest/counts and every per-number file remain
+untouched. Both indexes must agree before and after insertion; invalid snapshots
+fail before writes, and repeated insertions are no-ops. Then run the existing
+scoped artifact publisher with its separate pinned lifecycle metadata and verified
+receipt. Inventory insertion alone never counts as a delivered review.
 
 Run `Assert-CanonicalDashboardTarget.ps1` immediately before writing/committing.
 Preserve concurrent remote updates; use non-destructive fast-forward/retry

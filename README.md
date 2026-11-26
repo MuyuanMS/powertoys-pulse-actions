@@ -73,6 +73,19 @@ This generates local data only; commit, push, Pulse sync and upstream posting
 remain separate coordinator operations. Focused offline regression tests:
 `pwsh -NoProfile -File .\tests\Test-ScopedActionData.ps1`.
 
+If a validated PR has no index row, first use the bounded metadata-only mode:
+
+```powershell
+.\emit.ps1 -PrInventoryOnly -Numbers 52291 -LiveMetadataPath C:\review-evidence\pr-inventory.private.json
+```
+
+Supply a complete, pinned GraphQL snapshot as specified in the
+[inventory insertion contract](./.github/skills/powertoys-dashboard-update/references/publication.md#bounded-pr-inventory-insertion).
+Add `-ValidateOnly` for preflight. It reuses the full generator's row factory but
+inserts only missing selected PR metadata, without fetching the backlog, touching
+item files, or claiming review completion. Then use the scoped publisher above.
+Focused tests: `pwsh -NoProfile -File .\tests\Test-PrInventory.ps1`.
+
 ## Download a PR CI installer only
 
 The public Azure build service supports individual-file downloads. This helper

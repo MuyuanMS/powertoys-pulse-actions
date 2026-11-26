@@ -17,15 +17,26 @@
   items get a hand-authored overlay ($OV) with drafted agent content.
 #>
 
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Full')]
 param(
-  [switch]$AllowStaleReviewQueue
+  [Parameter(ParameterSetName = 'Full')][switch]$AllowStaleReviewQueue,
+  [Parameter(Mandatory, ParameterSetName = 'PrInventory')][switch]$PrInventoryOnly,
+  [Parameter(Mandatory, ParameterSetName = 'PrInventory')][int[]]$Numbers,
+  [Parameter(Mandatory, ParameterSetName = 'PrInventory')][string]$LiveMetadataPath,
+  [Parameter(ParameterSetName = 'PrInventory')][switch]$ValidateOnly
 )
 
 $ErrorActionPreference = 'Stop'
 $here   = Split-Path -Parent $MyInvocation.MyCommand.Path
 & (Join-Path $here '.github\skills\powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1') `
   -Dashboard $here | Out-Null
+if ($PSCmdlet.ParameterSetName -eq 'PrInventory') {
+  if (-not $PrInventoryOnly) { throw 'Explicit -PrInventoryOnly is required for bounded inventory generation.' }
+  . (Join-Path $here 'Emit.PrInventory.ps1')
+  Invoke-PrInventoryGeneration -Dashboard $here -Numbers $Numbers -LiveMetadataPath $LiveMetadataPath -ValidateOnly:$ValidateOnly
+  return
+}
+. (Join-Path $here 'Emit.Index.ps1')
 $v2json = Join-Path $here '..\dashboard\data\latest.json'
 $currentIndex = Join-Path $here 'data\index.json'
 $standaloneMode = -not (Test-Path $v2json) -and (Test-Path $currentIndex)
@@ -83,32 +94,6 @@ function Get-CiState {
     }
   }
   return 'passed'
-}
-function Convert-LiveItem {
-  param($Raw, [string]$Kind, $Previous, [int]$CommentCount, $Readiness)
-  $labels = @($Raw.labels | ForEach-Object { $_.name })
-  $assignees = @($Raw.assignees | ForEach-Object { $_.login } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-  $author = if ($Raw.user.login) { $Raw.user.login } else { 'unknown' }
-  $association = [string]$Raw.author_association
-  $community = $association -notin @('MEMBER','OWNER','COLLABORATOR')
-  [ordered]@{
-    id = "$Kind-$($Raw.number)"; kind = $Kind; number = [int]$Raw.number
-    url = $Raw.html_url; title = $Raw.title; author = $author
-    state = $Raw.state
-    is_draft = [bool]$Raw.draft
-    is_community = [bool]$community; mine = ($author -ieq $ME)
-    is_cmdpal = (($labels -join '|') -match '(?i)Command Palette|CmdPal')
-    labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
-    assignees = $assignees
-    comments = $CommentCount
-    review_decision = if ($Kind -eq 'pr' -and $Readiness.reviewDecision) { [string]$Readiness.reviewDecision } else { $null }
-    ci_state = if ($Kind -eq 'pr' -and $Readiness.ci_state) { [string]$Readiness.ci_state } else { $null }
-    merge_state = if ($Kind -eq 'pr' -and $Readiness.mergeStateStatus) { [string]$Readiness.mergeStateStatus } else { $null }
-    track = if ($Previous) { $Previous.track } else { $null }
-    stage = if ($Previous) { $Previous.stage } else { $null }
-    owes = if ($Previous) { $Previous.owes } else { 'us' }
-    priority = if ($Previous) { $Previous.priority } else { $null }
-  }
 }
 function Get-PrReadiness {
   $query = 'query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){pullRequests(first:10,after:$cursor,states:OPEN,orderBy:{field:UPDATED_AT,direction:DESC}){nodes{number reviewDecision mergeStateStatus} pageInfo{hasNextPage endCursor}}}}'
@@ -199,10 +184,10 @@ try {
     } else {
       0
     }
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number] $discussionCount $prReadinessByNumber[[int]$raw.number]))
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number] $discussionCount $prReadinessByNumber[[int]$raw.number] -Maintainer $ME))
   }
   foreach ($raw in $liveIssues) {
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number] ([int]$raw.comments) $null))
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number] ([int]$raw.comments) $null -Maintainer $ME))
   }
   $src.items = $liveItems.ToArray()
   "live upstream backlog loaded: prs=$($livePrs.Count) openIssues=$($liveOpenIssues.Count) recentIssues=$($liveIssues.Count)"
@@ -894,7 +879,7 @@ foreach ($artifact in $existingArtifacts.Values) {
     if ([datetime](Get-PropertyValue $artifact 'source_updated_at') -lt $recentArtifactCutoff) { continue }
     $raw = gh api "repos/$UP/issues/$number" 2>$null | ConvertFrom-Json
     if ($raw.state -eq 'open' -and -not $raw.pull_request) {
-      $src.items += [pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[$number] ([int]$raw.comments))
+      $src.items += [pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[$number] ([int]$raw.comments) -Maintainer $ME)
       $liveNumbers[$number] = $true
     }
   } catch {
@@ -1023,26 +1008,10 @@ foreach ($it in $src.items) {
       $primary = [ordered]@{ type=$action.type; label=$label }
     }
   }
-  $entry = [ordered]@{
-    id=$it.id; kind=$it.kind; number=$n; url=$it.url; title=$it.title; author=$it.author
-    state=$it.state
-    is_draft=[bool]$it.is_draft
-    is_community=[bool]$it.is_community; mine=[bool]$it.mine; is_cmdpal=[bool]$it.is_cmdpal
-    track=$track; stage=$stage; owes=$iowes; pending_author=$pendingAuthor
-    waiting_since=$waitingSince
-    has_artifact=$hasArtifact; agent_status=$agentStatus; issue_type=$issueType
-    proposed_open=$proposedOpen
-    primary_action=if ($primary) { [pscustomobject]$primary } else { $null }
-    labels=@($it.labels); assignees=@($it.assignees | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) }); created_at=$it.created_at; updated_at=$it.updated_at
-    comments=$it.comments; priority=$it.priority
-  }
-  if ($it.kind -eq 'pr') {
-    $entry['review_decision'] = $it.review_decision
-    $entry['ci_state'] = $it.ci_state
-    $entry['merge_state'] = $it.merge_state
-  }
-  if ($mt) { $entry['mirror'] = [pscustomobject]$mt }
-  $indexList.Add([pscustomobject]$entry)
+  $entry = New-BoardIndexEntry -Item $it -Track $track -Stage $stage -Owes $iowes `
+    -PendingAuthor $pendingAuthor -WaitingSince $waitingSince -HasArtifact $hasArtifact `
+    -AgentStatus $agentStatus -IssueType $issueType -ProposedOpen $proposedOpen -PrimaryAction $primary -Mirror $mt
+  $indexList.Add($entry)
 
   if (-not $hasArtifact) { continue }
 
@@ -1130,11 +1099,6 @@ $impact = [ordered]@{
 }
 
 # ---- index.json (+ .js fallback) -----------------------------------------
-$cPr=0; $cIss=0; $cCom=0
-foreach ($x in $indexList) {
-  if ($x.kind -eq 'pr') { $cPr++ } elseif ($x.kind -eq 'issue') { $cIss++ }
-  if ($x.is_community) { $cCom++ }
-}
 $idxItems = $indexList.ToArray()
 $artNums  = $artifactNumbers.ToArray()
 $index = [ordered]@{}
@@ -1145,13 +1109,13 @@ $index['fork']             = $FORK
 $index['maintainer']       = $ME
 $index['stage_labels']     = $src.stage_labels
 $index['tracks']           = $src.tracks
-$index['counts']           = [ordered]@{ open_prs=$cPr; open_issues=$cIss; community=$cCom; artifacts=$artNums.Count }
+$index['counts']           = Get-BoardIndexCounts -Items $idxItems -ArtifactCount $artNums.Count
 $index['impact']           = $impact
 $index['artifact_numbers'] = $artNums
 $index['items']            = $idxItems
-$ij = $index | ConvertTo-Json -Depth 20
-[System.IO.File]::WriteAllText((Join-Path $outDir 'index.json'), $ij, $enc)
-[System.IO.File]::WriteAllText((Join-Path $outDir 'index.js'), ("window.BOARD_INDEX = " + $ij + ";"), $enc)
+$indexFiles = ConvertTo-BoardIndexFiles $index
+[System.IO.File]::WriteAllText((Join-Path $outDir 'index.json'), $indexFiles.json, $enc)
+[System.IO.File]::WriteAllText((Join-Path $outDir 'index.js'), $indexFiles.javascript, $enc)
 
 "index.json written: items=$($indexList.Count)  artifacts=$($artifactNumbers.Count) [$(( $artifactNumbers | Sort-Object ) -join ', ')]"
 
