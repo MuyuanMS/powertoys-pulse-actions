@@ -10,35 +10,20 @@
   "owes": "us",
   "pending_author": false,
   "waiting_since": null,
-  "generated_at": "2026-11-13T10:48:09.5990179Z",
-  "evaluated_at": "2026-11-13T10:48:09.5990179Z",
-  "source_updated_at": "2026-11-13T08:02:24Z",
-  "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730",
+  "generated_at": "2026-11-26T06:48:45.8390292+00:00",
+  "evaluated_at": "2026-11-26T06:48:45.8390292+00:00",
+  "source_updated_at": "2026-11-23T20:41:27Z",
+  "head_sha": "2a85c842fc121bf036358afba11663b843a2662d",
   "needs_revalidation": false,
   "proposed_comments": [
-    {
-      "id": "teardown-reopen-race",
-      "kind": "inline",
-      "title": "Reopening Peek while browser cleanup is pending can be undone",
-      "severity": "medium",
-      "confidence": {
-        "score": 87,
-        "rationale": "Exact upstream control flow proves an async-void teardown yields while visible, while the same-file Toggle path calls Initialize/Activate without checking the in-progress guard; behavioral timing was not reproduced."
-      },
-      "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
-      "side": "RIGHT",
-      "line": 255,
-      "body": "### Reopening Peek while browser cleanup is pending can be undone\n\n**Severity:** `medium`\n\n`Uninitialize()` yields here while the window remains visible, but `Toggle()` does not check `_isUninitializing` before taking its same-file path into `Initialize()`/`Activate()`. If that activation occurs before the clear finishes, the older teardown continues to `Hide()` and closes the newly reopened preview. Please serialize same-file activation against teardown, or recheck that teardown still owns the close before hiding, and cover a same-file reopen while the clear is delayed.",
-      "in_diff": true
-    },
     {
       "id": "navigation-completion-correlation",
       "kind": "inline",
       "title": "Correlate NavigationCompleted with the about:blank navigation",
       "severity": "medium",
       "confidence": {
-        "score": 83,
-        "rationale": "The completion handler ignores navigation identity; WebView2 exposes NavigationId correlation and permits overlapping navigations, though this timing race was not reproduced."
+        "score": 92,
+        "rationale": "The completion-identity defect is supported by unchanged grounded input, the documented overlapping-navigation sequence and a focused deterministic event check. The finding asserts loss of the intended completion guarantee, not reproduced visual flash."
       },
       "path": "src/modules/peek/Peek.FilePreviewer/Controls/BrowserControl.xaml.cs",
       "side": "RIGHT",
@@ -49,19 +34,18 @@
   ],
   "actions": [
     {
+      "id": "52104-post-navigation-correlation",
       "type": "post_review",
+      "label": "Post navigation-correlation review",
+      "head_sha": "2a85c842fc121bf036358afba11663b843a2662d",
       "review": {
+        "commit_id": "2a85c842fc121bf036358afba11663b843a2662d",
         "comment_ids": [
-          "teardown-reopen-race",
           "navigation-completion-correlation"
         ],
-        "commit_id": "7e95000aa346c03f763023ab6f92c6789e18e730",
         "event": "COMMENT",
-        "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730"
-      },
-      "id": "52104-post-current-findings",
-      "label": "Post inline review comments",
-      "head_sha": "7e95000aa346c03f763023ab6f92c6789e18e730"
+        "head_sha": "2a85c842fc121bf036358afba11663b843a2662d"
+      }
     }
   ],
   "validation": {}
