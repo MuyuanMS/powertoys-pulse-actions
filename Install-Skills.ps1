@@ -26,6 +26,7 @@ $skills = @(
   'powertoys-pr-review',
   'powertoys-issue-to-design',
   'powertoys-design-to-pr'
+  'powertoys-pr-auto-post'
 )
 
 foreach ($skill in $skills) {

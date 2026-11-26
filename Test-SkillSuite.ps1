@@ -6,6 +6,7 @@ $requiredSkills = @(
   'powertoys-pr-review',
   'powertoys-issue-to-design',
   'powertoys-design-to-pr'
+  'powertoys-pr-auto-post'
 )
 
 $errors = [System.Collections.Generic.List[string]]::new()
@@ -189,6 +190,8 @@ foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1', 
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
 }
+& pwsh -NoProfile -File (Join-Path $skillsRoot 'powertoys-pr-auto-post\tests\Test-AutoPost.ps1')
+if ($LASTEXITCODE -ne 0) { $errors.Add('Independent auto-post regression tests failed.') }
 foreach ($testName in @('Test-SkillContracts.ps1', 'Test-PrReviewDispatch.ps1', 'Test-SkillInstallation.ps1', 'Test-PublicPrArtifact.ps1')) {
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-dashboard-update\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Drain reliability regression test failed: $testName") }
