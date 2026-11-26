@@ -9,11 +9,19 @@ param(
   [switch]$RequireIssueContext,
   [switch]$RequireFindingGrounding,
   [string]$GroundingPath,
-  [string]$SourceRepository
+  [string]$SourceRepository,
+  [string]$OutputReceiptPath
 )
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'PublicPrArtifact.ps1')
+if ($OutputReceiptPath -and (-not $Numbers -or -not $RequireFindingGrounding)) {
+  throw 'A publication receipt requires explicit -Numbers and -RequireFindingGrounding.'
+}
+if ($OutputReceiptPath) {
+  . (Join-Path $PSScriptRoot 'ArtifactValidationReceipt.ps1')
+}
+$validatedReceiptRecords = [System.Collections.Generic.List[object]]::new()
 $Dashboard = (Resolve-Path $Dashboard).Path
 $itemsPath = Join-Path $Dashboard 'data\items'
 if (-not (Test-Path $itemsPath)) {
@@ -143,13 +151,22 @@ function Test-ClearRequestInfo {
 
 foreach ($path in @($paths)) {
   try {
-    $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
+    $jsonOptions = if ($OutputReceiptPath) { @{ DateKind = 'String' } } else { @{} }
+    $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json @jsonOptions
   } catch {
     $errors.Add("$($path.Name) is not valid JSON: $($_.Exception.Message)")
     continue
   }
 
   $prefix = $path.Name
+  if ($OutputReceiptPath) {
+    $validatedReceiptRecords.Add([pscustomobject]@{
+      number = [int]$artifact.number
+      kind = [string]$artifact.kind
+      head_sha = [string]$artifact.head_sha
+      content_sha256 = Get-ArtifactContentDigest $artifact
+    })
+  }
   $fileNumber = 0
   [void][int]::TryParse($path.BaseName, [ref]$fileNumber)
   if ([int]$artifact.number -ne $fileNumber) {
@@ -625,3 +642,20 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host "Validated $(@($paths).Count) dashboard artifact(s)."
+if ($OutputReceiptPath) {
+  foreach ($path in @($paths)) {
+    $current = Get-Content -LiteralPath $path.FullName -Raw | ConvertFrom-Json -DateKind String
+    $record = @($validatedReceiptRecords | Where-Object { $_.number -eq $current.number })
+    if ($record.Count -ne 1 -or (Get-ArtifactContentDigest $current) -cne $record[0].content_sha256) {
+      throw 'An artifact changed during validation; no publication receipt was issued.'
+    }
+  }
+  $receipt = [ordered]@{
+    schemaVersion = 1
+    validator = 'Test-DashboardArtifacts.ps1'
+    finding_grounding_required = $true
+    artifacts = $validatedReceiptRecords.ToArray()
+  }
+  [IO.File]::WriteAllText([IO.Path]::GetFullPath($OutputReceiptPath),
+    ($receipt | ConvertTo-Json -Depth 10), [Text.UTF8Encoding]::new($false))
+}

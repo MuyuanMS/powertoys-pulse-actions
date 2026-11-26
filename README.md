@@ -53,6 +53,26 @@ Repository-level use is also supported: copy the skill directories from
 
 No token or account-specific local configuration is stored in this repository.
 
+## Publish only selected, validated PR artifacts
+
+`Publish-ScopedActionData.ps1` is an offline alternative to full `emit.ps1` when
+unrelated backlog items must not be traversed. It requires PowerShell 7.5+, a
+canonical actions `main` checkout, explicit existing non-CmdPal PR numbers,
+separate public candidates, pinned eligible live metadata, and private strict
+validation receipts. It never calls upstream APIs, reads unselected item files,
+or marks a drain complete. See the [scoped publication contract](./.github/skills/powertoys-dashboard-update/references/publication.md#scoped-offline-pr-publication).
+
+```powershell
+.\Publish-ScopedActionData.ps1 -Numbers 49276,51102 `
+  -CandidateDataPath C:\validated-candidates\data `
+  -LiveMetadataPath C:\review-evidence\eligible-live-metadata.json `
+  -ValidationReceiptPath C:\review-evidence\publication-receipt.json
+```
+
+This generates local data only; commit, push, Pulse sync and upstream posting
+remain separate coordinator operations. Focused offline regression tests:
+`pwsh -NoProfile -File .\tests\Test-ScopedActionData.ps1`.
+
 ## Download a PR CI installer only
 
 The public Azure build service supports individual-file downloads. This helper
