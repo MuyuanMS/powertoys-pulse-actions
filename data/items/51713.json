@@ -9,43 +9,69 @@
   "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-03T17:08:23.3081887+08:00",
-  "evaluated_at": "2026-11-03T17:08:23.3104243+08:00",
-  "source_updated_at": "2026-10-30T23:04:08Z",
-  "head_sha": "07d18369ec6ac326ced23eba1aee0e7e60dc582e",
+  "generated_at": "2026-11-25T04:02:41.4076926Z",
+  "evaluated_at": "2026-11-25T04:02:41.4076926Z",
+  "source_updated_at": "2026-11-25T02:25:21Z",
+  "head_sha": "d5b3cd910d63465ce2abcb2fe4f3d0c7c6dee277",
   "needs_revalidation": false,
   "proposed_comments": [
     {
-      "title": "Add direct tests for BoxBounds.MoveTo",
+      "title": "Restore the wait result's observation",
       "disposition": "proposed",
-      "in_diff": false,
-      "id": "51713-recovered-MoveTo-coverage",
-      "body": "### Add direct tests for BoxBounds.MoveTo\n\n**Severity:** `low` (non-blocking test coverage)\n\n**Affected code:** `src/modules/MouseUtils/MouseJump.Models/Drawing/BoxBounds.cs`, `MoveTo`, and `MouseJump.Models.UnitTests/Drawing/BoxBoundsTests.cs`.\n\n**Problem:** The existing `BoxBoundsTests` exercise the bounds factories but contain no direct `MoveTo` cases. The new method translates five nested rectangles and has a separate empty-box return path.\n\n**Why it matters:** Focused assertions would protect the relationship between the nested bounds and the requested origin. Other preview or integration paths may exercise the method indirectly; this is a request for explicit boundary coverage, not a claim that the current coordinate arithmetic is wrong.\n\n**Suggested change:**\n\n1. Add a non-empty box with distinct outer, margin, border, padding, and content bounds. Move it to a new origin and assert that every rectangle receives the same delta while retaining its size.\n2. Cover positive and negative offsets, including a move to `(0, 0)`.\n3. Add an empty-box case confirming that the existing `IsEmpty` short circuit preserves the empty result, and a null-location case for the existing argument guard.\n\n**Verification:** Run the focused `BoxBoundsTests`. The new cases should fail if a nested rectangle is omitted, its size changes, or the requested origin is applied inconsistently; no rendering implementation change is required.",
-      "kind": "companion",
+      "in_diff": true,
+      "id": "51713-restore-wait-observation",
+      "body": "### Restore the wait result's observation\n\n**Severity:** `medium`\n\n`WaitForStable` returns a `StableWaitResult<ProcessWindow>`, not a `ProcessWindow`. It has no `WindowHandle` and cannot be returned as `ProcessWindow`, so `MouseUtils.UITests.Next` fails to compile. Use the successful wait's `LastObservation` for the handle and return value:\n\n```suggestion\n                WindowControl.WaitForForeground(preview.LastObservation.Hwnd, 2_000);\n                return preview.LastObservation;\n```",
+      "kind": "inline",
+      "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+      "start_line": 283,
+      "line": 284,
+      "side": "RIGHT",
       "confidence": {
-        "score": 89,
-        "rationale": "Exact current source supports this non-blocking coverage/diagnostic improvement; existing functional behavior and the strongest prior counterevidence are retained."
+        "score": 100,
+        "rationale": "The exact-head build fails at these lines; the literal candidate and current baseline both build successfully."
       },
-      "severity": "low",
-      "out_of_diff_reason": "A consolidated general request coordinates targeted coverage or observability across the related implementation and verification paths; no uncompiled literal patch is offered."
+      "severity": "medium"
     }
   ],
   "actions": [
     {
-      "id": "51713-post-recovered",
+      "id": "51713-post-compile-fix",
       "type": "post_review",
       "review": {
-        "head_sha": "07d18369ec6ac326ced23eba1aee0e7e60dc582e",
+        "head_sha": "d5b3cd910d63465ce2abcb2fe4f3d0c7c6dee277",
         "comment_ids": [
-          "51713-recovered-MoveTo-coverage"
+          "51713-restore-wait-observation"
         ],
         "event": "COMMENT"
       },
-      "label": "Post general non-blocking improvement comment",
+      "label": "Post compile fix suggestion",
       "requires_confirmation": true,
-      "head_sha": "07d18369ec6ac326ced23eba1aee0e7e60dc582e",
-      "source_updated_at": "2026-10-30T23:04:08Z"
+      "head_sha": "d5b3cd910d63465ce2abcb2fe4f3d0c7c6dee277",
+      "source_updated_at": "2026-11-25T02:25:21Z"
     }
   ],
-  "validation": {}
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "d5b3cd910d63465ce2abcb2fe4f3d0c7c6dee277",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "51713-restore-wait-observation"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "d5b3cd910d63465ce2abcb2fe4f3d0c7c6dee277",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51713-restore-wait-observation"
+      ],
+      "files": [
+        {
+          "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
 }

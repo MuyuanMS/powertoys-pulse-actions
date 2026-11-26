@@ -4,162 +4,20 @@
   "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
   "url": "https://github.com/microsoft/PowerToys/pull/49963",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T18:30:30.4096586Z",
-  "evaluated_at": "2026-10-09T17:47:37.9Z",
-  "source_updated_at": "2026-10-09T06:44:31Z",
+  "generated_at": "2026-11-24T10:45:58.7604957+08:00",
+  "evaluated_at": "2026-11-24T10:45:58.7604957+08:00",
+  "source_updated_at": "2026-11-23T16:33:34Z",
   "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
-  "proposed_comments": [
-    {
-      "id": "49963-copy-target-image-capture",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
-      "line": 191,
-      "side": "RIGHT",
-      "title": "(1/4) Capture the image item before dispatch",
-      "body": "### (1/4) Capture the image item before dispatch\r\n\r\n**Severity:** `medium`\r\n\r\nThe production dispatcher helper always queues through `TryEnqueue`, so this callback runs later. If copy starts on image A and the reusable previewer is rebound to B before the callback executes, reading mutable `Item` copies B. Capture `Item` before enqueueing and use that snapshot in the callback; apply all four members of this atomic group.\r\n\r\n```suggestion\r\n                var targetItem = Item;\r\n                await Dispatcher.RunOnUiThread(async () =>\r\n```",
-      "confidence": {
-        "score": 94,
-        "rationale": "DispatcherExtensions.RunOnUiThread unconditionally calls TryEnqueue, while ImagePreviewer.Rebind replaces the mutable Item property. Capturing before enqueue removes that scheduling race."
-      },
-      "body_sha256": "cc0b1b54bd850b78407e9fcd218882f0a58ecae9e8f22c1ba0171a42eacbf2ee",
-      "selection_group": {
-        "id": "copy-target-capture",
-        "title": "Keep each copy operation bound to its original file",
-        "position": 1,
-        "total": 4,
-        "atomic": true
-      }
-    },
-    {
-      "id": "49963-copy-target-image-read",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
-      "line": 193,
-      "side": "RIGHT",
-      "title": "(2/4) Read the captured image item",
-      "body": "### (2/4) Read the captured image item\r\n\r\n**Severity:** `medium`\r\n\r\nThis callback must use the item captured before `RunOnUiThread` enqueues it. Otherwise an intervening `Rebind` changes the file copied from A to B. Apply this as part of the complete four-location atomic group.\r\n\r\n```suggestion\r\n                    var storageItem = await targetItem.GetStorageItemAsync();\r\n```",
-      "confidence": {
-        "score": 94,
-        "rationale": "The exact callback reads the current mutable Item after TryEnqueue; using the captured local makes the queued operation stable."
-      },
-      "body_sha256": "126606a5f7235d3e4bbacae3fc357e8f1a1c8883765b551f165bbefb55833e2c",
-      "selection_group": {
-        "id": "copy-target-capture",
-        "title": "Keep each copy operation bound to its original file",
-        "position": 2,
-        "total": 4,
-        "atomic": true
-      }
-    },
-    {
-      "id": "49963-copy-target-unsupported-capture",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
-      "line": 204,
-      "side": "RIGHT",
-      "title": "(3/4) Capture the unsupported-file item before dispatch",
-      "body": "### (3/4) Capture the unsupported-file item before dispatch\r\n\r\n**Severity:** `medium`\r\n\r\nIn production `RunOnUIThreadAsync` delegates to the dispatcher helper, which queues through `TryEnqueue`. If copy starts on unsupported item A and the previewer is rebound to B before the callback executes, reading mutable `Item` copies B. Capture `Item` before calling the helper and use that snapshot in the callback; apply all four members of this atomic group.\r\n\r\n```suggestion\r\n            var targetItem = Item;\r\n            await RunOnUIThreadAsync(async () =>\r\n```",
-      "confidence": {
-        "score": 94,
-        "rationale": "RunOnUIThreadAsync delegates production work to the always-enqueue dispatcher helper and UnsupportedFilePreviewer.Rebind mutates Item."
-      },
-      "body_sha256": "6087a06ff06b63f11020cb0eaa6d3c8db8f53c4b3e83ecde67c57b0d3ee4ba31",
-      "selection_group": {
-        "id": "copy-target-capture",
-        "title": "Keep each copy operation bound to its original file",
-        "position": 3,
-        "total": 4,
-        "atomic": true
-      }
-    },
-    {
-      "id": "49963-copy-target-unsupported-read",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
-      "line": 206,
-      "side": "RIGHT",
-      "title": "(4/4) Read the captured unsupported-file item",
-      "body": "### (4/4) Read the captured unsupported-file item\r\n\r\n**Severity:** `medium`\r\n\r\nUse the item captured before `RunOnUIThreadAsync` schedules this callback. Reading `Item` inside it can select B after the operation began for A. Apply this as part of the complete four-location atomic group.\r\n\r\n```suggestion\r\n                var storageItem = await targetItem.GetStorageItemAsync();\r\n```",
-      "confidence": {
-        "score": 94,
-        "rationale": "The current queued callback dereferences Item after the dispatcher gap; the captured local prevents a copy of a later selection."
-      },
-      "body_sha256": "d18f25df4c1d99848f95257fcd37bd5f3821c0ceaef7972f35df7f748ad69e1b",
-      "selection_group": {
-        "id": "copy-target-capture",
-        "title": "Keep each copy operation bound to its original file",
-        "position": 4,
-        "total": 4,
-        "atomic": true
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-49963",
-      "type": "post_review",
-      "label": "Post 4 atomic inline suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Four copy-target suggestions form an all-or-none group. Historical automated review cap is reached; this draft does not claim cloud-clean convergence.",
-      "review": {
-        "event": "COMMENT",
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 49963,
-        "pr": 49963,
-        "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3"
-      }
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "validation": {
-    "suggestion_patch": {
+    "upstream_head": {
       "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "49963-copy-target-image-capture",
-        "49963-copy-target-image-read",
-        "49963-copy-target-unsupported-capture",
-        "49963-copy-target-unsupported-read"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
-      "result": "passed",
-      "checked_comment_ids": [
-        "49963-copy-target-image-capture",
-        "49963-copy-target-image-read",
-        "49963-copy-target-unsupported-capture",
-        "49963-copy-target-unsupported-read"
-      ],
-      "files": [
-        {
-          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
-          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
+      "result": "passed"
     }
   }
 }
