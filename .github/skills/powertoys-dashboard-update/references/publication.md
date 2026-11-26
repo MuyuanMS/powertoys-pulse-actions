@@ -66,6 +66,95 @@ the updater never executes them automatically.
 
 ## Commit and verify canonical delivery
 
+### Scoped offline PR publication
+
+Use `Publish-ScopedActionData.ps1` instead of full `emit.ps1` when independently
+validated PR results must publish without enumerating unrelated item files or
+fetching upstream metadata. This is a supported generator, not permission to
+hand-edit the generated index. It requires PowerShell 7.5+ (JSON timestamps must
+remain strings to preserve unrelated row content) and the same canonical `main`
+guard. It supports existing non-CmdPal PR index rows only; new inventory rows and
+issue generation remain the full generator's responsibility.
+
+Inputs:
+
+- `-Numbers`: the explicit authorized, processed selection. No implicit discovery.
+- `-CandidateDataPath`: a separate directory with `items/<number>.json`. Supply
+  already-sanitized public PR review artifacts, including neutral corrections.
+  The publisher validates, sanitizes, and validates an isolated selected-only
+  copy; any sanitizer content change invalidates its receipt rather than silently
+  stripping findings or manufacturing review completion.
+- `-LiveMetadataPath`: a coordinator-supplied JSON array containing selected
+  `number`, `headRefOid`, `title`, `updatedAt`, `isDraft`, and `labels` (objects
+  with `name`). Export it from the eligible open-PR discovery. If supplied,
+  `state` must be open. Drafts, CmdPal labels and non-matching heads fail closed.
+  Selected display metadata is pinned to this snapshot; no upstream calls occur.
+- `-ValidationReceiptPath`: a private integrity envelope for previously successful
+  strict validation. For new validations, generate it with
+  `Test-DashboardArtifacts.ps1 -Numbers ... -RequireFindingGrounding
+  -GroundingPath ... -SourceRepository ... -OutputReceiptPath ...` **after**
+  sanitizing the separate candidates. The existing exact-head, literal-suggestion,
+  public-content and grounding gates remain unchanged. Do not reread restricted
+  source to obtain a receipt; retain an unavailable result privately instead.
+
+For unchanged retained candidates, the coordinator may supply the same envelope
+only after verifying the saved successful strict validation, exact-tree/literal
+patch and finding-grounding evidence for the pinned head and final bodies. The
+envelope binds that verified result to the public artifact, not new source
+evidence. Never infer a pass from a candidate filename, hash alone, or worker
+completion. Private envelope schema (do not put it in `data/`):
+
+```json
+{
+  "schemaVersion": 1,
+  "validator": "Test-DashboardArtifacts.ps1",
+  "finding_grounding_required": true,
+  "artifacts": [
+    { "number": 49276, "kind": "pr", "head_sha": "<full pinned head>",
+      "content_sha256": "<verified public artifact digest>" }
+  ]
+}
+```
+
+The coordinator's retained-result readiness array is also supported directly:
+each selected entry must have `number`, `head_sha`, `source_updated_at`,
+`status: "ready_for_publication"`, a nonempty `validation` attestation covering
+the preserved evidence verification, and `candidate_sha256` (SHA256 of the exact
+supplied candidate file bytes). `candidate_path` is ignored; only the explicitly
+supplied candidate directory is read. This form accommodates already verified
+historical receipts without rerunning source checks, rebuilding, or rewriting
+their evidence. As with the envelope, the coordinator must verify the underlying
+receipts; a readiness label or byte hash alone is not substantive validation.
+
+Compute `content_sha256` using `Get-ArtifactContentDigest` from
+`scripts/ArtifactValidationReceipt.ps1`, parsing candidates with
+`ConvertFrom-Json -DateKind String`. Object-key ordering is canonicalized; array
+order and every JSON value remain significant. This integrity envelope does not
+replace the coordinator's substantive evidence verification or posting approval.
+
+```powershell
+& "$Dashboard\Publish-ScopedActionData.ps1" -Numbers $ProcessedNumbers `
+  -CandidateDataPath $ValidatedCandidateData `
+  -LiveMetadataPath $PinnedEligibleMetadata `
+  -ValidationReceiptPath $VerifiedPublicationReceipt
+```
+
+Only selected per-number artifacts and their index rows are projected. Unselected
+item bytes are never read or written; unselected row content and manifest order
+are preserved. Both indexes are generated together, selected numbers enter
+`artifact_numbers`, and its count is updated. Inventory timestamps, other counts
+and historical impact remain unchanged: this is not a live inventory/impact
+refresh or a complete-drain claim. Baseline JSON/JS disagreement, missing rows,
+receipt mismatch or any failed gate leaves the target untouched. Repeated
+generation is deterministic. Hold exclusive publication ownership; the generator
+also detects changed index/selected-file baselines and serializes scoped writers.
+Use `-ValidateOnly` for a read-only preflight through all selected gates.
+
+Do not run the full sanitizer or a whole-feed validator afterward in a restricted
+scope: those enumerate unrelated files. The scoped command already runs both
+public gates for the selected artifacts. Continue the canonical commit and Pulse
+delivery steps below, staging only the returned `changed_files`.
+
 Run `Assert-CanonicalDashboardTarget.ps1` immediately before writing/committing.
 Preserve concurrent remote updates; use non-destructive fast-forward/retry
 instead of overwriting another publisher. Stage only this run's intended data

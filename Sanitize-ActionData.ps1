@@ -1,9 +1,11 @@
 param(
   [string]$DataPath = (Join-Path $PSScriptRoot 'data'),
-  [string]$PrivateStatePath
+  [string]$PrivateStatePath,
+  [switch]$PreserveJsonDateStrings
 )
 
 $ErrorActionPreference = 'Stop'
+$jsonOptions = if ($PreserveJsonDateStrings) { @{ DateKind = 'String' } } else { @{} }
 . (Join-Path $PSScriptRoot '.github\skills\powertoys-dashboard-update\scripts\PublicPrArtifact.ps1')
 $downgradedPrs = [System.Collections.Generic.HashSet[int]]::new()
 $proposedCommentCounts = @{}
@@ -257,7 +259,7 @@ $encoding = [System.Text.UTF8Encoding]::new($false)
 $count = 0
 $publicPrStages = @{}
 foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
-  $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
+  $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json @jsonOptions
   if ($artifact.kind -eq 'pr') {
     $projection = ConvertTo-PublicPrArtifact $artifact
     if (($projection | ConvertTo-Json -Depth 60 -Compress) -cne
@@ -287,7 +289,7 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
 if ($downgradedPrs.Count -gt 0 -or $proposedCommentCounts.Count -gt 0) {
   $indexPath = Join-Path $DataPath 'index.json'
   if (Test-Path $indexPath) {
-    $index = Get-Content $indexPath -Raw | ConvertFrom-Json
+    $index = Get-Content $indexPath -Raw | ConvertFrom-Json @jsonOptions
     foreach ($row in @($index.items | Where-Object { $_.kind -eq 'pr' })) {
       $number = [int]$row.number
       if ($publicPrStages.ContainsKey($number)) {
