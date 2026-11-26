@@ -16,7 +16,7 @@ function Assert-Fails([scriptblock]$Action, [string]$Pattern) {
 try {
     & $installer -Destination $destination
     & $installer -Destination $destination -VerifyOnly
-    Assert-True (@(Get-ChildItem $destination -Directory).Count -eq 4) 'all four execution skills installed'
+    Assert-True (@(Get-ChildItem $destination -Directory).Count -eq 5) 'orchestration suite and independent auto-post skill installed'
     $entry = Join-Path $destination 'powertoys-pr-review\SKILL.md'
     Add-Content -LiteralPath $entry 'local override that must not be lost'
     $override = Get-Content $entry -Raw

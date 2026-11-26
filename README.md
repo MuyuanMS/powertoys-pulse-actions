@@ -13,6 +13,13 @@ The updater is an orchestrator and requires all four checked-in skills:
 | `powertoys-issue-to-design` | Bug judgment, investigation, adversary-reviewed implementation design |
 | `powertoys-design-to-pr` | Approved design to reviewed and build-verified fork PR |
 
+The installer also includes **`powertoys-pr-auto-post`**, an independent consumer
+of current canonical PR drafts. It scores proposals in five dimensions and can
+post only high-confidence `COMMENT` reviews under a separately authorized
+operator account. It never runs the updater or writes dashboard data. See
+[`AUTO_POST_SETUP_PROMPT.md`](./AUTO_POST_SETUP_PROMPT.md) for a copyable
+second-machine setup prompt and the skill's evidence and posting boundaries.
+
 ## Install
 
 ```powershell
@@ -28,10 +35,10 @@ pwsh -NoProfile -File .\powertoys-pulse-actions\Install-Skills.ps1 -VerifyOnly
 ```
 
 Updates back up existing installations outside the skills directory and verify
-every file of all four skills. `-VerifyOnly` refuses stale or extra local
+every file of the four producer skills and independent auto-post skill. `-VerifyOnly` refuses stale or extra local
 overrides without modifying the installation.
 
-Repository-level use is also supported: copy the four directories from
+Repository-level use is also supported: copy the skill directories from
 `.github/skills` into another repository's `.github/skills`.
 
 ## Prerequisites

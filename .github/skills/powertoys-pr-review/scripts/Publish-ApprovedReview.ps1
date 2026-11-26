@@ -22,6 +22,7 @@ param(
     [Parameter(Mandatory)][string]$DataPath,
     [Parameter(Mandatory)][string]$DecisionsPath,
     [string]$StatePath,
+    [string]$ExpectedLogin,
     [switch]$DryRun,
     [switch]$Offline
 )
@@ -95,6 +96,15 @@ function Assert-FreshSnapshot {
     )
 
     $live = Get-GitHubReviewState -Repository $Repository -PullRequestNumber $Plan.number
+    if ($ExpectedLogin) {
+        $actualLogin = [string](Invoke-GhGet -Endpoint 'user').login
+        if ($actualLogin -ine $ExpectedLogin) {
+            throw "Authenticated login changed from '$ExpectedLogin' to '$actualLogin'."
+        }
+    }
+    if ($live.state -ne 'open' -or $live.draft -eq $true) {
+        throw "PR $($Plan.number) is no longer open and non-draft."
+    }
     if ([string]$live.headSha -ne [string]$Plan.headSha) {
         throw "PR $($Plan.number) head moved from $($Plan.headSha) to $($live.headSha)."
     }

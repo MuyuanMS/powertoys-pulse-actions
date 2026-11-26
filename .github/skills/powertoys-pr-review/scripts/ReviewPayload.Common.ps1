@@ -411,6 +411,8 @@ function Get-GitHubReviewState {
 
     return [pscustomobject]@{
         headSha = [string]$pullRequest.head.sha
+        state = [string]$pullRequest.state
+        draft = $pullRequest.draft
         updatedAt = ConvertTo-ReviewTimestamp -Value $pullRequest.updated_at
         issueCommentCount = $issueComments.Count
         reviewCommentCount = $reviewComments.Count
