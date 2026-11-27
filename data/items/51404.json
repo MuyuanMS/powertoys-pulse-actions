@@ -1,16 +1,198 @@
 {
+  "schemaVersion": 3,
   "number": 51404,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[UITests] Add a virtual multi-monitor layer to the local VM harness",
   "url": "https://github.com/microsoft/PowerToys/pull/51404",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-22T21:25:24Z",
-  "evaluated_at": "2026-11-22T21:25:24Z",
+  "generated_at": "2026-11-27T03:12:20.598984+00:00",
+  "evaluated_at": "2026-11-27T03:12:20.598984+00:00",
   "source_updated_at": "2026-11-22T21:17:33Z",
   "head_sha": "cff537d30024601f070a469887894cf3ceb9fe2a",
-  "proposed_comments": [],
-  "actions": []
+  "proposed_comments": [
+    {
+      "id": "timer-native-error",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve the timer creation error",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Watch-LowLevelMouse.ps1",
+      "line": 67,
+      "side": "RIGHT",
+      "body": "### Preserve the timer creation error\n\n**Severity:** `medium`\n\nThe recording timer is the probe's stopping mechanism. Its failure guard needs the error from `SetTimer`, but this declaration does not preserve that native error. Add `SetLastError = true` together with the timer creation and cleanup change below.\n\n```suggestion\n    [DllImport(\"user32.dll\", SetLastError = true)] static extern UIntPtr SetTimer(IntPtr hwnd, UIntPtr id, uint elapse, IntPtr proc);\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "Exact current source and caller counterevidence assessed; conditional failure behavior checked without invoking desktop APIs, and literal candidate parsing/embedded C# compilation verified."
+      },
+      "start_line": 67,
+      "in_diff": true,
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "mouse-timer-failure",
+        "title": "Handle recording timer creation failure",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "timer-lifetime",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject a failed timer before waiting for messages",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Watch-LowLevelMouse.ps1",
+      "line": 95,
+      "side": "RIGHT",
+      "body": "### Reject a failed timer before waiting for messages\n\n**Severity:** `medium`\n\n`SetTimer` returns zero on failure, but the probe still enters `GetMessage` without a scheduled stopping message. A direct invocation can therefore wait beyond `DurationSeconds`. Check timer creation inside the existing `try/finally`, preserve hook cleanup on failure, and destroy only a timer that was successfully created.\n\n```suggestion\n        UIntPtr timer = UIntPtr.Zero;\n        try\n        {\n            timer = SetTimer(IntPtr.Zero, UIntPtr.Zero, milliseconds, IntPtr.Zero);\n            if (timer == UIntPtr.Zero)\n                throw new InvalidOperationException(\"SetTimer failed: \" + Marshal.GetLastWin32Error());\n            MSG msg;\n            while (GetMessage(out msg, IntPtr.Zero, 0, 0) > 0)\n            {\n                if (msg.Message == WM_TIMER && msg.WParam == timer) break;\n            }\n        }\n        finally\n        {\n            if (timer != UIntPtr.Zero) KillTimer(IntPtr.Zero, timer);\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "Exact current source and caller counterevidence assessed; conditional failure behavior checked without invoking desktop APIs, and literal candidate parsing/embedded C# compilation verified."
+      },
+      "start_line": 84,
+      "in_diff": true,
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "mouse-timer-failure",
+        "title": "Handle recording timer creation failure",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "screenshot-parent",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Allow a screenshot filename in the current directory",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Save-VirtualScreenshot.ps1",
+      "line": 52,
+      "side": "RIGHT",
+      "body": "### Allow a screenshot filename in the current directory\n\n**Severity:** `medium`\n\nFor `-OutputPath desktop.png`, `Split-Path -Parent` is empty, so `New-Item` fails before the bitmap is saved. Create a parent directory only when one is present; leave the supplied filename unchanged so the PNG is saved in the current directory.\n\n```suggestion\n    $outputDirectory = Split-Path -Path $OutputPath -Parent\n    if ($outputDirectory) {\n        New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null\n    }\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact current source and caller counterevidence assessed; conditional failure behavior checked without invoking desktop APIs, and literal candidate parsing/embedded C# compilation verified."
+      },
+      "start_line": 52,
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "csv-parent",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Allow a mouse recording filename in the current directory",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Watch-LowLevelMouse.ps1",
+      "line": 132,
+      "side": "RIGHT",
+      "body": "### Allow a mouse recording filename in the current directory\n\n**Severity:** `medium`\n\nFor `-OutputPath hook.csv`, the parent path is empty and unconditional directory creation fails before `Export-Csv`. Skip directory creation for a leaf filename while retaining it for nested output paths. This does not change how an empty recording is enumerated.\n\n```suggestion\n$outputDirectory = Split-Path -Path $OutputPath -Parent\nif ($outputDirectory) {\n    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null\n}\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact current source and caller counterevidence assessed; conditional failure behavior checked without invoking desktop APIs, and literal candidate parsing/embedded C# compilation verified."
+      },
+      "start_line": 132,
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "pointer-read-acceleration",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Reject a failed acceleration read",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Set-PointerBaseline.ps1",
+      "line": 54,
+      "side": "RIGHT",
+      "body": "### Reject a failed acceleration read\n\n**Severity:** `low`\n\nThe SET calls in `Apply` check their return values, but this GET call does not. If the read fails, the zero-initialized array is reported as observed acceleration-off settings. Check the BOOL result and throw the captured native error before returning diagnostic data.\n\n```suggestion\n        if (!SystemParametersInfo(SPI_GETMOUSE, 0, values, 0))\n            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact GET method returns initialized defaults on a false BOOL; managed failure seams demonstrate upstream defaults versus candidate exceptions and preserve successful reads."
+      },
+      "start_line": 54,
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "pointer-read-speed",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Reject a failed pointer speed read",
+      "path": ".github/skills/ui-tests-local-vm/templates/multimon/Set-PointerBaseline.ps1",
+      "line": 61,
+      "side": "RIGHT",
+      "body": "### Reject a failed pointer speed read\n\n**Severity:** `low`\n\nThe SET calls in `Apply` check their return values, but this GET call does not. If the read fails, the zero-initialized speed is reported as an observed value. Check the BOOL result and throw the captured native error before returning diagnostic data.\n\n```suggestion\n        if (!SystemParametersInfo(SPI_GETMOUSESPEED, 0, ref speed, 0))\n            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact GET method returns initialized defaults on a false BOOL; managed failure seams demonstrate upstream defaults versus candidate exceptions and preserve successful reads."
+      },
+      "start_line": 61,
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51404-diagnostic-errors",
+      "type": "post_review",
+      "label": "Post diagnostic error-handling review",
+      "requires_confirmation": true,
+      "review": {
+        "head_sha": "cff537d30024601f070a469887894cf3ceb9fe2a",
+        "event": "COMMENT",
+        "comment_ids": [
+          "timer-native-error",
+          "timer-lifetime",
+          "screenshot-parent",
+          "csv-parent",
+          "pointer-read-acceleration",
+          "pointer-read-speed"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "cff537d30024601f070a469887894cf3ceb9fe2a",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "timer-native-error",
+        "timer-lifetime",
+        "screenshot-parent",
+        "csv-parent",
+        "pointer-read-acceleration",
+        "pointer-read-speed"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "cff537d30024601f070a469887894cf3ceb9fe2a",
+      "result": "passed",
+      "checked_comment_ids": [
+        "timer-native-error",
+        "timer-lifetime",
+        "screenshot-parent",
+        "csv-parent",
+        "pointer-read-acceleration",
+        "pointer-read-speed"
+      ],
+      "files": [
+        {
+          "path": ".github/skills/ui-tests-local-vm/templates/multimon/Save-VirtualScreenshot.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/skills/ui-tests-local-vm/templates/multimon/Set-PointerBaseline.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": ".github/skills/ui-tests-local-vm/templates/multimon/Watch-LowLevelMouse.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
 }
