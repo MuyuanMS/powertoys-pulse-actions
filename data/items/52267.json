@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 5,
+  "number": 52267,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Add shared input-injection helper and migrate Advanced Paste to it",
+  "url": "https://github.com/microsoft/PowerToys/pull/52267",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-11-27T05:38:57.816787+00:00",
+  "evaluated_at": "2026-11-27T05:38:57.816787+00:00",
+  "source_updated_at": "2026-11-25T06:32:09Z",
+  "head_sha": "0629f0014e44541525af62500e245c8220f36fdb",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "pr52267-native-timeout-budget",
+      "title": "Limit the final native polling delay",
+      "severity": "medium",
+      "path": "src/common/utils/input_injection.h",
+      "start_line": 106,
+      "line": 107,
+      "side": "RIGHT",
+      "body": "### Limit the final native polling delay\n\n**Severity:** `medium`\n\nLimit the final requested polling delay to the remaining timeout. With a modifier held, a 5ms timeout and 10ms interval currently request 10ms of sleep; a 25ms timeout requests 30ms. The pre-sleep guard does not cap that last delay. Apply the corresponding managed change as a pair, and add native/managed regression cases for an interval larger than the timeout and a non-divisible budget.\n\n```suggestion\n            const auto delay = (std::min)(interval, timeout - waited);\n            api.sleep(delay);\n            waited += delay;\n```",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "Deterministic held-modifier regression fails on the unchanged helper and passes with the exact remaining-budget clamp."
+      },
+      "selection_group": {
+        "id": "pr52267-timeout-budget-native-managed",
+        "title": "Native and managed timeout-budget clamps",
+        "atomic": true,
+        "position": 1,
+        "total": 2
+      }
+    },
+    {
+      "id": "pr52267-managed-timeout-budget",
+      "title": "Limit the final managed polling delay",
+      "severity": "medium",
+      "path": "src/common/ManagedCommon/InputInjection.cs",
+      "start_line": 79,
+      "line": 80,
+      "side": "RIGHT",
+      "body": "### Limit the final managed polling delay\n\n**Severity:** `medium`\n\nKeep the managed helper's requested-delay budget aligned with the native fix. This loop has the same 5ms/10ms and 25ms/10ms overshoot: checking the budget before a full interval does not limit the final sleep. Clamp both the requested sleep and its accumulated delay, and cover both budget shapes in the managed regression tests.\n\n```suggestion\n                var remaining = timeout - waited;\n                var delay = interval < remaining ? interval : remaining;\n                api.Sleep(delay);\n                waited += delay;\n```",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "Deterministic held-modifier regression fails on the unchanged helper and passes with the exact remaining-budget clamp."
+      },
+      "selection_group": {
+        "id": "pr52267-timeout-budget-native-managed",
+        "title": "Native and managed timeout-budget clamps",
+        "atomic": true,
+        "position": 2,
+        "total": 2
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "pr52267-post-timeout-budget-review",
+      "type": "post_review",
+      "label": "Post paired timeout-budget suggestions",
+      "note": "Apply the native and managed delay clamps together.",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "pr52267-native-timeout-budget",
+          "pr52267-managed-timeout-budget"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "0629f0014e44541525af62500e245c8220f36fdb",
+      "result": "regression_reproduced"
+    },
+    "suggestion_patch": {
+      "head_sha": "0629f0014e44541525af62500e245c8220f36fdb",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "pr52267-native-timeout-budget",
+        "pr52267-managed-timeout-budget"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "0629f0014e44541525af62500e245c8220f36fdb",
+      "result": "passed",
+      "checked_comment_ids": [
+        "pr52267-native-timeout-budget",
+        "pr52267-managed-timeout-budget"
+      ],
+      "files": [
+        {
+          "path": "src/common/ManagedCommon/InputInjection.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/common/utils/input_injection.h",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}

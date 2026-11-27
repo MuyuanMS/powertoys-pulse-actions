@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 248,
     "open_issues": 11218,
     "community": 10350,
-    "artifacts": 2265
+    "artifacts": 2269
   },
   "impact": {
     "as_of": "2026-11-21T15:52:25.2381377+08:00",
@@ -2362,7 +2362,11 @@ window.BOARD_INDEX = {
     52320,
     52379,
     52112,
-    52271
+    52271,
+    52267,
+    52269,
+    52293,
+    52343
   ],
   "items": [
     {
@@ -4312,7 +4316,7 @@ window.BOARD_INDEX = {
       ],
       "proposed_open": 0,
       "primary_action": null,
-      "needs_revalidation": true
+      "needs_revalidation": false
     },
     {
       "id": "pr-51974",
@@ -386942,35 +386946,36 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52343,
       "url": "https://github.com/microsoft/PowerToys/pull/52343",
-      "title": "[MWB] Retry settings.json writes on sharing violations",
       "author": "crutkas",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Mouse Without Borders",
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-25T03:50:49Z",
-      "updated_at": "2026-11-25T05:36:38Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "[MWB] Retry settings.json writes on sharing violations",
+      "updated_at": "2026-11-25T05:36:38Z",
+      "is_draft": false,
+      "labels": [
+        "Product-Mouse Without Borders",
+        "Ready for review"
+      ],
+      "proposed_open": 0,
+      "primary_action": null,
+      "needs_revalidation": true
     },
     {
       "id": "pr-52338",
@@ -387151,34 +387156,37 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52293,
       "url": "https://github.com/microsoft/PowerToys/pull/52293",
-      "title": "Build/run module",
       "author": "Official-Echo",
       "state": "open",
-      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-23T04:31:34Z",
-      "updated_at": "2026-11-23T04:31:58Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "Build/run module",
+      "updated_at": "2026-11-23T04:31:58Z",
+      "is_draft": false,
+      "labels": [
+        "Ready for review"
+      ],
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post platform, build-argument and runner-ownership corrections"
+      }
     },
     {
       "id": "pr-52285",
@@ -387260,70 +387268,75 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52269,
       "url": "https://github.com/microsoft/PowerToys/pull/52269",
-      "title": "ZoomIt DemoType: keep the low-level keyboard hook fast and never strand keys",
       "author": "crutkas",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-ZoomIt",
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-21T17:07:36Z",
-      "updated_at": "2026-11-24T06:26:49Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "ZoomIt DemoType: keep the low-level keyboard hook fast and never strand keys",
+      "updated_at": "2026-11-24T06:26:49Z",
+      "is_draft": false,
+      "labels": [
+        "Product-ZoomIt",
+        "Ready for review"
+      ],
+      "proposed_open": 0,
+      "primary_action": null,
+      "needs_revalidation": true
     },
     {
       "id": "pr-52267",
       "kind": "pr",
       "number": 52267,
       "url": "https://github.com/microsoft/PowerToys/pull/52267",
-      "title": "Add shared input-injection helper and migrate Advanced Paste to it",
       "author": "crutkas",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Advanced Paste",
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-21T17:03:03Z",
-      "updated_at": "2026-11-25T06:32:09Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "DIRTY",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "Add shared input-injection helper and migrate Advanced Paste to it",
+      "updated_at": "2026-11-25T06:32:09Z",
+      "is_draft": false,
+      "labels": [
+        "Product-Advanced Paste",
+        "Ready for review"
+      ],
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post paired timeout-budget suggestions"
+      },
+      "needs_revalidation": false
     }
   ]
 };
