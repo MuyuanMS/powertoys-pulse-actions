@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 249,
     "open_issues": 11218,
     "community": 10350,
-    "artifacts": 2282
+    "artifacts": 2283
   },
   "impact": {
     "as_of": "2026-11-21T15:52:25.2381377+08:00",
@@ -2379,7 +2379,8 @@ window.BOARD_INDEX = {
     52382,
     52338,
     52080,
-    52369
+    52369,
+    52394
   ],
   "items": [
     {
@@ -387369,35 +387370,35 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52394,
       "url": "https://github.com/microsoft/PowerToys/pull/52394",
-      "title": "[Settings] Remove unsupported ?. from Advanced Paste x:Bind paths",
       "author": "moooyo",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Author-Feedback",
-        "Product-Settings"
-      ],
       "assignees": [],
       "created_at": "2026-11-27T05:33:32Z",
-      "updated_at": "2026-11-27T05:57:17Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "[Settings] Remove unsupported ?. from Advanced Paste x:Bind paths",
+      "updated_at": "2026-11-27T05:57:17Z",
+      "is_draft": false,
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-Settings"
+      ],
+      "proposed_open": 0,
+      "primary_action": null
     }
   ]
 };
