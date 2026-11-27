@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 3,
+  "number": 52320,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "FancyZones: put zoned windows into Windows snap groups",
+  "url": "https://github.com/microsoft/PowerToys/pull/52320",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-27T04:18:14.199449+00:00",
+  "evaluated_at": "2026-11-27T04:18:14.199449+00:00",
+  "source_updated_at": "2026-11-26T10:48:40Z",
+  "head_sha": "bd7eec7a7057d4508651b1848928053750df7da9",
+  "confidence": "high",
+  "proposed_comments": [
+    {
+      "id": "pr52320-sent-message-snap-lifetime",
+      "kind": "inline",
+      "title": "Preserve snap-owner lifetimes while servicing sent messages",
+      "severity": "high",
+      "path": "src/modules/fancyzones/FancyZonesLib/NativeSnap.cpp",
+      "line": 294,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve snap-owner lifetimes while servicing sent messages\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/fancyzones/FancyZonesLib/NativeSnap.cpp:PumpThreadMessages`, `FancyZones.cpp:OnDisplayChange`/`UpdateWorkAreas`, `WorkArea.cpp:Snap`, and their mouse/keyboard snap callers in the same directory.\n\n**Problem:** `PeekMessageW(..., PM_NOREMOVE)` still dispatches sent messages; it only leaves posted messages queued. A work-area-size change delivered as `WM_SETTINGCHANGE` with `SPI_SETWORKAREA` can therefore reenter `UpdateWorkAreas` during the native wait. When the geometry changes, that path calls `AbortMoveSize()` and clears the work-area map while the outer snap is still executing.\n\n**Why it matters:** On the mouse path, aborting destroys the active `WindowMouseSnap` and its highlighted-zone set. `WorkArea::Snap` received that set by reference and uses it again when stamping the zone property after the wait; `WindowMouseSnap::MoveSizeEnd` also resumes with `SwitchSnappingMode(false)`. The keyboard path similarly dereferences the work area for tracing after `Snap` returns. Copying the overlay HWND does not preserve those objects or references, so a work-area change during snapping can lead to use-after-free.\n\n**Suggested change:**\n1. Guard the complete owner-level snap transaction, including the caller's post-snap work, rather than just copying data inside `WorkArea::Snap`.\n2. While that transaction is active, defer destructive work-area rebuilds and drag-owner destruction; apply the pending reconfiguration only after the outer call unwinds. Preserve sent-message servicing needed by the Shell.\n3. Handle cancellation before applying stale zone metadata or subsequent snap completion actions.\n\n**Verification:** Add a regression that delivers a sent work-area change during the native wait for both mouse and keyboard snapping. Verify that owner destruction and map clearing wait until the outer transaction finishes, or that the snap cancels without using invalidated references or stamping stale zone metadata. Also cover ordinary native snapping and the existing placement fallback.\n",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 92,
+        "rationale": "Sent-message dispatch, destructive reconfiguration, and post-snap accesses to invalidated references are established by the code paths."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "pr52320-post-lifetime-review",
+      "type": "post_review",
+      "label": "Post lifetime-safety review comment",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "bd7eec7a7057d4508651b1848928053750df7da9",
+        "comment_ids": [
+          "pr52320-sent-message-snap-lifetime"
+        ]
+      }
+    }
+  ]
+}
