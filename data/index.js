@@ -387465,7 +387465,7 @@ window.BOARD_INDEX = {
       "ci_state": null,
       "merge_state": "BLOCKED",
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -387480,7 +387480,8 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "proposed_open": 0,
-      "primary_action": null
+      "primary_action": null,
+      "needs_revalidation": false
     },
     {
       "id": "pr-52398",
