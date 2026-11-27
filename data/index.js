@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 230,
     "open_issues": 11218,
     "community": 10345,
-    "artifacts": 2261
+    "artifacts": 2262
   },
   "impact": {
     "as_of": "2026-11-21T15:52:25.2381377+08:00",
@@ -2358,7 +2358,8 @@ window.BOARD_INDEX = {
     8,
     4,
     52291,
-    52283
+    52283,
+    52320
   ],
   "items": [
     {
@@ -386652,35 +386653,38 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52320,
       "url": "https://github.com/microsoft/PowerToys/pull/52320",
-      "title": "FancyZones: put zoned windows into Windows snap groups",
       "author": "ID-VerNe",
       "state": "open",
-      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-FancyZones",
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-24T04:45:10Z",
-      "updated_at": "2026-11-26T10:48:40Z",
       "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "FancyZones: put zoned windows into Windows snap groups",
+      "updated_at": "2026-11-26T10:48:40Z",
+      "is_draft": false,
+      "labels": [
+        "Product-FancyZones",
+        "Ready for review"
+      ],
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post lifetime-safety review comment"
+      }
     }
   ]
 };
