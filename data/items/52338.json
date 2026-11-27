@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "number": 52338,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "[Runner] Return empty list from GetAllConflicts when no conflict exists",
+  "url": "https://github.com/microsoft/PowerToys/pull/52338",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "pending_author": false,
+  "generated_at": "2026-11-27T06:49:41.0994749+00:00",
+  "evaluated_at": "2026-11-27T06:49:41.0994749+00:00",
+  "source_updated_at": "2026-11-24T21:23:35Z",
+  "head_sha": "12b1a37685cff73657c1bc861768e9d7de642a90",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "pr52338-test-hotkey-precondition",
+      "path": "src/runner/UnitTests/HotkeyConflictTests.cpp",
+      "side": "RIGHT",
+      "line": 86,
+      "start_line": 86,
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "Native unavailable-registration cases fail the original setup but safely log/return with the correction; successful-registration cases retain assertions and cleanup. Exact literal native compile and real hotkey unit tests pass."
+      },
+      "body": "### Do not fail the detector test when its hotkey is unavailable\n\nIf another process already owns Ctrl+Alt+Shift+F24, `RegisterHotKey` fails and this assertion makes the test fail before conflict detection is exercised. Please treat unavailable registration as an unmet test precondition: log the reason and return without running the assertions. When registration succeeds, retain the existing scope-exit cleanup and System-conflict checks.\n\n```suggestion\n            if (!RegisterHotKey(nullptr, testHotkeyId, MOD_CONTROL | MOD_ALT | MOD_SHIFT, VK_F24))\n            {\n                Logger::WriteMessage(L\"Skipping system-conflict check: Ctrl+Alt+Shift+F24 is unavailable.\");\n                return;\n            }\n```",
+      "title": "Handle unavailable test hotkey registration",
+      "kind": "inline",
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "note": "One inline suggestion handles unavailable hotkey registration without weakening the successful conflict assertions.",
+      "review": {
+        "event": "COMMENT"
+      },
+      "id": "pr52338-post-test-precondition-review",
+      "label": "Post review with test-precondition suggestion",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "12b1a37685cff73657c1bc861768e9d7de642a90",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "12b1a37685cff73657c1bc861768e9d7de642a90",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "pr52338-test-hotkey-precondition"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "12b1a37685cff73657c1bc861768e9d7de642a90",
+      "result": "passed",
+      "checked_comment_ids": [
+        "pr52338-test-hotkey-precondition"
+      ],
+      "files": [
+        {
+          "path": "src/runner/UnitTests/HotkeyConflictTests.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
