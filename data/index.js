@@ -3105,14 +3105,14 @@ window.BOARD_INDEX = {
       "ci_state": null,
       "merge_state": "BLOCKED",
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "awaiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-11-27T09:16:41Z",
       "has_artifact": true,
       "agent_status": "review",
       "title": "[Keyboard Manager] Remap a key to an ordered key sequence",
-      "updated_at": "2026-11-26T18:35:35Z",
+      "updated_at": "2026-11-27T09:16:41Z",
       "is_draft": false,
       "labels": [
         "Product-Keyboard Manager",
@@ -3120,7 +3120,7 @@ window.BOARD_INDEX = {
       ],
       "proposed_open": 0,
       "primary_action": null,
-      "needs_revalidation": true
+      "needs_revalidation": false
     },
     {
       "id": "pr-52129",
