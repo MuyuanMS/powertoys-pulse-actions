@@ -39,6 +39,16 @@ history must be reconciled, never initialized to zero. A live head mismatch
 requires the PR skill's upstream gate and repinning, not an old-state resume.
 Keep running workers outside the queue tracked until safely reconciled.
 
+After independently adjudicating a no-action outcome and verifying its neutral
+artifact delivery, record `phase: completed_no_action` and
+`coordinator_no_action_disposition` with number, head, source activity,
+`assessment_complete: true`, `outcome: no_supported_author_change`,
+`clean_review: false`, `approval: false`, `assessment_evidence`, and
+`artifact_delivery_receipt`. The dispatcher reports these separately as
+`completed_no_action_assessments`; unchanged assessments need no repeated
+finalization. They are not clean reviews or a zero-stale-queue claim. Changed
+heads require repinning; changed discussion requires focused context review.
+
 ## Execute until no runnable work remains
 
 ```powershell

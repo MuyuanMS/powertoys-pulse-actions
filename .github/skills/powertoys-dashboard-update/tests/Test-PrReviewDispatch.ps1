@@ -24,6 +24,27 @@ function Assert-Fails([scriptblock]$Action, [string]$Pattern) {
     Assert-True ($failure -match $Pattern) "Expected $Pattern, got '$failure'"
 }
 try {
+    $dateDashboard = Join-Path $root 'date-dashboard'
+    $dateItems = Join-Path $dateDashboard 'data\items'
+    New-Item -ItemType Directory -Path $dateItems -Force | Out-Null
+    @{
+        number = 1; head_sha = $head; stage = 'awaiting_author'
+        pending_author = $true; source_updated_at = $now.ToString('o')
+    } | ConvertTo-Json | Set-Content (Join-Path $dateItems '1.json')
+    $datePr = @{
+        number = 1; title = 'Same-head author wait'; headRefOid = $head; isDraft = $false
+        updatedAt = $now.ToOffset([timespan]::FromHours(8)).ToString('o'); labels = @()
+    }
+    $datePrPath = Join-Path $root 'date-prs.json'
+    ConvertTo-Json -InputObject @($datePr) | Set-Content $datePrPath
+    $staleReader = Join-Path $PSScriptRoot '..\scripts\Get-StalePrReviewQueue.ps1'
+    $dateQueue = & $staleReader -Dashboard $dateDashboard -PullRequestsJsonPath $datePrPath -AsJson | ConvertFrom-Json -DateKind String
+    Assert-True ($dateQueue.stale_count -eq 0) 'equivalent UTC and offset dates preserve a current author wait'
+    $datePr.updatedAt = $now.AddMinutes(1).ToString('o')
+    ConvertTo-Json -InputObject @($datePr) | Set-Content $datePrPath
+    $dateQueue = & $staleReader -Dashboard $dateDashboard -PullRequestsJsonPath $datePrPath -AsJson | ConvertFrom-Json -DateKind String
+    Assert-True ($dateQueue.stale_count -eq 1 -and
+        $dateQueue.stale_prs[0].reasons -contains 'new_activity_after_author_wait') 'real newer discussion invalidates the author wait'
     $candidatePath = Join-Path $root 'candidates.json'
     @{
         prs = @(
@@ -156,6 +177,33 @@ try {
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'exhausted queued review cannot start round four'
     $rows[0].round = 8
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'legacy history exceeding three is preserved and receives no new allowance'
+    $rows[0].phase = 'completed_no_action'
+    $queue[0].updated_at = $now.ToOffset([timespan]::FromHours(8)).ToString('o')
+    $rows[0].coordinator_no_action_disposition = @{
+        number = 1; head_sha = $head; source_updated_at = $now.ToString('o')
+        assessment_complete = $true; outcome = 'no_supported_author_change'
+        clean_review = $false; approval = $false
+        assessment_evidence = 'Saved full review and grounded no-action disposition'
+        artifact_delivery_receipt = 'Verified neutral artifact and index delivery'
+    }
+    $plan = Plan @($queue[0]) @($rows[0])
+    Assert-True ($plan.assignments.Count -eq 0 -and $plan.completed_no_action_count -eq 1 -and
+        $plan.operator_exception_count -eq 0) 'current delivered no-action assessment ends naturally across equivalent timestamp offsets'
+    Assert-True (-not $plan.complete) 'neutral completion does not manufacture a publishable review or zero stale queue'
+    $completedRow = $rows[0] | ConvertTo-Json -Depth 12 | ConvertFrom-Json -DateKind String
+    $rows[0].review.request_pending = $true
+    Assert-True ((Plan @($queue[0]) @($rows[0])).completed_no_action_count -eq 0) 'completion marker cannot abandon a still-pending cloud request'
+    $rows[0].review.request_pending = $false
+    $queue[0].updated_at = $now.AddMinutes(1).ToString('o')
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_context') 'new same-head discussion reopens only focused no-action context'
+    $queue[0].updated_at = $now.ToString('o')
+    $rows[0].head_sha = 'b' * 40
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'reconcile_updated_head') 'new head invalidates completed no-action assessment'
+    $rows[0].head_sha = $head
+    $rows[0].coordinator_no_action_disposition.assessment_evidence = ''
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_context') 'bare no-action completion cannot park unassessed work'
+    $rows[0].coordinator_no_action_disposition = $null
+    Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'finalize_review_limit') 'phase alone cannot skip capped final assessment'
     $rows[0].round = 0
     $rows[0].phase = 'reviewing_findings'
     $rows[0].architecture = @{ head_sha = $head; status = 'pending' }
@@ -210,6 +258,13 @@ try {
     $plan = Plan @($queue[0]) @($rows[0])
     Assert-True ($plan.assignments.Count -eq 0 -and $plan.operator_exception_count -eq 1) 'verified policy exception does not repeatedly consume a worker'
     Assert-True ($plan.exhausted_with_exceptions -and -not $plan.complete) 'only verified exceptions is explicitly incomplete, never false drain success'
+    $completedRow.number = 2
+    $completedRow.coordinator_no_action_disposition.number = 2
+    $completedRow.coordinator_no_action_disposition.source_updated_at = $queue[0].updated_at
+    $plan = Plan @($queue[0], @{ number = 2; live_head_sha = $head; updated_at = $queue[0].updated_at }) @($rows[0], $completedRow)
+    Assert-True ($plan.completed_no_action_count -eq 1 -and
+        $plan.operator_exception_count -eq 1 -and $plan.exhausted_with_exceptions -and
+        -not $plan.complete) 'completed assessments do not hide a real remaining exception or keep requesting finalization'
     $rows[0].operator_exception.source_updated_at = $now.AddHours(-2).ToString('o')
     Assert-True ((Plan @($queue[0]) @($rows[0])).assignments[0].action -eq 'revalidate_operator_exception') 'new activity invalidates acknowledged exception even on unchanged head'
     $rows[0].operator_exception.source_updated_at = $queue[0].updated_at

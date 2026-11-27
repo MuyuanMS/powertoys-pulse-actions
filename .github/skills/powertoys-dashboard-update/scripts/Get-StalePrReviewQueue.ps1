@@ -48,12 +48,12 @@ function Invoke-GhJson {
         return $null
     }
 
-    return ($raw -join "`n" | ConvertFrom-Json)
+    return ($raw -join "`n" | ConvertFrom-Json -DateKind String)
 }
 
 function Read-JsonFile {
     param([Parameter(Mandatory)][string]$Path)
-    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -DateKind String
 }
 
 function Get-Artifact {
@@ -63,7 +63,7 @@ function Get-Artifact {
         return $null
     }
 
-    return Get-Content $path -Raw | ConvertFrom-Json
+    return Get-Content $path -Raw | ConvertFrom-Json -DateKind String
 }
 
 function Test-HasNewerActivity {
