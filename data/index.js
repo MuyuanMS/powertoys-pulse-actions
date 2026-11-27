@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 249,
     "open_issues": 11218,
     "community": 10350,
-    "artifacts": 2283
+    "artifacts": 2284
   },
   "impact": {
     "as_of": "2026-11-21T15:52:25.2381377+08:00",
@@ -2380,7 +2380,8 @@ window.BOARD_INDEX = {
     52338,
     52080,
     52369,
-    52394
+    52394,
+    52315
   ],
   "items": [
     {
@@ -387078,35 +387079,39 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52315,
       "url": "https://github.com/microsoft/PowerToys/pull/52315",
-      "title": "Add Shift-assisted opposite-edge resizing to Grab And Move",
       "author": "Scottj1s",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Grab And Move",
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-23T22:59:44Z",
-      "updated_at": "2026-11-26T12:29:44Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "Add Shift-assisted opposite-edge resizing to Grab And Move",
+      "updated_at": "2026-11-26T12:29:44Z",
+      "is_draft": false,
+      "labels": [
+        "Product-Grab And Move",
+        "Ready for review"
+      ],
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post the test-coordinate correction"
+      },
+      "needs_revalidation": false
     },
     {
       "id": "pr-52311",
