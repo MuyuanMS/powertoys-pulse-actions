@@ -1,0 +1,52 @@
+{
+  "number": 52257,
+  "kind": "pr",
+  "title": "Runner: dispatch module hotkey actions off the keyboard hook",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-11-27T06:00:14.185261+00:00",
+  "evaluated_at": "2026-11-27T06:00:14.185272+00:00",
+  "source_updated_at": "2026-11-21T15:43:45Z",
+  "head_sha": "4497c8f32df9b21c8f658040d709d97a7883dbad",
+  "proposed_comments": [
+    {
+      "id": "pr52257-hook-shared-state",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/interface/powertoy_module_interface.h",
+      "line": 188,
+      "side": "RIGHT",
+      "body": "### Publish a thread-safe hook-side state snapshot\n\n**Affected code:** `PowertoyModuleIface::should_handle_hotkey()`, the hook's `shouldHandle` callback, and the module state read by Peek, AlwaysOnTop and Launcher.\n\n**Problem:** Moving the callback to a dedicated thread makes its reads concurrent with `enable()`, `disable()` and `set_config()`. For example, Peek's `m_enabled` is a plain `bool`: `disable()` writes it while `should_handle_hotkey()` reads it. The same check reads mutable `m_hotkey` and `m_enableSpaceToActivate`. The descriptor mutex is released before calling the module and does not protect these fields. The new interface text explicitly permits unsynchronized plain-field reads.\n\n**Why it matters:** Disabling a module or changing its hotkey while keys arrive now introduces a C++ data race, with undefined behavior rather than a reliable swallow decision. Serializing only the action on the main thread does not serialize the earlier eligibility check.\n\n**Suggested change:** Define and implement a thread-safe hook-readable state contract. Publish atomic state or an immutable, coherently updated eligibility snapshot without taking a potentially blocking module mutex in the hook; audit the default `is_enabled()` shim and every override for mutable state. Update the interface documentation to require that synchronization.\n\n**Verification:** The current source has concurrent plain-field readers/writers and no common synchronization covering them. Add concurrency coverage for enabling/disabling and changing Peek's Space/hotkey configuration while eligibility checks run; verify that the hook never observes a partially updated configuration.",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "Exact-source cross-thread plain reads/writes with descriptor lock released before callback."
+      }
+    },
+    {
+      "id": "pr52257-hook-lifetime",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/runner/centralized_kb_hook.cpp",
+      "line": 530,
+      "side": "RIGHT",
+      "body": "### Keep the hook callback's lifetime inside module lifetime\n\n**Affected code:** `CentralizedKeyboardHook::Stop()` and the module-unloading scope in `main.cpp`.\n\n**Problem:** If the two-second wait does not report thread completion, `Stop()` detaches the hook thread and returns. The caller then clears the registrations and destroys the modules. `KeyboardHookProc` already copies a callback capturing a raw module pointer before releasing the descriptor mutex, so clearing the registration cannot invalidate that in-flight copy. The hook thread only unhooks after its message loop exits.\n\n**Why it matters:** The timeout branch allows an in-flight eligibility callback to outlive the module object and its DLL. `dispatcher.Shutdown()` drops queued actions but does not stop that callback, so it does not establish the module-unload lifetime guarantee.\n\n**Suggested change:** Make hook termination and completion a prerequisite for module destruction. Handle stop-message failures and timeout explicitly, retaining ownership until the callback/thread has exited; do not detach and continue unloading. Preserve bounded input handling without relying on the queued-action shutdown as proof that the hook is quiescent.\n\n**Verification:** The shutdown source directly continues to `modules().clear()` after the detach branch. Add a controlled blocked eligibility callback and a failed-stop-message case; module destruction must not occur until the callback has returned and the hook thread has completed.",
+      "severity": "high",
+      "confidence": {
+        "score": 88,
+        "rationale": "Explicit timeout/detach branch permits unload before the raw-pointer callback completes."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "pr52257-post-source-findings",
+      "type": "post_review",
+      "label": "Post hook-state and lifetime review",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "4497c8f32df9b21c8f658040d709d97a7883dbad"
+      }
+    }
+  ]
+}
