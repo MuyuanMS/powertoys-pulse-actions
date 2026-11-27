@@ -9,8 +9,8 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-11-09T21:54:19Z",
-  "evaluated_at": "2026-11-09T21:54:19Z",
-  "source_updated_at": "2026-11-09T19:21:21Z",
+  "evaluated_at": "2026-11-27T05:45:48.7568764+00:00",
+  "source_updated_at": "2026-11-20T04:39:01Z",
   "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
   "confidence": "High",
   "needs_revalidation": false,
@@ -21,38 +21,37 @@
       "severity": "medium",
       "title": "Dispose a partially initialized ThemeListener",
       "in_diff": false,
-      "out_of_diff_reason": "The cleanup must restructure the constructor's multi-step watcher initialization rather than replace one safe current-diff range.",
-      "body": "### Dispose a partially initialized ThemeListener\n\n**Severity:** `medium`\n\n**Affected code:** `src/common/ManagedCommon/ThemeListener.cs`, the `ThemeListener` constructor.\n\n**Problem:** The constructor starts the app-theme watcher before it creates and starts the system-theme watcher. If the second query, watcher construction, or `Start()` call throws, the first watcher remains subscribed and running because construction never completes and the caller cannot dispose it.\n\n**Why it matters:** Repeated Settings or module initialization attempts can leak WMI watchers and event subscriptions, leaving callbacks active after failed construction.\n\n**Suggested change:**\n1. Create both watchers in local variables inside a guarded initialization block.\n2. Start and subscribe both locals before assigning them to the readonly fields.\n3. On failure, dispose every watcher already created without masking the original exception, then rethrow it.\n4. Preserve the existing successful initialization and disposal behavior.\n\n```csharp\nManagementEventWatcher appWatcher = null;\nManagementEventWatcher systemWatcher = null;\ntry\n{\n    // Construct, subscribe, and start both watchers.\n    appThemeWatcher = appWatcher;\n    systemThemeWatcher = systemWatcher;\n}\ncatch\n{\n    systemWatcher?.Dispose();\n    appWatcher?.Dispose();\n    throw;\n}\n```\n\n**Verification:** Build the Settings UI and common managed projects, inject a failure after the first watcher starts, and verify that watcher is disposed and no callback remains registered.",
+      "out_of_diff_reason": "The correction spans constructor resource acquisition and exception cleanup, including cleanup failures; no replacement implementation is supplied or claimed validated.",
+      "body": "### Clean up ThemeListener when construction fails\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/common/ManagedCommon/ThemeListener.cs`, `ThemeListener()`; its existing consumer is `src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs`, `MainWindow()`.\r\n\r\n**Problem:** The constructor starts `appThemeWatcher` before constructing and starting `systemThemeWatcher`, with no exception cleanup around either step. If the first start succeeds and the second watcher construction or `Start()` throws, construction exits without disposing the already-started watcher.\r\n\r\n**Why it matters:** Peek catches the constructor exception, but the assignment to its `themeListener` field never completes. Its later `themeListener?.Dispose()` therefore cannot release resources acquired by the failed constructor. The new second watcher adds a failure point after a live first subscription has been established.\r\n\r\n**Suggested change:**\r\n1. Make the two-watcher initialization exception-safe, tracking each watcher as soon as it is created.\r\n2. If initialization fails, unsubscribe and dispose every watcher acquired so far. Attempt cleanup of both even if one cleanup fails, and preserve the original initialization exception.\r\n3. Retain the successful initialization and normal disposal behavior.\r\n\r\n**Verification:** The constructor and Peek caller source demonstrate the missing cleanup path; no runtime fault-injection result is claimed. Add a focused test that makes the second watcher fail after the first starts, asserts all acquired watchers are cleaned up, and confirms the original exception propagates. Also cover successful initialization and a cleanup operation that throws.",
       "confidence": {
         "score": 96,
-        "rationale": "The constructor starts the first watcher before creating the second and has no partial-construction cleanup path."
+        "rationale": "Exact constructor and existing Peek caller show no partial-construction cleanup; runtime frequency and a replacement implementation have not been tested."
       },
       "disposition": "proposed"
     }
   ],
   "actions": [
     {
-      "id": "request-changes-49221",
-      "type": "request_changes",
-      "label": "Request partial ThemeListener initialization cleanup",
+      "id": "post-review-49221",
+      "type": "post_review",
+      "label": "Review ThemeListener construction cleanup",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 49221,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
-        "body": "Thanks for the contribution. The CLA is complete and the PR is scoped coherently. One remaining request covers cleanup if ThemeListener initialization fails partway through."
+        "event": "COMMENT",
+        "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a"
       },
-      "note": "Draft only. One implementation-ready general comment requires explicit maintainer approval."
+      "note": "One general review comment. Draft only; explicit approval required."
     }
   ],
   "freshness": {},
   "validation": {
     "upstream_head": {
       "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
-      "result": "passed"
+      "result": "passed_source_control_flow_proof"
     },
     "suggestion_patch": {
       "head_sha": "14f44fe49e8e9cc2fa235519115db97949f0861a",
