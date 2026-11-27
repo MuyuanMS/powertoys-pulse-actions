@@ -10085,13 +10085,19 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 49226,
       "url": "https://github.com/microsoft/PowerToys/pull/49226",
-      "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
       "author": "JRScott812",
       "state": "open",
-      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
+      "issue_type": null,
+      "assignees": [],
+      "created_at": "2026-07-08T20:33:34Z",
+      "comments": 4,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED",
       "track": "review",
       "stage": "awaiting_review_approval",
       "owes": "maintainer",
@@ -10099,24 +10105,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post the ThemeListener fail-open suggestion"
-      },
+      "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
+      "updated_at": "2026-11-20T04:28:48Z",
+      "is_draft": false,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
       ],
-      "assignees": [],
-      "created_at": "2026-07-08T20:33:34Z",
-      "updated_at": "2026-11-20T04:28:48Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post the settings syntax repair request"
+      }
     },
     {
       "id": "pr-49225",

@@ -8,75 +8,46 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-09T21:54:19Z",
-  "evaluated_at": "2026-11-09T21:54:19Z",
-  "source_updated_at": "2026-11-09T19:29:23Z",
+  "generated_at": "2026-11-27T08:03:50.5042134+00:00",
+  "evaluated_at": "2026-11-27T08:03:50.5042134+00:00",
+  "source_updated_at": "2026-11-20T04:28:48Z",
   "head_sha": "0a27877c084c860112da1b1eb5b834e499c851b2",
   "confidence": "High",
   "proposed_comments": [
     {
-      "id": "fail-open-when-theme-listener-startup-fails",
       "kind": "inline",
-      "severity": "medium",
-      "title": "Keep tray setup running when theme monitoring fails",
-      "body": "### Keep tray setup running when theme monitoring fails\n\n**Severity:** `medium`\n\n`ThemeListener` starts WMI watchers and can throw when theme monitoring is unavailable. This new construction runs during `FrmScreen_Load` before cursor setup and `UpdateNotifyIcon()`, so letting the exception reach the outer catch skips the rest of that initialization.\n\nCatch and log construction failure locally, then return so the caller continues with the currently selected icon.\n\n```suggestion\n            try\n            {\n                themeListener = new ManagedCommon.ThemeListener();\n            }\n            catch (Exception e)\n            {\n                Logger.Log(e);\n                return;\n            }\n```",
-      "path": "src/modules/MouseWithoutBorders/App/Form/frmScreen.cs",
-      "start_line": 738,
-      "line": 738,
+      "path": "src/modules/MouseWithoutBorders/App/Class/Setting.cs",
+      "body": "### Repair the settings merge so Mouse Without Borders builds\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/MouseWithoutBorders/App/Class/Setting.cs`, the end of `ApplyLoadedSettings` and the `ShowThemeAdaptiveTrayIcon` / `AllowNonConsoleSessions` declarations.\n\n**Problem:** The added theme-refresh branch leaves surplus closing braces before `SaveSettings`, ending the enclosing type/namespace too early. Farther down, the new `ShowThemeAdaptiveTrayIcon` declaration is immediately followed by the existing `AllowNonConsoleSessions` declaration without its own accessor block; their accessor bodies are interleaved, including a value-returning statement inside the setter.\n\n**Why it matters:** These are syntax errors in the PR's settings integration, not a theme-monitoring runtime failure. The Mouse Without Borders App cannot be built from the current PR head, so the new tray setting cannot be delivered.\n\n**Suggested change:**\n- Restore the closing scopes at the end of `ApplyLoadedSettings`, keeping the new theme-refresh branch inside the existing properties-change handling and `SaveSettings` inside the `Settings` class.\n- Give `ShowThemeAdaptiveTrayIcon` its own correctly closed getter/setter, accessing its matching property under the existing lock.\n- Preserve `AllowNonConsoleSessions` as a separate getter returning `_properties.AllowNonConsoleSessions.Value`; do not place that return inside the other property's setter.\n\n**Verification:** The current-head x64 Debug Mouse Without Borders App build fails with CS8803 at line 186 and CS1002 at line 1302, followed by related parser errors. Rebuild that App after resolving both blocks and check that both settings still expose their intended values. No replacement implementation is claimed to have passed.",
+      "disposition": "proposed",
+      "title": "Repair the settings merge so Mouse Without Borders builds",
       "side": "RIGHT",
       "in_diff": true,
       "confidence": {
-        "score": 97,
-        "rationale": "The constructor starts WMI watchers and can throw; current-head control flow shows the exception reaches FrmScreen_Load's outer catch before cursor creation and UpdateNotifyIcon."
+        "score": 99,
+        "rationale": "Both actual matching-head compiler builds fail on identical raw Setting.cs; the actual PR base/head diff introduces the malformed scopes and property splice."
       },
-      "disposition": "proposed"
+      "id": "repair-setting-cs-merge-compilation",
+      "severity": "high",
+      "line": 1302
     }
   ],
   "actions": [
     {
-      "id": "post-review-49226-theme-listener-fail-open",
-      "type": "post_review",
-      "label": "Post the ThemeListener fail-open suggestion",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
       "review": {
-        "repository": "microsoft/PowerToys",
         "pullRequest": 49226,
         "pr": 49226,
         "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
         "head_sha": "0a27877c084c860112da1b1eb5b834e499c851b2"
       },
-      "note": "Draft only. Exact-head control flow and patch applicability were rechecked; no real WMI outage or system-theme change was induced."
+      "label": "Post the settings syntax repair request",
+      "id": "post-review-49226-settings-syntax-repair",
+      "confirm": true,
+      "primary": true,
+      "requiresApproval": true,
+      "type": "post_review",
+      "note": "Standalone source-proven compilation finding; no apply-ready replacement or successful repaired build is claimed."
     }
   ],
-  "freshness": {},
-  "validation": {
-    "upstream_head": {
-      "head_sha": "0a27877c084c860112da1b1eb5b834e499c851b2",
-      "result": "passed"
-    },
-    "suggestion_patch": {
-      "head_sha": "0a27877c084c860112da1b1eb5b834e499c851b2",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "fail-open-when-theme-listener-startup-fails"
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "0a27877c084c860112da1b1eb5b834e499c851b2",
-      "result": "passed",
-      "checked_comment_ids": [
-        "fail-open-when-theme-listener-startup-fails"
-      ],
-      "files": [
-        {
-          "path": "src/modules/MouseWithoutBorders/App/Form/frmScreen.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        }
-      ]
-    }
-  }
+  "freshness": {}
 }
