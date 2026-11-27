@@ -85,9 +85,9 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 228,
+    "open_prs": 230,
     "open_issues": 11218,
-    "community": 10343,
+    "community": 10345,
     "artifacts": 2260
   },
   "impact": {
@@ -386607,6 +386607,76 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "needs_revalidation": false
+    },
+    {
+      "id": "pr-52283",
+      "kind": "pr",
+      "number": 52283,
+      "url": "https://github.com/microsoft/PowerToys/pull/52283",
+      "title": "Mouse Utils: Add Scroll Acceleration",
+      "author": "furious",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Utilities",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-22T15:32:37Z",
+      "updated_at": "2026-11-22T20:04:01Z",
+      "comments": 5,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-52320",
+      "kind": "pr",
+      "number": 52320,
+      "url": "https://github.com/microsoft/PowerToys/pull/52320",
+      "title": "FancyZones: put zoned windows into Windows snap groups",
+      "author": "ID-VerNe",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-11-24T04:45:10Z",
+      "updated_at": "2026-11-26T10:48:40Z",
+      "comments": 6,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
     }
   ]
 };
