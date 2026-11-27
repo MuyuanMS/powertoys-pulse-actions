@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 5,
+  "number": 52283,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Mouse Utils: Add Scroll Acceleration",
+  "url": "https://github.com/microsoft/PowerToys/pull/52283",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-27T04:15:55.102795+00:00",
+  "evaluated_at": "2026-11-27T04:15:55.102795+00:00",
+  "source_updated_at": "2026-11-22T20:04:01Z",
+  "head_sha": "21a9b7c36b4adafb47063e630a01164717c19b2c",
+  "confidence": "high",
+  "proposed_comments": [
+    {
+      "id": "52283-ctrl-cancel-332",
+      "title": "Cancel pending glide and inertia when Ctrl is held",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact timer path fails the three Ctrl-only cases before the correction and passes them afterward, with the normal and disabled-policy controls preserved."
+      },
+      "kind": "inline",
+      "path": "src/modules/MouseUtils/ScrollAcceleration/main.cpp",
+      "line": 332,
+      "side": "RIGHT",
+      "in_diff": true,
+      "selection_group": {
+        "id": "52283-ctrl-cancellation",
+        "title": "Cancel pending scrolling on Ctrl",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### Cancel pending glide and inertia when Ctrl is held\n\n**Severity:** `medium`\n\nWith Smooth scroll enabled, Ctrl held after the last wheel tick does not stop queued glide or inertia: the existing Ctrl check runs only on another non-injected wheel event. Check the key before stepping the timer's state and cancel both axes, so pending deltas are not emitted while Ctrl bypass is active.\n\n```suggestion\n                    std::scoped_lock lock(g_momentumMutex);\n                    if (g_injectorIgnoreWithCtrl && (GetAsyncKeyState(VK_CONTROL) & 0x8000))\n                    {\n                        g_verticalMomentum.Cancel();\n                        g_horizontalMomentum.Cancel();\n                        g_verticalSmoothing.Reset();\n                        g_horizontalSmoothing.Reset();\n                    }\n```\n\nApply all three suggestions in this group as one batch; they form one Ctrl-cancellation correction.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "52283-ctrl-cancel-233",
+      "title": "Publish the Ctrl-bypass setting to the injector safely",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact timer path fails the three Ctrl-only cases before the correction and passes them afterward, with the normal and disabled-policy controls preserved."
+      },
+      "kind": "inline",
+      "path": "src/modules/MouseUtils/ScrollAcceleration/main.cpp",
+      "line": 233,
+      "side": "RIGHT",
+      "in_diff": true,
+      "selection_group": {
+        "id": "52283-ctrl-cancellation",
+        "title": "Cancel pending scrolling on Ctrl",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### Publish the Ctrl-bypass setting to the injector safely\n\n**Severity:** `medium`\n\nThe timer-side cancellation must honor `ignore_with_ctrl=false` as well. Copy the option while holding `g_momentumMutex`, rather than reading the hook thread's `g_settings` directly from the injector; the companion timer change reads this copy under the same mutex.\n\n```suggestion\n        std::scoped_lock lock(g_momentumMutex);\n        g_injectorIgnoreWithCtrl = settings.ignoreWithCtrl;\n```\n\nApply all three suggestions in this group as one batch; they form one Ctrl-cancellation correction.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "52283-ctrl-cancel-56",
+      "title": "Keep the injector's Ctrl-bypass policy under its state mutex",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact timer path fails the three Ctrl-only cases before the correction and passes them afterward, with the normal and disabled-policy controls preserved."
+      },
+      "kind": "inline",
+      "path": "src/modules/MouseUtils/ScrollAcceleration/main.cpp",
+      "line": 56,
+      "side": "RIGHT",
+      "in_diff": true,
+      "selection_group": {
+        "id": "52283-ctrl-cancellation",
+        "title": "Cancel pending scrolling on Ctrl",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### Keep the injector's Ctrl-bypass policy under its state mutex\n\n**Severity:** `medium`\n\nThe Ctrl cancellation change needs a policy copy shared by `ApplySettings` and the injector timer. Place it with the state guarded by `g_momentumMutex`; the companion suggestions update and read it under that mutex, preserving the configured Ctrl-bypass behavior without introducing a cross-thread settings read.\n\n```suggestion\n    std::mutex g_momentumMutex;\n    bool g_injectorIgnoreWithCtrl = true;\n```\n\nApply all three suggestions in this group as one batch; they form one Ctrl-cancellation correction.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "52283-post-ctrl-cancellation",
+      "type": "post_review",
+      "label": "Post atomic Ctrl-cancellation suggestions",
+      "review": {
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "21a9b7c36b4adafb47063e630a01164717c19b2c",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "21a9b7c36b4adafb47063e630a01164717c19b2c",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "52283-ctrl-cancel-332",
+        "52283-ctrl-cancel-233",
+        "52283-ctrl-cancel-56"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "21a9b7c36b4adafb47063e630a01164717c19b2c",
+      "result": "passed",
+      "checked_comment_ids": [
+        "52283-ctrl-cancel-332",
+        "52283-ctrl-cancel-233",
+        "52283-ctrl-cancel-56"
+      ],
+      "files": [
+        {
+          "path": "src/modules/MouseUtils/ScrollAcceleration/main.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
