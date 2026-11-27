@@ -9920,7 +9920,7 @@ window.BOARD_INDEX = {
       "ci_state": null,
       "merge_state": "DIRTY",
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -9932,9 +9932,12 @@ window.BOARD_INDEX = {
       "labels": [
         "Ready for review"
       ],
-      "proposed_open": 0,
-      "primary_action": null,
-      "needs_revalidation": true
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Request shortcut, whitespace, conflict-name, and telemetry corrections"
+      },
+      "needs_revalidation": false
     },
     {
       "id": "pr-49502",

@@ -2,17 +2,133 @@
   "schemaVersion": 5,
   "number": 49647,
   "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "title": "[Advanced Paste] Add single-line paste formatting",
   "url": "https://github.com/microsoft/PowerToys/pull/49647",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-25T02:46:22.696206+00:00",
-  "evaluated_at": "2026-11-25T02:46:22.696206+00:00",
+  "generated_at": "2026-11-27T03:45:37.200813+00:00",
+  "evaluated_at": "2026-11-27T03:45:37.200813+00:00",
   "source_updated_at": "2026-11-24T20:11:33Z",
   "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": []
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "reset-removed-single-line-hotkey",
+      "kind": "inline",
+      "severity": "medium",
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "line": 425,
+      "side": "RIGHT",
+      "body": "### Clear the optional shortcut when its setting is absent\n\n**Severity:** `medium`\n\n**Affected code:** `AdvancedPaste::read_settings` in `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`.\n\n**Problem:** After a shortcut has been configured, loading a legacy settings payload without `paste-as-single-line-hotkey` skips this assignment and retains the previous member value. The first-load default is empty, but it does not reset an already-running module.\n\n**Why it matters:** The runner can re-register the old chord from `get_hotkeys` even though the current settings no longer contain that shortcut.\n\n**Suggested change:** Clear the member when the optional property is absent; keep the guarded parse for older settings files.\n\n```suggestion\n                    }\n                    else\n                    {\n                        m_paste_as_single_line_hotkey = {};\n                    }\n```\n\n**Verification:** Configure a single-line shortcut, then reload a nonempty legacy properties payload without the new key. Confirm that `get_hotkeys` returns an empty single-line shortcut and the old chord is no longer registered.",
+      "title": "Clear the optional shortcut when its setting is absent",
+      "confidence": {
+        "score": 94,
+        "rationale": "The absent-key branch leaves a persistent shortcut unchanged, and get_hotkeys returns that member during reconfiguration."
+      },
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "collapse-unicode-spaces-adjacent-to-line-breaks",
+      "kind": "inline",
+      "severity": "medium",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/SingleLineTextHelper.cs",
+      "line": 13,
+      "side": "RIGHT",
+      "body": "### Collapse Unicode horizontal spaces next to line breaks\n\n**Severity:** `medium`\n\n**Affected code:** `SingleLineTextHelper.LineBreakRegex`.\n\n**Problem:** Both horizontal-whitespace classes accept only ASCII space and tab. `First\\u00A0\\nSecond` therefore becomes `First\\u00A0 Second`, and `First\\n\\u2003\\nSecond` becomes `First \\u2003 Second`, instead of collapsing the whitespace around the breaks to one space.\n\n**Why it matters:** Text copied from documents can contain non-breaking or em spaces. The promised normalization does not hold for those inputs, although Unicode characters away from line breaks should remain unchanged.\n\n**Suggested change:** Include Unicode space separators around line breaks while retaining inline characters and the non-backtracking regex.\n\n```suggestion\n        \"[\\\\p{Zs}\\\\t]*(?:(?:\\\\r\\\\n|[\\\\n\\\\r\\\\u000B\\\\u000C\\\\u0085\\\\u2028\\\\u2029])[\\\\p{Zs}\\\\t]*)+\",\n```\n\nAdd regression cases for a non-breaking space before a break, an em space between repeated breaks, and unchanged inline Unicode spaces.\n\n**Verification:** The first two inputs should produce `First Second`; `Keep\\u00A0inline\\u2003spaces` should be preserved.",
+      "title": "Collapse Unicode horizontal spaces next to line breaks",
+      "confidence": {
+        "score": 99,
+        "rationale": "The ASCII-only character classes preserve non-breaking and em spaces next to breaks; Unicode space separators normalize these cases without changing inline text."
+      },
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "localize-shifted-additional-action-conflicts",
+      "kind": "companion",
+      "severity": "medium",
+      "body": "### Derive custom-action classification from the current accessor list\n\n**Severity:** `medium`\n\n**Affected code:** `AdvancedPasteSettings.GetAllHotkeyAccessors` and `ShortcutConflictViewModel.GetHotkeyLocalizationHeader`.\n\n**Problem:** The new fifth built-in shortcut shifts additional-action IDs, but the conflict dialog still treats every Advanced Paste ID greater than 9 as a custom action. With coaching disabled, Transcode to MP3 is now ID 10 and MP4 is ID 11, so the dialog returns raw `TranscodeToMp3` and `TranscodeToMp4` keys instead of their localized headers.\n\n**Why it matters:** Users resolving a shortcut conflict see implementation keys for normal built-in actions rather than the names shown in Settings.\n\n**Suggested change:** Derive the classification from the loaded settings instead of a fixed ID.\n\n1. In `SetupModuleData`, when the settings are `AdvancedPasteSettings`, compute the first custom-action index as `allHotkeyAccessors.Length - advancedPasteSettings.Properties.CustomActions.Value.Count`. This includes the coaching accessor only when it is actually present.\n2. Pass whether `module.HotkeyID` belongs to that custom-action tail into `GetHotkeyLocalizationHeader` rather than testing `hotkeyID > 9`.\n3. Return the literal action name only for that custom tail; resolve the normal `/Header` resource for all built-in additional actions.\n\n**Verification:** Check conflicts for MP3 and MP4 with coaching disabled and enabled. Both should use their localized `/Header` resources, while a named custom action should display its own name.",
+      "title": "Derive custom-action classification from the current accessor list",
+      "confidence": {
+        "score": 95,
+        "rationale": "The accessor order places built-in MP3 and MP4 actions beyond the fixed custom-action boundary; the optional coaching accessor also changes that boundary."
+      },
+      "in_diff": false,
+      "disposition": "proposed",
+      "out_of_diff_reason": "The new accessor is in the PR diff, but the required custom-action classification fix is in the unchanged ShortcutConflictViewModel.GetHotkeyLocalizationHeader method."
+    },
+    {
+      "id": "reserve-telemetry-hotkey-storage",
+      "kind": "companion",
+      "severity": "medium",
+      "body": "### Keep hotkey string storage stable until telemetry is emitted\n\n**Severity:** `medium`\n\n**Affected code:** `Trace::AdvancedPaste_SettingsTelemetry` in `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/trace.cpp`.\n\n**Problem:** `getHotkeyCStr` appends a string to a vector and returns its `c_str()` pointer. Later appends, including the new fifth built-in field and additional-action fields, can reallocate the vector before TraceLogging consumes previously captured pointers. Short strings stored inside moved string objects are particularly susceptible.\n\n**Why it matters:** With diagnostics and the provider enabled, the event can read invalid storage and report corrupted shortcut strings.\n\n**Suggested change:** Stabilize the backing storage before any string pointer is captured.\n\n1. Immediately after constructing `hotkeyStrs`, call `hotkeyStrs.reserve(5 + additionalActionsHotkeys.size());`, before calling either helper. Alternatively, use storage with stable addresses.\n2. Keep the existing event fields and their order; ensure subsequent appends cannot exceed the reserved number of hotkey strings.\n\n**Verification:** Emit settings telemetry with short unassigned shortcut strings and configured additional actions; confirm all shortcut fields remain correct across the entire event construction.",
+      "title": "Keep hotkey string storage stable until telemetry is emitted",
+      "confidence": {
+        "score": 89,
+        "rationale": "Vector reallocation can invalidate captured short-string pointers before TraceLogging consumes the complete event arguments."
+      },
+      "in_diff": false,
+      "disposition": "proposed",
+      "out_of_diff_reason": "The added telemetry argument is in the PR diff, but the storage reservation must occur at the unchanged hotkeyStrs declaration before any string pointer is captured."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49647",
+      "type": "post_review",
+      "label": "Request shortcut, whitespace, conflict-name, and telemetry corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Posts two inline suggestions and two general correction comments.",
+      "review": {
+        "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49647,
+        "pr": 49647,
+        "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+        "commit_id": "589a669bad9231c17908568bbd8ae73c628e75a8"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "reset-removed-single-line-hotkey",
+        "collapse-unicode-spaces-adjacent-to-line-breaks"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+      "result": "passed",
+      "checked_comment_ids": [
+        "reset-removed-single-line-hotkey",
+        "collapse-unicode-spaces-adjacent-to-line-breaks"
+      ],
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/SingleLineTextHelper.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
 }
