@@ -22,7 +22,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if ($PSCmdlet.ParameterSetName -eq 'RunPlan') {
-    $runPlan = Get-Content -LiteralPath $RunPlanJsonPath -Raw | ConvertFrom-Json
+    $runPlan = Get-Content -LiteralPath $RunPlanJsonPath -Raw | ConvertFrom-Json -DateKind String
     if ($null -eq $runPlan.selected_prs) {
         throw 'Expected selected_prs in the saved run plan, including an empty array.'
     }
@@ -41,9 +41,9 @@ if ($PSCmdlet.ParameterSetName -eq 'RunPlan') {
         })
     }
 } else {
-    $queue = Get-Content -LiteralPath $QueueJsonPath -Raw | ConvertFrom-Json
+    $queue = Get-Content -LiteralPath $QueueJsonPath -Raw | ConvertFrom-Json -DateKind String
 }
-$ledger = Get-Content -LiteralPath $StateJsonPath -Raw | ConvertFrom-Json
+$ledger = Get-Content -LiteralPath $StateJsonPath -Raw | ConvertFrom-Json -DateKind String
 if ($null -eq $queue.stale_prs -or $null -eq $ledger.prs) {
     throw 'Expected stale_prs in queue and prs in private ledger, including empty arrays.'
 }
@@ -78,6 +78,7 @@ $runnable = [Collections.Generic.List[object]]::new()
 $checks = [Collections.Generic.List[object]]::new()
 $waits = [Collections.Generic.List[object]]::new()
 $exceptions = [Collections.Generic.List[object]]::new()
+$completedNoAction = [Collections.Generic.List[object]]::new()
 $seen = @{}
 :prLoop foreach ($pr in @($queue.stale_prs)) {
     $number = [int]$pr.number
@@ -94,6 +95,26 @@ $seen = @{}
     if ($row -and [string]$row.head_sha -ne [string]$pr.live_head_sha) {
         $action = 'reconcile_updated_head'
         $rank = 1
+    } elseif ($row.phase -eq 'completed_no_action' -and $row.coordinator_no_action_disposition) {
+        $disposition = $row.coordinator_no_action_disposition
+        $coveredActivity = [datetimeoffset]::MinValue
+        $liveActivity = [datetimeoffset]::MinValue
+        if ($disposition.number -eq $number -and
+            [string]$disposition.head_sha -eq [string]$pr.live_head_sha -and
+            $disposition.assessment_complete -eq $true -and
+            $row.review.request_pending -ne $true -and
+            $disposition.outcome -eq 'no_supported_author_change' -and
+            $disposition.clean_review -eq $false -and $disposition.approval -eq $false -and
+            -not [string]::IsNullOrWhiteSpace([string]$disposition.assessment_evidence) -and
+            -not [string]::IsNullOrWhiteSpace([string]$disposition.artifact_delivery_receipt) -and
+            [datetimeoffset]::TryParse([string]$disposition.source_updated_at, [ref]$coveredActivity) -and
+            [datetimeoffset]::TryParse([string]$pr.updated_at, [ref]$liveActivity) -and
+            $coveredActivity -eq $liveActivity) {
+            $completedNoAction.Add([pscustomobject]@{ number = $number; disposition = $disposition })
+            continue
+        }
+        $action = 'revalidate_context'
+        $rank = 2
     } elseif ($row.operator_exception) {
         $exception = $row.operator_exception
         $verifiedAt = [datetimeoffset]::MinValue
@@ -246,9 +267,12 @@ $plan = [pscustomobject]@{
     waits = $waits.ToArray()
     operator_exceptions = $exceptions.ToArray()
     operator_exception_count = $exceptions.Count
+    completed_no_action_assessments = $completedNoAction.ToArray()
+    completed_no_action_count = $completedNoAction.Count
     next_check_at = if ($nextCheck.Count) { $nextCheck[0].next_check_at } else { $null }
     complete = $seen.Count -eq 0 -and $runningIds.Count -eq 0 -and $BuildOwnerNumber -eq 0
-    exhausted_with_exceptions = $seen.Count -gt 0 -and $seen.Count -eq $exceptions.Count -and
+    exhausted_with_exceptions = $exceptions.Count -gt 0 -and
+        $seen.Count -eq ($exceptions.Count + $completedNoAction.Count) -and
         $runningIds.Count -eq 0 -and $BuildOwnerNumber -eq 0
 }
 if ($AsJson) { $plan | ConvertTo-Json -Depth 12 } else { $plan }
