@@ -1,0 +1,143 @@
+{
+  "number": 52293,
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "title": "Build/run module",
+  "url": "https://github.com/microsoft/PowerToys/pull/52293",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-11-27T05:30:51.480131+00:00",
+  "evaluated_at": "2026-11-27T05:30:51.480131+00:00",
+  "source_updated_at": "2026-11-23T04:31:58Z",
+  "head_sha": "043dce0d86b1224999a528f66a45676652464583",
+  "confidence": "high",
+  "proposed_comments": [
+    {
+      "id": "runner-ownership",
+      "kind": "inline",
+      "title": "Only stop positively identified runners from this checkout",
+      "severity": "medium",
+      "confidence": {
+        "score": 97,
+        "rationale": "Pinned source and focused argument/path predicates establish the reachable failure."
+      },
+      "path": "tools/build/run-module.ps1",
+      "start_line": 208,
+      "line": 210,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Only stop positively identified runners from this checkout\n\n**Severity:** `medium`\n\nThe current filter drops instances whose executable `Path` is unavailable, so they fall through to the subsequent `Stop-Process` call. Its wildcard also treats an adjacent directory such as `C:\\Dev\\PowerToysClone` as belonging to `C:\\Dev\\PowerToys`. Refuse unknown or unreadable paths, require a literal directory boundary, and avoid reading an unavailable path again in the warning.\n\n```suggestion\n    $installed = $running | Where-Object {\n        try {\n            $path = $_.Path\n            -not $path -or -not $path.StartsWith(\"$($repoRoot.TrimEnd('\\'))\\\", [StringComparison]::OrdinalIgnoreCase)\n        } catch {\n            $true\n        }\n    }\n    if ($installed) {\n        Write-Warning \"Another PowerToys instance is running outside this checkout, or its executable path could not be verified. Exit it first; two runners compete for keyboard hooks and hotkeys.\"\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "platform-layout",
+      "kind": "inline",
+      "title": "Assemble the selected platform's runtime layout",
+      "severity": "medium",
+      "confidence": {
+        "score": 98,
+        "rationale": "Pinned source and focused argument/path predicates establish the reachable failure."
+      },
+      "path": "tools/build/run-module.ps1",
+      "start_line": 189,
+      "line": 190,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Assemble the selected platform's runtime layout\n\n**Severity:** `medium`\n\n`RestoreThenBuild` receives `$Platform`, but the runtime copy source and destination always use `x64`. An ARM64 build therefore assembles the wrong architecture's files, or cannot find the expected runner output. Use the selected platform here and apply this together with the essentials-path correction.\n\n```suggestion\n$runnerDir = Join-Path $repoRoot \"src\\runner\\$Platform\\$Configuration\"\n$outDir = Join-Path $repoRoot \"$Platform\\$Configuration\"\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "selected-platform-layout",
+        "title": "Align the selected platform's essentials and runtime layout",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "platform-essentials",
+      "kind": "inline",
+      "title": "Probe essentials in the selected platform's output",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "Pinned source and focused argument/path predicates establish the reachable failure."
+      },
+      "path": "tools/build/run-module.ps1",
+      "start_line": 174,
+      "line": 176,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Probe essentials in the selected platform's output\n\n**Severity:** `medium`\n\nThese probes use `x64` even when the requested platform is ARM64, so existing x64 Settings and Quick Access outputs can incorrectly satisfy the readiness checks. The runner probe also looks under `WinUI3Apps`, although the runner output copied below comes from its project output directory. Probe the actual runner output and the selected platform's managed apps; apply this together with the runtime-layout correction.\n\n```suggestion\n    @{ Exe = \"src\\runner\\$Platform\\$Configuration\\PowerToys.exe\"; Project = \"src\\runner\\Runner.vcxproj\"; Name = \"Runner\" }\n    @{ Exe = \"$Platform\\$Configuration\\WinUI3Apps\\PowerToys.Settings.exe\"; Project = \"src\\settings-ui\\Settings.UI\\PowerToys.Settings.csproj\"; Name = \"Settings UI\" }\n    @{ Exe = \"$Platform\\$Configuration\\WinUI3Apps\\PowerToys.QuickAccess.exe\"; Project = \"src\\settings-ui\\QuickAccess.UI\\PowerToys.QuickAccess.csproj\"; Name = \"Quick Access\" }\n```",
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "selected-platform-layout",
+        "title": "Align the selected platform's essentials and runtime layout",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "preserve-build-arguments",
+      "kind": "inline",
+      "title": "Preserve argument boundaries and spaced solution paths",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The new wrapper flattens a string array before the legacy helper splits it; captured argument vectors reproduce the loss."
+      },
+      "path": "tools/build/run-module.ps1",
+      "line": 166,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Affected code:** `tools/build/run-module.ps1` and `RunMSBuild`/`RestoreThenBuild` in `tools/build/build-common.ps1`.\n\n**Problem:** The wrapper joins `ExtraArgs` into a string before the helper splits it on spaces. A single property such as `/p:Foo=\"a b\"` or a binlog path containing spaces consequently becomes multiple arguments. It also omits `SolutionDir` whenever that path contains spaces.\n\n**Why it matters:** User-supplied MSBuild values lose their boundaries. With `-IncludeTests`, projects such as `Peek.Common.UnitTests` use `$(SolutionDir)` for their output, so a checkout path containing spaces no longer receives the shared solution output directory.\n\n**Suggested change:**\n- Add optional tokenized `ArgumentList` and separate `SolutionDir` parameters to the helpers, preserving the existing string interface for unrelated callers.\n- Append `SolutionDir` as one MSBuild argument before caller overrides, and forward the original `ExtraArgs` array unchanged for both modules and essentials.\n- Let `RestoreThenBuild` retain ownership of its fixed restore/build switches rather than assembling another command string in this wrapper.\n\n**Verification:** Add captured-argument tests covering a quoted property, a binlog path containing spaces, and a spaced `SolutionDir` in both restore and build. Check that existing callers, `RestoreOnly`, and an explicit caller override retain their behavior.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-52293-043dce0d86b1",
+      "type": "post_review",
+      "label": "Post platform, build-argument and runner-ownership corrections",
+      "review": {
+        "event": "COMMENT",
+        "comment_ids": [
+          "runner-ownership",
+          "platform-layout",
+          "platform-essentials",
+          "preserve-build-arguments"
+        ]
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "043dce0d86b1224999a528f66a45676652464583",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "runner-ownership",
+        "platform-layout",
+        "platform-essentials"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "043dce0d86b1224999a528f66a45676652464583",
+      "result": "passed",
+      "checked_comment_ids": [
+        "runner-ownership",
+        "platform-layout",
+        "platform-essentials"
+      ],
+      "files": [
+        {
+          "path": "tools/build/run-module.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
