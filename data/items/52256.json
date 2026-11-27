@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 5,
+  "number": 52256,
+  "kind": "pr",
+  "title": "Runner: warn when a module hotkey action blocks the keyboard hook",
+  "url": "https://github.com/microsoft/PowerToys/pull/52256",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "pending_author": false,
+  "generated_at": "2026-11-27T06:01:09.626668+00:00",
+  "evaluated_at": "2026-11-27T06:01:09.626668+00:00",
+  "source_updated_at": "2026-11-23T22:14:54Z",
+  "head_sha": "fe7395a6b19efafd0134c115bc7312396791143a",
+  "confidence": "high",
+  "proposed_comments": [
+    {
+      "id": "pr52256-watchdog-stable-identity",
+      "kind": "inline",
+      "path": "src/runner/centralized_hotkeys.cpp",
+      "line": 114,
+      "side": "RIGHT",
+      "body": "### Keep watchdog hotkey identities stable across keyboard layouts\n\n**Severity:** `medium`\n\nPlease use the virtual-key descriptor for the watchdog's rate-limiter key. `ToWstring(shortcut)` obtains a display label from the current keyboard layout, while `ReportLimiter` stores that string as part of its `(module, hotkey)` identity. A layout-sensitive label can therefore create another limiter entry for the same registered virtual key and allow another report in the same session, contrary to the documented once-per-hotkey limit.\n\nThe existing `DescribeHotkey` helper derives the identity only from the registered modifiers and virtual-key code. Keep `ToWstring` for ordinary readable registration logs; only the watchdog key needs this change.\n\n```suggestion\n                    SlowHotkeyWatchdog::ReportSlowAction(\n                        L\"WM_HOTKEY\",\n                        moduleName,\n                        SlowHotkeyWatchdog::DescribeHotkey(\n                            (shortcut.modifiersMask & MOD_WIN) != 0,\n                            (shortcut.modifiersMask & MOD_CONTROL) != 0,\n                            (shortcut.modifiersMask & MOD_SHIFT) != 0,\n                            (shortcut.modifiersMask & MOD_ALT) != 0,\n                            shortcut.vkCode),\n                        elapsed);\n```\n\nPlease cover an OEM virtual key and confirm that the WM_HOTKEY and keyboard-hook descriptors share the same limiter identity.\n",
+      "confidence": {
+        "score": 88,
+        "rationale": "The caller supplies a current-layout-derived string directly to the deduplication set; the existing numeric descriptor removes that dependency.",
+        "level": "green"
+      },
+      "title": "Keep watchdog identities layout-independent",
+      "severity": "medium",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "review-52256-stable-watchdog-identity",
+      "type": "post_review",
+      "label": "Post inline suggestion for stable watchdog identities",
+      "review": {
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "fe7395a6b19efafd0134c115bc7312396791143a",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "head_sha": "fe7395a6b19efafd0134c115bc7312396791143a",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "pr52256-watchdog-stable-identity"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "fe7395a6b19efafd0134c115bc7312396791143a",
+      "result": "passed",
+      "checked_comment_ids": [
+        "pr52256-watchdog-stable-identity"
+      ],
+      "files": [
+        {
+          "path": "src/runner/centralized_hotkeys.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  }
+}
