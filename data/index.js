@@ -7579,13 +7579,19 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 51162,
       "url": "https://github.com/microsoft/PowerToys/pull/51162",
-      "title": "[FancyZones] Let new windows settle before moving them to their last known zone",
       "author": "panibor",
       "state": "open",
-      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
+      "issue_type": null,
+      "assignees": [],
+      "created_at": "2026-10-09T21:00:02Z",
+      "comments": 4,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED",
       "track": "review",
       "stage": "awaiting_review_approval",
       "owes": "us",
@@ -7593,24 +7599,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post initial-timer inline suggestion"
-      },
+      "title": "[FancyZones] Let new windows settle before moving them to their last known zone",
+      "updated_at": "2026-11-26T13:15:11Z",
+      "is_draft": false,
       "labels": [
         "Product-FancyZones",
         "Ready for review"
       ],
-      "assignees": [],
-      "created_at": "2026-10-09T21:00:02Z",
-      "updated_at": "2026-10-16T16:41:02Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post initial-timer inline suggestion"
+      }
     },
     {
       "id": "pr-51153",
