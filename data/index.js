@@ -88,7 +88,7 @@ window.BOARD_INDEX = {
     "open_prs": 250,
     "open_issues": 11218,
     "community": 10350,
-    "artifacts": 2286
+    "artifacts": 2287
   },
   "impact": {
     "as_of": "2026-11-21T15:52:25.2381377+08:00",
@@ -2383,7 +2383,8 @@ window.BOARD_INDEX = {
     52394,
     52315,
     52381,
-    52389
+    52389,
+    52371
   ],
   "items": [
     {
@@ -387416,34 +387417,34 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 52371,
       "url": "https://github.com/microsoft/PowerToys/pull/52371",
-      "title": "[CI] Test split Core signing and ARM64 MSI validation",
       "author": "moooyo",
       "state": "open",
-      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
       "assignees": [],
       "created_at": "2026-11-26T05:43:40Z",
-      "updated_at": "2026-11-27T07:50:00Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "title": "[CI] Test split Core signing and ARM64 MSI validation",
+      "updated_at": "2026-11-27T07:50:00Z",
+      "is_draft": false,
+      "labels": [
+        "Ready for review"
+      ],
+      "proposed_open": 0,
+      "primary_action": null
     }
   ]
 };
