@@ -6,14 +6,43 @@
   "title": "fix: deliver Grab And Move Alt chords without sticking Alt",
   "url": "https://github.com/microsoft/PowerToys/pull/52040",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-11-25T03:00:36.7789256+00:00",
-  "evaluated_at": "2026-11-25T03:00:36.7789256+00:00",
+  "generated_at": "2026-11-27T02:44:56.6323076Z",
+  "evaluated_at": "2026-11-27T02:44:56.6358321Z",
   "source_updated_at": "2026-11-23T16:13:49Z",
   "head_sha": "c992f669d2ad460aa6ca1e9265c260cf70ecfa8c",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": []
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "partial-chord-insertion",
+      "kind": "companion",
+      "title": "Track partial modifier insertion separately from chord success",
+      "severity": "medium",
+      "confidence": {
+        "score": 78,
+        "rationale": "Exact current source has inconsistent partial-insertion bookkeeping; real partial insertion and target delivery remain unobserved."
+      },
+      "body": "**Affected code:** `src/modules/GrabAndMove/GrabAndMove/main.cpp`, in `ReplayModifierChord`, `HandleKeyboardEvent`, and `ReleaseModifierSession`.\r\n\r\n**Problem:** If `SendInput` inserts only the modifier-down and returns 1, `HandleKeyboardEvent` chains the physical chord key but leaves `absorbed` set and `replayedDown` false. The inserted modifier-down is therefore absent from the session's replay bookkeeping.\r\n\r\n**Why it matters:** Under that partial-insertion condition, a repeated chord can request another modifier-down, normal modifier release can replay another down instead of taking the balancing-up branch, and the lost-keyup balancing guard does not recognize the inserted down. This is a conditional state-accounting defect, not a claim that a real short insertion or stuck Alt has been reproduced.\r\n\r\n**Suggested change:**\r\n1. In `HandleKeyboardEvent`, retain the return count from `ReplayModifierChord` and track the modifier-down whenever at least that event was inserted, separately from complete chord success.\r\n2. Keep chaining the physical chord key for a partial insertion; swallow it only when both events were inserted. Make repeats consult the tracked modifier-down so they do not replay it again.\r\n3. Route normal release through the tracked balancing-up branch, still chaining the physical up if injection fails. Include the tracked down in lost-keyup recovery, retaining it when that balancing-up attempt fails so recovery can retry.\r\n\r\nThe existing mouse passthrough path already separates `inserted >= 1` bookkeeping from complete-insertion swallowing.\r\n\r\n**Verification:** Exercise insertion counts 0, 1, and 2 with recorded accepted input prefixes, then repeats, normal release, missed release, and failed balancing-up followed by retry. Check that partial insertion chains the physical key without requesting another modifier-down, and that balancing failures retain state for recovery.",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction coordinates chord bookkeeping, repeats, and release/recovery paths; no independently validated literal patch is proposed."
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "commit_id": "c992f669d2ad460aa6ca1e9265c260cf70ecfa8c",
+        "head_sha": "c992f669d2ad460aa6ca1e9265c260cf70ecfa8c",
+        "event": "COMMENT",
+        "comment_ids": [
+          "partial-chord-insertion"
+        ]
+      },
+      "type": "post_review",
+      "id": "52040-post-current-findings",
+      "label": "Post general PR comment",
+      "head_sha": "c992f669d2ad460aa6ca1e9265c260cf70ecfa8c"
+    }
+  ]
 }
