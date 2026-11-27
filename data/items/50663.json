@@ -8,9 +8,9 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-11-13T07:51:12.5428022Z",
+  "generated_at": "2026-11-27T08:12:50.1079510+00:00",
   "evaluated_at": "2026-11-13T07:51:12.5428022Z",
-  "source_updated_at": "2026-11-11T21:01:24Z",
+  "source_updated_at": "2026-11-14T00:14:44Z",
   "head_sha": "9e1160751e0132a23b362c76cd3baf29328225f6",
   "confidence": "High",
   "needs_revalidation": false,
@@ -46,7 +46,7 @@
       "line": 34,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Gate the launch waiter on the module lifecycle\n\n**Severity:** `high`\n\nThe constructor starts a global named-event waiter unconditionally, but `disable()` only clears `_enabled` and `StartProcess()` does not check it. A signal can therefore launch Robocopy UI while the module is disabled; the callback also ignores wait failures, and concurrent event/custom-action launches can race while checking and storing `m_process`. Start the waiter during `enable()`, stop it during `disable()`, return on unsuccessful wait results, and synchronize access to the tracked process handle across launch and shutdown.",
+      "body": "### Gate the launch waiter on the module lifecycle\n\n**Severity:** `high`\n\nThe constructor starts the named-event waiter while `_enabled` is false. `disable()` only clears that flag, and the callback calls `StartProcess()` without an enabled-state check. Consequently, a launch-event signal after an ordinary module disable still reaches `ShellExecuteExW`. The application's GPO check does not enforce the ordinary enable toggle. Also, `EventWaiter` invokes this callback on `WAIT_FAILED`, but the callback ignores its error argument and launches anyway.\n\nStart the waiter in `enable()`, stop it in `disable()`, and return from the callback on unsuccessful wait results. Synchronize the tracked process state between the waiter thread and `call_custom_action()`; both currently check and update `m_process` without a lock. Single-instance registration in the application does not synchronize that native handle. Preserve deliberately supported custom-action launches separately.",
       "disposition": "proposed"
     }
   ],
@@ -71,7 +71,7 @@
   "validation": {
     "upstream_head": {
       "head_sha": "9e1160751e0132a23b362c76cd3baf29328225f6",
-      "result": "grounded_inline_prose"
+      "result": "passed"
     },
     "suggestion_patch": {
       "head_sha": "9e1160751e0132a23b362c76cd3baf29328225f6",
